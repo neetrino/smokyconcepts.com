@@ -28,14 +28,14 @@ export function ProductCardImage({
   isCompact = false,
 }: ProductCardImageProps) {
   return (
-    <div className="aspect-square bg-gray-100 relative overflow-hidden">
+    <div className="aspect-square bg-transparent relative overflow-hidden">
       <Link href={`/products/${slug}`} className="block w-full h-full">
         {image && !imageError ? (
           <Image
             src={image}
             alt={title}
             fill
-            className="object-cover"
+            className="object-contain"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
             unoptimized
             onError={onImageError}
