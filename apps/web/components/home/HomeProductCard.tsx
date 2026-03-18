@@ -6,11 +6,17 @@ import type { HomeBadgeTone, HomeProductItem } from './homePage.types';
 
 type HomeProductCardSize = 'default' | 'small';
 
+type TrailingActionIcon = 'bag' | 'wishlist';
+
 interface HomeProductCardProps {
   item: HomeProductItem;
   size?: HomeProductCardSize;
   /** Slight vertical offset for staggered product rows (e.g. Upcoming 2nd / 4th card). */
   imageNudgeDown?: boolean;
+  /** Stronger offset when imageNudgeDown (e.g. Culture center card). */
+  imageNudgeDeep?: boolean;
+  /** Icon next to the action button (Culture section uses wishlist). */
+  trailingIcon?: TrailingActionIcon;
 }
 
 const BADGE_CLASS_NAMES: Record<HomeBadgeTone, string> = {
@@ -23,7 +29,13 @@ const BADGE_CLASS_NAMES: Record<HomeBadgeTone, string> = {
 /**
  * Product card reused across trending, upcoming, and culture sections.
  */
-export function HomeProductCard({ item, size = 'default', imageNudgeDown = false }: HomeProductCardProps) {
+export function HomeProductCard({
+  item,
+  size = 'default',
+  imageNudgeDown = false,
+  imageNudgeDeep = false,
+  trailingIcon = 'bag',
+}: HomeProductCardProps) {
   const isSmall = size === 'small';
   const cardClassName = item.compact
     ? 'w-[10.75rem] rounded-[1.125rem] p-3'
@@ -39,7 +51,8 @@ export function HomeProductCard({ item, size = 'default', imageNudgeDown = false
 
   const productHref = item.slug ? `/products/${item.slug}` : null;
   const imagePullUp = item.compact ? '-mt-16' : isSmall ? '-mt-20' : '-mt-24';
-  const imageNudgeClassName = imageNudgeDown && !item.compact ? 'translate-y-3' : '';
+  const imageNudgeClassName =
+    imageNudgeDown && !item.compact ? (imageNudgeDeep ? 'translate-y-5' : 'translate-y-3') : '';
   const imageBlock = (
     <div
       className={`relative z-10 mb-2 ${imagePullUp} ${imageWrapperClassName} overflow-visible ${imageNudgeClassName}`.trim()}
@@ -114,7 +127,12 @@ export function HomeProductCard({ item, size = 'default', imageNudgeDown = false
               {item.actionLabel}
             </button>
           )}
-          <img src={HOME_ASSET_PATHS.bagIcon} alt="" className={`object-contain ${iconSizeClassName}`} aria-hidden="true" />
+          <img
+            src={trailingIcon === 'wishlist' ? HOME_ASSET_PATHS.wishlistIcon : HOME_ASSET_PATHS.bagIcon}
+            alt=""
+            className={`object-contain ${iconSizeClassName}`}
+            aria-hidden="true"
+          />
         </div>
       </div>
     </article>

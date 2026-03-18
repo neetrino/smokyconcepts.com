@@ -229,9 +229,16 @@ export function HomePageContent({ coverCollections }: HomePageContentProps) {
             title="Your Voice Shapes Culture"
             description="Culture moves when people take part. Your choice brings concepts to life, be part of the creation and get early access."
           />
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="flex flex-wrap justify-center gap-x-2 gap-y-8 sm:gap-x-3 lg:gap-x-3">
             {CULTURE_PRODUCTS.map((item, index) => (
-              <HomeProductCard key={`culture-${index}-${item.name}-${item.actionLabel}`} item={item} />
+              <div key={`culture-${index}-${item.name}-${item.actionLabel}`} className="w-full max-w-[15rem] shrink-0 sm:w-[15rem]">
+                <HomeProductCard
+                  item={item}
+                  imageNudgeDown={index === 1}
+                  imageNudgeDeep={index === 1}
+                  trailingIcon="wishlist"
+                />
+              </div>
             ))}
           </div>
         </section>

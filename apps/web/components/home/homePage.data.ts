@@ -7,6 +7,7 @@ import type {
 
 export const HOME_ASSET_PATHS = {
   bagIcon: '/assets/home/icons/bag.svg',
+  wishlistIcon: '/assets/home/icons/wishlist.svg',
   compactPack: '/assets/home/products/compact-figma.svg',
   craftTools: '/assets/home/concepts/craft-tools.png',
   heroBanner: '/assets/home/concepts/hero-banner.png',
