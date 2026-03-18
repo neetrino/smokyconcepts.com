@@ -15,6 +15,9 @@ const TRENDING_ITEMS_PER_PAGE = 3;
 const TRENDING_CARD_WIDTH_REM = 14;
 const TRENDING_CARD_GAP_REM = 0.75;
 const TRENDING_TRACK_STEP_REM = TRENDING_CARD_WIDTH_REM + TRENDING_CARD_GAP_REM;
+/** Viewport for three cards (3×width + 2×gap) + small buffer so right card/shadow is not clipped */
+const TRENDING_VIEWPORT_WIDTH_REM =
+  TRENDING_CARD_WIDTH_REM * 3 + TRENDING_CARD_GAP_REM * 2 + 0.25;
 
 interface ApiProduct {
   id: string;
@@ -129,7 +132,7 @@ export function TrendingFeaturedSection() {
 
   if (loading) {
     return (
-      <section className="flex flex-col gap-8 overflow-x-clip">
+      <section className="flex flex-col gap-8 overflow-x-hidden">
         <div className="flex items-center justify-between gap-6">
           <HomeSectionTitle title="Trending" centered={false} />
         </div>
@@ -158,7 +161,7 @@ export function TrendingFeaturedSection() {
   }
 
   return (
-    <section className="flex flex-col gap-8 overflow-x-clip">
+    <section className="flex flex-col gap-8 overflow-x-hidden">
       <div className="relative flex min-h-[4rem] items-center justify-end">
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <HomeSectionTitle title="Trending" centered />
@@ -167,15 +170,26 @@ export function TrendingFeaturedSection() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:hidden">
-        {visibleItems.map((item, index) => (
-          <div key={`trending-mobile-${item.slug ?? index}-${item.name}`} className="pt-16">
-            <HomeProductCard item={item} size="small" />
-          </div>
-        ))}
+        {visibleItems.map((item, index) => {
+          const isMiddleOfThree = visibleItems.length === 3 && index === 1;
+          return (
+            <div
+              key={`trending-mobile-${item.slug ?? index}-${item.name}`}
+              className={`pt-16 ${isMiddleOfThree ? 'translate-y-3' : ''}`.trim()}
+            >
+              <HomeProductCard item={item} size="small" />
+            </div>
+          );
+        })}
       </div>
 
-      <div className="relative z-10 mx-auto mt-10 hidden w-full max-w-[82rem] grid-cols-[minmax(0,18rem)_43.5rem_minmax(0,18rem)] items-center gap-4 xl:grid">
-        <div className="flex items-center justify-end gap-3 pt-32">
+      <div
+        className="relative z-10 mx-auto mt-10 hidden w-full min-w-0 max-w-[82rem] items-center gap-4 xl:grid"
+        style={{
+          gridTemplateColumns: `minmax(0,18rem) ${TRENDING_VIEWPORT_WIDTH_REM}rem minmax(0,18rem)`,
+        }}
+      >
+        <div className="flex min-w-0 items-center justify-end gap-3 pt-32">
           {previousPreviewItems.map((item, index) => (
             <div key={`trending-prev-${item.slug ?? index}-${item.name}`} className="w-[10.75rem] opacity-50">
               <HomeProductCard item={{ ...item, compact: true, faded: true }} size="small" />
@@ -183,23 +197,29 @@ export function TrendingFeaturedSection() {
           ))}
         </div>
 
-        <div className="-mt-28 overflow-x-hidden">
+        <div
+          className="-mt-28 shrink-0 overflow-x-clip overflow-y-visible"
+          style={{ width: `${TRENDING_VIEWPORT_WIDTH_REM}rem` }}
+        >
           <div
-            className="flex items-end justify-start gap-3 transition-transform duration-300 ease-out"
+            className="flex touch-pan-y items-end justify-start gap-3 transition-transform duration-300 ease-out"
             style={{ transform: `translateX(-${startIndex * TRENDING_TRACK_STEP_REM}rem)` }}
           >
-            {items.map((item, index) => (
-              <div
-                key={`trending-${item.slug ?? index}-${item.name}`}
-                className="w-[14rem] shrink-0 pt-20"
-              >
-                <HomeProductCard item={item} size="small" />
-              </div>
-            ))}
+            {items.map((item, index) => {
+              const isMiddleVisible = index === startIndex + 1;
+              return (
+                <div
+                  key={`trending-${item.slug ?? index}-${item.name}`}
+                  className={`w-[14rem] shrink-0 pt-20 ${isMiddleVisible ? 'translate-y-3' : ''}`.trim()}
+                >
+                  <HomeProductCard item={item} size="small" />
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        <div className="flex items-center justify-start gap-3 pt-32">
+        <div className="flex min-w-0 items-center justify-start gap-3 pt-32">
           {nextPreviewItems.map((item, index) => (
             <div key={`trending-next-${item.slug ?? index}-${item.name}`} className="w-[10.75rem] opacity-50">
               <HomeProductCard item={{ ...item, compact: true, faded: true }} size="small" />
