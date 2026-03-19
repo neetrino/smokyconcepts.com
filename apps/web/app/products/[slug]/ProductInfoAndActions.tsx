@@ -5,6 +5,7 @@ import { Heart } from 'lucide-react';
 import { formatPrice, type CurrencyCode } from '../../../lib/currency';
 import { t, getProductText } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
+import { Button } from '../../../components/ui/buttons';
 import { CompareIcon } from '../../../components/icons/CompareIcon';
 import type { Product, ProductVariant } from './types';
 
@@ -126,42 +127,57 @@ export function ProductInfoAndActions({
       {/* Action Buttons */}
       <div className="mt-auto pt-6">
         <div className="flex items-center gap-3 pt-4 border-t">
-          <div className="flex items-center border rounded-xl overflow-hidden bg-gray-50">
-            <button 
-              onClick={() => onQuantityAdjust(-1)} 
+          <div className="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden bg-gray-50">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => onQuantityAdjust(-1)}
               disabled={quantity <= 1}
-              className="w-12 h-12 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-12 h-12 rounded-none border-0"
             >
               -
-            </button>
-            <div className="w-12 text-center font-bold">{quantity}</div>
-            <button 
-              onClick={() => onQuantityAdjust(1)} 
+            </Button>
+            <div className="w-12 text-center font-bold text-gray-900">{quantity}</div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => onQuantityAdjust(1)}
               disabled={quantity >= maxQuantity}
-              className="w-12 h-12 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-12 h-12 rounded-none border-0"
             >
               +
-            </button>
+            </Button>
           </div>
-          <button 
-            disabled={!canAddToCart || isAddingToCart} 
-            className="flex-1 h-12 bg-gray-900 text-white rounded-xl uppercase font-bold disabled:bg-gray-300 disabled:cursor-not-allowed"
+          <Button
+            type="button"
+            variant="primary"
+            size="lg"
+            disabled={!canAddToCart || isAddingToCart}
             onClick={onAddToCart}
+            className="flex-1 h-12 uppercase font-extrabold tracking-[0.12em]"
           >
             {isAddingToCart ? t(language, 'product.adding') : (isOutOfStock ? t(language, 'product.outOfStock') : t(language, 'product.addToCart'))}
-          </button>
-          <button 
-            onClick={onCompareToggle} 
-            className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${isInCompare ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}
+          </Button>
+          <Button
+            type="button"
+            variant="icon"
+            size="icon"
+            onClick={onCompareToggle}
+            className={`w-12 h-12 ${isInCompare ? 'border-[#122a26] bg-[#122a26]/10' : ''}`}
           >
             <CompareIcon isActive={isInCompare} />
-          </button>
-          <button 
-            onClick={onAddToWishlist} 
-            className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center ${isInWishlist ? 'border-gray-900 bg-gray-50' : 'border-gray-200'}`}
+          </Button>
+          <Button
+            type="button"
+            variant="icon"
+            size="icon"
+            onClick={onAddToWishlist}
+            className={`w-12 h-12 ${isInWishlist ? 'border-[#122a26] bg-[#122a26]/10' : ''}`}
           >
-            <Heart fill={isInWishlist ? 'currentColor' : 'none'} />
-          </button>
+            <Heart fill={isInWishlist ? 'currentColor' : 'none'} className="w-5 h-5" />
+          </Button>
         </div>
       </div>
       {showMessage && <div className="mt-4 p-4 bg-gray-900 text-white rounded-md shadow-lg">{showMessage}</div>}

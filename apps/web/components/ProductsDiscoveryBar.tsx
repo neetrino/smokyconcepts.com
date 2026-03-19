@@ -2,6 +2,7 @@
 
 import { type FormEvent, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Button } from './ui/buttons';
 import { useTranslation } from '../lib/i18n-client';
 
 interface DiscoveryProduct {
@@ -73,23 +74,21 @@ export function ProductsDiscoveryBar({ products }: ProductsDiscoveryBarProps) {
                 className="h-11 flex-1 rounded-xl border border-gray-300 bg-white px-4 text-sm text-gray-900 outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
               />
               <div className="flex gap-2">
-                <button
-                  type="submit"
-                  className="h-11 rounded-xl bg-gray-900 px-5 text-sm font-semibold text-white transition hover:bg-gray-800"
-                >
+                <Button type="submit" variant="primary" className="h-11 px-5">
                   {t('common.buttons.search')}
-                </button>
+                </Button>
                 {currentSearch ? (
-                  <button
+                  <Button
                     type="button"
+                    variant="goldOutline"
                     onClick={() => {
                       setSearchInput('');
                       pushParams({ search: null });
                     }}
-                    className="h-11 rounded-xl border border-gray-300 px-4 text-sm font-semibold text-gray-700 transition hover:bg-white"
+                    className="h-11 px-4"
                   >
                     {t('products.discovery.clear')}
-                  </button>
+                  </Button>
                 ) : null}
               </div>
             </div>

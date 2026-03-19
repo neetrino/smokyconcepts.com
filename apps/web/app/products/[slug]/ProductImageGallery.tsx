@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Maximize2 } from 'lucide-react';
+import { Button } from '../../../components/ui/buttons';
 import { ProductLabels } from '../../../components/ProductLabels';
 import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
@@ -80,15 +81,15 @@ export function ProductImageGallery({
           {/* Navigation Arrows - Scroll thumbnails */}
           {images.length > THUMBNAILS_PER_VIEW && (
             <div className="flex flex-row gap-1.5 justify-center">
-              <button 
+              <Button
                 type="button"
+                variant="icon"
+                size="icon"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  // Scroll thumbnails up
                   const newStart = Math.max(0, thumbnailStartIndex - 1);
                   onThumbnailStartIndexChange(newStart);
-                  // Also update current image if needed
                   if (currentImageIndex > newStart + THUMBNAILS_PER_VIEW - 1) {
                     onImageIndexChange(newStart + THUMBNAILS_PER_VIEW - 1);
                   } else if (currentImageIndex < newStart) {
@@ -96,32 +97,22 @@ export function ProductImageGallery({
                   }
                 }}
                 disabled={thumbnailStartIndex <= 0}
-                className="w-9 h-9 rounded border transition-all duration-200 flex items-center justify-center border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-200 hover:shadow-[0_1px_3px_rgba(0,0,0,0.1)] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-gray-100 disabled:hover:border-gray-300 disabled:hover:shadow-none bg-gray-100"
+                className="w-9 h-9"
                 aria-label={t(language, 'common.ariaLabels.previousThumbnail')}
               >
-                <svg 
-                  className="w-4 h-4" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2.5} 
-                    d="M5 15l7-7 7 7" 
-                  />
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
                 </svg>
-              </button>
-              <button 
+              </Button>
+              <Button
                 type="button"
+                variant="icon"
+                size="icon"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  // Scroll thumbnails down
                   const newStart = Math.min(images.length - THUMBNAILS_PER_VIEW, thumbnailStartIndex + 1);
                   onThumbnailStartIndexChange(newStart);
-                  // Also update current image if needed
                   if (currentImageIndex < newStart) {
                     onImageIndexChange(newStart);
                   } else if (currentImageIndex > newStart + THUMBNAILS_PER_VIEW - 1) {
@@ -129,23 +120,13 @@ export function ProductImageGallery({
                   }
                 }}
                 disabled={thumbnailStartIndex >= images.length - THUMBNAILS_PER_VIEW}
-                className="w-9 h-9 rounded border transition-all duration-200 flex items-center justify-center border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-200 hover:shadow-[0_1px_3px_rgba(0,0,0,0.1)] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-gray-100 disabled:hover:border-gray-300 disabled:hover:shadow-none bg-gray-100"
+                className="w-9 h-9"
                 aria-label={t(language, 'common.ariaLabels.nextThumbnail')}
               >
-                <svg 
-                  className="w-4 h-4" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2.5} 
-                    d="M19 9l-7 7-7-7" 
-                  />
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
                 </svg>
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -174,14 +155,16 @@ export function ProductImageGallery({
           
           {/* Control Buttons - Bottom left */}
           <div className="absolute bottom-4 left-4 flex flex-col gap-3 z-10">
-            {/* Fullscreen Button */}
-            <button 
-              onClick={() => setShowZoom(true)} 
-              className="w-12 h-12 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/50 shadow-[0_2px_8px_rgba(0,0,0,0.15)] hover:bg-white/90 transition-all duration-300 hover:shadow-[0_4px_12px_rgba(0,0,0,0.2)]"
+            <Button
+              type="button"
+              variant="icon"
+              size="icon"
+              onClick={() => setShowZoom(true)}
+              className="w-12 h-12 bg-white/90 border-white/60 shadow-md hover:bg-white"
               aria-label={t(language, 'common.ariaLabels.fullscreenImage')}
             >
               <Maximize2 className="w-5 h-5 text-gray-800" />
-            </button>
+            </Button>
           </div>
           </div>
         </div>
@@ -191,8 +174,10 @@ export function ProductImageGallery({
       {showZoom && images.length > 0 && (
         <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4" onClick={() => setShowZoom(false)}>
           <img src={images[currentImageIndex]} alt="" className="max-w-full max-h-full object-contain" />
-          <button 
-            className="absolute top-4 right-4 text-white text-2xl"
+          <Button
+            type="button"
+            variant="outline"
+            className="absolute top-4 right-4 !text-white !border-white hover:!bg-white/10"
             aria-label={t(language, 'common.buttons.close')}
             onClick={(e) => {
               e.stopPropagation();
@@ -200,7 +185,7 @@ export function ProductImageGallery({
             }}
           >
             {t(language, 'common.buttons.close')}
-          </button>
+          </Button>
         </div>
       )}
     </>

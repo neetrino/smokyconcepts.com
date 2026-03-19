@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { Button } from '@shop/ui';
+import { Button } from '../../components/ui/buttons';
 import { apiClient } from '../../lib/api-client';
 import { getStoredLanguage } from '../../lib/language';
 import { t } from '../../lib/i18n';
@@ -201,9 +201,9 @@ export default async function ProductsPage({ searchParams }: any) {
 
               {productsData.meta.totalPages > 1 && (
                 <div className="mt-8 flex justify-center gap-2">
-                  {page > 1 && <Link href={buildPaginationUrl(page - 1)}><Button variant="outline">{t(language, 'common.pagination.previous')}</Button></Link>}
+                  {page > 1 && <Link href={buildPaginationUrl(page - 1)}><Button variant="goldOutline">{t(language, 'common.pagination.previous')}</Button></Link>}
                   <span>{t(language, 'common.pagination.pageOf').replace('{page}', page.toString()).replace('{totalPages}', productsData.meta.totalPages.toString())}</span>
-                  {page < productsData.meta.totalPages && <Link href={buildPaginationUrl(page + 1)}><Button variant="outline">{t(language, 'common.pagination.next')}</Button></Link>}
+                  {page < productsData.meta.totalPages && <Link href={buildPaginationUrl(page + 1)}><Button variant="goldOutline">{t(language, 'common.pagination.next')}</Button></Link>}
                 </div>
               )}
             </>

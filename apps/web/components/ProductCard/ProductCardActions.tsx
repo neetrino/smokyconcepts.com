@@ -1,6 +1,7 @@
 'use client';
 
 import type { MouseEvent } from 'react';
+import { Button } from '../ui/buttons';
 import { CompareIcon } from '../icons/CompareIcon';
 import { CartIcon as CartPngIcon } from '../icons/CartIcon';
 import { useTranslation } from '../../lib/i18n-client';
@@ -55,28 +56,23 @@ export function ProductCardActions({
 
   const actions = (
     <>
-      {/* Compare Icon */}
-      <button
+      <Button
+        type="button"
+        variant="icon"
+        size="icon"
         onClick={onCompareToggle}
-        className={`${buttonSize} rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
-          isInCompare
-            ? 'border-gray-900 text-gray-900 bg-white shadow-sm'
-            : 'border-gray-200 text-gray-700 bg-white hover:border-gray-300 hover:bg-gray-50'
-        }`}
+        className={`${buttonSize} rounded-full ${isInCompare ? 'border-[#122a26] bg-[#122a26]/10' : ''}`}
         title={isInCompare ? t('common.messages.removedFromCompare') : t('common.messages.addedToCompare')}
         aria-label={isInCompare ? t('common.ariaLabels.removeFromCompare') : t('common.ariaLabels.addToCompare')}
       >
         <CompareIcon isActive={isInCompare} size={isCompact ? 16 : 18} />
-      </button>
-
-      {/* Wishlist Icon */}
-      <button
+      </Button>
+      <Button
+        type="button"
+        variant="icon"
+        size="icon"
         onClick={onWishlistToggle}
-        className={`${buttonSize} rounded-full flex items-center justify-center transition-all duration-200 ${
-          isInWishlist
-            ? 'bg-red-600 text-white shadow-lg'
-            : 'bg-white text-gray-700 hover:bg-gray-50 shadow-md hover:shadow-lg'
-        }`}
+        className={`${buttonSize} rounded-full ${isInWishlist ? '!bg-[#731818] !text-white !border-[#731818]' : ''}`}
         title={isInWishlist ? t('common.messages.removedFromWishlist') : t('common.messages.addedToWishlist')}
         aria-label={isInWishlist ? t('common.ariaLabels.removeFromWishlist') : t('common.ariaLabels.addToWishlist')}
       >
@@ -85,7 +81,7 @@ export function ProductCardActions({
         ) : (
           <WishlistIcon filled={isInWishlist} />
         )}
-      </button>
+      </Button>
     </>
   );
 
@@ -100,15 +96,13 @@ export function ProductCardActions({
   return (
     <div className="flex items-center gap-2">
       {actions}
-      {/* Cart Icon */}
-      <button
+      <Button
+        type="button"
+        variant="icon"
+        size="icon"
         onClick={onAddToCart}
         disabled={!inStock || isAddingToCart}
-        className={`${buttonSize} rounded-full flex items-center justify-center transition-all duration-200 ${
-          inStock && !isAddingToCart
-            ? 'bg-transparent text-gray-600 hover:bg-green-600 hover:text-white hover:shadow-md'
-            : 'bg-transparent text-gray-400 cursor-not-allowed'
-        }`}
+        className={`${buttonSize} rounded-full ${inStock && !isAddingToCart ? 'hover:!bg-[#122a26] hover:!text-white hover:!border-[#122a26]' : ''}`}
         title={inStock ? t('common.buttons.addToCart') : t('common.stock.outOfStock')}
         aria-label={inStock ? t('common.ariaLabels.addToCart') : t('common.ariaLabels.outOfStock')}
       >
@@ -120,7 +114,7 @@ export function ProductCardActions({
         ) : (
           <CartPngIcon size={iconSize} />
         )}
-      </button>
+      </Button>
     </div>
   );
 }

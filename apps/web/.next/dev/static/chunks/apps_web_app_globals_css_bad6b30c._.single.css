@@ -1752,6 +1752,10 @@ a {
   border-radius: .75rem;
 }
 
+.rounded-none {
+  border-radius: 0;
+}
+
 .rounded-b-\[0\.25rem\] {
   border-bottom-right-radius: .25rem;
   border-bottom-left-radius: .25rem;
@@ -1913,6 +1917,20 @@ a {
 .border-yellow-200 {
   --tw-border-opacity: 1;
   border-color: rgb(254 240 138 / var(--tw-border-opacity, 1));
+}
+
+.border-white\/60 {
+  border-color: #fff9;
+}
+
+.\!border-white {
+  --tw-border-opacity: 1 !important;
+  border-color: rgb(255 255 255 / var(--tw-border-opacity, 1)) !important;
+}
+
+.\!border-\[\#731818\] {
+  --tw-border-opacity: 1 !important;
+  border-color: rgb(115 24 24 / var(--tw-border-opacity, 1)) !important;
 }
 
 .border-t-transparent {
@@ -2202,6 +2220,19 @@ a {
   background-color: rgb(254 252 232 / var(--tw-bg-opacity, 1));
 }
 
+.bg-\[\#122a26\]\/10 {
+  background-color: #122a261a;
+}
+
+.bg-\[\#dcc090\]\/10 {
+  background-color: #dcc0901a;
+}
+
+.\!bg-\[\#731818\] {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(115 24 24 / var(--tw-bg-opacity, 1)) !important;
+}
+
 .bg-opacity-50 {
   --tw-bg-opacity: .5;
 }
@@ -2426,6 +2457,10 @@ a {
 
 .p-8 {
   padding: 2rem;
+}
+
+.p-0 {
+  padding: 0;
 }
 
 .px-1 {
@@ -3046,6 +3081,11 @@ a {
   color: rgb(113 63 18 / var(--tw-text-opacity, 1));
 }
 
+.\!text-white {
+  --tw-text-opacity: 1 !important;
+  color: rgb(255 255 255 / var(--tw-text-opacity, 1)) !important;
+}
+
 .underline {
   text-decoration-line: underline;
 }
@@ -3486,6 +3526,15 @@ a {
   border-color: rgb(252 165 165 / var(--tw-border-opacity, 1));
 }
 
+.hover\:border-\[\#dcc090\]\/60:hover {
+  border-color: #dcc09099;
+}
+
+.hover\:\!border-\[\#122a26\]:hover {
+  --tw-border-opacity: 1 !important;
+  border-color: rgb(18 42 38 / var(--tw-border-opacity, 1)) !important;
+}
+
 .hover\:bg-\[\#122a26\]\/5:hover {
   background-color: #122a260d;
 }
@@ -3610,6 +3659,28 @@ a {
   background-color: #ffffffe6;
 }
 
+.hover\:bg-\[\#0f221f\]:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(15 34 31 / var(--tw-bg-opacity, 1));
+}
+
+.hover\:bg-\[\#dcc090\]\/5:hover {
+  background-color: #dcc0900d;
+}
+
+.hover\:bg-white\/10:hover {
+  background-color: #ffffff1a;
+}
+
+.hover\:\!bg-white\/10:hover {
+  background-color: #ffffff1a !important;
+}
+
+.hover\:\!bg-\[\#122a26\]:hover {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(18 42 38 / var(--tw-bg-opacity, 1)) !important;
+}
+
 .hover\:from-purple-600:hover {
   --tw-gradient-from: #9333ea var(--tw-gradient-from-position);
   --tw-gradient-to: #9333ea00 var(--tw-gradient-to-position);
@@ -3692,6 +3763,11 @@ a {
 .hover\:text-white:hover {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+}
+
+.hover\:\!text-white:hover {
+  --tw-text-opacity: 1 !important;
+  color: rgb(255 255 255 / var(--tw-text-opacity, 1)) !important;
 }
 
 .hover\:underline:hover {
@@ -3837,6 +3913,16 @@ a {
 .focus\:ring-purple-500:focus {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(168 85 247 / var(--tw-ring-opacity, 1));
+}
+
+.focus\:ring-\[\#122a26\]:focus {
+  --tw-ring-opacity: 1;
+  --tw-ring-color: rgb(18 42 38 / var(--tw-ring-opacity, 1));
+}
+
+.focus\:ring-\[\#dcc090\]:focus {
+  --tw-ring-opacity: 1;
+  --tw-ring-color: rgb(220 192 144 / var(--tw-ring-opacity, 1));
 }
 
 .focus\:ring-offset-2:focus {

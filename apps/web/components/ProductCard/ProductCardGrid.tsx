@@ -2,6 +2,7 @@
 
 import type { MouseEvent } from 'react';
 import Link from 'next/link';
+import { Button } from '../ui/buttons';
 import Image from 'next/image';
 import { ProductCardImage } from './ProductCardImage';
 import { ProductCardInfo } from './ProductCardInfo';
@@ -128,11 +129,13 @@ export function ProductCardGrid({
           >
             {t('common.buttons.shop', 'Shop')}
           </Link>
-          <button
+          <Button
             type="button"
+            variant="icon"
+            size="icon"
             onClick={onAddToCart}
             disabled={!product.inStock || isAddingToCart}
-            className="flex h-5 w-5 items-center justify-center transition-opacity hover:opacity-80 disabled:opacity-40"
+            className="h-10 w-10"
             title={product.inStock ? t('common.buttons.addToCart') : t('common.stock.outOfStock')}
             aria-label={product.inStock ? t('common.ariaLabels.addToCart') : t('common.ariaLabels.outOfStock')}
           >
@@ -144,7 +147,7 @@ export function ProductCardGrid({
             ) : (
               <Image src={BAG_ICON_PATH} alt="" width={20} height={20} aria-hidden />
             )}
-          </button>
+          </Button>
         </div>
       </div>
     </article>

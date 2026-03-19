@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef, Suspense } from 'react';
+import { Button } from './ui/buttons';
 import { useTranslation } from '../lib/i18n-client';
 
 type ViewMode = 'list' | 'grid-2' | 'grid-3';
@@ -150,29 +151,17 @@ function ProductsHeaderContent({ total, perPage }: ProductsHeaderProps) {
         {/* Left side: Clear filters + All products title */}
         <div className="flex items-center gap-4">
           {hasActiveFilters && (
-            <button
+            <Button
               type="button"
+              variant="goldOutline"
               onClick={handleClearFilters}
-              className="inline-flex items-center gap-2 text-sm text-gray-900 hover:text-gray-700 transition-colors"
+              className="inline-flex items-center gap-2"
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-gray-900"
-              >
-                <path
-                  d="M12 4L4 12M4 4L12 12"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <span>{t('products.header.clearFilters')}</span>
-            </button>
+            </Button>
           )}
           
           <h1 className="text-xl font-bold text-gray-900">
@@ -200,14 +189,12 @@ function ProductsHeaderContent({ total, perPage }: ProductsHeaderProps) {
 
           {/* View Mode Icons: List, Grid (2x2), and Grid (3x3) */}
           <div className="flex items-center gap-1">
-            {/* List View */}
-            <button
+            <Button
+              type="button"
+              variant="icon"
+              size="icon"
               onClick={() => handleViewModeChange('list')}
-              className={`rounded-lg p-2 transition-colors ${
-                viewMode === 'list'
-                  ? 'bg-gray-100 text-gray-900'
-                  : 'text-gray-400 hover:text-gray-600'
-              }`}
+              className={viewMode === 'list' ? 'border-[#dcc090] bg-[#dcc090]/10' : ''}
               aria-label={t('products.header.viewModes.list')}
             >
               <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -215,16 +202,13 @@ function ProductsHeaderContent({ total, perPage }: ProductsHeaderProps) {
                 <line x1="3" y1="10" x2="17" y2="10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 <line x1="3" y1="15" x2="17" y2="15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
-            </button>
-            
-            {/* Grid View (2x2) */}
-            <button
+            </Button>
+            <Button
+              type="button"
+              variant="icon"
+              size="icon"
               onClick={() => handleViewModeChange('grid-2')}
-              className={`rounded-lg p-2 transition-all ${
-                viewMode === 'grid-2'
-                  ? 'bg-gray-100 text-gray-900'
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-              }`}
+              className={viewMode === 'grid-2' ? 'border-[#dcc090] bg-[#dcc090]/10' : ''}
               aria-label={t('products.header.viewModes.grid2')}
             >
               <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -233,16 +217,13 @@ function ProductsHeaderContent({ total, perPage }: ProductsHeaderProps) {
                 <rect x="2" y="11" width="7" height="7" stroke="currentColor" strokeWidth="1.5" fill={viewMode === 'grid-2' ? 'currentColor' : 'none'} />
                 <rect x="11" y="11" width="7" height="7" stroke="currentColor" strokeWidth="1.5" fill={viewMode === 'grid-2' ? 'currentColor' : 'none'} />
               </svg>
-            </button>
-
-            {/* Grid View (3x3) */}
-            <button
+            </Button>
+            <Button
+              type="button"
+              variant="icon"
+              size="icon"
               onClick={() => handleViewModeChange('grid-3')}
-              className={`rounded-lg p-2 transition-all ${
-                viewMode === 'grid-3'
-                  ? 'bg-gray-100 text-gray-900'
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-              }`}
+              className={viewMode === 'grid-3' ? 'border-[#dcc090] bg-[#dcc090]/10' : ''}
               aria-label={t('products.header.viewModes.grid3')}
             >
               <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -256,42 +237,35 @@ function ProductsHeaderContent({ total, perPage }: ProductsHeaderProps) {
                 <circle cx="10" cy="16" r="1.5" fill="currentColor" />
                 <circle cx="16" cy="16" r="1.5" fill="currentColor" />
               </svg>
-            </button>
+            </Button>
           </div>
 
           {/* Sort dropdown */}
           <div className="relative" ref={sortDropdownRef}>
-            <button
+            <Button
+              type="button"
+              variant="goldOutline"
               onClick={() => setShowSortDropdown(!showSortDropdown)}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors text-sm text-gray-900 min-w-[160px]"
+              className="min-w-[160px] justify-between"
             >
               <span>{sortOptions.find(opt => opt.value === sortBy)?.label || t('products.header.sort.default')}</span>
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className={`transition-transform ${showSortDropdown ? 'rotate-180' : ''}`}
-              >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className={`transition-transform ${showSortDropdown ? 'rotate-180' : ''}`}>
                 <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-            </button>
+            </Button>
 
             {showSortDropdown && (
               <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden">
                 {sortOptions.map((option) => (
-                  <button
+                  <Button
                     key={option.value}
+                    type="button"
+                    variant="ghost"
                     onClick={() => handleSortChange(option.value)}
-                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                      sortBy === option.value
-                        ? 'bg-gray-100 text-gray-900 font-semibold'
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
+                    className={`w-full justify-start rounded-none ${sortBy === option.value ? 'bg-[#dcc090]/10 font-semibold' : ''}`}
                   >
                     {option.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}
@@ -327,97 +301,82 @@ function ProductsHeaderContent({ total, perPage }: ProductsHeaderProps) {
         {/* Bottom: Filters button + View Mode Icons + Sort */}
         <div className="flex items-center justify-between gap-2">
           {/* Left: Filters button */}
-          <button
+          <Button
             type="button"
+            variant="goldOutline"
             onClick={() => window.dispatchEvent(new Event('mobile:filters-toggle'))}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors text-sm font-medium text-gray-900"
+            className="inline-flex items-center gap-2"
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
               <line x1="3" y1="5" x2="17" y2="5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               <line x1="3" y1="10" x2="17" y2="10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               <line x1="3" y1="15" x2="17" y2="15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
             <span>{t('products.header.filters')}</span>
-          </button>
+          </Button>
 
           {/* Right: View Mode Icons + Sort */}
           <div className="flex items-center gap-2">
             {/* View Mode Icons */}
             <div className="flex items-center gap-1">
-              <button
+              <Button
+                type="button"
+                variant="icon"
+                size="icon"
                 onClick={() => handleViewModeChange('list')}
-                className={`rounded-lg p-2 transition-colors ${
-                  viewMode === 'list'
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'text-gray-400 hover:text-gray-600'
-                }`}
+                className={viewMode === 'list' ? 'border-[#dcc090] bg-[#dcc090]/10' : ''}
                 aria-label={t('products.header.viewModes.list')}
               >
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                   <line x1="3" y1="5" x2="17" y2="5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                   <line x1="3" y1="10" x2="17" y2="10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                   <line x1="3" y1="15" x2="17" y2="15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
-              </button>
-              <button
+              </Button>
+              <Button
+                type="button"
+                variant="icon"
+                size="icon"
                 onClick={() => handleViewModeChange('grid-2')}
-                className={`rounded-lg p-2 transition-all ${
-                  viewMode === 'grid-2'
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-                }`}
+                className={viewMode === 'grid-2' ? 'border-[#dcc090] bg-[#dcc090]/10' : ''}
                 aria-label={t('products.header.viewModes.grid2')}
               >
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                   <rect x="2" y="2" width="7" height="7" stroke="currentColor" strokeWidth="1.5" fill={viewMode === 'grid-2' ? 'currentColor' : 'none'} />
                   <rect x="11" y="2" width="7" height="7" stroke="currentColor" strokeWidth="1.5" fill={viewMode === 'grid-2' ? 'currentColor' : 'none'} />
                   <rect x="2" y="11" width="7" height="7" stroke="currentColor" strokeWidth="1.5" fill={viewMode === 'grid-2' ? 'currentColor' : 'none'} />
                   <rect x="11" y="11" width="7" height="7" stroke="currentColor" strokeWidth="1.5" fill={viewMode === 'grid-2' ? 'currentColor' : 'none'} />
                 </svg>
-              </button>
+              </Button>
             </div>
 
             {/* Sort icon */}
             <div className="relative" ref={mobileSortDropdownRef}>
-              <button
+              <Button
+                type="button"
+                variant="icon"
+                size="icon"
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
-                className="flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors text-gray-700"
                 aria-label={t('products.header.sortProducts')}
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  {/* Up arrow pointing up (left side) */}
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                   <path d="M7 8L10 5L13 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                  {/* Down arrow pointing down (right side) */}
                   <path d="M7 12L10 15L13 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
                 </svg>
-              </button>
+              </Button>
 
               {showSortDropdown && (
                 <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden">
                   {sortOptions.map((option) => (
-                    <button
+                    <Button
                       key={option.value}
+                      type="button"
+                      variant="ghost"
                       onClick={() => handleSortChange(option.value)}
-                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                        sortBy === option.value
-                          ? 'bg-gray-100 text-gray-900 font-semibold'
-                          : 'text-gray-700 hover:bg-gray-50'
-                      }`}
+                      className={`w-full justify-start rounded-none ${sortBy === option.value ? 'bg-[#dcc090]/10 font-semibold' : ''}`}
                     >
                       {option.label}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               )}

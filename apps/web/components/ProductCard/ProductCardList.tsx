@@ -5,6 +5,7 @@ import Image from 'next/image';
 import type { MouseEvent } from 'react';
 import { formatPrice } from '../../lib/currency';
 import { useTranslation } from '../../lib/i18n-client';
+import { Button } from '../ui/buttons';
 import { CompareIcon } from '../icons/CompareIcon';
 import { CartIcon as CartPngIcon } from '../icons/CartIcon';
 import type { CurrencyCode } from '../../lib/currency';
@@ -148,43 +149,35 @@ export function ProductCardList({
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 self-start sm:self-center">
-            {/* Compare Icon */}
-            <button
+            <Button
+              type="button"
+              variant="icon"
+              size="icon"
               onClick={onCompareToggle}
-              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
-                isInCompare
-                  ? 'border-gray-900 text-gray-900 bg-white shadow-sm'
-                  : 'border-gray-200 text-gray-700 bg-white hover:border-gray-300 hover:bg-gray-50'
-              }`}
+              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${isInCompare ? 'border-[#122a26] bg-[#122a26]/10' : ''}`}
               title={isInCompare ? t('common.messages.removedFromCompare') : t('common.messages.addedToCompare')}
               aria-label={isInCompare ? t('common.messages.removedFromCompare') : t('common.messages.addedToCompare')}
             >
               <CompareIcon isActive={isInCompare} />
-            </button>
-
-            {/* Wishlist Icon */}
-            <button
+            </Button>
+            <Button
+              type="button"
+              variant="icon"
+              size="icon"
               onClick={onWishlistToggle}
-              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
-                isInWishlist
-                  ? 'bg-red-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${isInWishlist ? '!bg-[#731818] !text-white !border-[#731818]' : ''}`}
               title={isInWishlist ? t('common.messages.removedFromWishlist') : t('common.messages.addedToWishlist')}
               aria-label={isInWishlist ? t('common.messages.removedFromWishlist') : t('common.messages.addedToWishlist')}
             >
               <WishlistIcon filled={isInWishlist} />
-            </button>
-
-            {/* Cart Icon */}
-            <button
+            </Button>
+            <Button
+              type="button"
+              variant="icon"
+              size="icon"
               onClick={onAddToCart}
               disabled={!product.inStock || isAddingToCart}
-              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
-                product.inStock && !isAddingToCart
-                  ? 'bg-gray-100 text-gray-700 hover:bg-green-600 hover:text-white'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
+              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${product.inStock && !isAddingToCart ? 'hover:!bg-[#122a26] hover:!text-white hover:!border-[#122a26]' : ''}`}
               title={product.inStock ? t('common.buttons.addToCart') : t('common.stock.outOfStock')}
               aria-label={product.inStock ? t('common.buttons.addToCart') : t('common.stock.outOfStock')}
             >
@@ -196,7 +189,7 @@ export function ProductCardList({
               ) : (
                 <CartPngIcon size={20} />
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
