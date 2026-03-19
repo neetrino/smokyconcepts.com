@@ -6,41 +6,73 @@
  */
 const { execSync } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 
 const DUMMY_URL = 'postgresql://build:build@localhost:5432/build';
 
-/** True if value looks like a real PostgreSQL URL (needed for Prisma 7 getConfig validation). */
+/** True if value looks like a real PostgreSQL URL (needed for Prisma getConfig validation). */
 function isValidPostgresUrl(value) {
   if (!value || typeof value !== 'string') return false;
   const trimmed = value.trim();
   return trimmed.length > 0 && (trimmed.startsWith('postgresql://') || trimmed.startsWith('postgres://'));
 }
 
-if (!isValidPostgresUrl(process.env.DATABASE_URL)) {
-  process.env.DATABASE_URL = DUMMY_URL;
-}
-if (!isValidPostgresUrl(process.env.DIRECT_URL)) {
-  process.env.DIRECT_URL = process.env.DATABASE_URL;
-}
+const useDummyDb = !isValidPostgresUrl(process.env.DATABASE_URL);
+const useDummyDirect = !isValidPostgresUrl(process.env.DIRECT_URL);
+const dbUrl = useDummyDb ? DUMMY_URL : process.env.DATABASE_URL;
+const directUrl = useDummyDirect ? (useDummyDb ? DUMMY_URL : process.env.DATABASE_URL) : process.env.DIRECT_URL;
+
+process.env.DATABASE_URL = dbUrl;
+process.env.DIRECT_URL = directUrl;
 
 const packageRoot = path.resolve(__dirname, '..');
 process.chdir(packageRoot);
 
-const fs = require('fs');
 const prismaSchema = path.join(packageRoot, 'prisma', 'schema.prisma');
 if (!fs.existsSync(prismaSchema)) {
   console.error('[db:generate] missing schema at', prismaSchema, 'cwd:', process.cwd());
   process.exit(1);
 }
 
+// Prisma (incl. v7) often reads .env from schema dir; write one so getConfig sees valid URLs when using dummy
+const envPath = path.join(packageRoot, '.env');
+const hadEnv = fs.existsSync(envPath);
+let savedEnv = null;
+if (hadEnv) {
+  savedEnv = fs.readFileSync(envPath, 'utf8');
+}
+function restoreEnv() {
+  if (hadEnv && savedEnv !== null) {
+    try {
+      fs.writeFileSync(envPath, savedEnv, 'utf8');
+    } catch (_) {}
+  } else if (!hadEnv && fs.existsSync(envPath)) {
+    try {
+      fs.unlinkSync(envPath);
+    } catch (_) {}
+  }
+}
+
+if (useDummyDb || useDummyDirect) {
+  try {
+    const envContent = `DATABASE_URL="${dbUrl.replace(/"/g, '\\"')}"\nDIRECT_URL="${directUrl.replace(/"/g, '\\"')}"\n`;
+    fs.writeFileSync(envPath, envContent, 'utf8');
+  } catch (_) {
+    // read-only fs; process.env is already set
+  }
+}
+
 try {
   execSync('npx prisma generate', {
     encoding: 'utf8',
-    env: { ...process.env, FORCE_COLOR: '1' },
+    cwd: packageRoot,
+    env: { ...process.env, DATABASE_URL: dbUrl, DIRECT_URL: directUrl, FORCE_COLOR: '1' },
   });
 } catch (err) {
   if (err.stdout) process.stdout.write(err.stdout);
   if (err.stderr) process.stderr.write(err.stderr);
   console.error('[db:generate] exit code:', err.status);
+  restoreEnv();
   process.exit(err.status ?? 1);
 }
+restoreEnv();
