@@ -8,6 +8,14 @@ import type { GeneratedVariant } from '../types';
 
 const UPLOAD_IMAGES_ENDPOINT = '/api/v1/admin/products/upload-images';
 
+/** Preserve original image format: PNG → PNG, WebP → WebP, else JPEG. */
+function getOutputFileType(file: File): string {
+  const t = file.type?.toLowerCase();
+  if (t === 'image/png') return 'image/png';
+  if (t === 'image/webp') return 'image/webp';
+  return 'image/jpeg';
+}
+
 /** Upload base64 images to R2 via API; returns array of public URLs. */
 async function uploadImagesToR2(images: string[]): Promise<string[]> {
   const res = await apiClient.post<{ urls: string[] }>(UPLOAD_IMAGES_ENDPOINT, { images });
@@ -148,7 +156,7 @@ export function useImageHandling({
             maxSizeMB: 2,
             maxWidthOrHeight: 1920,
             useWebWorker: true,
-            fileType: 'image/jpeg',
+            fileType: getOutputFileType(file),
             initialQuality: 0.8,
           });
 
@@ -248,7 +256,7 @@ export function useImageHandling({
         maxSizeMB: 2,
         maxWidthOrHeight: 1920,
         useWebWorker: true,
-        fileType: 'image/jpeg',
+        fileType: getOutputFileType(file),
         initialQuality: 0.8,
       });
 
@@ -300,7 +308,7 @@ export function useImageHandling({
             maxSizeMB: 2,
             maxWidthOrHeight: 1920,
             useWebWorker: true,
-            fileType: 'image/jpeg',
+            fileType: getOutputFileType(file),
             initialQuality: 0.8,
           });
 

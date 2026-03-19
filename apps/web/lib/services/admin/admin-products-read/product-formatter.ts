@@ -5,6 +5,7 @@ export function formatProductForList(product: {
   id: string;
   published: boolean;
   featured: boolean | null;
+  upcoming: boolean | null;
   discountPercent: number | null;
   createdAt: Date;
   translations?: Array<{
@@ -36,6 +37,7 @@ export function formatProductForList(product: {
     title: translation?.title || "",
     published: product.published,
     featured: product.featured || false,
+    upcoming: product.upcoming || false,
     price: variant?.price || 0,
     stock: variant?.stock || 0,
     discountPercent: product.discountPercent || 0,

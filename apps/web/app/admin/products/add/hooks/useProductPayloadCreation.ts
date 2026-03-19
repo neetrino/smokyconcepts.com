@@ -10,6 +10,7 @@ interface CreateAndSubmitPayloadProps {
     categoryIds: string[];
     published: boolean;
     featured: boolean;
+    upcoming: boolean;
     imageUrls: string[];
     featuredImageIndex: number;
     mainProductImage: string;
@@ -48,6 +49,7 @@ export async function createAndSubmitPayload({
       categoryIds: formData.categoryIds.length > 0 ? formData.categoryIds : undefined,
       published: isEditMode ? formData.published : true,
       featured: formData.featured,
+      upcoming: formData.upcoming,
       locale: 'en',
       variants: variants,
       attributeIds: attributeIds.length > 0 ? attributeIds : undefined,

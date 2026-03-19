@@ -77,6 +77,8 @@ export async function getProductById(productId: string) {
     categoryIds: product.categoryIds || [],
     attributeIds,
     published: product.published,
+    featured: product.featured ?? false,
+    upcoming: product.upcoming ?? false,
     media: Array.isArray(product.media) ? product.media : [],
     labels: labels.map((label: { id: string; type: string; value: string; position: string; color: string | null }) => ({
       id: label.id,

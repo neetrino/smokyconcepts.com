@@ -208,6 +208,9 @@ class ProductsFindTransformService {
         title: translation?.title || "",
         brand: null,
         categories,
+        skus: variants
+          .map((item) => item.sku?.trim() || "")
+          .filter((sku, index, array) => sku.length > 0 && array.indexOf(sku) === index),
         price: finalPrice,
         originalPrice: appliedDiscount > 0 ? originalPrice : variant?.compareAtPrice || null,
         compareAtPrice: variant?.compareAtPrice || null,

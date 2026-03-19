@@ -6,6 +6,7 @@ import { getStoredLanguage } from '../../lib/language';
 import { t } from '../../lib/i18n';
 import { PriceFilter } from '../../components/PriceFilter';
 import { ProductsHeader } from '../../components/ProductsHeader';
+import { ProductsDiscoveryBar } from '../../components/ProductsDiscoveryBar';
 import { ProductsGrid } from '../../components/ProductsGrid';
 import { CategoryNavigation } from '../../components/CategoryNavigation';
 import { MobileFiltersDrawer } from '../../components/MobileFiltersDrawer';
@@ -22,9 +23,16 @@ interface Product {
   slug: string;
   title: string;
   price: number;
+  originalPrice?: number | null;
   compareAtPrice: number | null;
   image: string | null;
   inStock: boolean;
+  categories: Array<{
+    id: string;
+    slug: string;
+    title: string;
+  }>;
+  skus: string[];
   brand?: { id: string; name: string } | null;
   labels?: Array<{
     id: string;
@@ -133,17 +141,19 @@ export default async function ProductsPage({ searchParams }: any) {
   // 🔧 FIX: normalize products 
   // add missing inStock, missing image fields 
   // ------------------------------------
-  const normalizedProducts = productsData.data.map((p: any) => ({
+  const normalizedProducts: Product[] = productsData.data.map((p) => ({
     id: p.id,
     slug: p.slug,
     title: p.title,
     price: p.price,
+    originalPrice: p.originalPrice ?? null,
     compareAtPrice: p.compareAtPrice ?? p.originalPrice ?? null,
     image: p.image ?? null,
     inStock: p.inStock ?? true,
+    categories: Array.isArray(p.categories) ? p.categories : [],
+    skus: Array.isArray(p.skus) ? p.skus : [],
     brand: p.brand ?? null,
-    colors: p.colors ?? [],
-    labels: p.labels ?? []            // ⭐ Add labels array (includes "Out of Stock" label)
+    labels: p.labels ?? []
   }));
 
   // PAGINATION
@@ -171,6 +181,8 @@ export default async function ProductsPage({ searchParams }: any) {
           perPage={productsData.meta.limit}
         />
       </div>
+
+      <ProductsDiscoveryBar products={normalizedProducts} />
 
       <div className="max-w-7xl mx-auto pl-2 sm:pl-4 md:pl-6 lg:pl-8 pr-4 sm:pr-6 lg:pr-8 flex flex-col lg:flex-row gap-8">
         <aside className="w-64 hidden lg:block bg-gray-50 rounded-xl flex-shrink-0">

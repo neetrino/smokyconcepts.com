@@ -10,6 +10,7 @@ export interface UpdateProductData {
   categoryIds?: string[];
   published?: boolean;
   featured?: boolean;
+  upcoming?: boolean;
   locale?: string;
   media?: unknown[];
   labels?: Array<{

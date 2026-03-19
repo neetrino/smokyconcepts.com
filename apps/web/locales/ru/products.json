@@ -48,6 +48,12 @@
     "title": "Фильтры",
     "close": "Закрыть фильтры"
   },
+  "discovery": {
+    "searchTitle": "Найти товары по SKU",
+    "searchHelper": "Используйте полный или частичный SKU, чтобы быстро найти подходящие товары.",
+    "searchPlaceholder": "Поиск по SKU",
+    "clear": "Очистить"
+  },
   "categoryNavigation": {
     "all": "Все",
     "shopAll": "Все товары",

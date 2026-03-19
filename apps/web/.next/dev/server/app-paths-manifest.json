@@ -1,18 +1,10 @@
 {
-  "/admin/page": "app/admin/page.js",
-  "/admin/products/add/page": "app/admin/products/add/page.js",
-  "/admin/products/page": "app/admin/products/page.js",
-  "/api/v1/admin/activity/route": "app/api/v1/admin/activity/route.js",
-  "/api/v1/admin/categories/route": "app/api/v1/admin/categories/route.js",
-  "/api/v1/admin/dashboard/recent-orders/route": "app/api/v1/admin/dashboard/recent-orders/route.js",
-  "/api/v1/admin/dashboard/top-products/route": "app/api/v1/admin/dashboard/top-products/route.js",
-  "/api/v1/admin/dashboard/user-activity/route": "app/api/v1/admin/dashboard/user-activity/route.js",
-  "/api/v1/admin/products/route": "app/api/v1/admin/products/route.js",
-  "/api/v1/admin/products/upload-images/route": "app/api/v1/admin/products/upload-images/route.js",
-  "/api/v1/admin/settings/route": "app/api/v1/admin/settings/route.js",
-  "/api/v1/admin/stats/route": "app/api/v1/admin/stats/route.js",
-  "/api/v1/categories/tree/route": "app/api/v1/categories/tree/route.js",
-  "/api/v1/currency-rates/route": "app/api/v1/currency-rates/route.js",
+  "/api/v1/products/[slug]/reviews/route": "app/api/v1/products/[slug]/reviews/route.js",
+  "/api/v1/products/[slug]/route": "app/api/v1/products/[slug]/route.js",
   "/api/v1/products/route": "app/api/v1/products/route.js",
-  "/page": "app/page.js"
+  "/api/v1/voting/[id]/like/route": "app/api/v1/voting/[id]/like/route.js",
+  "/api/v1/voting/route": "app/api/v1/voting/route.js",
+  "/cart/page": "app/cart/page.js",
+  "/page": "app/page.js",
+  "/products/[slug]/page": "app/products/[slug]/page.js"
 }

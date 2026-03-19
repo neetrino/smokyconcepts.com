@@ -1,8 +1,9 @@
-import type { Variant } from '../types';
+import type { Variant, GeneratedVariant } from '../types';
 
 interface UseVariantValidationProps {
   productType: 'simple' | 'variable';
   variants: Variant[];
+  generatedVariants?: GeneratedVariant[];
   simpleProductData: {
     price: string;
     sku: string;
@@ -15,15 +16,33 @@ interface UseVariantValidationProps {
 export function useVariantValidation({
   productType,
   variants,
+  generatedVariants = [],
   simpleProductData,
   isClothingCategory,
   setLoading,
 }: UseVariantValidationProps) {
   const validateVariants = (): boolean => {
-    // Skip variant validation for Simple products - they create variants later in the process
+    // Variable product: may use formData.variants (color/size matrix) OR generatedVariants (simple list from edit/add).
+    // When variants.length === 0 (e.g. edit mode loads into generatedVariants), validate generatedVariants instead.
     if (productType === 'variable' && variants.length === 0) {
-      setLoading(false);
-      return false;
+      if (generatedVariants.length === 0) {
+        setLoading(false);
+        return false;
+      }
+      const skuSet = new Set<string>();
+      for (const gv of generatedVariants) {
+        const sku = (gv.sku || '').trim();
+        if (!sku) {
+          setLoading(false);
+          return false;
+        }
+        if (skuSet.has(sku)) {
+          setLoading(false);
+          return false;
+        }
+        skuSet.add(sku);
+      }
+      return true;
     }
 
     // Validate all variants (skip for simple products - validation is done in variant creation)

@@ -124,6 +124,16 @@ async function buildFilterFilter(
     };
   }
 
+  if (filter === "upcoming") {
+    return {
+      where: {
+        ...existingWhere,
+        upcoming: true,
+      },
+      bestsellerProductIds,
+    };
+  }
+
   if (filter === "bestseller") {
     type BestsellerVariant = { variantId: string | null; _sum: { quantity: number | null } };
     const bestsellerVariants: BestsellerVariant[] = await db.orderItem.groupBy({

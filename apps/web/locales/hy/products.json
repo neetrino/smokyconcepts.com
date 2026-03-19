@@ -48,6 +48,12 @@
     "title": "Ֆիլտրեր",
     "close": "Փակել ֆիլտրերը"
   },
+  "discovery": {
+    "searchTitle": "Գտնել ապրանքները SKU-ով",
+    "searchHelper": "Օգտագործեք ամբողջական կամ մասնակի SKU, որպեսզի արագ գտնեք համապատասխան ապրանքները։",
+    "searchPlaceholder": "Որոնել SKU-ով",
+    "clear": "Մաքրել"
+  },
   "categoryNavigation": {
     "all": "Բոլորը",
     "shopAll": "Բոլոր ապրանքները",

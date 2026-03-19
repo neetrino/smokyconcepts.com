@@ -14,6 +14,7 @@ export function useProductFormState() {
     categoryIds: [] as string[],
     published: false,
     featured: false,
+    upcoming: false,
     imageUrls: [] as string[],
     featuredImageIndex: 0,
     mainProductImage: '' as string,

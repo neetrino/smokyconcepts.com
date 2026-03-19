@@ -145,6 +145,17 @@ export function useProductHandlers({
     }
   };
 
+  const handleToggleUpcoming = async (productId: string, currentStatus: boolean, productTitle: string) => {
+    try {
+      const newStatus = !currentStatus;
+      await apiClient.put(`/api/v1/admin/products/${productId}`, { upcoming: newStatus });
+      await fetchProducts();
+    } catch (err: any) {
+      console.error('❌ [ADMIN] Error updating product upcoming status:', err);
+      alert(t('admin.products.errorUpdatingUpcoming').replace('{message}', err.message || t('admin.common.unknownErrorFallback')));
+    }
+  };
+
   const handleToggleAllFeatured = async () => {
     if (products.length === 0) return;
 
@@ -187,6 +198,7 @@ export function useProductHandlers({
     handleDeleteProduct,
     handleTogglePublished,
     handleToggleFeatured,
+    handleToggleUpcoming,
     handleToggleAllFeatured,
   };
 }

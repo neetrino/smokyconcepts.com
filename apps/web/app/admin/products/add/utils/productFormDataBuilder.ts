@@ -13,6 +13,7 @@ interface FormData {
   categoryIds: string[];
   published: boolean;
   featured: boolean;
+  upcoming: boolean;
   imageUrls: string[];
   featuredImageIndex: number;
   mainProductImage: string;
@@ -39,6 +40,7 @@ export function buildFormData(
     categoryIds: product.categoryIds || [],
     published: product.published || false,
     featured: product.featured || false,
+    upcoming: product.upcoming || false,
     imageUrls: normalizedMedia,
     featuredImageIndex:
       featuredIndexFromApi >= 0 && featuredIndexFromApi < normalizedMedia.length

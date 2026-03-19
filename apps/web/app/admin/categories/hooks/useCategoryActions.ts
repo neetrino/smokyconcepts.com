@@ -25,6 +25,7 @@ const initialFormData: CategoryFormData = {
   title: '',
   parentId: '',
   requiresSizes: false,
+  imageUrl: '',
   subcategoryIds: [],
 };
 
@@ -55,6 +56,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         title: formData.title.trim(),
         parentId: formData.parentId || undefined,
         requiresSizes: formData.requiresSizes,
+        imageUrl: formData.imageUrl.trim() || undefined,
         locale: 'en',
       });
       setShowAddModal(false);
@@ -85,6 +87,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         title: category.title,
         parentId: category.parentId || '',
         requiresSizes: category.requiresSizes || false,
+        imageUrl: categoryWithChildren.imageUrl || '',
         subcategoryIds: categoryWithChildren.children?.map(child => child.id) || [],
       });
     } catch (err: unknown) {
@@ -93,6 +96,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         title: category.title,
         parentId: category.parentId || '',
         requiresSizes: category.requiresSizes || false,
+        imageUrl: category.imageUrl || '',
         subcategoryIds: [],
       });
     }
@@ -112,6 +116,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         title: formData.title.trim(),
         parentId: formData.parentId || null,
         requiresSizes: formData.requiresSizes,
+        imageUrl: formData.imageUrl.trim(),
         subcategoryIds: formData.subcategoryIds,
         locale: 'en',
       });

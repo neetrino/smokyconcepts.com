@@ -3,6 +3,7 @@
 import { Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 import type { Category, CategoryFormData } from '../types';
+import { CategoryImageField } from './CategoryImageField';
 
 interface EditCategoryModalProps {
   isOpen: boolean;
@@ -80,6 +81,11 @@ export function EditCategoryModal({
               </span>
             </label>
           </div>
+          <CategoryImageField
+            value={formData.imageUrl}
+            onChange={(imageUrl) => onFormDataChange({ ...formData, imageUrl })}
+            disabled={saving}
+          />
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Subcategories

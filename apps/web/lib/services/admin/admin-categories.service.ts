@@ -1,5 +1,27 @@
 import { db } from "@white-shop/db";
 
+function extractCategoryImage(media: unknown): string | undefined {
+  if (!Array.isArray(media) || media.length === 0) {
+    return undefined;
+  }
+
+  const firstMedia = media[0];
+  if (typeof firstMedia === "string" && firstMedia.trim()) {
+    return firstMedia.trim();
+  }
+
+  if (typeof firstMedia === "object" && firstMedia !== null) {
+    const mediaObject = firstMedia as { url?: string; src?: string; value?: string };
+    const imageUrl = mediaObject.url || mediaObject.src || mediaObject.value;
+
+    if (typeof imageUrl === "string" && imageUrl.trim()) {
+      return imageUrl.trim();
+    }
+  }
+
+  return undefined;
+}
+
 class AdminCategoriesService {
   /**
    * Get categories for admin
@@ -21,7 +43,7 @@ class AdminCategoriesService {
     });
 
     return {
-      data: categories.map((category: { id: string; parentId: string | null; requiresSizes: boolean | null; translations?: Array<{ title: string; slug: string }> }) => {
+      data: categories.map((category: { id: string; parentId: string | null; requiresSizes: boolean | null; media: unknown; translations?: Array<{ title: string; slug: string }> }) => {
         const translations = Array.isArray(category.translations) ? category.translations : [];
         const translation = translations[0] || null;
         return {
@@ -30,6 +52,7 @@ class AdminCategoriesService {
           slug: translation?.slug || "",
           parentId: category.parentId,
           requiresSizes: category.requiresSizes || false,
+          imageUrl: extractCategoryImage(category.media),
         };
       }),
     };
@@ -43,6 +66,7 @@ class AdminCategoriesService {
     locale?: string;
     parentId?: string;
     requiresSizes?: boolean;
+    imageUrl?: string;
   }) {
     const locale = data.locale || "en";
     
@@ -68,10 +92,25 @@ class AdminCategoriesService {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
 
+    const lastSiblingCategory = await db.category.findFirst({
+      where: {
+        parentId: data.parentId || null,
+        deletedAt: null,
+      },
+      orderBy: {
+        position: "desc",
+      },
+      select: {
+        position: true,
+      },
+    });
+
     const category = await db.category.create({
       data: {
         parentId: data.parentId || undefined,
+        position: (lastSiblingCategory?.position ?? -1) + 1,
         requiresSizes: data.requiresSizes || false,
+        media: data.imageUrl ? [data.imageUrl] : [],
         published: true,
         translations: {
           create: {
@@ -98,6 +137,7 @@ class AdminCategoriesService {
         slug: translation?.slug || "",
         parentId: category.parentId,
         requiresSizes: category.requiresSizes || false,
+        imageUrl: extractCategoryImage(category.media),
       },
     };
   }
@@ -137,6 +177,7 @@ class AdminCategoriesService {
       slug: translation?.slug || "",
       parentId: category.parentId,
       requiresSizes: category.requiresSizes || false,
+      imageUrl: extractCategoryImage(category.media),
       children: category.children.map((child: { id: string; parentId: string | null; requiresSizes: boolean | null; translations?: Array<{ title: string; slug: string }> }) => {
         const childTranslations = Array.isArray(child.translations) ? child.translations : [];
         const childTranslation = childTranslations[0] || null;
@@ -146,6 +187,7 @@ class AdminCategoriesService {
           slug: childTranslation?.slug || "",
           parentId: child.parentId,
           requiresSizes: child.requiresSizes || false,
+          imageUrl: extractCategoryImage((child as { media?: unknown }).media),
         };
       }),
     };
@@ -159,6 +201,7 @@ class AdminCategoriesService {
     locale?: string;
     parentId?: string | null;
     requiresSizes?: boolean;
+    imageUrl?: string;
     subcategoryIds?: string[];
   }) {
     const locale = data.locale || "en";
@@ -270,6 +313,10 @@ class AdminCategoriesService {
       updateData.requiresSizes = data.requiresSizes;
     }
 
+    if (data.imageUrl !== undefined) {
+      updateData.media = data.imageUrl ? [data.imageUrl] : [];
+    }
+
     // Update translation if title is provided
     if (data.title) {
       const slug = data.title
@@ -322,6 +369,7 @@ class AdminCategoriesService {
         slug: translation?.slug || "",
         parentId: updatedCategory.parentId,
         requiresSizes: updatedCategory.requiresSizes || false,
+        imageUrl: extractCategoryImage(updatedCategory.media),
       },
     };
   }

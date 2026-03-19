@@ -2,8 +2,8 @@
 
 import { Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
-import { showToast } from '../../../../components/Toast';
 import type { Category, CategoryFormData } from '../types';
+import { CategoryImageField } from './CategoryImageField';
 
 interface AddCategoryModalProps {
   isOpen: boolean;
@@ -77,6 +77,11 @@ export function AddCategoryModal({
               </span>
             </label>
           </div>
+          <CategoryImageField
+            value={formData.imageUrl}
+            onChange={(imageUrl) => onFormDataChange({ ...formData, imageUrl })}
+            disabled={saving}
+          />
         </div>
         <div className="flex gap-3 mt-6">
           <Button

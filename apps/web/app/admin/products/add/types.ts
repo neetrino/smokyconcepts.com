@@ -69,6 +69,7 @@ export interface ProductData {
   attributeIds?: string[]; // All attribute IDs that this product has
   published: boolean;
   featured?: boolean;
+  upcoming?: boolean;
   media?: string[];
   labels?: ProductLabel[];
   variants?: Array<{

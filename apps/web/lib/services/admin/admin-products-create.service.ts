@@ -92,6 +92,7 @@ class AdminProductsCreateService {
     categoryIds?: string[];
     published: boolean;
     featured?: boolean;
+    upcoming?: boolean;
     locale: string;
     media?: any[];
     mainProductImage?: string;
@@ -217,6 +218,7 @@ class AdminProductsCreateService {
             media: finalMedia,
             published: data.published,
             featured: data.featured ?? false,
+            upcoming: data.upcoming ?? false,
             publishedAt: data.published ? new Date() : undefined,
             translations: {
               create: {

@@ -4,6 +4,7 @@ export interface Product {
   title: string;
   published: boolean;
   featured?: boolean;
+  upcoming?: boolean;
   price: number;
   stock: number;
   discountPercent?: number;

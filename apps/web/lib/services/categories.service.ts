@@ -1,5 +1,28 @@
 import { db } from "@white-shop/db";
 
+function extractCategoryImage(media: unknown): string | null {
+  if (!Array.isArray(media) || media.length === 0) {
+    return null;
+  }
+
+  const firstMedia = media[0];
+
+  if (typeof firstMedia === "string" && firstMedia.trim()) {
+    return firstMedia.trim();
+  }
+
+  if (typeof firstMedia === "object" && firstMedia !== null) {
+    const mediaObject = firstMedia as { url?: string; src?: string; value?: string };
+    const imageUrl = mediaObject.url || mediaObject.src || mediaObject.value;
+
+    if (typeof imageUrl === "string" && imageUrl.trim()) {
+      return imageUrl.trim();
+    }
+  }
+
+  return null;
+}
+
 class CategoriesService {
   /**
    * Get category tree
@@ -131,6 +154,55 @@ class CategoriesService {
           }
         : null,
     };
+  }
+
+  /**
+   * Get root categories for homepage collections section
+   */
+  async getHomeCollections(lang: string = "en") {
+    const categories = await db.category.findMany({
+      where: {
+        parentId: null,
+        published: true,
+        deletedAt: null,
+      },
+      include: {
+        translations: true,
+      },
+      orderBy: [
+        {
+          position: "asc",
+        },
+        {
+          createdAt: "asc",
+        },
+      ],
+    });
+
+    return categories
+      .map((category: {
+        media: unknown;
+        translations: Array<{ locale: string; slug: string; title: string }>;
+      }) => {
+        const translation =
+          category.translations.find((item: { locale: string }) => item.locale === lang) ||
+          category.translations[0];
+
+        if (!translation) {
+          return null;
+        }
+
+        return {
+          title: translation.title,
+          slug: translation.slug,
+          imageSrc: extractCategoryImage(category.media) || undefined,
+        };
+      })
+      .filter(
+        (
+          category: { title: string; slug: string; imageSrc?: string } | null
+        ): category is { title: string; slug: string; imageSrc?: string } => category !== null
+      );
   }
 }
 

@@ -179,6 +179,7 @@ function AddProductPageContent() {
             onRemoveLabel={removeLabel}
             onUpdateLabel={(index, field, value) => updateLabel(index, field, value)}
             onFeaturedChange={(featured) => formState.setFormData((prev) => ({ ...prev, featured }))}
+            onUpcomingChange={(upcoming) => formState.setFormData((prev) => ({ ...prev, upcoming }))}
             onVariantsUpdate={(updater) => formState.setFormData((prev) => ({ ...prev, variants: updater(prev.variants) }))}
             onApplyToAllVariants={(field, value) => applyToAllVariants(field, value)}
             isClothingCategory={isClothingCategory}

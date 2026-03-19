@@ -18,6 +18,11 @@ interface Product {
   price: number;
   image: string | null;
   inStock: boolean;
+  categories: Array<{
+    id: string;
+    slug: string;
+    title: string;
+  }>;
   brand: {
     id: string;
     name: string;

@@ -9,9 +9,15 @@ interface Product {
   slug: string;
   title: string;
   price: number;
+  originalPrice?: number | null;
   compareAtPrice: number | null;
   image: string | null;
   inStock: boolean;
+  categories: Array<{
+    id: string;
+    slug: string;
+    title: string;
+  }>;
   brand: {
     id: string;
     name: string;

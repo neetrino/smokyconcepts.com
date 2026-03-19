@@ -35,6 +35,11 @@ interface ProductCardListProps {
     price: number;
     image: string | null;
     inStock: boolean;
+    categories: Array<{
+      id: string;
+      slug: string;
+      title: string;
+    }>;
     brand: { id: string; name: string } | null;
     labels?: ProductLabel[];
     compareAtPrice?: number | null;
@@ -75,14 +80,14 @@ export function ProductCardList({
         {/* Product Image */}
         <Link
           href={`/products/${product.slug}`}
-          className="w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0 relative overflow-hidden self-start sm:self-center"
+          className="w-20 h-20 bg-transparent rounded-lg flex-shrink-0 relative overflow-hidden self-start sm:self-center"
         >
           {product.image && !imageError ? (
             <Image
               src={product.image}
               alt={product.title}
               fill
-              className="object-cover"
+              className="object-contain"
               sizes="80px"
               unoptimized
               onError={onImageError}
@@ -103,8 +108,14 @@ export function ProductCardList({
               {product.title}
             </h3>
             <p className="text-base sm:text-lg text-gray-500 mt-1">
-              {product.brand?.name || t('common.defaults.category')}
+              {product.categories[0]?.title || product.brand?.name || t('common.defaults.category')}
             </p>
+          </Link>
+          <Link
+            href={`/products/${product.slug}`}
+            className="mt-2 inline-flex text-sm font-semibold text-gray-900 underline-offset-4 hover:underline"
+          >
+            {t('common.buttons.viewDetails')}
           </Link>
         </div>
 

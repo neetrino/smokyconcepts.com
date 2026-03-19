@@ -16,6 +16,7 @@ interface UseProductFormHandlersProps {
     categoryIds: string[];
     published: boolean;
     featured: boolean;
+    upcoming: boolean;
     imageUrls: string[];
     featuredImageIndex: number;
     mainProductImage: string;
@@ -69,6 +70,7 @@ export function useProductFormHandlers({
   const { validateVariants } = useVariantValidation({
     productType,
     variants: formData.variants,
+    generatedVariants,
     simpleProductData,
     isClothingCategory,
     setLoading,

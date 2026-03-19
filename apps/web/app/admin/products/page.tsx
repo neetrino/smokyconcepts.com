@@ -432,6 +432,7 @@ export default function ProductsPage() {
               handleDeleteProduct={handlers.handleDeleteProduct}
               handleTogglePublished={handlers.handleTogglePublished}
               handleToggleFeatured={handlers.handleToggleFeatured}
+              handleToggleUpcoming={handlers.handleToggleUpcoming}
               meta={meta}
               page={page}
               setPage={setPage}

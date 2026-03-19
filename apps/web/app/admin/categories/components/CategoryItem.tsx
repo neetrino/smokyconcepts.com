@@ -19,22 +19,31 @@ export function CategoryItem({ category, parentCategory, onEdit, onDelete }: Cat
       className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
       style={{ paddingLeft: `${16 + category.level * 24}px` }}
     >
-      <div className="flex-1">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-1 items-center gap-3">
+        {category.imageUrl ? (
+          <img
+            src={category.imageUrl}
+            alt={category.title}
+            className="h-12 w-12 rounded-lg border border-gray-200 bg-white object-cover"
+          />
+        ) : null}
+        <div>
+          <div className="flex items-center gap-2">
           <div className="text-sm font-medium text-gray-900">{category.title}</div>
           {category.requiresSizes && (
             <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
               Sizes
             </span>
           )}
-        </div>
-        <div className="text-xs text-gray-500 mt-1">
-          {category.slug}
-          {parentCategory && (
-            <span className="ml-2 text-gray-400">
-              → Parent: {parentCategory.title}
-            </span>
-          )}
+          </div>
+          <div className="text-xs text-gray-500 mt-1">
+            {category.slug}
+            {parentCategory && (
+              <span className="ml-2 text-gray-400">
+                → Parent: {parentCategory.title}
+              </span>
+            )}
+          </div>
         </div>
       </div>
       <div className="flex items-center gap-2">

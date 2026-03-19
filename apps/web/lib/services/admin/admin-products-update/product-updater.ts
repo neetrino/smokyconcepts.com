@@ -51,6 +51,7 @@ export function buildProductUpdateData(
   published?: boolean;
   publishedAt?: Date;
   featured?: boolean;
+  upcoming?: boolean;
 } {
   const updateData: {
     primaryCategoryId?: string | null;
@@ -59,6 +60,7 @@ export function buildProductUpdateData(
     published?: boolean;
     publishedAt?: Date;
     featured?: boolean;
+    upcoming?: boolean;
   } = {};
   
   if (data.primaryCategoryId !== undefined) updateData.primaryCategoryId = data.primaryCategoryId || null;
@@ -82,7 +84,8 @@ export function buildProductUpdateData(
   }
   
   if (data.featured !== undefined) updateData.featured = data.featured;
-  
+  if (data.upcoming !== undefined) updateData.upcoming = data.upcoming;
+
   return updateData;
 }
 

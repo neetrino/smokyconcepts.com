@@ -31,8 +31,9 @@ model User {
   updatedAt            DateTime  @updatedAt
 
   // Relations
-  orders Order[]
-  reviews ProductReview[]
+  orders      Order[]
+  reviews     ProductReview[]
+  votingLikes VotingLike[]
 
   @@index([deletedAt])
   @@map("users")
@@ -111,6 +112,7 @@ model Product {
   media             Json[]               @default([])
   published         Boolean              @default(false)
   featured          Boolean              @default(false)
+  upcoming          Boolean              @default(false)
   publishedAt       DateTime?
   translations      ProductTranslation[]
   categoryIds        String[]
@@ -128,6 +130,7 @@ model Product {
 
   @@index([published, publishedAt])
   @@index([featured])
+  @@index([upcoming])
   @@index([deletedAt])
   @@map("products")
 }
@@ -345,4 +348,35 @@ model ContactMessage {
   @@index([createdAt(sort: Desc)])
   @@index([email])
   @@map("contact_messages")
+}
+
+model VotingItem {
+  id        String       @id @default(cuid())
+  title     String
+  imageUrl  String
+  deletedAt DateTime?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  likes VotingLike[]
+
+  @@index([deletedAt])
+  @@index([createdAt(sort: Desc)])
+  @@map("voting_items")
+}
+
+model VotingLike {
+  id        String   @id @default(cuid())
+  itemId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  item VotingItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, userId])
+  @@index([itemId])
+  @@index([userId])
+  @@index([createdAt(sort: Desc)])
+  @@map("voting_likes")
 }

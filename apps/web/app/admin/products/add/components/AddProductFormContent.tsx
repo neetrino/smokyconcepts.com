@@ -24,6 +24,7 @@ interface AddProductFormContentProps {
     featuredImageIndex: number;
     labels: ProductLabel[];
     featured: boolean;
+    upcoming: boolean;
     variants: Variant[];
   };
   productType: 'simple' | 'variable';
@@ -70,6 +71,7 @@ interface AddProductFormContentProps {
   onRemoveLabel: (index: number) => void;
   onUpdateLabel: (index: number, field: keyof ProductLabel, value: any) => void;
   onFeaturedChange: (featured: boolean) => void;
+  onUpcomingChange: (upcoming: boolean) => void;
   onVariantsUpdate: (updater: (prev: Variant[]) => Variant[]) => void;
   onApplyToAllVariants: (field: 'price' | 'compareAtPrice' | 'stock' | 'sku', value: string) => void;
   isClothingCategory: () => boolean;
@@ -118,6 +120,7 @@ export function AddProductFormContent({
   onRemoveLabel,
   onUpdateLabel,
   onFeaturedChange,
+  onUpcomingChange,
   onVariantsUpdate,
   onApplyToAllVariants,
   isClothingCategory,
@@ -204,7 +207,7 @@ export function AddProductFormContent({
           onUpdateLabel={onUpdateLabel}
         />
 
-        <Publishing featured={formData.featured} onFeaturedChange={onFeaturedChange} />
+        <Publishing featured={formData.featured} onFeaturedChange={onFeaturedChange} upcoming={formData.upcoming} onUpcomingChange={onUpcomingChange} />
 
         <FormActions loading={loading} isEditMode={isEditMode} />
       </form>

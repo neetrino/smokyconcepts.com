@@ -57,8 +57,9 @@ export function useProductDataLoading({
     }
   }, [isLoggedIn, isAdmin, setDefaultCurrency]);
 
-  // Fetch categories
+  // Fetch categories once when admin is ready (setCategories is stable from useState)
   useEffect(() => {
+    if (!isLoggedIn || !isAdmin) return;
     const fetchData = async () => {
       try {
         const categoriesRes = await apiClient.get<{ data: Category[] }>('/api/v1/admin/categories');
@@ -68,7 +69,8 @@ export function useProductDataLoading({
       }
     };
     fetchData();
-  }, [setCategories]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only run when auth is ready
+  }, [isLoggedIn, isAdmin]);
 
   // Close category dropdown when clicking outside
   useEffect(() => {

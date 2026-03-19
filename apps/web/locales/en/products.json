@@ -48,6 +48,12 @@
     "title": "Filters",
     "close": "Close Filters"
   },
+  "discovery": {
+    "searchTitle": "Find products by SKU",
+    "searchHelper": "Use a full or partial SKU to jump straight to matching products.",
+    "searchPlaceholder": "Search by SKU",
+    "clear": "Clear"
+  },
   "categoryNavigation": {
     "all": "All",
     "shopAll": "Shop All",

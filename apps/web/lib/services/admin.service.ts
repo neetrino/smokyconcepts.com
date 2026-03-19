@@ -10,6 +10,7 @@ import { adminSettingsService } from "./admin/admin-settings.service";
 import { adminDeliveryService } from "./admin/admin-delivery.service";
 import { adminCategoriesService } from "./admin/admin-categories.service";
 import { adminProductsService } from "./admin/admin-products.service";
+import { adminVotingService } from "./admin/admin-voting.service";
 
 class AdminService {
   // Delegate to specialized services
@@ -58,6 +59,13 @@ class AdminService {
   updateProduct = adminProductsService.updateProduct.bind(adminProductsService);
   deleteProduct = adminProductsService.deleteProduct.bind(adminProductsService);
   updateProductDiscount = adminProductsService.updateProductDiscount.bind(adminProductsService);
+
+  // Voting methods
+  getVotingItems = adminVotingService.getVotingItems.bind(adminVotingService);
+  getVotingItemById = adminVotingService.getVotingItemById.bind(adminVotingService);
+  createVotingItem = adminVotingService.createVotingItem.bind(adminVotingService);
+  updateVotingItem = adminVotingService.updateVotingItem.bind(adminVotingService);
+  deleteVotingItem = adminVotingService.deleteVotingItem.bind(adminVotingService);
 }
 
 export const adminService = new AdminService();

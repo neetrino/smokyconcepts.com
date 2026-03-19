@@ -1,13 +1,18 @@
 'use client';
 
 import type { MouseEvent } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 import { ProductCardImage } from './ProductCardImage';
 import { ProductCardInfo } from './ProductCardInfo';
 import { ProductCardActions } from './ProductCardActions';
 import { CartIcon as CartPngIcon } from '../icons/CartIcon';
 import { useTranslation } from '../../lib/i18n-client';
+import { formatPrice } from '../../lib/currency';
 import type { CurrencyCode } from '../../lib/currency';
 import type { ProductLabel } from '../ProductLabels';
+
+const BAG_ICON_PATH = '/assets/home/icons/bag.svg';
 
 interface ProductCardGridProps {
   product: {
@@ -17,6 +22,11 @@ interface ProductCardGridProps {
     price: number;
     image: string | null;
     inStock: boolean;
+    categories: Array<{
+      id: string;
+      slug: string;
+      title: string;
+    }>;
     brand: { id: string; name: string } | null;
     labels?: ProductLabel[];
     compareAtPrice?: number | null;
@@ -52,11 +62,22 @@ export function ProductCardGrid({
   onAddToCart,
 }: ProductCardGridProps) {
   const { t } = useTranslation();
+  const imageWrapperHeight = isCompact ? 'h-44' : 'h-56';
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow relative group">
+    <article className="relative w-full max-w-[20rem] rounded-3xl bg-white p-4 shadow-[0_6px_24px_rgba(18,42,38,0.05)] transition-shadow hover:shadow-[0_8px_28px_rgba(18,42,38,0.08)] group">
+      {/* Dots row — like Trending section */}
+      <div className="mb-4 flex gap-1">
+        {Array.from({ length: 7 }).map((_, index) => (
+          <span
+            key={`${product.slug}-dot-${index}`}
+            className={`h-1 w-6 rounded-full ${index === 0 ? 'bg-[#122a26]' : 'bg-[#d9d9d9]'}`}
+          />
+        ))}
+      </div>
+
       {/* Product Image */}
-      <div className="aspect-square bg-gray-100 relative overflow-hidden">
+      <div className={`relative mb-4 ${imageWrapperHeight} overflow-hidden`}>
         <ProductCardImage
           slug={product.slug}
           image={product.image}
@@ -65,9 +86,8 @@ export function ProductCardGrid({
           imageError={imageError}
           onImageError={onImageError}
           isCompact={isCompact}
+          fillContainer
         />
-        
-        {/* Action Icons - appear on hover */}
         <ProductCardActions
           isInWishlist={isInWishlist}
           isInCompare={isInCompare}
@@ -80,44 +100,54 @@ export function ProductCardGrid({
           showOnHover
         />
       </div>
-      
-      {/* Product Info */}
+
+      {/* Product Info — trending style */}
       <ProductCardInfo
         slug={product.slug}
         title={product.title}
         brandName={product.brand?.name}
+        categoryName={product.categories[0]?.title}
         price={product.price}
         originalPrice={product.originalPrice}
         compareAtPrice={product.compareAtPrice}
         discountPercent={product.discountPercent}
         currency={currency}
         isCompact={isCompact}
+        variant="trending"
       />
 
-      {/* Cart Button in Price Row */}
-      <div className={`px-4 pb-4 flex items-center justify-end ${isCompact ? 'gap-2' : 'gap-4'}`}>
-        <button
-          onClick={onAddToCart}
-          disabled={!product.inStock || isAddingToCart}
-          className={`${isCompact ? 'w-10 h-10' : 'w-12 h-12'} rounded-full flex items-center justify-center transition-all duration-200 ${
-            product.inStock && !isAddingToCart
-              ? 'bg-transparent text-gray-600 hover:bg-green-600 hover:text-white hover:shadow-md'
-              : 'bg-transparent text-gray-400 cursor-not-allowed'
-          }`}
-          title={product.inStock ? t('common.buttons.addToCart') : t('common.stock.outOfStock')}
-          aria-label={product.inStock ? t('common.ariaLabels.addToCart') : t('common.ariaLabels.outOfStock')}
-        >
-          {isAddingToCart ? (
-            <svg className={`animate-spin ${isCompact ? 'h-5 w-5' : 'h-6 w-6'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-          ) : (
-            <CartPngIcon size={isCompact ? 18 : 24} />
-          )}
-        </button>
+      {/* Price + Shop + Bag row — like Trending */}
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <span className="text-base font-extrabold leading-none text-black">
+          {formatPrice(product.price ?? 0, currency)}
+        </span>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/products/${product.slug}`}
+            className="rounded-lg border-2 border-[#dcc090] px-3 py-1 text-xs font-extrabold uppercase tracking-[0.12em] text-[#dcc090] transition-colors hover:bg-[#dcc090]/10"
+          >
+            {t('common.buttons.shop', 'Shop')}
+          </Link>
+          <button
+            type="button"
+            onClick={onAddToCart}
+            disabled={!product.inStock || isAddingToCart}
+            className="flex h-5 w-5 items-center justify-center transition-opacity hover:opacity-80 disabled:opacity-40"
+            title={product.inStock ? t('common.buttons.addToCart') : t('common.stock.outOfStock')}
+            aria-label={product.inStock ? t('common.ariaLabels.addToCart') : t('common.ariaLabels.outOfStock')}
+          >
+            {isAddingToCart ? (
+              <svg className="h-5 w-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden>
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            ) : (
+              <Image src={BAG_ICON_PATH} alt="" width={20} height={20} aria-hidden />
+            )}
+          </button>
+        </div>
       </div>
-    </div>
+    </article>
   );
 }
 
