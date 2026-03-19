@@ -175,9 +175,9 @@ export function TrendingFeaturedSection() {
           return (
             <div
               key={`trending-mobile-${item.slug ?? index}-${item.name}`}
-              className={`pt-16 ${isMiddleOfThree ? 'translate-y-3' : ''}`.trim()}
+              className="pt-16"
             >
-              <HomeProductCard item={item} size="small" />
+              <HomeProductCard item={item} size="small" imageNudgeDown={isMiddleOfThree} imageNudgeDeep />
             </div>
           );
         })}
@@ -210,9 +210,9 @@ export function TrendingFeaturedSection() {
               return (
                 <div
                   key={`trending-${item.slug ?? index}-${item.name}`}
-                  className={`w-[14rem] shrink-0 pt-20 ${isMiddleVisible ? 'translate-y-3' : ''}`.trim()}
+                  className="w-[14rem] shrink-0 pt-20"
                 >
-                  <HomeProductCard item={item} size="small" />
+                  <HomeProductCard item={item} size="small" imageNudgeDown={isMiddleVisible} imageNudgeDeep />
                 </div>
               );
             })}

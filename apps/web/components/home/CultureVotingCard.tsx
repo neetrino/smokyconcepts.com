@@ -41,7 +41,7 @@ export function CultureVotingCard({
   onToggleLike,
   imageNudgeDown = false,
 }: CultureVotingCardProps) {
-  const imageNudgeClassName = imageNudgeDown ? 'translate-y-5' : '';
+  const imageNudgeClassName = imageNudgeDown ? 'translate-y-4' : '';
   return (
     <article className="relative z-10 w-full max-w-[15rem] overflow-visible rounded-3xl bg-white p-4 lg:max-w-none">
       <div className={`relative z-10 -mt-24 mb-2 h-72 overflow-visible rounded-2xl ${imageNudgeClassName}`.trim()}>

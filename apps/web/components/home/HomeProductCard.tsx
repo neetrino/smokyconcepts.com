@@ -52,7 +52,7 @@ export function HomeProductCard({
   const productHref = item.slug ? `/products/${item.slug}` : null;
   const imagePullUp = item.compact ? '-mt-16' : isSmall ? '-mt-20' : '-mt-24';
   const imageNudgeClassName =
-    imageNudgeDown && !item.compact ? (imageNudgeDeep ? 'translate-y-5' : 'translate-y-3') : '';
+    imageNudgeDown && !item.compact ? (imageNudgeDeep ? 'translate-y-4' : 'translate-y-1') : '';
   const imageBlock = (
     <div
       className={`relative z-10 mb-2 ${imagePullUp} ${imageWrapperClassName} overflow-visible ${imageNudgeClassName}`.trim()}
