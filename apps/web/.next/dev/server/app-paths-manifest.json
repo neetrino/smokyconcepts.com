@@ -4,6 +4,7 @@
   "/api/v1/products/route": "app/api/v1/products/route.js",
   "/api/v1/voting/[id]/like/route": "app/api/v1/voting/[id]/like/route.js",
   "/api/v1/voting/route": "app/api/v1/voting/route.js",
+  "/cart/page": "app/cart/page.js",
   "/page": "app/page.js",
   "/products/[slug]/page": "app/products/[slug]/page.js"
 }

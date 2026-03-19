@@ -1,6 +1,9 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { useAddToCart } from '../hooks/useAddToCart';
 import { HOME_ASSET_PATHS } from './homePage.data';
 import type { HomeBadgeTone, HomeProductItem } from './homePage.types';
 
@@ -37,6 +40,12 @@ export function HomeProductCard({
   trailingIcon = 'bag',
 }: HomeProductCardProps) {
   const isSmall = size === 'small';
+  const canAddToCart = Boolean(item.slug?.trim() && !item.slug.includes(' '));
+  const { isAddingToCart, addToCart } = useAddToCart({
+    productId: item.slug ?? '',
+    productSlug: item.slug ?? '',
+    inStock: true,
+  });
   const cardClassName = item.compact
     ? 'w-[10.75rem] rounded-[1.125rem] p-3'
     : isSmall
@@ -127,12 +136,33 @@ export function HomeProductCard({
               {item.actionLabel}
             </button>
           )}
-          <img
-            src={trailingIcon === 'wishlist' ? HOME_ASSET_PATHS.wishlistIcon : HOME_ASSET_PATHS.bagIcon}
-            alt=""
-            className={`object-contain ${iconSizeClassName}`}
-            aria-hidden="true"
-          />
+          {trailingIcon === 'bag' && canAddToCart ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                addToCart();
+              }}
+              disabled={isAddingToCart}
+              className={`shrink-0 ${iconSizeClassName} transition-opacity hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed`}
+              aria-label="Add to cart"
+              title="Add to cart"
+            >
+              <img
+                src={HOME_ASSET_PATHS.bagIcon}
+                alt=""
+                className="h-full w-full object-contain"
+                aria-hidden="true"
+              />
+            </button>
+          ) : (
+            <img
+              src={trailingIcon === 'wishlist' ? HOME_ASSET_PATHS.wishlistIcon : HOME_ASSET_PATHS.bagIcon}
+              alt=""
+              className={`object-contain ${iconSizeClassName}`}
+              aria-hidden="true"
+            />
+          )}
         </div>
       </div>
     </article>

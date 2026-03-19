@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
+import { getCartCount } from '../lib/storageCounts';
 import { HOME_ASSET_PATHS } from './home/homePage.data';
 
 const NAVIGATION_ITEMS = [
@@ -16,6 +18,14 @@ const NAVIGATION_ITEMS = [
  */
 export function Header() {
   const pathname = usePathname();
+  const [cartCount, setCartCount] = useState(() => (typeof window !== 'undefined' ? getCartCount() : 0));
+
+  useEffect(() => {
+    setCartCount(getCartCount());
+    const handleCartUpdate = () => setCartCount(getCartCount());
+    window.addEventListener('cart-updated', handleCartUpdate);
+    return () => window.removeEventListener('cart-updated', handleCartUpdate);
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 bg-[#122a26]">
@@ -41,9 +51,11 @@ export function Header() {
         <div className="flex items-center gap-6">
           <Link href="/cart" className="relative inline-flex h-6 w-6 items-center justify-center">
             <img src={HOME_ASSET_PATHS.bagIcon} alt="Cart" className="h-6 w-5 object-contain" />
-            <span className="absolute -right-2 -top-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#dcc090] px-1 text-[0.55rem] font-bold text-[#122a26]">
-              2
-            </span>
+            {cartCount > 0 && (
+              <span className="absolute -right-2 -top-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#dcc090] px-1 text-[0.55rem] font-bold text-[#122a26]">
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            )}
           </Link>
           <button
             type="button"
