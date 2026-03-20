@@ -70,7 +70,7 @@ function mapVotingItem(item: VotingItemRecord, topLikedId: string | null) {
 
 class AdminVotingService {
   async getVotingItems() {
-    const items = await db.votingItem.findMany({
+    const rawItems = await db.votingItem.findMany({
       where: {
         deletedAt: null,
       },
@@ -90,9 +90,13 @@ class AdminVotingService {
         createdAt: "desc",
       },
     });
+    const items: VotingItemRecord[] = rawItems as VotingItemRecord[];
 
     const topLikedId = getTopLikedId(items);
-    const totalLikes = items.reduce((sum, item) => sum + item._count.likes, 0);
+    const totalLikes = items.reduce(
+      (sum: number, item: VotingItemRecord) => sum + item._count.likes,
+      0
+    );
 
     return {
       data: items.map((item) => mapVotingItem(item, topLikedId)),

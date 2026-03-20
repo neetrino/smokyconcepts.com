@@ -15,7 +15,12 @@ interface Product {
   compareAtPrice?: number | null;
   image: string | null;
   inStock: boolean;
-  brand: {
+  categories?: Array<{
+    id: string;
+    slug: string;
+    title: string;
+  }>;
+  brand?: {
     id: string;
     name: string;
   } | null;
@@ -219,7 +224,10 @@ export function FeaturedProductsTabs() {
         ) : products.length > 0 ? (
           <div className={MOBILE_GRID_LAYOUT}>
             {products.slice(0, PRODUCTS_PER_PAGE).map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard
+                key={product.id}
+                product={{ ...product, categories: product.categories ?? [] }}
+              />
             ))}
           </div>
         ) : (

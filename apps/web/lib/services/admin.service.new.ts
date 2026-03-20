@@ -13,14 +13,14 @@ import { adminDeliveryService } from "./admin/admin-delivery.service";
 // These will be moved to admin-products.service.ts, admin-categories.service.ts, and admin-attributes.service.ts
 import { db } from "@white-shop/db";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { findOrCreateAttributeValue } from "../utils/variant-generator";
-import { ensureProductVariantAttributesColumn } from "../utils/db-ensure";
+import { findOrCreateAttributeValue } from "./utils/variant-generator";
+import { ensureProductVariantAttributesColumn } from "./utils/db-ensure";
 import {
   processImageUrl,
   smartSplitUrls,
   cleanImageUrls,
   separateMainAndVariantImages,
-} from "../utils/image-utils";
+} from "./utils/image-utils";
 
 class AdminService {
   // Delegate to specialized services

@@ -18,7 +18,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1005.0",
     "@hookform/resolvers": "^5.2.2",
-    "@prisma/client": "^5.9.0",
+    "@prisma/client": "5.22.0",
     "@shop/design-tokens": "*",
     "@shop/ui": "*",
     "@white-shop/db": "*",
