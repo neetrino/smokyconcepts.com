@@ -28,7 +28,7 @@ interface ProductCardGridProps {
       slug: string;
       title: string;
     }>;
-    brand: { id: string; name: string } | null;
+    brand?: { id: string; name: string } | null;
     labels?: ProductLabel[];
     compareAtPrice?: number | null;
     originalPrice?: number | null;
@@ -127,7 +127,7 @@ export function ProductCardGrid({
             href={`/products/${product.slug}`}
             className="rounded-lg border-2 border-[#dcc090] px-3 py-1 text-xs font-extrabold uppercase tracking-[0.12em] text-[#dcc090] transition-colors hover:bg-[#dcc090]/10"
           >
-            {t('common.buttons.shop', 'Shop')}
+            {t('common.buttons.shop')}
           </Link>
           <Button
             type="button"

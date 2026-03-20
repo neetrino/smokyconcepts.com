@@ -41,7 +41,7 @@ interface ProductCardListProps {
       slug: string;
       title: string;
     }>;
-    brand: { id: string; name: string } | null;
+    brand?: { id: string; name: string } | null;
     labels?: ProductLabel[];
     compareAtPrice?: number | null;
     originalPrice?: number | null;

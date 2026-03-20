@@ -16,9 +16,16 @@ function buildProblem(status: number, title: string, detail: string): VotingProb
   };
 }
 
+interface VotingItemRow {
+  id: string;
+  title: string;
+  imageUrl: string;
+  _count: { likes: number };
+}
+
 class VotingService {
   async getVotingItems(userId?: string) {
-    const items = await db.votingItem.findMany({
+    const rawItems = await db.votingItem.findMany({
       where: {
         deletedAt: null,
       },
@@ -36,6 +43,7 @@ class VotingService {
         createdAt: "desc",
       },
     });
+    const items: VotingItemRow[] = rawItems as VotingItemRow[];
 
     const likedItemIds = new Set<string>();
 
@@ -44,7 +52,7 @@ class VotingService {
         where: {
           userId,
           itemId: {
-            in: items.map((item) => item.id),
+            in: items.map((item: VotingItemRow) => item.id),
           },
         },
         select: {

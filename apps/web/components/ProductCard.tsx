@@ -23,7 +23,7 @@ interface Product {
     slug: string;
     title: string;
   }>;
-  brand: {
+  brand?: {
     id: string;
     name: string;
   } | null;
