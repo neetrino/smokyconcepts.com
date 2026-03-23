@@ -85,10 +85,13 @@ export function TrendingFeaturedSection() {
       ? items
       : [items[startIndex], items[(startIndex + 1) % n], items[(startIndex + 2) % n]].filter(Boolean);
   const hasMultiplePages = maxPage > 0;
-  const previousPreviewItems =
-    n === 0 ? [] : [items[(startIndex - 2 + n) % n], items[(startIndex - 1 + n) % n]].filter(Boolean);
-  const nextPreviewItems =
-    n === 0 ? [] : [items[(startIndex + TRENDING_ITEMS_PER_PAGE) % n], items[(startIndex + TRENDING_ITEMS_PER_PAGE + 1) % n]].filter(Boolean);
+  const visibleIndices = new Set(
+    n > 0 ? [startIndex, (startIndex + 1) % n, (startIndex + 2) % n] : []
+  );
+  const prevIndices = n === 0 ? [] : [(startIndex - 2 + n) % n, (startIndex - 1 + n) % n].filter((i) => !visibleIndices.has(i));
+  const nextIndices = n === 0 ? [] : [(startIndex + TRENDING_ITEMS_PER_PAGE) % n, (startIndex + TRENDING_ITEMS_PER_PAGE + 1) % n].filter((i) => !visibleIndices.has(i));
+  const previousPreviewItems = prevIndices.map((i) => items[i]).filter(Boolean);
+  const nextPreviewItems = nextIndices.map((i) => items[i]).filter(Boolean);
 
   const goPrev = useCallback(() => {
     setCurrentPage((p) => (p === 0 ? maxPage : p - 1));
@@ -266,7 +269,7 @@ export function TrendingFeaturedSection() {
         >
           <ChevronLeft className="h-8 w-8" strokeWidth={2.5} />
         </button>
-        <p className="text-center text-[1.5rem] font-extrabold text-[#122a26] sm:text-[2rem]">
+        <p className="text-center text-xl font-extrabold text-[#122a26] sm:text-[1.5rem]">
           {visibleItems[0]?.badge && visibleItems[0].badge !== 'Featured'
             ? visibleItems[0].badge
             : '—'}

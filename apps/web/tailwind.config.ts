@@ -20,6 +20,7 @@ const config: Config = {
       fontFamily: {
         sans: ['system-ui', '-apple-system', 'sans-serif'],
         heading: ['system-ui', '-apple-system', 'sans-serif'],
+        montserrat: ['var(--font-montserrat)', 'system-ui', 'sans-serif'],
       },
     },
   },

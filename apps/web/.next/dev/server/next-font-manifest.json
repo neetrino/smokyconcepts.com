@@ -1,6 +1,12 @@
 {
   "app": {
-    "[project]/apps/web/app/admin/orders/page": [
+    "[project]/apps/web/app/about/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2"
+    ],
+    "[project]/apps/web/app/admin/categories/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2"
+    ],
+    "[project]/apps/web/app/admin/messages/page": [
       "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2"
     ],
     "[project]/apps/web/app/admin/page": [
@@ -12,16 +18,23 @@
     "[project]/apps/web/app/admin/products/page": [
       "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2"
     ],
-    "[project]/apps/web/app/login/page": [
+    "[project]/apps/web/app/admin/voting/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2"
+    ],
+    "[project]/apps/web/app/contact/page": [
       "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2"
     ],
     "[project]/apps/web/app/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2"
+    ],
+    "[project]/apps/web/app/privacy/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2"
+    ],
+    "[project]/apps/web/app/products/[slug]/page": [
       "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2"
     ],
     "[project]/apps/web/app/products/page": [
-      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2"
-    ],
-    "[project]/apps/web/app/profile/page": [
       "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2"
     ]
   },

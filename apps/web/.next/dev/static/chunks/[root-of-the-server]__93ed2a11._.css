@@ -1056,6 +1056,10 @@ a {
   height: 100%;
 }
 
+.h-\[30rem\] {
+  height: 30rem;
+}
+
 .max-h-60 {
   max-height: 15rem;
 }
@@ -1072,11 +1076,7 @@ a {
   max-height: 100%;
 }
 
-.min-h-12 {
-  min-height: 3rem;
-}
-
-.min-h-\[2\.75rem\] {
+.min-h-11, .min-h-\[2\.75rem\] {
   min-height: 2.75rem;
 }
 
@@ -1466,30 +1466,6 @@ a {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
-.scale-105 {
-  --tw-scale-x: 1.05;
-  --tw-scale-y: 1.05;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
-.scale-95 {
-  --tw-scale-x: .95;
-  --tw-scale-y: .95;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
-.scale-\[0\.96\] {
-  --tw-scale-x: .96;
-  --tw-scale-y: .96;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
-.scale-90 {
-  --tw-scale-x: .9;
-  --tw-scale-y: .9;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
 .transform {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
@@ -1719,6 +1695,12 @@ a {
   --tw-space-y-reverse: 0;
   margin-top: calc(2rem * calc(1 - var(--tw-space-y-reverse)));
   margin-bottom: calc(2rem * var(--tw-space-y-reverse));
+}
+
+.space-y-5 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));
 }
 
 .divide-y > :not([hidden]) ~ :not([hidden]) {
@@ -2846,6 +2828,18 @@ a {
   line-height: 1rem;
 }
 
+.text-\[8px\] {
+  font-size: 8px;
+}
+
+.text-\[0\.5625rem\] {
+  font-size: .5625rem;
+}
+
+.text-\[0\.5rem\] {
+  font-size: .5rem;
+}
+
 .font-bold {
   font-weight: 700;
 }
@@ -3389,7 +3383,7 @@ a {
   transition-timing-function: cubic-bezier(.4, 0, .2, 1);
 }
 
-.transition-transform, .transition-\[transform\] {
+.transition-transform {
   transition-property: transform;
   transition-duration: .15s;
   transition-timing-function: cubic-bezier(.4, 0, .2, 1);
@@ -4218,6 +4212,11 @@ a {
     padding-right: 1.5rem;
   }
 
+  .sm\:px-7 {
+    padding-left: 1.75rem;
+    padding-right: 1.75rem;
+  }
+
   .sm\:px-8 {
     padding-left: 2rem;
     padding-right: 2rem;
@@ -4254,9 +4253,9 @@ a {
     line-height: 2rem;
   }
 
-  .sm\:text-5xl {
-    font-size: 3rem;
-    line-height: 1;
+  .sm\:text-4xl {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
   }
 
   .sm\:text-\[2rem\] {
@@ -4281,6 +4280,20 @@ a {
   .sm\:text-xs {
     font-size: .75rem;
     line-height: 1rem;
+  }
+
+  .sm\:text-5xl {
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .sm\:text-6xl {
+    font-size: 3.75rem;
+    line-height: 1;
+  }
+
+  .sm\:text-\[1\.5rem\] {
+    font-size: 1.5rem;
   }
 }
 

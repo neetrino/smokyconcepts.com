@@ -144,14 +144,14 @@ export function UpcomingProductsSection() {
   const visibleItems = items.slice(start, start + CARDS_PER_PAGE);
 
   return (
-    <section className="flex flex-col gap-8 overflow-hidden">
+    <section className="flex flex-col gap-4 overflow-hidden sm:gap-5">
       <div className="relative flex min-h-[4rem] items-center justify-end">
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <HomeSectionTitle title="Upcoming" centered />
         </div>
         <HomeActionButton href="/products" label="Shop" variant="outline" className="hidden sm:inline-flex" />
       </div>
-      <div className="mt-28 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="mt-8 grid grid-cols-2 gap-4 sm:mt-12 sm:grid-cols-3 lg:grid-cols-5">
         {visibleItems.map((item, index) => {
           const isStaggeredImage = index === 1 || index === 3;
           return (
@@ -163,7 +163,7 @@ export function UpcomingProductsSection() {
       </div>
       {totalPages > 1 && (
         <div
-          className="mt-16 flex items-center justify-center gap-4"
+          className="mt-2 flex items-center justify-center gap-4 sm:mt-3"
           role="tablist"
           aria-label="Upcoming products pagination"
         >

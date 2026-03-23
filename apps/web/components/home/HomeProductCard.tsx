@@ -87,7 +87,7 @@ export function HomeProductCard({
       )}
     </div>
   );
-  const titleClassName = isSmall ? 'text-xl' : 'text-[1.6rem]';
+  const titleClassName = isSmall ? 'text-lg' : 'text-xl';
   const titleBlock = productHref ? (
     <Link href={productHref}>
       <h3 className={`font-extrabold leading-none text-[#414141] ${titleClassName}`}>{item.name}</h3>
@@ -97,7 +97,7 @@ export function HomeProductCard({
   );
 
   const dotsClassName = isSmall ? 'h-0.5 w-4' : 'h-1 w-6';
-  const priceClassName = isSmall ? 'text-lg' : 'text-xl';
+  const priceClassName = isSmall ? 'text-base' : 'text-lg';
   const actionClassName = isSmall
     ? 'rounded-md border-2 border-[#dcc090] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#dcc090] transition-colors hover:bg-[#dcc090]/10'
     : 'rounded-lg border-2 border-[#dcc090] px-3 py-1 text-xs font-extrabold uppercase tracking-[0.12em] text-[#dcc090] transition-colors hover:bg-[#dcc090]/10';
