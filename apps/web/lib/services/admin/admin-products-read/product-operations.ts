@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { db } from "@white-shop/db";
 import { logger } from "../../utils/logger";
 import type { ProductFilters } from "./types";
@@ -5,6 +6,15 @@ import { buildProductWhereClause, buildProductOrderByClause } from "./query-buil
 import { executeProductListQuery, executeProductDetailQuery } from "./query-executor";
 import { formatProductForList } from "./product-formatter";
 import { formatVariantForAdmin } from "./variant-formatter";
+
+type CategoryWithEnTranslations = Prisma.CategoryGetPayload<{
+  include: {
+    translations: {
+      where: { locale: string };
+      take: number;
+    };
+  };
+}>;
 
 /**
  * Get products for admin
@@ -36,7 +46,7 @@ export async function getProducts(filters: ProductFilters) {
       })
     ),
   ];
-  const fallbackCategories =
+  const fallbackCategories: CategoryWithEnTranslations[] =
     fallbackCategoryIds.length > 0
       ? await db.category.findMany({
           where: { id: { in: fallbackCategoryIds } },
