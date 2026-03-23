@@ -13,7 +13,8 @@
     "voting": "Voting",
     "filterByPrice": "Filter by Price",
     "delivery": "Delivery",
-    "settings": "Settings"
+    "settings": "Settings",
+    "homeHero": "Home hero"
   },
   "dashboard": {
     "title": "Admin Page",
@@ -692,6 +693,27 @@
     "showingPage": "Showing page {page} of {totalPages} ({total} total)",
     "previous": "Previous",
     "next": "Next"
+  },
+  "homeHero": {
+    "title": "Homepage hero",
+    "subtitle": "Images, headline, description, and button for each slide. Dots on the site switch slides.",
+    "back": "Back to Admin Dashboard",
+    "addSlide": "Add slide",
+    "removeSlide": "Remove",
+    "resetDefaults": "Reset to built-in default",
+    "slideLabel": "Slide {n}",
+    "imageUrl": "Image URL",
+    "uploadFile": "Upload image",
+    "uploading": "Uploading…",
+    "titleField": "Headline",
+    "description": "Description",
+    "ctaLabel": "Button label",
+    "ctaHref": "Button link (path or URL)",
+    "save": "Save hero",
+    "saved": "Homepage hero saved.",
+    "loadError": "Could not load hero settings. Showing defaults in the form.",
+    "saveError": "Could not save. Check the fields and try again.",
+    "uploadError": "Upload failed. Try another file or paste an image URL."
   },
   "common": {
     "loading": "Loading...",

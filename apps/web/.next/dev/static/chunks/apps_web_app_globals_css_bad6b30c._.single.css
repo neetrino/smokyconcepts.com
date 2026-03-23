@@ -559,6 +559,22 @@ a {
   z-index: 9999;
 }
 
+.z-0 {
+  z-index: 0;
+}
+
+.z-\[1\] {
+  z-index: 1;
+}
+
+.z-\[2\] {
+  z-index: 2;
+}
+
+.z-\[3\] {
+  z-index: 3;
+}
+
 .order-1 {
   order: 1;
 }
@@ -3737,6 +3753,10 @@ a {
   background-color: #ffffffbf;
 }
 
+.hover\:bg-white\/80:hover {
+  background-color: #fffc;
+}
+
 .hover\:from-purple-600:hover {
   --tw-gradient-from: #9333ea var(--tw-gradient-from-position);
   --tw-gradient-to: #9333ea00 var(--tw-gradient-to-position);
@@ -4086,6 +4106,10 @@ a {
 
   .sm\:order-2 {
     order: 2;
+  }
+
+  .sm\:col-span-2 {
+    grid-column: span 2 / span 2;
   }
 
   .sm\:mt-6 {

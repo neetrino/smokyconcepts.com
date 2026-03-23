@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { HomeActionButton } from './HomeActionButton';
 import { CultureVotingSection } from './CultureVotingSection';
+import { HomeHeroSection } from './HomeHeroSection';
 import { HomeSectionTitle } from './HomeSectionTitle';
 import {
   HOME_ASSET_PATHS,
@@ -13,6 +14,7 @@ import {
 import { TrendingFeaturedSection } from './TrendingFeaturedSection';
 import { UpcomingProductsSection } from '@/components/home/UpcomingProductsSection';
 import type { HomeCoverCollectionItem } from './homePage.types';
+import type { HomeHeroSlide } from '@/lib/types/home-hero.types';
 
 function PackFitCard({
   title,
@@ -78,9 +80,10 @@ function UpcomingLineCard({ title, imageSrc }: (typeof UPCOMING_LINES)[number]) 
  */
 interface HomePageContentProps {
   coverCollections: HomeCoverCollectionItem[];
+  heroSlides: HomeHeroSlide[];
 }
 
-export function HomePageContent({ coverCollections }: HomePageContentProps) {
+export function HomePageContent({ coverCollections, heroSlides }: HomePageContentProps) {
   return (
     <div className="overflow-x-hidden overflow-y-visible bg-[#f3f1ee] text-[#414141]">
       <div className="mx-auto flex max-w-[120rem] flex-col gap-24 overflow-x-hidden overflow-y-visible px-4 pb-24 pt-10 sm:px-8 lg:px-[7.5rem]">
@@ -89,25 +92,7 @@ export function HomePageContent({ coverCollections }: HomePageContentProps) {
             title="We Make Concepts Real"
             description="Premium accessories that redefine your rituals."
           />
-          <div className="relative overflow-hidden rounded-[2.25rem]">
-            <div className="relative h-[42.5rem]">
-              <Image src={HOME_ASSET_PATHS.heroBanner} alt="Smoky Concepts hero" fill className="object-cover" priority sizes="1680px" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent" />
-              <div className="absolute bottom-12 left-8 max-w-[33rem] text-white sm:left-12">
-                <h1 className="text-4xl font-extrabold leading-none sm:text-5xl">Contrary</h1>
-                <p className="mt-4 text-base font-medium leading-relaxed sm:text-lg">
-                  The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for those interested. Sections 1.10.32 and 1.10.33 from
-                </p>
-                <HomeActionButton href="/about" label="Deep Dive" className="mt-7" />
-              </div>
-              <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 gap-2">
-                <span className="h-1.5 w-4 rounded-full bg-white" />
-                <span className="h-1.5 w-3 rounded-full bg-white/60" />
-                <span className="h-1.5 w-2 rounded-full bg-white/50" />
-                <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
-              </div>
-            </div>
-          </div>
+          <HomeHeroSection slides={heroSlides} />
         </section>
 
         <section className="flex flex-col gap-10 pb-10">

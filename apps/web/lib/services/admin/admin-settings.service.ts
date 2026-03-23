@@ -1,5 +1,8 @@
 import { db } from "@white-shop/db";
 
+import { parseHomeHeroConfigForAdmin } from "@/lib/services/home-hero.service";
+import { homeHeroConfigSchema } from "@/lib/validation/home-hero.schema";
+
 class AdminSettingsService {
   /**
    * Get settings
@@ -8,10 +11,19 @@ class AdminSettingsService {
     const settings = await db.settings.findMany({
       where: {
         key: {
-          in: ['globalDiscount', 'categoryDiscounts', 'brandDiscounts', 'defaultCurrency', 'currencyRates'],
+          in: [
+            "globalDiscount",
+            "categoryDiscounts",
+            "brandDiscounts",
+            "defaultCurrency",
+            "currencyRates",
+            "homeHero",
+          ],
         },
       },
     });
+
+    const homeHeroRow = settings.find((s: { key: string }) => s.key === "homeHero");
     
     const globalDiscountSetting = settings.find((s: { key: string; value: string }) => s.key === 'globalDiscount');
     const categoryDiscountsSetting = settings.find((s: { key: string; value: string }) => s.key === 'categoryDiscounts');
@@ -34,13 +46,21 @@ class AdminSettingsService {
       brandDiscounts: brandDiscountsSetting ? (brandDiscountsSetting.value as Record<string, number>) : {},
       defaultCurrency: defaultCurrencySetting ? (defaultCurrencySetting.value as string) : 'AMD',
       currencyRates: currencyRatesSetting ? (currencyRatesSetting.value as Record<string, number>) : defaultCurrencyRates,
+      homeHero: parseHomeHeroConfigForAdmin(homeHeroRow?.value),
     };
   }
 
   /**
    * Update settings
    */
-  async updateSettings(data: any) {
+  async updateSettings(data: {
+    globalDiscount?: number;
+    categoryDiscounts?: Record<string, number>;
+    brandDiscounts?: Record<string, number>;
+    defaultCurrency?: string;
+    currencyRates?: Record<string, number>;
+    homeHero?: unknown;
+  }) {
     console.log('⚙️ [ADMIN SERVICE] Updating settings...', data);
     
     // Update global discount
@@ -129,7 +149,24 @@ class AdminSettingsService {
       });
       console.log('✅ [ADMIN SERVICE] Currency rates updated:', data.currencyRates);
     }
-    
+
+    if (data.homeHero !== undefined) {
+      const parsed = homeHeroConfigSchema.parse(data.homeHero);
+      await db.settings.upsert({
+        where: { key: "homeHero" },
+        update: {
+          value: parsed,
+          updatedAt: new Date(),
+        },
+        create: {
+          key: "homeHero",
+          value: parsed,
+          description: "Homepage hero carousel (images, copy, CTA per slide)",
+        },
+      });
+      console.log("✅ [ADMIN SERVICE] Home hero updated:", parsed.slides.length, "slides");
+    }
+
     return { success: true };
   }
 
