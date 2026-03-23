@@ -10,13 +10,25 @@ const getProductListInclude = () => ({
     where: { locale: "en" },
     take: 1,
   },
+  categories: {
+    include: {
+      translations: {
+        where: { locale: "en" },
+        take: 1,
+      },
+    },
+  },
   variants: {
     where: { published: true },
     take: 1,
-    orderBy: { price: "asc" },
+    orderBy: { price: "asc" as const },
   },
   labels: true,
 });
+
+export type AdminProductListRecord = Prisma.ProductGetPayload<{
+  include: ReturnType<typeof getProductListInclude>;
+}>;
 
 /**
  * Base include configuration for product detail queries
@@ -44,7 +56,7 @@ export async function executeProductListQuery(
   orderBy: Prisma.ProductOrderByWithRelationInput,
   skip: number,
   take: number
-) {
+): Promise<{ products: AdminProductListRecord[]; total: number }> {
   const queryStartTime = Date.now();
   
   try {

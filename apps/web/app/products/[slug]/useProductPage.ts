@@ -5,10 +5,8 @@ import { getStoredCurrency } from '../../../lib/currency';
 import { getStoredLanguage, type LanguageCode } from '../../../lib/language';
 import { useProductImages } from './hooks/useProductImages';
 import { useProductFetch } from './hooks/useProductFetch';
-import { useWishlistCompare } from './hooks/useWishlistCompare';
 import { useProductReviews } from './hooks/useProductReviews';
 import { useVariantSelection } from './hooks/useVariantSelection';
-import { useProductActions } from './hooks/useProductActions';
 import { useProductQuantity } from './hooks/useProductQuantity';
 import { useProductCalculations } from './hooks/useProductCalculations';
 
@@ -56,23 +54,9 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     isVariationRequired,
   });
 
-  const { isInWishlist, setIsInWishlist, isInCompare, setIsInCompare } = useWishlistCompare({
-    productId: product?.id || null,
-  });
-
   const { reviews, averageRating } = useProductReviews({
     slug,
     productId: product?.id || null,
-  });
-
-  const { handleAddToWishlist, handleCompareToggle } = useProductActions({
-    productId: product?.id || null,
-    isInWishlist,
-    setIsInWishlist,
-    isInCompare,
-    setIsInCompare,
-    setShowMessage,
-    language,
   });
 
   useEffect(() => {
@@ -131,8 +115,6 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     setIsAddingToCart,
     showMessage,
     setShowMessage,
-    isInWishlist,
-    isInCompare,
     quantity,
     reviews,
     averageRating,
@@ -147,7 +129,5 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     canAddToCart,
     scrollToReviews,
     adjustQuantity,
-    handleAddToWishlist,
-    handleCompareToggle,
   };
 }

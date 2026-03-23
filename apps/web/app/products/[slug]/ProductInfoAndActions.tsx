@@ -1,12 +1,9 @@
 'use client';
 
-import type { MouseEvent } from 'react';
-import { Heart } from 'lucide-react';
 import { formatPrice, type CurrencyCode } from '../../../lib/currency';
 import { t, getProductText } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import { Button } from '../../../components/ui/buttons';
-import { CompareIcon } from '../../../components/icons/CompareIcon';
 import type { Product, ProductVariant } from './types';
 
 interface ProductInfoAndActionsProps {
@@ -24,15 +21,10 @@ interface ProductInfoAndActionsProps {
   isOutOfStock: boolean;
   canAddToCart: boolean;
   isAddingToCart: boolean;
-  isInWishlist: boolean;
-  isInCompare: boolean;
   showMessage: string | null;
-  isLoggedIn: boolean;
   currentVariant: ProductVariant | null;
   onQuantityAdjust: (delta: number) => void;
   onAddToCart: () => Promise<void>;
-  onAddToWishlist: (e: MouseEvent) => void;
-  onCompareToggle: (e: MouseEvent) => void;
   onScrollToReviews: () => void;
 }
 
@@ -51,15 +43,10 @@ export function ProductInfoAndActions({
   isOutOfStock,
   canAddToCart,
   isAddingToCart,
-  isInWishlist,
-  isInCompare,
   showMessage,
-  isLoggedIn,
   currentVariant,
   onQuantityAdjust,
   onAddToCart,
-  onAddToWishlist,
-  onCompareToggle,
   onScrollToReviews,
 }: ProductInfoAndActionsProps) {
   return (
@@ -159,24 +146,6 @@ export function ProductInfoAndActions({
             className="flex-1 h-12 uppercase font-extrabold tracking-[0.12em]"
           >
             {isAddingToCart ? t(language, 'product.adding') : (isOutOfStock ? t(language, 'product.outOfStock') : t(language, 'product.addToCart'))}
-          </Button>
-          <Button
-            type="button"
-            variant="icon"
-            size="icon"
-            onClick={onCompareToggle}
-            className={`w-12 h-12 ${isInCompare ? 'border-[#122a26] bg-[#122a26]/10' : ''}`}
-          >
-            <CompareIcon isActive={isInCompare} />
-          </Button>
-          <Button
-            type="button"
-            variant="icon"
-            size="icon"
-            onClick={onAddToWishlist}
-            className={`w-12 h-12 ${isInWishlist ? 'border-[#122a26] bg-[#122a26]/10' : ''}`}
-          >
-            <Heart fill={isInWishlist ? 'currentColor' : 'none'} className="w-5 h-5" />
           </Button>
         </div>
       </div>

@@ -12,6 +12,7 @@ interface Product {
   originalPrice?: number | null;
   compareAtPrice: number | null;
   image: string | null;
+  images?: string[];
   inStock: boolean;
   categories: Array<{
     id: string;

@@ -1,12 +1,11 @@
 'use client';
 
-import type { MouseEvent } from 'react';
+import { useEffect, useMemo, useState, type MouseEvent } from 'react';
 import Link from 'next/link';
 import { Button } from '../ui/buttons';
 import Image from 'next/image';
 import { ProductCardImage } from './ProductCardImage';
 import { ProductCardInfo } from './ProductCardInfo';
-import { ProductCardActions } from './ProductCardActions';
 import { CartIcon as CartPngIcon } from '../icons/CartIcon';
 import { useTranslation } from '../../lib/i18n-client';
 import { formatPrice } from '../../lib/currency';
@@ -22,6 +21,7 @@ interface ProductCardGridProps {
     title: string;
     price: number;
     image: string | null;
+    images?: string[];
     inStock: boolean;
     categories: Array<{
       id: string;
@@ -35,14 +35,8 @@ interface ProductCardGridProps {
     discountPercent?: number | null;
   };
   currency: CurrencyCode;
-  isInWishlist: boolean;
-  isInCompare: boolean;
   isAddingToCart: boolean;
-  imageError: boolean;
   isCompact?: boolean;
-  onImageError: () => void;
-  onWishlistToggle: (e: MouseEvent) => void;
-  onCompareToggle: (e: MouseEvent) => void;
   onAddToCart: (e: MouseEvent) => void;
 }
 
@@ -52,27 +46,51 @@ interface ProductCardGridProps {
 export function ProductCardGrid({
   product,
   currency,
-  isInWishlist,
-  isInCompare,
   isAddingToCart,
-  imageError,
   isCompact = false,
-  onImageError,
-  onWishlistToggle,
-  onCompareToggle,
   onAddToCart,
 }: ProductCardGridProps) {
   const { t } = useTranslation();
   const imageWrapperHeight = isCompact ? 'h-44' : 'h-56';
+  const productImages = useMemo(() => {
+    const rawImages = product.images && product.images.length > 0 ? product.images : [product.image];
+    return rawImages.filter((image, index, images): image is string => Boolean(image) && images.indexOf(image) === index);
+  }, [product.image, product.images]);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setActiveImageIndex(0);
+  }, [product.id]);
+
+  useEffect(() => {
+    if (activeImageIndex >= productImages.length) {
+      setActiveImageIndex(0);
+    }
+  }, [activeImageIndex, productImages.length]);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [activeImageIndex, product.id]);
+
+  const activeImage = productImages[activeImageIndex] || product.image;
+  const paginationDots = productImages.length > 0 ? productImages : [product.image || 'fallback-image'];
 
   return (
     <article className="relative w-full max-w-[20rem] rounded-3xl bg-white p-4 shadow-[0_6px_24px_rgba(18,42,38,0.05)] transition-shadow hover:shadow-[0_8px_28px_rgba(18,42,38,0.08)] group">
-      {/* Dots row — like Trending section */}
+      {/* Dots row */}
       <div className="mb-4 flex gap-1">
-        {Array.from({ length: 7 }).map((_, index) => (
-          <span
+        {paginationDots.map((_, index) => (
+          <button
             key={`${product.slug}-dot-${index}`}
-            className={`h-1 w-6 rounded-full ${index === 0 ? 'bg-[#122a26]' : 'bg-[#d9d9d9]'}`}
+            type="button"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              setActiveImageIndex(index);
+            }}
+            className={`h-1 rounded-full transition-all ${index === activeImageIndex ? 'w-8 bg-[#122a26]' : 'w-6 bg-[#d9d9d9]'}`}
+            aria-label={`${t('common.buttons.viewDetails')} ${index + 1}`}
           />
         ))}
       </div>
@@ -81,24 +99,13 @@ export function ProductCardGrid({
       <div className={`relative mb-4 ${imageWrapperHeight} overflow-hidden`}>
         <ProductCardImage
           slug={product.slug}
-          image={product.image}
+          image={activeImage}
           title={product.title}
           labels={product.labels}
           imageError={imageError}
-          onImageError={onImageError}
+          onImageError={() => setImageError(true)}
           isCompact={isCompact}
           fillContainer
-        />
-        <ProductCardActions
-          isInWishlist={isInWishlist}
-          isInCompare={isInCompare}
-          isAddingToCart={isAddingToCart}
-          inStock={product.inStock}
-          isCompact={isCompact}
-          onWishlistToggle={onWishlistToggle}
-          onCompareToggle={onCompareToggle}
-          onAddToCart={onAddToCart}
-          showOnHover
         />
       </div>
 

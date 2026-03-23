@@ -18,11 +18,11 @@ export function HomeSectionTitle({
 
   return (
     <div className={`flex flex-col gap-4 ${alignmentClassName} ${className}`.trim()}>
-      <h2 className="text-4xl font-extrabold leading-tight text-[#414141] sm:text-5xl">
+      <h2 className="text-3xl font-extrabold leading-tight text-[#414141] sm:text-4xl">
         {title}
       </h2>
       {description ? (
-        <p className="max-w-[52rem] text-lg font-medium leading-[1.65] text-[#414141]">
+        <p className="max-w-[52rem] text-base font-medium leading-relaxed text-[#414141]">
           {description}
         </p>
       ) : null}

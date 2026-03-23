@@ -487,7 +487,6 @@
 
 ### Admin - Այլ
 
-- `GET /api/v1/admin/messages` — Հաղորդագրություններ
 - `GET /api/v1/admin/delivery` — Առաքման կարգավորումներ
 - `GET /api/v1/admin/activity` — Գործունեության լոգ
 

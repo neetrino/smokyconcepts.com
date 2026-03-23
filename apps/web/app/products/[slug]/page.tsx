@@ -1,10 +1,6 @@
 'use client';
 
-import { use } from 'react';
-import { useRouter } from 'next/navigation';
-import { getStoredCurrency } from '../../../lib/currency';
 import { t } from '../../../lib/i18n';
-import { useAuth } from '../../../lib/auth/AuthContext';
 import { RelatedProducts } from '../../../components/RelatedProducts';
 import { ProductReviews } from '../../../components/ProductReviews';
 import { ProductImageGallery } from './ProductImageGallery';
@@ -13,9 +9,6 @@ import { useProductPage } from './useProductPage';
 import type { ProductPageProps } from './types';
 
 export default function ProductPage({ params }: ProductPageProps) {
-  const router = useRouter();
-  const { isLoggedIn } = useAuth();
-  
   const {
     product,
     loading,
@@ -30,8 +23,6 @@ export default function ProductPage({ params }: ProductPageProps) {
     setIsAddingToCart,
     showMessage,
     setShowMessage,
-    isInWishlist,
-    isInCompare,
     quantity,
     reviews,
     averageRating,
@@ -46,8 +37,6 @@ export default function ProductPage({ params }: ProductPageProps) {
     canAddToCart,
     scrollToReviews,
     adjustQuantity,
-    handleAddToWishlist,
-    handleCompareToggle,
   } = useProductPage(params);
 
   const handleAddToCart = async () => {
@@ -109,15 +98,10 @@ export default function ProductPage({ params }: ProductPageProps) {
             isOutOfStock={isOutOfStock}
             canAddToCart={canAddToCart}
             isAddingToCart={isAddingToCart}
-            isInWishlist={isInWishlist}
-            isInCompare={isInCompare}
             showMessage={showMessage}
-            isLoggedIn={isLoggedIn}
             currentVariant={currentVariant}
             onQuantityAdjust={adjustQuantity}
             onAddToCart={handleAddToCart}
-            onAddToWishlist={handleAddToWishlist}
-            onCompareToggle={handleCompareToggle}
             onScrollToReviews={scrollToReviews}
           />
       </div>

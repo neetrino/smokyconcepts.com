@@ -50,7 +50,7 @@ export function CultureVotingCard({
 
       <div className="mt-4 flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <h3 className="text-[1.6rem] font-extrabold leading-none text-[#414141] line-clamp-2">{title}</h3>
+          <h3 className="text-xl font-extrabold leading-none text-[#414141] line-clamp-2">{title}</h3>
           <p className="mt-2 text-xs font-medium text-[#9d9d9d]">
             {likeCount} {likeCount === 1 ? 'like' : 'likes'}
           </p>

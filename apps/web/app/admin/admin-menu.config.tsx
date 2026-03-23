@@ -29,6 +29,21 @@ export function getAdminMenuTABS(t: (path: string) => string): AdminMenuItem[] {
     ),
   },
   {
+    id: 'home-hero',
+    label: t('admin.menu.homeHero'),
+    path: '/admin/home-hero',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+        />
+      </svg>
+    ),
+  },
+  {
     id: 'orders',
     label: t('admin.menu.orders'),
     path: '/admin/orders',
@@ -100,21 +115,6 @@ export function getAdminMenuTABS(t: (path: string) => string): AdminMenuItem[] {
           strokeLinejoin="round"
           strokeWidth={2}
           d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-        />
-      </svg>
-    ),
-  },
-  {
-    id: 'messages',
-    label: t('admin.menu.messages'),
-    path: '/admin/messages',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
         />
       </svg>
     ),

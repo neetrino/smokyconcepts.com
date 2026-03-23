@@ -1,7 +1,6 @@
 {
   "buttons": {
     "addToCart": "Add to Cart",
-    "addToWishlist": "Add to Wishlist",
     "viewProduct": "View Product",
     "viewDetails": "View Details",
     "browseProducts": "Browse Products",
@@ -22,8 +21,6 @@
     "products": "Products",
     "categories": "Categories",
     "cart": "Cart",
-    "wishlist": "Wishlist",
-    "compare": "Compare",
     "checkout": "Checkout",
     "profile": "Profile",
     "orders": "Orders",
@@ -60,35 +57,6 @@
     "items": "items",
     "item": "item"
   },
-  "wishlist": {
-    "title": "My Wishlist",
-    "empty": "Your wishlist is empty",
-    "emptyDescription": "Start adding products to your wishlist to save them for later.",
-    "totalCount": "Total items in wishlist",
-    "tableHeaders": {
-      "productName": "Product Name",
-      "unitPrice": "Unit Price",
-      "stockStatus": "Stock Status",
-      "action": "Action"
-    }
-  },
-  "compare": {
-    "title": "Compare Products",
-    "empty": "No products to compare",
-    "emptyDescription": "Add up to 4 products to compare their features and prices.",
-    "products": "products",
-    "product": "product",
-    "isFull": "Comparison list is full",
-    "characteristic": "Characteristic",
-    "image": "Image",
-    "name": "Name",
-    "brand": "Brand",
-    "price": "Price",
-    "availability": "Availability",
-    "actions": "Actions",
-    "viewDetails": "View Details",
-    "browseProducts": "Browse Products"
-  },
   "reviews": {
     "title": "Reviews",
     "writeReview": "Write Review",
@@ -111,10 +79,6 @@
   "messages": {
     "addedToCart": "Added to cart",
     "removedFromCart": "Removed from cart",
-    "addedToWishlist": "Added to wishlist",
-    "removedFromWishlist": "Removed from wishlist",
-    "addedToCompare": "Added to compare",
-    "removedFromCompare": "Removed from compare",
     "errorAddingToCart": "Error adding to cart",
     "loading": "Loading...",
     "loadingFilters": "Loading filters...",
@@ -126,7 +90,6 @@
     "selectOptions": "Select options",
     "adding": "Adding...",
     "pcs": "pcs",
-    "compareMaxReached": "You can compare a maximum of 4 products",
     "invalidProduct": "Invalid product. Please refresh the page and try again.",
     "noVariantsAvailable": "No variants available",
     "stockExceeded": "Available quantity is {stock} pcs. You cannot add more:",
@@ -141,7 +104,6 @@
     "sku": "SKU"
   },
   "alerts": {
-    "compareMaxReached": "You can compare a maximum of 4 products",
     "invalidProduct": "Invalid product. Please refresh the page and try again.",
     "noVariantsAvailable": "No variants available",
     "stockExceeded": "Available quantity is {stock} pcs. You cannot add more:",
@@ -153,10 +115,6 @@
   "ariaLabels": {
     "addToCart": "Add to cart",
     "removeFromCart": "Remove from cart",
-    "addToWishlist": "Add to wishlist",
-    "removeFromWishlist": "Remove from wishlist",
-    "addToCompare": "Add to compare",
-    "removeFromCompare": "Remove from compare",
     "outOfStock": "Out of stock",
     "search": "Search",
     "searchPlaceholder": "Search products",

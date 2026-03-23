@@ -1,9 +1,8 @@
-import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
 import { apiClient } from '../../../../lib/api-client';
 import { useTranslation } from '../../../../lib/i18n-client';
 import type { Product, ProductsResponse } from '../types';
+import type { ProductData } from '../add/types';
 
 interface UseProductHandlersProps {
   products: Product[];
@@ -27,7 +26,18 @@ export function useProductHandlers({
   setTogglingAllFeatured,
 }: UseProductHandlersProps) {
   const { t } = useTranslation();
-  const router = useRouter();
+
+  const buildDuplicateSlug = (slug: string) => {
+    const normalizedSlug = slug.trim() || 'product';
+    const suffix = Date.now().toString().slice(-6);
+    return `${normalizedSlug}-copy-${suffix}`;
+  };
+
+  const buildDuplicateSku = (sku: string | undefined, duplicateSlug: string, index: number) => {
+    const baseSku = sku?.trim() || duplicateSlug.toUpperCase().replace(/[^A-Z0-9]+/g, '-');
+    const suffix = Date.now().toString().slice(-6);
+    return `${baseSku}-COPY-${suffix}-${index + 1}`;
+  };
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -89,6 +99,50 @@ export function useProductHandlers({
     } catch (err: any) {
       console.error('❌ [ADMIN] Error deleting product:', err);
       alert(t('admin.products.errorDeleting').replace('{message}', err.message || t('admin.common.unknownErrorFallback')));
+    }
+  };
+
+  const handleDuplicateProduct = async (productId: string) => {
+    try {
+      const sourceProduct = await apiClient.get<ProductData>(`/api/v1/admin/products/${productId}`);
+      const duplicateSlug = buildDuplicateSlug(sourceProduct.slug || '');
+      const duplicatedVariants = Array.isArray(sourceProduct.variants)
+        ? sourceProduct.variants.map((variant, index) => ({
+            price: variant.price,
+            compareAtPrice: variant.compareAtPrice,
+            stock: variant.stock,
+            sku: buildDuplicateSku(variant.sku, duplicateSlug, index),
+            imageUrl: variant.imageUrl,
+            published: false,
+          }))
+        : [];
+
+      const payload = {
+        title: sourceProduct.title,
+        slug: duplicateSlug,
+        descriptionHtml: sourceProduct.descriptionHtml || undefined,
+        primaryCategoryId: sourceProduct.primaryCategoryId || undefined,
+        categoryIds: sourceProduct.categoryIds || [],
+        published: false,
+        featured: false,
+        upcoming: false,
+        locale: 'en',
+        media: sourceProduct.media || [],
+        variants: duplicatedVariants,
+        labels: (sourceProduct.labels || []).map((label) => ({
+          type: label.type,
+          value: label.value,
+          position: label.position,
+          color: label.color || null,
+        })),
+      };
+
+      await apiClient.post<{ id: string }>('/api/v1/admin/products', payload);
+      await fetchProducts();
+      alert(t('admin.products.duplicatedSuccess').replace('{title}', sourceProduct.title));
+    } catch (err: any) {
+      console.error('❌ [ADMIN] Error duplicating product:', err);
+      alert(t('admin.products.errorDuplicating').replace('{message}', err.message || t('admin.common.unknownErrorFallback')));
     }
   };
 
@@ -196,6 +250,7 @@ export function useProductHandlers({
     toggleSelectAll,
     handleBulkDelete,
     handleDeleteProduct,
+    handleDuplicateProduct,
     handleTogglePublished,
     handleToggleFeatured,
     handleToggleUpcoming,

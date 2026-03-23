@@ -350,6 +350,20 @@ model ContactMessage {
   @@map("contact_messages")
 }
 
+// ============================================
+// PRODUCT UPDATE SUBSCRIBER (Notify Me)
+// ============================================
+model ProductUpdateSubscriber {
+  id        String   @id @default(cuid())
+  email     String
+  name      String?
+  createdAt DateTime @default(now())
+
+  @@unique([email])
+  @@index([createdAt(sort: Desc)])
+  @@map("product_update_subscribers")
+}
+
 model VotingItem {
   id        String       @id @default(cuid())
   title     String

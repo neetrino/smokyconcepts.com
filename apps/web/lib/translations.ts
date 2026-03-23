@@ -21,28 +21,8 @@ export const translations = {
       items: 'items',
       item: 'item',
     },
-    wishlist: {
-      title: 'My Wishlist',
-      empty: 'Your wishlist is empty',
-      emptyDescription: 'Start adding products to your wishlist to save them for later.',
-      browseProducts: 'Browse Products',
-      remove: 'Remove',
-      items: 'items',
-      item: 'item',
-      totalCount: 'Total items in wishlist',
-    },
-    compare: {
-      title: 'Compare Products',
-      empty: 'No products to compare',
-      emptyDescription: 'Add up to 4 products to compare their features and prices.',
-      browseProducts: 'Browse Products',
-      remove: 'Remove',
-      products: 'products',
-      product: 'product',
-    },
     product: {
       addToCart: 'Add to Cart',
-      addToWishlist: 'Add to Wishlist',
       viewProduct: 'View Product',
       viewDetails: 'View Details',
       productInformation: 'Product Information',
@@ -53,8 +33,6 @@ export const translations = {
       products: 'Products',
       categories: 'Categories',
       cart: 'Cart',
-      wishlist: 'Wishlist',
-      compare: 'Compare',
       checkout: 'Checkout',
       profile: 'Profile',
       orders: 'Orders',
@@ -110,28 +88,8 @@ export const translations = {
       items: 'ապրանք',
       item: 'ապրանք',
     },
-    wishlist: {
-      title: 'Իմ ցանկությունների ցուցակ',
-      empty: 'Ձեր ցանկությունների ցուցակը դատարկ է',
-      emptyDescription: 'Սկսեք ավելացնել ապրանքներ ձեր ցանկությունների ցուցակին՝ հետագա օգտագործման համար:',
-      browseProducts: 'Դիտել ապրանքները',
-      remove: 'Հեռացնել',
-      items: 'ապրանք',
-      item: 'ապրանք',
-      totalCount: 'Ընդհանուր ապրանքներ ցանկությունների ցուցակում',
-    },
-    compare: {
-      title: 'Համեմատել ապրանքները',
-      empty: 'Համեմատելու ապրանքներ չկան',
-      emptyDescription: 'Ավելացրեք մինչև 4 ապրանք՝ դրանց հատկանիշներն ու գները համեմատելու համար:',
-      browseProducts: 'Դիտել ապրանքները',
-      remove: 'Հեռացնել',
-      products: 'ապրանք',
-      product: 'ապրանք',
-    },
     product: {
       addToCart: 'Ավելացնել զամբյուղ',
-      addToWishlist: 'Ավելացնել ցանկությունների ցուցակ',
       viewProduct: 'Դիտել ապրանքը',
       viewDetails: 'Դիտել մանրամասները',
       productInformation: 'Ապրանքի տեղեկություն',
@@ -142,8 +100,6 @@ export const translations = {
       products: 'Ապրանքներ',
       categories: 'Կատեգորիաներ',
       cart: 'Զամբյուղ',
-      wishlist: 'Ցանկությունների ցուցակ',
-      compare: 'Համեմատել',
       checkout: 'Վճարում',
       profile: 'Պրոֆիլ',
       orders: 'Պատվերներ',
@@ -199,28 +155,8 @@ export const translations = {
       items: 'товаров',
       item: 'товар',
     },
-    wishlist: {
-      title: 'Мой список желаний',
-      empty: 'Ваш список желаний пуст',
-      emptyDescription: 'Начните добавлять товары в список желаний, чтобы сохранить их на потом.',
-      browseProducts: 'Просмотреть товары',
-      remove: 'Удалить',
-      items: 'товаров',
-      item: 'товар',
-      totalCount: 'Всего товаров в списке желаний',
-    },
-    compare: {
-      title: 'Сравнить товары',
-      empty: 'Нет товаров для сравнения',
-      emptyDescription: 'Добавьте до 4 товаров, чтобы сравнить их характеристики и цены.',
-      browseProducts: 'Просмотреть товары',
-      remove: 'Удалить',
-      products: 'товаров',
-      product: 'товар',
-    },
     product: {
       addToCart: 'Добавить в корзину',
-      addToWishlist: 'Добавить в список желаний',
       viewProduct: 'Просмотреть товар',
       viewDetails: 'Просмотреть детали',
       productInformation: 'Информация о товаре',
@@ -231,8 +167,6 @@ export const translations = {
       products: 'Товары',
       categories: 'Категории',
       cart: 'Корзина',
-      wishlist: 'Список желаний',
-      compare: 'Сравнить',
       checkout: 'Оформление',
       profile: 'Профиль',
       orders: 'Заказы',
@@ -288,28 +222,8 @@ export const translations = {
       items: 'ნივთი',
       item: 'ნივთი',
     },
-    wishlist: {
-      title: 'ჩემი სურვილების სია',
-      empty: 'თქვენი სურვილების სია ცარიელია',
-      emptyDescription: 'დაიწყეთ პროდუქტების დამატება თქვენს სურვილების სიაში, რომ შემდეგ გამოიყენოთ.',
-      browseProducts: 'პროდუქტების ნახვა',
-      remove: 'წაშლა',
-      items: 'ნივთი',
-      item: 'ნივთი',
-      totalCount: 'სულ პროდუქტი სურვილების სიაში',
-    },
-    compare: {
-      title: 'პროდუქტების შედარება',
-      empty: 'შედარების პროდუქტები არ არის',
-      emptyDescription: 'დაამატეთ 4 პროდუქტამდე მათი მახასიათებლებისა და ფასების შესადარებლად.',
-      browseProducts: 'პროდუქტების ნახვა',
-      remove: 'წაშლა',
-      products: 'პროდუქტი',
-      product: 'პროდუქტი',
-    },
     product: {
       addToCart: 'კალათაში დამატება',
-      addToWishlist: 'სურვილების სიაში დამატება',
       viewProduct: 'პროდუქტის ნახვა',
       viewDetails: 'დეტალების ნახვა',
       productInformation: 'პროდუქტის ინფორმაცია',
@@ -320,8 +234,6 @@ export const translations = {
       products: 'პროდუქტები',
       categories: 'კატეგორიები',
       cart: 'კალათა',
-      wishlist: 'სურვილების სია',
-      compare: 'შედარება',
       checkout: 'გადახდა',
       profile: 'პროფილი',
       orders: 'შეკვეთები',
@@ -366,16 +278,15 @@ export function getTranslation(key: string, language?: LanguageCode): string {
   const lang = language || getStoredLanguage();
   const keys = key.split('.');
   let value: any = translations[lang];
-  
+
   for (const k of keys) {
     if (value && typeof value === 'object' && k in value) {
       value = value[k as keyof typeof value];
     } else {
-      // Fallback to English if translation not found
       value = translations.en;
-      for (const k2 of keys) {
-        if (value && typeof value === 'object' && k2 in value) {
-          value = value[k2 as keyof typeof value];
+      for (const fallbackKey of keys) {
+        if (value && typeof value === 'object' && fallbackKey in value) {
+          value = value[fallbackKey as keyof typeof value];
         } else {
           return key;
         }
@@ -383,16 +294,12 @@ export function getTranslation(key: string, language?: LanguageCode): string {
       break;
     }
   }
-  
+
   return typeof value === 'string' ? value : key;
 }
 
-// Simple hook for client components
 export function useTranslation() {
-  // This will be implemented in client components using useState/useEffect
-  // For now, just return a function that uses current language
   return {
     t: (key: string) => getTranslation(key),
   };
 }
-

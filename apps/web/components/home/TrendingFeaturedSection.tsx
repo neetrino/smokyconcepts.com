@@ -46,9 +46,22 @@ function mapApiProductToHomeItem(product: ApiProduct, priceFormatted: string): H
     imageSrc: product.image ?? PLACEHOLDER_IMAGE,
     badge: categoryTitle || 'Featured',
     badgeTone: 'dark',
-    actionLabel: 'Shop',
+    actionLabel: 'Buy',
     slug: product.slug,
   };
+}
+
+/** Group items by category (badge), then flatten so same-category items are side-by-side. */
+function groupItemsByCategory(items: HomeProductItem[]): HomeProductItem[] {
+  const byCategory = new Map<string, HomeProductItem[]>();
+  for (const item of items) {
+    const key = item.badge || 'Other';
+    if (!byCategory.has(key)) byCategory.set(key, []);
+    byCategory.get(key)!.push(item);
+  }
+  const result: HomeProductItem[] = [];
+  byCategory.forEach((group) => result.push(...group));
+  return result;
 }
 
 /**
@@ -66,17 +79,25 @@ export function TrendingFeaturedSection() {
   ).filter((startIndex, index, allStartIndices) => index === 0 || startIndex !== allStartIndices[index - 1]);
   const maxPage = Math.max(0, pageStartIndices.length - 1);
   const startIndex = pageStartIndices[currentPage] ?? 0;
-  const visibleItems = items.slice(startIndex, startIndex + TRENDING_ITEMS_PER_PAGE);
-  const canGoPrev = currentPage > 0;
-  const canGoNext = currentPage < maxPage;
-  const previousPreviewItems = items.slice(Math.max(0, startIndex - 2), startIndex);
-  const nextPreviewItems = items.slice(startIndex + TRENDING_ITEMS_PER_PAGE, startIndex + TRENDING_ITEMS_PER_PAGE + 2);
+    const n = items.length;
+  const visibleItems =
+    n <= TRENDING_ITEMS_PER_PAGE
+      ? items
+      : [items[startIndex], items[(startIndex + 1) % n], items[(startIndex + 2) % n]].filter(Boolean);
+  const hasMultiplePages = maxPage > 0;
+  const visibleIndices = new Set(
+    n > 0 ? [startIndex, (startIndex + 1) % n, (startIndex + 2) % n] : []
+  );
+  const prevIndices = n === 0 ? [] : [(startIndex - 2 + n) % n, (startIndex - 1 + n) % n].filter((i) => !visibleIndices.has(i));
+  const nextIndices = n === 0 ? [] : [(startIndex + TRENDING_ITEMS_PER_PAGE) % n, (startIndex + TRENDING_ITEMS_PER_PAGE + 1) % n].filter((i) => !visibleIndices.has(i));
+  const previousPreviewItems = prevIndices.map((i) => items[i]).filter(Boolean);
+  const nextPreviewItems = nextIndices.map((i) => items[i]).filter(Boolean);
 
   const goPrev = useCallback(() => {
-    setCurrentPage((p) => Math.max(0, p - 1));
-  }, []);
+    setCurrentPage((p) => (p === 0 ? maxPage : p - 1));
+  }, [maxPage]);
   const goNext = useCallback(() => {
-    setCurrentPage((p) => Math.min(maxPage, p + 1));
+    setCurrentPage((p) => (p >= maxPage ? 0 : p + 1));
   }, [maxPage]);
 
   const fetchFeatured = useCallback(async () => {
@@ -91,10 +112,16 @@ export function TrendingFeaturedSection() {
         },
       });
       const list = Array.isArray(response?.data) ? response.data : [];
-      const mapped: HomeProductItem[] = list.map((p) =>
-        mapApiProductToHomeItem(p, formatPrice(p.price ?? 0, currency))
-      );
-      setItems(mapped);
+      const seenSlugs = new Set<string>();
+      const mapped: HomeProductItem[] = list
+        .filter((p) => {
+          const slug = p.slug ?? p.id;
+          if (seenSlugs.has(slug)) return false;
+          seenSlugs.add(slug);
+          return true;
+        })
+        .map((p) => mapApiProductToHomeItem(p, formatPrice(p.price ?? 0, currency)));
+      setItems(groupItemsByCategory(mapped));
     } catch (err) {
       console.error('TrendingFeaturedSection: failed to load featured products', err);
       setError('Failed to load');
@@ -153,7 +180,7 @@ export function TrendingFeaturedSection() {
       <section className="flex flex-col gap-8">
         <div className="flex items-center justify-between gap-6">
           <HomeSectionTitle title="Trending" centered={false} />
-          <HomeActionButton href="/products" label="Shop" variant="outline" className="hidden sm:inline-flex" />
+          <HomeActionButton href="/products" label="Buy" variant="outline" className="hidden sm:inline-flex" />
         </div>
         <p className="py-6 text-center text-[#9d9d9d]">No featured products yet.</p>
       </section>
@@ -166,7 +193,7 @@ export function TrendingFeaturedSection() {
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <HomeSectionTitle title="Trending" centered />
         </div>
-        <HomeActionButton href="/products" label="Shop" variant="outline" className="hidden sm:inline-flex" />
+        <HomeActionButton href="/products" label="Buy" variant="outline" className="hidden sm:inline-flex" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:hidden">
@@ -203,19 +230,23 @@ export function TrendingFeaturedSection() {
         >
           <div
             className="flex touch-pan-y items-end justify-start gap-3 transition-transform duration-300 ease-out"
-            style={{ transform: `translateX(-${startIndex * TRENDING_TRACK_STEP_REM}rem)` }}
+            style={{
+              transform: `translateX(-${startIndex * TRENDING_TRACK_STEP_REM}rem)`,
+              width: n > 0 ? `${(n * 2) * TRENDING_TRACK_STEP_REM - TRENDING_CARD_GAP_REM}rem` : undefined,
+            }}
           >
-            {items.map((item, index) => {
-              const isMiddleVisible = index === startIndex + 1;
-              return (
-                <div
-                  key={`trending-${item.slug ?? index}-${item.name}`}
-                  className="w-[14rem] shrink-0 pt-20"
-                >
-                  <HomeProductCard item={item} size="small" imageNudgeDown={isMiddleVisible} imageNudgeDeep />
-                </div>
-              );
-            })}
+            {n > 0 &&
+              [...items, ...items].map((item, index) => {
+                const isMiddle = index === startIndex + 1;
+                return (
+                  <div
+                    key={`trending-${item.slug ?? index}-${item.name}-${index}`}
+                    className="w-[14rem] shrink-0 pt-20"
+                  >
+                    <HomeProductCard item={item} size="small" imageNudgeDown={isMiddle} imageNudgeDeep />
+                  </div>
+                );
+              })}
           </div>
         </div>
 
@@ -232,17 +263,21 @@ export function TrendingFeaturedSection() {
         <button
           type="button"
           onClick={goPrev}
-          disabled={!canGoPrev}
+          disabled={!hasMultiplePages}
           className="flex h-10 w-10 items-center justify-center text-[#122a26] transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40"
           aria-label="Previous"
         >
           <ChevronLeft className="h-8 w-8" strokeWidth={2.5} />
         </button>
-        <p className="text-center text-[1.5rem] font-extrabold text-[#122a26] sm:text-[2rem]">Classic</p>
+        <p className="text-center text-xl font-extrabold text-[#122a26] sm:text-[1.5rem]">
+          {visibleItems[0]?.badge && visibleItems[0].badge !== 'Featured'
+            ? visibleItems[0].badge
+            : '—'}
+        </p>
         <button
           type="button"
           onClick={goNext}
-          disabled={!canGoNext}
+          disabled={!hasMultiplePages}
           className="flex h-10 w-10 items-center justify-center text-[#122a26] transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40"
           aria-label="Next"
         >

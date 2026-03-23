@@ -17,6 +17,7 @@ interface ProductsTableProps {
   handleHeaderSort: (field: 'price' | 'createdAt' | 'title' | 'stock') => void;
   currency: CurrencyCode;
   handleDeleteProduct: (productId: string, productTitle: string) => void;
+  handleDuplicateProduct: (productId: string) => void;
   handleTogglePublished: (productId: string, currentStatus: boolean, productTitle: string) => void;
   handleToggleFeatured: (productId: string, currentStatus: boolean, productTitle: string) => void;
   handleToggleUpcoming: (productId: string, currentStatus: boolean, productTitle: string) => void;
@@ -49,6 +50,7 @@ export function ProductsTable({
   handleHeaderSort,
   currency,
   handleDeleteProduct,
+  handleDuplicateProduct,
   handleTogglePublished,
   handleToggleFeatured,
   handleToggleUpcoming,
@@ -155,39 +157,49 @@ export function ProductsTable({
                     </button>
                   </th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <button
-                      type="button"
-                      onClick={() => handleHeaderSort('price')}
-                      className="inline-flex items-center gap-1 text-gray-500 hover:text-gray-800"
-                    >
-                      <span>{t('admin.products.price')}</span>
-                      <span className="flex flex-col gap-0.5">
-                        <svg
-                          className={`w-2.5 h-2.5 ${
-                            sortBy === 'price-asc'
-                              ? 'text-gray-900'
-                              : 'text-gray-400'
-                          }`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                        </svg>
-                        <svg
-                          className={`w-2.5 h-2.5 ${
-                            sortBy === 'price-desc'
-                              ? 'text-gray-900'
-                              : 'text-gray-400'
-                          }`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </span>
-                    </button>
+                    <div className="flex items-start justify-between gap-3">
+                      <button
+                        type="button"
+                        onClick={() => handleHeaderSort('price')}
+                        className="inline-flex items-center gap-1 text-gray-500 hover:text-gray-800"
+                      >
+                        <span>{t('admin.products.price')}</span>
+                        <span className="flex flex-col gap-0.5">
+                          <svg
+                            className={`w-2.5 h-2.5 ${
+                              sortBy === 'price-asc'
+                                ? 'text-gray-900'
+                                : 'text-gray-400'
+                            }`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                          </svg>
+                          <svg
+                            className={`w-2.5 h-2.5 ${
+                              sortBy === 'price-desc'
+                                ? 'text-gray-900'
+                                : 'text-gray-400'
+                            }`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </span>
+                      </button>
+                      <span className="text-right">{t('admin.products.category')}</span>
+                    </div>
+                  </th>
+                  <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <span className="inline-flex items-center justify-center gap-2">
+                      {t('admin.products.featured')}
+                      <span className="text-gray-400 font-normal normal-case">/</span>
+                      {t('admin.products.upcoming')}
+                    </span>
                   </th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <button
@@ -223,13 +235,6 @@ export function ProductsTable({
                         </svg>
                       </span>
                     </button>
-                  </th>
-                  <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <span className="inline-flex items-center justify-center gap-2">
-                      {t('admin.products.featured')}
-                      <span className="text-gray-400 font-normal normal-case">/</span>
-                      {t('admin.products.upcoming')}
-                    </span>
                   </th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider pl-6">
                     {t('admin.products.actions')}
@@ -282,25 +287,40 @@ export function ProductsTable({
                       )}
                     </td>
                     <td className="px-3 py-4 whitespace-nowrap">
-                      <div className="flex flex-col">
-                        <div className="text-sm font-medium text-gray-900">
-                          {formatPrice(product.price, currency)}
-                        </div>
-                        {(product.compareAtPrice && product.compareAtPrice > product.price) || 
-                         (product.discountPercent && product.discountPercent > 0) ? (
-                          <div className="text-xs text-gray-500 line-through mt-0.5">
-                            {formatPrice(
-                              product.compareAtPrice && product.compareAtPrice > product.price
-                                ? product.compareAtPrice
-                                : product.price / (1 - (product.discountPercent || 0) / 100),
-                              currency
-                            )}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex flex-col">
+                          <div className="text-sm font-medium text-gray-900">
+                            {formatPrice(product.price, currency)}
                           </div>
-                        ) : null}
+                          {(product.compareAtPrice && product.compareAtPrice > product.price) || 
+                           (product.discountPercent && product.discountPercent > 0) ? (
+                            <div className="text-xs text-gray-500 line-through mt-0.5">
+                              {formatPrice(
+                                product.compareAtPrice && product.compareAtPrice > product.price
+                                  ? product.compareAtPrice
+                                  : product.price / (1 - (product.discountPercent || 0) / 100),
+                                currency
+                              )}
+                            </div>
+                          ) : null}
+                        </div>
+                        <div className="flex max-w-[180px] flex-wrap justify-end gap-1">
+                          {product.categories && product.categories.length > 0 ? (
+                            product.categories.map((category) => (
+                              <span
+                                key={`${product.id}-${category}`}
+                                className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700"
+                              >
+                                {category}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
+                              -
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(product.createdAt).toLocaleDateString('hy-AM')}
                     </td>
                     <td className="px-3 py-4 whitespace-nowrap text-center">
                       <div className="inline-flex items-center justify-center gap-1">
@@ -346,29 +366,48 @@ export function ProductsTable({
                         </button>
                       </div>
                     </td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(product.createdAt).toLocaleDateString('hy-AM')}
+                    </td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center gap-1 flex-wrap">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => router.push(`/admin/products/add?id=${product.id}`)}
-                          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2"
+                          title={t('admin.products.edit')}
+                          aria-label={t('admin.products.edit')}
                         >
-                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
-                          {t('admin.products.edit')}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDuplicateProduct(product.id)}
+                          className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 px-2"
+                          title={t('admin.products.duplicate')}
+                          aria-label={t('admin.products.duplicate')}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <rect x="7" y="7" width="12" height="12" rx="2" strokeWidth={2} />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15H4a1 1 0 01-1-1V5a1 1 0 011-1h9a1 1 0 011 1v1" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10v6M10 13h6" />
+                          </svg>
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteProduct(product.id, product.title)}
-                          className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                          className="text-red-600 hover:text-red-800 hover:bg-red-50 px-2"
+                          title={t('admin.products.delete')}
+                          aria-label={t('admin.products.delete')}
                         >
-                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
-                          {t('admin.products.delete')}
                         </Button>
                         <button
                           type="button"

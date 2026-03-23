@@ -24,7 +24,7 @@ export function HomeActionButton({
   return (
     <Link
       href={href}
-      className={`inline-flex min-h-12 items-center justify-center rounded-lg px-6 text-base font-extrabold uppercase tracking-[0.2em] transition-colors sm:px-8 ${VARIANT_CLASS_NAMES[variant]} ${className}`.trim()}
+      className={`inline-flex min-h-11 items-center justify-center rounded-lg px-5 text-sm font-extrabold uppercase tracking-[0.2em] transition-colors sm:px-7 ${VARIANT_CLASS_NAMES[variant]} ${className}`.trim()}
     >
       {label}
     </Link>

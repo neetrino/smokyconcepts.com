@@ -1,6 +1,6 @@
 import { db } from "@white-shop/db";
 import { processImageUrl } from "./utils/image-utils";
-import { translations } from "../translations";
+import { t } from "../i18n";
 import { ProductWithRelations } from "./products-find-query.service";
 
 /** Option-like item from variant.attributes JSON (options relation removed from schema) */
@@ -24,10 +24,20 @@ function getVariantOptions(attributes: unknown): VariantOptionFromAttributes[] {
  * Get "Out of Stock" translation for a given language
  */
 const getOutOfStockLabel = (lang: string = "en"): string => {
-  const langKey = lang as keyof typeof translations;
-  const translation = translations[langKey] || translations.en;
-  return translation.stock.outOfStock;
+  return t(lang as "en" | "hy" | "ru", "common.stock.outOfStock");
 };
+
+function extractProductImages(media: unknown): string[] {
+  if (!Array.isArray(media)) {
+    return [];
+  }
+
+  return media
+    .map((item) =>
+      processImageUrl(item as string | null | undefined | { url?: string; src?: string; value?: string })
+    )
+    .filter((url, index, urls): url is string => url !== null && urls.indexOf(url) === index);
+}
 
 class ProductsFindTransformService {
   /**
@@ -53,7 +63,38 @@ class ProductsFindTransformService {
     
     const categoryDiscountsSetting = discountSettings.find((s: { key: string; value: unknown }) => s.key === "categoryDiscounts");
     const categoryDiscounts = categoryDiscountsSetting ? (categoryDiscountsSetting.value as Record<string, number>) || {} : {};
-    
+
+    // When product.categories is empty but primaryCategoryId is set, fetch primary category for response
+    const primaryCategoryIds = [
+      ...new Set(
+        products
+          .filter(
+            (p) =>
+              p.primaryCategoryId &&
+              (!Array.isArray(p.categories) || p.categories.length === 0)
+          )
+          .map((p) => p.primaryCategoryId as string)
+      ),
+    ];
+    const primaryCategories =
+      primaryCategoryIds.length > 0
+        ? await db.category.findMany({
+            where: { id: { in: primaryCategoryIds } },
+            include: { translations: true },
+          })
+        : [];
+    type CategoryOutput = { id: string; slug: string; title: string };
+    const primaryCategoryById = new Map<string, CategoryOutput>(
+      primaryCategories.map((cat: { id: string; translations?: Array<{ locale: string; slug: string; title: string }> }) => {
+        const catTranslations = Array.isArray(cat.translations) ? cat.translations : [];
+        const catTranslation =
+          catTranslations.find((t: { locale: string }) => t.locale === lang) || catTranslations[0] || null;
+        return [
+          cat.id,
+          { id: cat.id, slug: catTranslation?.slug ?? "", title: catTranslation?.title ?? "" },
+        ];
+      })
+    );
 
     // Format response
     const data = products.map((product: ProductWithRelations) => {
@@ -191,16 +232,24 @@ class ProductsFindTransformService {
         finalPrice = originalPrice * (1 - appliedDiscount / 100);
       }
 
-      // Get categories with translations
-      const categories = Array.isArray(product.categories) ? product.categories.map((cat: { id: string; translations?: Array<{ locale: string; slug: string; title: string }> }) => {
-        const catTranslations = Array.isArray(cat.translations) ? cat.translations : [];
-        const catTranslation = catTranslations.find((t: { locale: string }) => t.locale === lang) || catTranslations[0] || null;
-        return {
-          id: cat.id,
-          slug: catTranslation?.slug || "",
-          title: catTranslation?.title || "",
-        };
-      }) : [];
+      // Get categories with translations (relation first; fallback to primary category when relation is empty)
+      let categories = Array.isArray(product.categories)
+        ? product.categories.map((cat: { id: string; translations?: Array<{ locale: string; slug: string; title: string }> }) => {
+            const catTranslations = Array.isArray(cat.translations) ? cat.translations : [];
+            const catTranslation = catTranslations.find((t: { locale: string }) => t.locale === lang) || catTranslations[0] || null;
+            return {
+              id: cat.id,
+              slug: catTranslation?.slug || "",
+              title: catTranslation?.title || "",
+            };
+          })
+        : [];
+      if (categories.length === 0 && product.primaryCategoryId) {
+        const primary: CategoryOutput | undefined = primaryCategoryById.get(product.primaryCategoryId);
+        if (primary) categories = [primary];
+      }
+
+      const productImages = extractProductImages(product.media);
 
       return {
         id: product.id,
@@ -215,16 +264,8 @@ class ProductsFindTransformService {
         originalPrice: appliedDiscount > 0 ? originalPrice : variant?.compareAtPrice || null,
         compareAtPrice: variant?.compareAtPrice || null,
         discountPercent: appliedDiscount > 0 ? appliedDiscount : null,
-        image: (() => {
-          // Use unified image utilities to get first valid main image
-          if (!Array.isArray(product.media) || product.media.length === 0) {
-            return null;
-          }
-          
-          // Process first image - cast JsonValue to ImageUrlInput
-          const firstImage = processImageUrl(product.media[0] as string | null | undefined | { url?: string; src?: string; value?: string });
-          return firstImage || null;
-        })(),
+        image: productImages[0] || null,
+        images: productImages,
         inStock: (variant?.stock || 0) > 0,
         labels: (() => {
           // Map existing labels

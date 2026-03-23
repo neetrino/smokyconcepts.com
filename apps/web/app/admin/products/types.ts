@@ -6,6 +6,7 @@ export interface Product {
   featured?: boolean;
   upcoming?: boolean;
   price: number;
+  categories?: string[];
   stock: number;
   discountPercent?: number;
   compareAtPrice?: number | null;
