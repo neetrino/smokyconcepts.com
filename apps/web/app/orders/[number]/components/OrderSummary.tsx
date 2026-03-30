@@ -4,11 +4,12 @@ import Link from 'next/link';
 import { Card, Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { formatPriceInCurrency, convertPrice } from '../../../../lib/currency';
+import type { CurrencyCode } from '../../../../lib/currency';
 import type { Order } from '../types';
 
 interface OrderSummaryProps {
   order: Order;
-  currency: 'USD' | 'AMD' | 'EUR' | 'RUB' | 'GEL';
+  currency: CurrencyCode;
   calculatedShipping: number | null;
   loadingShipping: boolean;
 }

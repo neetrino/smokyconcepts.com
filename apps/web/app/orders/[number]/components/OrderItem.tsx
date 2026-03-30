@@ -2,12 +2,13 @@
 
 import { useTranslation } from '../../../../lib/i18n-client';
 import { formatPriceInCurrency, convertPrice } from '../../../../lib/currency';
+import type { CurrencyCode } from '../../../../lib/currency';
 import { getColorValue } from '../utils/color-helpers';
 import type { OrderItem as OrderItemType } from '../types';
 
 interface OrderItemProps {
   item: OrderItemType;
-  currency: 'USD' | 'AMD' | 'EUR' | 'RUB' | 'GEL';
+  currency: CurrencyCode;
 }
 
 export function OrderItem({ item, currency }: OrderItemProps) {

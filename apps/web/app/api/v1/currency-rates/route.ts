@@ -9,10 +9,6 @@ export async function GET() {
     const settings = await adminService.getSettings();
     const rates = settings.currencyRates || {
       USD: 1,
-      AMD: 400,
-      EUR: 0.92,
-      RUB: 90,
-      GEL: 2.7,
     };
     
     return NextResponse.json(rates);
@@ -21,10 +17,6 @@ export async function GET() {
     // Return default rates on error
     return NextResponse.json({
       USD: 1,
-      AMD: 400,
-      EUR: 0.92,
-      RUB: 90,
-      GEL: 2.7,
     });
   }
 }

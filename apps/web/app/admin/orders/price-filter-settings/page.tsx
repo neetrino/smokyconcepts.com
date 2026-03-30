@@ -17,9 +17,6 @@ export default function PriceFilterSettingsPage() {
   const [minPrice, setMinPrice] = useState<string>('');
   const [maxPrice, setMaxPrice] = useState<string>('');
   const [stepSizeUSD, setStepSizeUSD] = useState<string>('');
-  const [stepSizeAMD, setStepSizeAMD] = useState<string>('');
-  const [stepSizeRUB, setStepSizeRUB] = useState<string>('');
-  const [stepSizeGEL, setStepSizeGEL] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   
@@ -37,9 +34,6 @@ export default function PriceFilterSettingsPage() {
         stepSize?: number;
         stepSizePerCurrency?: {
           USD?: number;
-          AMD?: number;
-          RUB?: number;
-          GEL?: number;
         };
       }>('/api/v1/admin/settings/price-filter');
       const minPriceStr = response.minPrice?.toString() || '';
@@ -50,9 +44,6 @@ export default function PriceFilterSettingsPage() {
       setMinPrice(minPriceStr);
       setMaxPrice(maxPriceStr);
       setStepSizeUSD(per.USD !== undefined ? per.USD.toString() : fallbackStep);
-      setStepSizeAMD(per.AMD !== undefined ? per.AMD.toString() : '');
-      setStepSizeRUB(per.RUB !== undefined ? per.RUB.toString() : '');
-      setStepSizeGEL(per.GEL !== undefined ? per.GEL.toString() : '');
       prevStepSizeRef.current = fallbackStep;
       
       console.log('✅ [PRICE FILTER SETTINGS] Settings loaded:', response);
@@ -62,9 +53,6 @@ export default function PriceFilterSettingsPage() {
       setMinPrice('');
       setMaxPrice('');
       setStepSizeUSD('');
-      setStepSizeAMD('');
-      setStepSizeRUB('');
-      setStepSizeGEL('');
       prevStepSizeRef.current = '';
     } finally {
       setLoading(false);
@@ -143,9 +131,6 @@ export default function PriceFilterSettingsPage() {
     const minValue = minPrice.trim() ? parseFloat(minPrice) : null;
     const maxValue = maxPrice.trim() ? parseFloat(maxPrice) : null;
     const stepValueUSD = stepSizeUSD.trim() ? parseFloat(stepSizeUSD) : null;
-    const stepValueAMD = stepSizeAMD.trim() ? parseFloat(stepSizeAMD) : null;
-    const stepValueRUB = stepSizeRUB.trim() ? parseFloat(stepSizeRUB) : null;
-    const stepValueGEL = stepSizeGEL.trim() ? parseFloat(stepSizeGEL) : null;
 
     if (minValue !== null && (isNaN(minValue) || minValue < 0)) {
       alert(t('admin.priceFilter.minPriceInvalid'));
@@ -166,9 +151,6 @@ export default function PriceFilterSettingsPage() {
     };
 
     if (!validateStep(stepValueUSD, t('admin.priceFilter.stepSizeUsd'))) return;
-    if (!validateStep(stepValueAMD, t('admin.priceFilter.stepSizeAmd'))) return;
-    if (!validateStep(stepValueRUB, t('admin.priceFilter.stepSizeRub'))) return;
-    if (!validateStep(stepValueGEL, t('admin.priceFilter.stepSizeGel'))) return;
 
     if (minValue !== null && maxValue !== null && minValue >= maxValue) {
       alert(t('admin.priceFilter.minMustBeLess'));
@@ -181,22 +163,13 @@ export default function PriceFilterSettingsPage() {
         minValue,
         maxValue,
         stepValueUSD,
-        stepValueAMD,
-        stepValueRUB,
-        stepValueGEL,
       });
 
       const stepSizePerCurrency: {
         USD?: number;
-        AMD?: number;
-        RUB?: number;
-        GEL?: number;
       } = {};
 
       if (stepValueUSD !== null) stepSizePerCurrency.USD = stepValueUSD;
-      if (stepValueAMD !== null) stepSizePerCurrency.AMD = stepValueAMD;
-      if (stepValueRUB !== null) stepSizePerCurrency.RUB = stepValueRUB;
-      if (stepValueGEL !== null) stepSizePerCurrency.GEL = stepValueGEL;
       await apiClient.put('/api/v1/admin/settings/price-filter', {
         minPrice: minValue,
         maxPrice: maxValue,
@@ -336,7 +309,7 @@ export default function PriceFilterSettingsPage() {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         {t('admin.priceFilter.stepSizeUsd')}
@@ -346,48 +319,6 @@ export default function PriceFilterSettingsPage() {
                         value={stepSizeUSD}
                         onChange={(e) => handleStepSizeChange(e.target.value)}
                         placeholder="100"
-                        min="1"
-                        step="1"
-                        className="w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {t('admin.priceFilter.stepSizeAmd')}
-                      </label>
-                      <Input
-                        type="number"
-                        value={stepSizeAMD}
-                        onChange={(e) => setStepSizeAMD(e.target.value)}
-                        placeholder="5000"
-                        min="1"
-                        step="1"
-                        className="w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {t('admin.priceFilter.stepSizeRub')}
-                      </label>
-                      <Input
-                        type="number"
-                        value={stepSizeRUB}
-                        onChange={(e) => setStepSizeRUB(e.target.value)}
-                        placeholder="500"
-                        min="1"
-                        step="1"
-                        className="w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {t('admin.priceFilter.stepSizeGel')}
-                      </label>
-                      <Input
-                        type="number"
-                        value={stepSizeGEL}
-                        onChange={(e) => setStepSizeGEL(e.target.value)}
-                        placeholder="10"
                         min="1"
                         step="1"
                         className="w-full"
@@ -404,7 +335,6 @@ export default function PriceFilterSettingsPage() {
                         <p className="font-medium mb-1">{t('admin.priceFilter.howItWorks')}</p>
                         <ul className="list-disc list-inside space-y-1 text-blue-700">
                           <li>{t('admin.priceFilter.stepSizeControls')}</li>
-                          <li>{t('admin.priceFilter.differentStepSizes')}</li>
                           <li>{t('admin.priceFilter.defaultRange')}</li>
                           <li>{t('admin.priceFilter.usersCanAdjust')}</li>
                           <li>{t('admin.priceFilter.changesTakeEffect')}</li>
@@ -435,9 +365,6 @@ export default function PriceFilterSettingsPage() {
                         setMinPrice('');
                         setMaxPrice('');
                         setStepSizeUSD('');
-                        setStepSizeAMD('');
-                        setStepSizeRUB('');
-                        setStepSizeGEL('');
                         prevStepSizeRef.current = '';
                       }}
                     >

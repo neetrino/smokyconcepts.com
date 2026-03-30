@@ -31,7 +31,7 @@ export default function DeliveryPage() {
               const methodName = method.name[lang as keyof typeof method.name] || method.name.en;
               const freeAbove = method.freeAbove ? new Intl.NumberFormat('hy-AM', {
                 style: 'currency',
-                currency: 'AMD',
+                currency: 'USD',
                 minimumFractionDigits: 0,
               }).format(method.freeAbove) : null;
               
@@ -45,7 +45,7 @@ export default function DeliveryPage() {
                       <>
                         {t('delivery.deliveryInformation.deliveryCost').replace('{price}', new Intl.NumberFormat('hy-AM', {
                           style: 'currency',
-                          currency: 'AMD',
+                          currency: 'USD',
                           minimumFractionDigits: 0,
                         }).format(method.price))}
                         {freeAbove && ` (${t('delivery.deliveryInformation.freeForOrdersAbove').replace('{amount}', freeAbove)})`}

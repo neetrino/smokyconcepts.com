@@ -4,6 +4,7 @@ import { UseFormRegister, UseFormSetValue, UseFormHandleSubmit, FieldErrors } fr
 import { ShippingAddressModal } from './components/ShippingAddressModal';
 import { CardDetailsModal } from './components/CardDetailsModal';
 import { CheckoutFormData, Cart } from './types';
+import type { CurrencyCode } from '../../lib/currency';
 
 interface CheckoutModalsProps {
   showShippingModal: boolean;
@@ -25,7 +26,7 @@ interface CheckoutModalsProps {
     shippingDisplay: number;
     totalDisplay: number;
   };
-  currency: 'USD' | 'AMD' | 'EUR' | 'RUB' | 'GEL';
+  currency: CurrencyCode;
   loadingDeliveryPrice: boolean;
   deliveryPrice: number | null;
   logoErrors: Record<string, boolean>;

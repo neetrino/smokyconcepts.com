@@ -2,6 +2,7 @@
 
 import { useTranslation } from '../../../lib/i18n-client';
 import { formatPriceInCurrency } from '../../../lib/currency';
+import type { CurrencyCode } from '../../../lib/currency';
 import { Cart } from '../types';
 
 interface OrderSummaryModalProps {
@@ -12,7 +13,7 @@ interface OrderSummaryModalProps {
     shippingDisplay: number;
     totalDisplay: number;
   };
-  currency: 'USD' | 'AMD' | 'EUR' | 'RUB' | 'GEL';
+  currency: CurrencyCode;
   shippingMethod: 'pickup' | 'delivery';
   shippingCity?: string;
   loadingDeliveryPrice: boolean;

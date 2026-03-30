@@ -254,7 +254,7 @@ class OrdersService {
             shippingAmount,
             taxAmount,
             total,
-            currency: 'AMD',
+            currency: 'USD',
             customerEmail: email,
             customerPhone: phone,
             customerLocale: 'en', // TODO: Get from request
@@ -378,7 +378,7 @@ class OrdersService {
             provider: paymentMethod,
             method: paymentMethod,
             amount: total,
-            currency: 'AMD',
+            currency: 'USD',
             status: 'pending',
           },
         });

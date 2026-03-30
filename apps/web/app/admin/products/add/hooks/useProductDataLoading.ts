@@ -41,14 +41,14 @@ export function useProductDataLoading({
     const loadDefaultCurrency = async () => {
       try {
         const settingsRes = await apiClient.get<{ defaultCurrency?: string }>('/api/v1/admin/settings');
-        const currency = (settingsRes.defaultCurrency || 'AMD') as CurrencyCode;
+        const currency = (settingsRes.defaultCurrency || 'USD') as CurrencyCode;
         if (currency in CURRENCIES) {
           setDefaultCurrency(currency);
           console.log('✅ [ADMIN] Default currency loaded:', currency);
         }
       } catch (err) {
         console.error('❌ [ADMIN] Error loading default currency:', err);
-        setDefaultCurrency('AMD');
+        setDefaultCurrency('USD');
       }
     };
     

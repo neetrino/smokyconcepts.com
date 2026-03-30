@@ -65,22 +65,23 @@ export function clearCurrencyRatesCache(): void {
 const CURRENCY_STORAGE_KEY = 'shop_currency';
 
 export function getStoredCurrency(): CurrencyCode {
-  if (typeof window === 'undefined') return 'AMD';
+  if (typeof window === 'undefined') return 'USD';
   try {
     const stored = localStorage.getItem(CURRENCY_STORAGE_KEY);
-    if (stored && stored in CURRENCIES) {
-      return stored as CurrencyCode;
+    if (stored === 'USD') {
+      return 'USD';
     }
   } catch {
     // Ignore errors
   }
-  return 'AMD';
+  return 'USD';
 }
 
 export function setStoredCurrency(currency: CurrencyCode): void {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(CURRENCY_STORAGE_KEY, currency);
+    const normalizedCurrency: CurrencyCode = currency === 'USD' ? 'USD' : 'USD';
+    localStorage.setItem(CURRENCY_STORAGE_KEY, normalizedCurrency);
     window.dispatchEvent(new Event('currency-updated'));
   } catch (error) {
     console.error('Failed to save currency:', error);

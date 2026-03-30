@@ -34,17 +34,13 @@ class AdminSettingsService {
     // Default currency rates (fallback)
     const defaultCurrencyRates = {
       USD: 1,
-      AMD: 400,
-      EUR: 0.92,
-      RUB: 90,
-      GEL: 2.7,
     };
     
     return {
       globalDiscount: globalDiscountSetting ? Number(globalDiscountSetting.value) : 0,
       categoryDiscounts: categoryDiscountsSetting ? (categoryDiscountsSetting.value as Record<string, number>) : {},
       brandDiscounts: brandDiscountsSetting ? (brandDiscountsSetting.value as Record<string, number>) : {},
-      defaultCurrency: defaultCurrencySetting ? (defaultCurrencySetting.value as string) : 'AMD',
+      defaultCurrency: defaultCurrencySetting ? (defaultCurrencySetting.value as string) : 'USD',
       currencyRates: currencyRatesSetting ? (currencyRatesSetting.value as Record<string, number>) : defaultCurrencyRates,
       homeHero: parseHomeHeroConfigForAdmin(homeHeroRow?.value),
     };
@@ -127,7 +123,7 @@ class AdminSettingsService {
         create: {
           key: 'defaultCurrency',
           value: currencyValue,
-          description: 'Default currency for admin product pricing (USD, AMD, EUR)',
+          description: 'Default currency for admin product pricing (USD)',
         },
       });
       console.log('✅ [ADMIN SERVICE] Default currency updated:', currencyValue);
@@ -144,7 +140,7 @@ class AdminSettingsService {
         create: {
           key: 'currencyRates',
           value: data.currencyRates,
-          description: 'Currency exchange rates relative to USD (USD, AMD, EUR, RUB, GEL)',
+          description: 'Currency exchange rates relative to USD (USD only)',
         },
       });
       console.log('✅ [ADMIN SERVICE] Currency rates updated:', data.currencyRates);
@@ -195,9 +191,6 @@ class AdminSettingsService {
       stepSize?: number;
       stepSizePerCurrency?: {
         USD?: number;
-        AMD?: number;
-        RUB?: number;
-        GEL?: number;
       };
     };
     console.log('✅ [ADMIN SERVICE] Price filter settings loaded:', value);
@@ -218,9 +211,6 @@ class AdminSettingsService {
     stepSize?: number | null;
     stepSizePerCurrency?: {
       USD?: number | null;
-      AMD?: number | null;
-      RUB?: number | null;
-      GEL?: number | null;
     } | null;
   }) {
     console.log('⚙️ [ADMIN SERVICE] Updating price filter settings...', data);
@@ -231,9 +221,6 @@ class AdminSettingsService {
       stepSize?: number;
       stepSizePerCurrency?: {
         USD?: number;
-        AMD?: number;
-        RUB?: number;
-        GEL?: number;
       };
     } = {};
     
@@ -247,18 +234,9 @@ class AdminSettingsService {
       value.stepSize = data.stepSize;
     }
     if (data.stepSizePerCurrency) {
-      const cleaned: { USD?: number; AMD?: number; RUB?: number; GEL?: number } = {};
+      const cleaned: { USD?: number } = {};
       if (data.stepSizePerCurrency.USD !== null && data.stepSizePerCurrency.USD !== undefined) {
         cleaned.USD = data.stepSizePerCurrency.USD;
-      }
-      if (data.stepSizePerCurrency.AMD !== null && data.stepSizePerCurrency.AMD !== undefined) {
-        cleaned.AMD = data.stepSizePerCurrency.AMD;
-      }
-      if (data.stepSizePerCurrency.RUB !== null && data.stepSizePerCurrency.RUB !== undefined) {
-        cleaned.RUB = data.stepSizePerCurrency.RUB;
-      }
-      if (data.stepSizePerCurrency.GEL !== null && data.stepSizePerCurrency.GEL !== undefined) {
-        cleaned.GEL = data.stepSizePerCurrency.GEL;
       }
       if (Object.keys(cleaned).length > 0) {
         value.stepSizePerCurrency = cleaned;

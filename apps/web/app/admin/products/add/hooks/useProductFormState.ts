@@ -30,7 +30,7 @@ export function useProductFormState() {
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [useNewCategory, setUseNewCategory] = useState(false);
-  const [defaultCurrency, setDefaultCurrency] = useState<CurrencyCode>('AMD');
+  const [defaultCurrency, setDefaultCurrency] = useState<CurrencyCode>('USD');
   const [productType, setProductType] = useState<'simple' | 'variable'>('variable');
   const [simpleProductData, setSimpleProductData] = useState({
     price: '',

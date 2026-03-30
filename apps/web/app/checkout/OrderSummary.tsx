@@ -3,6 +3,7 @@
 import { Button } from '@shop/ui';
 import { useTranslation } from '../../lib/i18n-client';
 import { formatPriceInCurrency } from '../../lib/currency';
+import type { CurrencyCode } from '../../lib/currency';
 
 interface Cart {
   id: string;
@@ -26,7 +27,7 @@ interface OrderSummaryProps {
     shippingDisplay: number;
     totalDisplay: number;
   };
-  currency: 'USD' | 'AMD' | 'EUR' | 'RUB' | 'GEL';
+  currency: CurrencyCode;
   shippingMethod: 'pickup' | 'delivery';
   shippingCity: string | undefined;
   loadingDeliveryPrice: boolean;

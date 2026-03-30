@@ -102,10 +102,10 @@ export function OrderDetailsItems({
                   </td>
                   <td className="px-3 py-2 text-right">{item.quantity}</td>
                   <td className="px-3 py-2 text-right">
-                    {formatCurrency(item.unitPrice, orderDetails.currency || 'AMD', 'USD')}
+                    {formatCurrency(item.unitPrice, orderDetails.currency || 'USD', 'USD')}
                   </td>
                   <td className="px-3 py-2 text-right">
-                    {formatCurrency(item.total, orderDetails.currency || 'AMD', 'USD')}
+                    {formatCurrency(item.total, orderDetails.currency || 'USD', 'USD')}
                   </td>
                 </tr>
               );

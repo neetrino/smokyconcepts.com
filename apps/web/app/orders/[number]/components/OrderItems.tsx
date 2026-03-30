@@ -2,12 +2,13 @@
 
 import { Card } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
+import type { CurrencyCode } from '../../../../lib/currency';
 import { OrderItem } from './OrderItem';
 import type { OrderItem as OrderItemType } from '../types';
 
 interface OrderItemsProps {
   items: OrderItemType[];
-  currency: 'USD' | 'AMD' | 'EUR' | 'RUB' | 'GEL';
+  currency: CurrencyCode;
 }
 
 export function OrderItems({ items, currency }: OrderItemsProps) {

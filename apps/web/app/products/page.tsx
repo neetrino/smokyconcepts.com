@@ -3,6 +3,18 @@ import { ProductsCatalogView } from './components/ProductsCatalogView';
 
 export const revalidate = 60;
 
+function normalizeBaseUrl(rawUrl?: string): string {
+  if (!rawUrl) return '';
+  const trimmedUrl = rawUrl.trim();
+  if (!trimmedUrl) return '';
+
+  if (/^https?:\/\//i.test(trimmedUrl)) {
+    return trimmedUrl;
+  }
+
+  return `https://${trimmedUrl}`;
+}
+
 interface Product {
   id: string;
   slug: string;
@@ -64,9 +76,9 @@ async function getProducts(
     const queryString = new URLSearchParams(params).toString();
 
     // Fallback chain: NEXT_PUBLIC_APP_URL -> VERCEL_URL -> localhost (for local dev)
-    const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+    const configuredBaseUrl = normalizeBaseUrl(process.env.NEXT_PUBLIC_APP_URL);
+    const vercelBaseUrl = normalizeBaseUrl(process.env.VERCEL_URL);
+    const baseUrl = configuredBaseUrl || vercelBaseUrl || 'http://localhost:3000';
 
     const targetUrl = `${baseUrl}/api/v1/products?${queryString}`;
     console.log("🌐 [PRODUCTS] Fetch products", { targetUrl, baseUrl });

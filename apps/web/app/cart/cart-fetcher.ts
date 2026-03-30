@@ -184,7 +184,7 @@ function buildCartFromItems(validItems: CartItem[]): Cart {
       shipping: 0,
       tax: 0,
       total: subtotal,
-      currency: 'AMD',
+      currency: 'USD',
     },
     itemsCount,
   };

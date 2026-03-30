@@ -16,34 +16,7 @@ interface Settings {
   currencyRates?: Record<string, number>;
 }
 
-// AMD-based UI rates: how much of each currency equals 1 AMD
-interface AmdBasedRates {
-  USD: number; // 1 AMD = X USD
-  EUR: number; // 1 AMD = X EUR
-  RUB: number; // 1 AMD = X RUB
-  GEL: number; // 1 AMD = X GEL
-}
-
-function toAmdBasedRates(usdBasedRates: Record<string, number>): AmdBasedRates {
-  const amdRate = usdBasedRates.AMD ?? 400;
-  return {
-    USD: parseFloat((1 / amdRate).toFixed(6)),
-    EUR: parseFloat(((usdBasedRates.EUR ?? 0.92) / amdRate).toFixed(6)),
-    RUB: parseFloat(((usdBasedRates.RUB ?? 90) / amdRate).toFixed(6)),
-    GEL: parseFloat(((usdBasedRates.GEL ?? 2.7) / amdRate).toFixed(6)),
-  };
-}
-
-function fromAmdBasedRates(amd: AmdBasedRates): Record<string, number> {
-  const amdRate = amd.USD > 0 ? parseFloat((1 / amd.USD).toFixed(2)) : 400;
-  return {
-    USD: 1,
-    AMD: amdRate,
-    EUR: parseFloat((amd.EUR * amdRate).toFixed(4)),
-    RUB: parseFloat((amd.RUB * amdRate).toFixed(2)),
-    GEL: parseFloat((amd.GEL * amdRate).toFixed(4)),
-  };
-}
+const USD_ONLY_RATES: Record<string, number> = { USD: 1 };
 
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -52,20 +25,8 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState<Settings>({
-    defaultCurrency: 'AMD',
-    currencyRates: {
-      USD: 1,
-      AMD: 400,
-      EUR: 0.92,
-      RUB: 90,
-      GEL: 2.7,
-    },
-  });
-  const [amdRates, setAmdRates] = useState<AmdBasedRates>({
-    USD: 0.0025,
-    EUR: 0.0023,
-    RUB: 0.225,
-    GEL: 0.00675,
+    defaultCurrency: 'USD',
+    currencyRates: USD_ONLY_RATES,
   });
 
   useEffect(() => {
@@ -88,21 +49,19 @@ export default function SettingsPage() {
       setLoading(true);
       console.log('⚙️ [ADMIN] Fetching settings...');
       const data = await apiClient.get<Settings>('/api/v1/admin/settings');
-      const usdRates = data.currencyRates || { USD: 1, AMD: 400, EUR: 0.92, RUB: 90, GEL: 2.7 };
+      const usdRates = data.currencyRates || USD_ONLY_RATES;
       setSettings({
-        defaultCurrency: data.defaultCurrency || 'AMD',
+        defaultCurrency: data.defaultCurrency || 'USD',
         globalDiscount: data.globalDiscount,
         categoryDiscounts: data.categoryDiscounts,
         brandDiscounts: data.brandDiscounts,
         currencyRates: usdRates,
       });
-      setAmdRates(toAmdBasedRates(usdRates));
       console.log('✅ [ADMIN] Settings loaded:', data);
     } catch (err: any) {
       console.error('❌ [ADMIN] Error fetching settings:', err);
-      const defaultRates = { USD: 1, AMD: 400, EUR: 0.92, RUB: 90, GEL: 2.7 };
-      setSettings({ defaultCurrency: 'AMD', currencyRates: defaultRates });
-      setAmdRates(toAmdBasedRates(defaultRates));
+      const defaultRates = USD_ONLY_RATES;
+      setSettings({ defaultCurrency: 'USD', currencyRates: defaultRates });
     } finally {
       setLoading(false);
     }
@@ -113,8 +72,7 @@ export default function SettingsPage() {
     try {
       console.log('⚙️ [ADMIN] Saving settings...', settings);
 
-      // Convert AMD-based UI rates back to USD-based rates for storage
-      const currencyRatesToSave = fromAmdBasedRates(amdRates);
+      const currencyRatesToSave = USD_ONLY_RATES;
 
       await apiClient.put('/api/v1/admin/settings', {
         defaultCurrency: settings.defaultCurrency,
@@ -211,13 +169,11 @@ export default function SettingsPage() {
                 {t('admin.settings.defaultCurrency')}
               </label>
               <select 
-                value={settings.defaultCurrency || 'AMD'}
+                value={settings.defaultCurrency || 'USD'}
                 onChange={(e) => setSettings({ ...settings, defaultCurrency: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="AMD">{t('admin.settings.amd')}</option>
                 <option value="USD">{t('admin.settings.usd')}</option>
-                <option value="EUR">{t('admin.settings.eur')}</option>
               </select>
             </div>
             <div>
@@ -236,125 +192,9 @@ export default function SettingsPage() {
         {/* Currency Exchange Rates */}
         <Card className="p-6 mb-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('admin.settings.currencyRates')}</h2>
-          <p className="text-sm text-gray-600 mb-4">
-            Մուտքագրեք, թե 1 AMD-ն ինչ արժե մյուս արժույթներով:
+          <p className="text-sm text-gray-600">
+            USD fixed as the only available currency. Exchange rates are disabled.
           </p>
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  AMD (Armenian Dram)
-                </label>
-                <input
-                  type="number"
-                  value={1}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 cursor-not-allowed"
-                  disabled
-                />
-                <p className="text-xs text-gray-500 mt-1">Հիմնական արժույթ (Base Currency)</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  1 AMD = ? USD
-                </label>
-                <input
-                  type="number"
-                  step="0.000001"
-                  min="0.000001"
-                  value={amdRates.USD}
-                  onChange={(e) => {
-                    const v = parseFloat(e.target.value);
-                    if (!isNaN(v) && v > 0) setAmdRates({ ...amdRates, USD: v });
-                  }}
-                  onBlur={(e) => {
-                    if (!e.target.value || parseFloat(e.target.value) <= 0) {
-                      setAmdRates({ ...amdRates, USD: 0.0025 });
-                    }
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="0.0025"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  1 USD = {amdRates.USD > 0 ? (1 / amdRates.USD).toFixed(0) : '—'} AMD
-                </p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  1 AMD = ? EUR
-                </label>
-                <input
-                  type="number"
-                  step="0.000001"
-                  min="0.000001"
-                  value={amdRates.EUR}
-                  onChange={(e) => {
-                    const v = parseFloat(e.target.value);
-                    if (!isNaN(v) && v > 0) setAmdRates({ ...amdRates, EUR: v });
-                  }}
-                  onBlur={(e) => {
-                    if (!e.target.value || parseFloat(e.target.value) <= 0) {
-                      setAmdRates({ ...amdRates, EUR: 0.0023 });
-                    }
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="0.0023"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  1 EUR = {amdRates.EUR > 0 ? (1 / amdRates.EUR).toFixed(0) : '—'} AMD
-                </p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  1 AMD = ? RUB
-                </label>
-                <input
-                  type="number"
-                  step="0.0001"
-                  min="0.0001"
-                  value={amdRates.RUB}
-                  onChange={(e) => {
-                    const v = parseFloat(e.target.value);
-                    if (!isNaN(v) && v > 0) setAmdRates({ ...amdRates, RUB: v });
-                  }}
-                  onBlur={(e) => {
-                    if (!e.target.value || parseFloat(e.target.value) <= 0) {
-                      setAmdRates({ ...amdRates, RUB: 0.225 });
-                    }
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="0.225"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  1 RUB = {amdRates.RUB > 0 ? (1 / amdRates.RUB).toFixed(1) : '—'} AMD
-                </p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  1 AMD = ? GEL
-                </label>
-                <input
-                  type="number"
-                  step="0.000001"
-                  min="0.000001"
-                  value={amdRates.GEL}
-                  onChange={(e) => {
-                    const v = parseFloat(e.target.value);
-                    if (!isNaN(v) && v > 0) setAmdRates({ ...amdRates, GEL: v });
-                  }}
-                  onBlur={(e) => {
-                    if (!e.target.value || parseFloat(e.target.value) <= 0) {
-                      setAmdRates({ ...amdRates, GEL: 0.00675 });
-                    }
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="0.00675"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  1 GEL = {amdRates.GEL > 0 ? (1 / amdRates.GEL).toFixed(0) : '—'} AMD
-                </p>
-              </div>
-            </div>
-          </div>
         </Card>
 
         {/* Actions */}

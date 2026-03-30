@@ -1,12 +1,13 @@
 import { useMemo } from 'react';
 import { convertPrice } from '../../../lib/currency';
+import type { CurrencyCode } from '../../../lib/currency';
 import type { Cart } from '../types';
 
 interface UseOrderSummaryProps {
   cart: Cart | null;
   shippingMethod: 'pickup' | 'delivery';
   deliveryPrice: number | null;
-  currency: 'USD' | 'AMD' | 'EUR' | 'RUB' | 'GEL';
+  currency: CurrencyCode;
 }
 
 export function useOrderSummary({
@@ -34,10 +35,10 @@ export function useOrderSummary({
     const shippingAMD = shippingMethod === 'delivery' && deliveryPrice !== null ? deliveryPrice : 0;
     const totalAMD = subtotalAMD + taxAMD + shippingAMD;
     
-    const subtotalDisplay = currency === 'AMD' ? subtotalAMD : convertPrice(subtotalAMD, 'AMD', currency);
-    const taxDisplay = currency === 'AMD' ? taxAMD : convertPrice(taxAMD, 'AMD', currency);
-    const shippingDisplay = currency === 'AMD' ? shippingAMD : convertPrice(shippingAMD, 'AMD', currency);
-    const totalDisplay = currency === 'AMD' ? totalAMD : convertPrice(totalAMD, 'AMD', currency);
+    const subtotalDisplay = convertPrice(subtotalAMD, 'AMD', currency);
+    const taxDisplay = convertPrice(taxAMD, 'AMD', currency);
+    const shippingDisplay = convertPrice(shippingAMD, 'AMD', currency);
+    const totalDisplay = convertPrice(totalAMD, 'AMD', currency);
     
     return {
       subtotalAMD,

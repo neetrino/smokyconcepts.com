@@ -7,6 +7,7 @@ import { ContactInformation } from './ContactInformation';
 import { CardInputFields } from './CardInputFields';
 import { OrderSummaryModal } from './OrderSummaryModal';
 import { CheckoutFormData, Cart } from '../types';
+import type { CurrencyCode } from '../../../lib/currency';
 
 interface ShippingAddressModalProps {
   isOpen: boolean;
@@ -25,7 +26,7 @@ interface ShippingAddressModalProps {
     shippingDisplay: number;
     totalDisplay: number;
   };
-  currency: 'USD' | 'AMD' | 'EUR' | 'RUB' | 'GEL';
+  currency: CurrencyCode;
   shippingCity?: string;
   loadingDeliveryPrice: boolean;
   deliveryPrice: number | null;

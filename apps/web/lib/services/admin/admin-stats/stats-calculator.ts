@@ -54,7 +54,7 @@ export async function getStats() {
   });
 
   const totalRevenue = completedOrders.reduce((sum: number, order: { total: number; currency: string | null }) => sum + order.total, 0);
-  const currency = completedOrders[0]?.currency || "AMD";
+  const currency = completedOrders[0]?.currency || "USD";
 
   return {
     users: {

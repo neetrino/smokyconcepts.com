@@ -69,7 +69,7 @@ export function OrderDetailsSummary({
         const totalDisplay = currency === 'AMD' ? totalAMD : convertPrice(totalAMD, 'AMD', currency as CurrencyCode);
         return formatPriceInCurrency(totalDisplay, currency as CurrencyCode);
       })()
-    : formatCurrency(orderDetails.total, (orderDetails.currency || 'AMD') as CurrencyCode, 'USD');
+    : formatCurrency(orderDetails.total, (orderDetails.currency || 'USD') as CurrencyCode, 'USD');
 
   return (
     <Card className="p-4 md:p-5">
