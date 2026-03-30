@@ -1,0 +1,370 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================
+// USER MODEL
+// ============================================
+model User {
+  id                   String    @id @default(cuid())
+  email                String?   @unique
+  phone                String?   @unique
+  passwordHash         String?
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
+  firstName            String?
+  lastName             String?
+  emailVerified        Boolean   @default(false)
+  phoneVerified        Boolean   @default(false)
+  locale               String    @default("en")
+  blocked              Boolean   @default(false)
+  roles                String[]  @default(["customer"])
+  addresses            Address[]
+  deletedAt            DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  // Relations
+  orders      Order[]
+  votingLikes VotingLike[]
+
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model Address {
+  id           String  @id @default(cuid())
+  userId       String
+  firstName    String?
+  lastName     String?
+  company      String?
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  state        String?
+  postalCode   String?
+  countryCode  String  @default("AM")
+  phone        String?
+  isDefault    Boolean @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("addresses")
+}
+
+// ============================================
+// CATEGORY MODEL
+// ============================================
+model Category {
+  id            String                @id @default(cuid())
+  parentId      String?
+  position      Int                   @default(0)
+  published     Boolean               @default(false)
+  requiresSizes Boolean               @default(false)
+  media         Json[]                @default([])
+  translations  CategoryTranslation[]
+  deletedAt     DateTime?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  // Relations
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  products Product[]  @relation("ProductCategories")
+
+  @@index([parentId])
+  @@index([published])
+  @@index([deletedAt])
+  @@map("categories")
+}
+
+model CategoryTranslation {
+  id             String  @id @default(cuid())
+  categoryId     String
+  locale         String
+  title          String
+  slug           String
+  fullPath       String
+  description    String?
+  seoTitle       String?
+  seoDescription String?
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, locale])
+  @@index([slug, locale])
+  @@map("category_translations")
+}
+
+// ============================================
+// PRODUCT MODEL
+// ============================================
+model Product {
+  id                String               @id @default(cuid())
+  skuPrefix         String?
+  media             Json[]               @default([])
+  published         Boolean              @default(false)
+  featured          Boolean              @default(false)
+  upcoming          Boolean              @default(false)
+  publishedAt       DateTime?
+  translations      ProductTranslation[]
+  categoryIds        String[]
+  primaryCategoryId String?
+  variants          ProductVariant[]
+  labels            ProductLabel[]
+  discountPercent   Int                  @default(0)
+  deletedAt         DateTime?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  // Relations
+  categories Category[]     @relation("ProductCategories")
+
+  @@index([published, publishedAt])
+  @@index([featured])
+  @@index([upcoming])
+  @@index([deletedAt])
+  @@map("products")
+}
+
+model ProductTranslation {
+  id              String  @id @default(cuid())
+  productId       String
+  locale          String
+  title           String
+  slug            String
+  subtitle        String?
+  descriptionHtml String? @db.Text
+  seoTitle        String?
+  seoDescription  String?
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, locale])
+  @@index([slug, locale])
+  @@map("product_translations")
+}
+
+model ProductVariant {
+  id             String                 @id @default(cuid())
+  productId      String
+  sku            String?                @unique
+  barcode        String?
+  price          Float
+  compareAtPrice Float?
+  cost           Float?
+  stock          Int                    @default(0)
+  stockReserved  Int                    @default(0)
+  weightGrams    Int?
+  imageUrl       String?
+  position       Int                    @default(0)
+  published      Boolean                @default(true)
+  attributes     Json?     // JSONB: optional display data
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  @@index([productId])
+  @@map("product_variants")
+}
+
+model ProductLabel {
+  id        String  @id @default(cuid())
+  productId String
+  type      String // 'text' | 'percentage'
+  value     String
+  position  String  @default("top-left") // 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
+  color     String?
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_labels")
+}
+
+// ============================================
+// ORDER MODEL
+// ============================================
+model Order {
+  id                String       @id @default(cuid())
+  number            String       @unique
+  userId            String?
+  status            String       @default("pending")
+  paymentStatus     String       @default("pending")
+  fulfillmentStatus String       @default("unfulfilled")
+  subtotal          Float
+  discountAmount    Float        @default(0)
+  shippingAmount    Float        @default(0)
+  taxAmount         Float        @default(0)
+  total             Float
+  currency          String       @default("AMD")
+  customerEmail     String?
+  customerPhone     String?
+  customerLocale    String       @default("en")
+  billingAddress    Json?
+  shippingAddress   Json?
+  shippingMethod    String?
+  trackingNumber    String?
+  notes             String?      @db.Text
+  adminNotes        String?      @db.Text
+  ipAddress         String?
+  userAgent         String?
+  paidAt            DateTime?
+  fulfilledAt       DateTime?
+  cancelledAt       DateTime?
+  items             OrderItem[]
+  payments          Payment[]
+  events            OrderEvent[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status, createdAt(sort: Desc)])
+  @@index([customerEmail])
+  @@index([createdAt(sort: Desc)])
+  @@map("orders")
+}
+
+model OrderItem {
+  id           String  @id @default(cuid())
+  orderId      String
+  variantId    String?
+  productTitle String
+  variantTitle String?
+  sku          String
+  quantity     Int
+  price        Float
+  total        Float
+  imageUrl     String?
+
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@map("order_items")
+}
+
+model Payment {
+  id                    String    @id @default(cuid())
+  orderId               String
+  provider              String
+  providerTransactionId String?
+  method                String?
+  amount                Float
+  currency              String    @default("AMD")
+  status                String    @default("pending")
+  cardLast4             String?
+  cardBrand             String?
+  errorCode             String?
+  errorMessage          String?
+  providerResponse      Json?
+  idempotencyKey        String?
+  completedAt           DateTime?
+  failedAt              DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model OrderEvent {
+  id        String   @id @default(cuid())
+  orderId   String
+  type      String
+  data      Json?
+  userId    String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_events")
+}
+
+// ============================================
+// SETTINGS MODEL
+// ============================================
+model Settings {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+  @@map("settings")
+}
+
+// ============================================
+// CONTACT MESSAGE MODEL
+// ============================================
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt(sort: Desc)])
+  @@index([email])
+  @@map("contact_messages")
+}
+
+// ============================================
+// PRODUCT UPDATE SUBSCRIBER (Notify Me)
+// ============================================
+model ProductUpdateSubscriber {
+  id        String   @id @default(cuid())
+  email     String
+  name      String?
+  createdAt DateTime @default(now())
+
+  @@unique([email])
+  @@index([createdAt(sort: Desc)])
+  @@map("product_update_subscribers")
+}
+
+model VotingItem {
+  id        String       @id @default(cuid())
+  title     String
+  imageUrl  String
+  deletedAt DateTime?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  likes VotingLike[]
+
+  @@index([deletedAt])
+  @@index([createdAt(sort: Desc)])
+  @@map("voting_items")
+}
+
+model VotingLike {
+  id        String   @id @default(cuid())
+  itemId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  item VotingItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, userId])
+  @@index([itemId])
+  @@index([userId])
+  @@index([createdAt(sort: Desc)])
+  @@map("voting_likes")
+}

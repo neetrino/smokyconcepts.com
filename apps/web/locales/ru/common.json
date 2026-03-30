@@ -1,0 +1,150 @@
+{
+  "buttons": {
+    "addToCart": "Добавить в корзину",
+    "viewProduct": "Посмотреть товар",
+    "viewDetails": "Посмотреть детали",
+    "browseProducts": "Просмотреть товары",
+    "proceedToCheckout": "Перейти к оформлению",
+    "remove": "Удалить",
+    "submit": "Отправить",
+    "cancel": "Отмена",
+    "login": "Войти",
+    "register": "Зарегистрироваться",
+    "search": "Поиск",
+    "shop": "В магазин",
+    "shopNow": "Купить сейчас",
+    "viewMore": "Узнать больше",
+    "close": "Закрыть"
+  },
+  "navigation": {
+    "home": "Главная",
+    "products": "Товары",
+    "categories": "Категории",
+    "cart": "Корзина",
+    "checkout": "Оформление заказа",
+    "profile": "Профиль",
+    "orders": "Заказы",
+    "login": "Войти",
+    "register": "Зарегистрироваться",
+    "about": "О нас",
+    "contact": "Контакты",
+    "admin": "Админ",
+    "adminPanel": "Панель администратора",
+    "logout": "Выйти",
+    "faq": "FAQ",
+    "shipping": "Доставка",
+    "returns": "Возвраты",
+    "support": "Поддержка",
+    "privacy": "Конфиденциальность",
+    "terms": "Условия",
+    "cookies": "Файлы cookie",
+    "delivery": "Доставка",
+    "stores": "Магазины"
+  },
+  "stock": {
+    "inStock": "В наличии",
+    "outOfStock": "Нет в наличии"
+  },
+  "cart": {
+    "title": "Корзина покупок",
+    "empty": "Ваша корзина пуста",
+    "orderSummary": "Итоги заказа",
+    "subtotal": "Промежуточный итог",
+    "shipping": "Доставка",
+    "tax": "Налог",
+    "total": "Итого",
+    "free": "Бесплатно",
+    "items": "товаров",
+    "item": "товар"
+  },
+  "messages": {
+    "addedToCart": "Добавлено в корзину",
+    "removedFromCart": "Удалено из корзины",
+    "errorAddingToCart": "Ошибка при добавлении в корзину",
+    "loading": "Загрузка...",
+    "loadingFilters": "Загрузка фильтров...",
+    "noImage": "Нет изображения",
+    "noProductsFound": "Товары не найдены",
+    "selectColor": "Пожалуйста, выберите цвет",
+    "selectSize": "Пожалуйста, выберите размер",
+    "selectColorAndSize": "Пожалуйста, выберите размер и цвет",
+    "selectOptions": "Выберите опции",
+    "adding": "Добавление...",
+    "pcs": "шт",
+    "invalidProduct": "Недействительный товар. Пожалуйста, обновите страницу и попробуйте снова.",
+    "noVariantsAvailable": "Нет доступных вариантов",
+    "stockExceeded": "Доступное количество составляет {stock} шт. Вы не можете добавить больше:",
+    "quantityUpdated": "Количество обновлено",
+    "failedToUpdateQuantity": "Не удалось обновить количество",
+    "stockInsufficient": "Доступное количество недостаточно",
+    "availableQuantity": "Доступное количество составляет {stock} шт",
+    "addQuantity": "Добавить количество",
+    "product": "Товар",
+    "quantity": "Количество",
+    "subtotal": "Промежуточный итог",
+    "sku": "Артикул"
+  },
+  "alerts": {
+    "invalidProduct": "Недействительный товар. Пожалуйста, обновите страницу и попробуйте снова.",
+    "noVariantsAvailable": "Нет доступных вариантов",
+    "stockExceeded": "Доступное количество составляет {stock} шт. Вы не можете добавить больше:",
+    "stockInsufficient": "Доступное количество недостаточно: {message}",
+    "noMoreStockAvailable": "Больше нет товара в наличии",
+    "productNotFound": "Товар не найден. Пожалуйста, обновите страницу и попробуйте снова.",
+    "failedToAddToCart": "Не удалось добавить товар в корзину. Пожалуйста, попробуйте снова."
+  },
+  "ariaLabels": {
+    "addToCart": "Добавить в корзину",
+    "removeFromCart": "Удалить из корзины",
+    "outOfStock": "Нет в наличии",
+    "search": "Поиск",
+    "searchPlaceholder": "Поиск товаров",
+    "openMenu": "Открыть меню навигации",
+    "closeMenu": "Закрыть меню навигации",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "linkedin": "LinkedIn",
+    "color": "Цвет: {color}",
+    "previousImage": "Предыдущее изображение",
+    "nextImage": "Следующее изображение",
+    "goToSlide": "Перейти к слайду {number}",
+    "previousThumbnail": "Предыдущая миниатюра",
+    "nextThumbnail": "Следующая миниатюра",
+    "fullscreenImage": "Полноэкранное изображение"
+  },
+  "placeholders": {
+    "search": "Поиск товаров"
+  },
+  "defaults": {
+    "category": "Бакалея"
+  },
+  "footer": {
+    "shop": "Магазин",
+    "description": "Профессиональная платформа электронной коммерции для современного опыта покупок.",
+    "quickLinks": "Быстрые ссылки",
+    "legal": "Юридическая информация",
+    "contactInfo": "Контактная информация",
+    "privacyPolicy": "Политика конфиденциальности",
+    "termsOfService": "Условия использования",
+    "cookiePolicy": "Политика использования файлов cookie",
+    "refundPolicy": "Политика возврата",
+    "deliveryTerms": "Условия доставки",
+    "copyright": "© {year} Shop. Все права защищены.",
+    "paymentMethods": "Способы оплаты:"
+  },
+  "product": {
+    "product": "товар",
+    "products": "товаров"
+  },
+  "pagination": {
+    "previous": "Предыдущая",
+    "next": "Следующая",
+    "pageOf": "Страница {page} из {totalPages}"
+  },
+  "notFound": {
+    "title": "Страница не найдена",
+    "description": "Страница, которую вы ищете, не существует или была перемещена.",
+    "goHome": "На главную"
+  }
+}
+

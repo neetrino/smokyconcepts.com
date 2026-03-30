@@ -1,0 +1,123 @@
+{
+  "homepage": {
+    "common": {
+      "retry": "Retry"
+    },
+    "hero": {
+      "title": "We Make Concepts Real",
+      "description": "Premium accessories that redefine your rituals.",
+      "imageAlt": "Hero",
+      "slideAriaPrefix": "Slide"
+    },
+    "packFit": {
+      "title": "Will it fit mine?",
+      "description": "Pack names are standard. Dimensions aren’t. We make precise versions that match yours",
+      "cta": "Check Availability",
+      "items": {
+        "ultraSlims": { "title": "Ultra Slims", "subtitle": "3 versions" },
+        "compact": { "title": "Compact", "subtitle": "3 versions" },
+        "superSlims": { "title": "Super Slims", "subtitle": "3 versions" },
+        "slims": { "title": "Slims", "subtitle": "3 versions" },
+        "kingSize": { "title": "King Size", "subtitle": "" },
+        "sticks": { "title": "Sticks", "subtitle": "" }
+      }
+    },
+    "coverCollections": {
+      "title": "Cover Collections"
+    },
+    "ritual": {
+      "title": "Your Ritual\nYour Signature",
+      "description": "Personalize your Smoky Cover. A small detail. A clear message.",
+      "bannerAlt": "Crafting ritual",
+      "cta": "Personalize",
+      "steps": {
+        "apply": { "title": "Apply", "description": "Submit the form." },
+        "consultation": { "title": "Consultation", "description": "We reach out to refine your vision." },
+        "designAndMaterials": { "title": "Design & Materials", "description": "You define, we turn imagination into form." },
+        "packagingAndDelivery": { "title": "Packaging & Delivery", "description": "Your 1 of 1, crafted and delivered." }
+      }
+    },
+    "bringing": {
+      "title": "Bringing Concepts to Life.",
+      "imageAltLeft": "Concept tools",
+      "imageAltRight": "Craft details",
+      "moreLabel": "More",
+      "paragraphs": {
+        "first": "Smoky Concepts brings fresh ideas into real life. We study everyday rituals, find what’s missing, and design the piece that feels right, more beautiful, more personal, more you.",
+        "second": "Our first concept is Covering. Starting with Smoky Covers for cigarette packs, then taking it to other everyday objects, our way.",
+        "third": "We transform what you already use into something you’ll love to hold.",
+        "fourthPrefix": "Engineering meets handcraft to build pieces you’ll keep as part of your ritual.",
+        "fifth": "Now you know the philosophy. Meet what’s coming."
+      }
+    },
+    "behindCreation": {
+      "title": "Behind the Creation",
+      "description": "Technology gives it form. Living materials give it soul. Crafted into something you carry daily.",
+      "imageAlt": "Behind the creation",
+      "youtubeAlt": "YouTube",
+      "cta": "Deep Dive"
+    },
+    "trending": {
+      "title": "Trending",
+      "loadError": "Failed to load featured products.",
+      "noFeatured": "No featured products yet.",
+      "shopCta": "Shop",
+      "buyCta": "Buy",
+      "previousAria": "Previous",
+      "nextAria": "Next"
+    },
+    "upcoming": {
+      "title": "Upcoming",
+      "loadError": "Failed to load upcoming products.",
+      "noUpcoming": "No upcoming products yet.",
+      "shopCta": "Shop",
+      "paginationAria": "Upcoming products pagination",
+      "pageAriaPrefix": "Page"
+    },
+    "culture": {
+      "title": "Your Voice Shapes Culture",
+      "description": "Culture moves when people take part. Your choice brings concepts to life, be part of the creation and get early access.",
+      "loadError": "Failed to load voting items.",
+      "updateError": "Failed to update vote.",
+      "loginPrompt": "Please log in to vote.",
+      "labels": {
+        "kingSize": "King Size",
+        "compact": "Compact",
+        "special": "Special",
+        "classic": "Classic",
+        "atelier": "Atelier",
+        "earlyAccess": "Early Access"
+      }
+    },
+    "upcomingLines": {
+      "title": "Upcoming Product Lines",
+      "description": "The Covering concept expands: Smoky Covers for money, phones, laptops, documents, keys, Knifes, and more. Next up, and it’s going to be special.",
+      "cta": "Notify Me",
+      "cards": {
+        "notebooks": "Notebooks",
+        "knifes": "Knifes",
+        "phones": "Phones",
+        "wallets": "Wallets",
+        "documents": "Documents",
+        "keys": "Keys"
+      }
+    },
+    "sayHi": {
+      "title": "Say Hi",
+      "description": "Have a question, an idea, or a collaboration in mind?",
+      "cta": "Reach Out"
+    },
+    "footer": {
+      "contactTitle": "Contact info",
+      "designedBy": "Designed by",
+      "whatsappLabel": "whatsup :",
+      "copyright": "Copyright© 2026. All Rights Reserved.",
+      "links": {
+        "privacy": "Privacy Policy",
+        "terms": "Terms and conditions",
+        "deliveryTerms": "Delivery Terms",
+        "refund": "Refund Policy"
+      }
+    }
+  }
+}

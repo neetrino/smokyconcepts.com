@@ -1,0 +1,82 @@
+{
+  "title": "Privacy Policy",
+  "intro": {
+    "p1": "By visiting the website smokyconcepts.com (hereinafter referred to as the “Website”) and making purchases, you automatically consent to the collection, processing, and use of your personal data.",
+    "p2": "By \"Personal Data,\" we mean any information that allows or may allow us to directly or indirectly identify your identity, such as your name, surname, address, email, phone number, and other data (hereinafter referred to as \"Data\").",
+    "p3": "In this Privacy Policy, \"we,\" \"us,\" and \"our\" refer to Website (for more information, please visit the \"About Us\" section), while \"you,\" \"your,\" and \"yours\" refer to any individual who visits the Website or uses our services."
+  },
+  "sections": {
+    "collectedData": {
+      "title": "1. Collected Data",
+      "intro": "We may collect the following types of information:",
+      "bullets": {
+        "contact": "Contact information – name, surname, address, phone number, email address",
+        "purchase": "Purchase information – products purchased, payment methods",
+        "technical": "Technical information – device type, browser, operating system",
+        "cookies": "Cookies and tracking technologies – for website usage analysis"
+      }
+    },
+    "dataUsage": {
+      "title": "2. Use of Data",
+      "intro": "Collected data is never sold or provided to third parties for marketing purposes. It is used only for the following purposes:",
+      "bullets": {
+        "orders": "Processing and shipping orders",
+        "support": "Providing user support",
+        "improve": "Improving website functionality",
+        "legal": "Complying with legal requirements"
+      }
+    },
+    "retention": {
+      "title": "3. Data Retention Periods",
+      "intro": "Your personal data is stored as follows:",
+      "bullets": {
+        "account": "User account data – as long as the account is active",
+        "history": "Purchase history – 5 years (to comply with tax and accounting regulations)",
+        "marketing": "Marketing data – 2 years or until the user opts out"
+      }
+    },
+    "security": {
+      "title": "4. Data Security",
+      "intro": "We implement appropriate technical and organizational measures to ensure the protection of your data, including:",
+      "bullets": {
+        "ssl": "SSL encryption – to secure payment and personal data transmission",
+        "access": "Access control – limited access to personal data",
+        "audits": "Regular audits – to detect potential security vulnerabilities"
+      }
+    },
+    "sharing": {
+      "title": "5. Sharing Data with Third Parties",
+      "intro": "We do not sell or provide your data to third parties, except for:",
+      "bullets": {
+        "shipping": "Shipping services – to ensure order delivery",
+        "payment": "Payment systems – for secure payment processing",
+        "law": "Law enforcement authorities – in cases required by law"
+      },
+      "outro": "All third parties are obligated to protect your data and cannot use it for other purposes."
+    },
+    "rights": {
+      "title": "6. User Rights",
+      "intro": "You have the right to:",
+      "bullets": {
+        "copy": "Receive a copy of your personal data",
+        "editDelete": "Edit or delete your data (through our website settings or customer support)",
+        "unsubscribe": "Opt-out of marketing emails (via the \"unsubscribe\" link in each email)",
+        "restrict": "Request that your data is not processed for specific purposes, except in cases required by law"
+      }
+    },
+    "cookies": {
+      "title": "7. Cookies Usage",
+      "intro": "Our website uses cookies to optimize user experience. We use:",
+      "bullets": {
+        "functional": "Functional cookies – to ensure proper website operation",
+        "analytics": "Analytical cookies – to understand user behavior and improve the website",
+        "marketing": "Marketing cookies (only with your consent) – to provide more relevant advertisements"
+      },
+      "outro": ""
+    },
+    "changes": {
+      "title": "8. Policy Changes",
+      "intro": "We reserve the right to make legally permitted changes to this page and the above sections. Updates will be posted on the Website."
+    }
+  }
+}

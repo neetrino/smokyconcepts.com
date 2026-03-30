@@ -1,0 +1,29 @@
+{
+  "details_title": "Детали товара",
+  "related_products_title": "Рекомендации",
+  "specifications_title": "Характеристики",
+  "description_title": "Описание",
+  "shipping_title": "Доставка",
+  "color": "Цвет",
+  "size": "Размер",
+  "quantity": "Количество",
+  "addToCart": "Добавить в корзину",
+  "buy_now": "Купить",
+  "choose_size": "Выбрать размер",
+  "outOfStock": "Нет в наличии",
+  "selectColor": "Пожалуйста, выберите цвет",
+  "selectSize": "Пожалуйста, выберите размер",
+  "selectColorAndSize": "Пожалуйста, выберите размер и цвет",
+  "selectOptions": "Выберите опции",
+  "adding": "Добавление...",
+  "addedToCart": "Добавлено в корзину",
+  "errorAddingToCart": "Ошибка при добавлении в корзину",
+  "description_empty": "Описание скоро появится.",
+  "pcs": "шт",
+  "outOfStockLabel": "Нет в наличии",
+  "noRelatedProducts": "Нет рекомендаций"
+}
+
+
+
+

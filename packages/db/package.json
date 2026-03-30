@@ -1,0 +1,26 @@
+{
+  "name": "@white-shop/db",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "db:generate": "node scripts/generate-with-env.js",
+    "db:push": "npx prisma@5.22.0 db push",
+    "db:migrate": "npx prisma@5.22.0 migrate dev",
+    "db:migrate:deploy": "npx prisma@5.22.0 migrate deploy",
+    "db:studio": "npx prisma@5.22.0 studio",
+    "db:seed": "npx prisma@5.22.0 db seed",
+    "postinstall": "node scripts/generate-with-env.js"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.cjs"
+  },
+  "dependencies": {
+    "@prisma/client": "5.22.0"
+  },
+  "devDependencies": {
+    "prisma": "5.22.0"
+  }
+}
+

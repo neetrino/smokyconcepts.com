@@ -1,0 +1,29 @@
+{
+  "details_title": "Ապրանքի մանրամասներ",
+  "related_products_title": "Առաջարկներ",
+  "specifications_title": "Տեխնիկական բնութագրեր",
+  "description_title": "Նկարագրություն",
+  "shipping_title": "Առաքում",
+  "color": "Գույն",
+  "size": "Չափ",
+  "quantity": "Քանակ",
+  "addToCart": "Ավելացնել զամբյուղ",
+  "buy_now": "Գնել",
+  "choose_size": "Ընտրել չափը",
+  "outOfStock": "Արտադրված",
+  "selectColor": "Խնդրում ենք ընտրել գույն",
+  "selectSize": "Խնդրում ենք ընտրել չափ",
+  "selectColorAndSize": "Խնդրում ենք ընտրել գույն և չափ",
+  "selectOptions": "Ընտրել ընտրանքներ",
+  "adding": "Ավելացվում է...",
+  "addedToCart": "Ավելացվեց զամբյուղ",
+  "errorAddingToCart": "Սխալ ավելացնելիս",
+  "description_empty": "Նկարագրությունը շուտով կհասանելի լինի։",
+  "pcs": "հատ",
+  "outOfStockLabel": "Արտադրված",
+  "noRelatedProducts": "Առաջարկներ չկան"
+}
+
+
+
+

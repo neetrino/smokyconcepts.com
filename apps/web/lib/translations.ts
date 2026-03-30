@@ -1,0 +1,237 @@
+// Translation utilities
+import { getStoredLanguage, type LanguageCode } from './language';
+
+export const translations = {
+  en: {
+    stock: {
+      inStock: 'In Stock',
+      outOfStock: 'Out of Stock',
+    },
+    cart: {
+      title: 'Shopping Cart',
+      empty: 'Your cart is empty',
+      orderSummary: 'Order Summary',
+      subtotal: 'Subtotal',
+      shipping: 'Shipping',
+      tax: 'Tax',
+      total: 'Total',
+      free: 'Free',
+      proceedToCheckout: 'Proceed to Checkout',
+      remove: 'Remove',
+      items: 'items',
+      item: 'item',
+    },
+    product: {
+      addToCart: 'Add to Cart',
+      viewProduct: 'View Product',
+      viewDetails: 'View Details',
+      productInformation: 'Product Information',
+      browseProducts: 'Browse Products',
+    },
+    breadcrumb: {
+      home: 'Home',
+      products: 'Products',
+      categories: 'Categories',
+      cart: 'Cart',
+      checkout: 'Checkout',
+      profile: 'Profile',
+      orders: 'Orders',
+      login: 'Login',
+      register: 'Register',
+      about: 'About',
+      contact: 'Contact',
+      admin: 'Admin',
+      faq: 'FAQ',
+      shipping: 'Shipping',
+      returns: 'Returns',
+      support: 'Support',
+      privacy: 'Privacy',
+      terms: 'Terms',
+      cookies: 'Cookies',
+      delivery: 'Delivery',
+      stores: 'Stores',
+    },
+  },
+  hy: {
+    stock: {
+      inStock: 'Պահեստում',
+      outOfStock: 'Արտադրված',
+    },
+    cart: {
+      title: 'Գնումների զամբյուղ',
+      empty: 'Ձեր զամբյուղը դատարկ է',
+      orderSummary: 'Պատվերի ամփոփում',
+      subtotal: 'Ենթագումար',
+      shipping: 'Առաքում',
+      tax: 'Հարկ',
+      total: 'Ընդամենը',
+      free: 'Անվճար',
+      proceedToCheckout: 'Անցնել վճարման',
+      remove: 'Հեռացնել',
+      items: 'ապրանք',
+      item: 'ապրանք',
+    },
+    product: {
+      addToCart: 'Ավելացնել զամբյուղ',
+      viewProduct: 'Դիտել ապրանքը',
+      viewDetails: 'Դիտել մանրամասները',
+      productInformation: 'Ապրանքի տեղեկություն',
+      browseProducts: 'Դիտել ապրանքները',
+    },
+    breadcrumb: {
+      home: 'Գլխավոր',
+      products: 'Ապրանքներ',
+      categories: 'Կատեգորիաներ',
+      cart: 'Զամբյուղ',
+      checkout: 'Վճարում',
+      profile: 'Պրոֆիլ',
+      orders: 'Պատվերներ',
+      login: 'Մուտք',
+      register: 'Գրանցում',
+      about: 'Մեր մասին',
+      contact: 'Կապ',
+      admin: 'Ադմին',
+      faq: 'Հաճախակի հարցեր',
+      shipping: 'Առաքում',
+      returns: 'Վերադարձ',
+      support: 'Աջակցություն',
+      privacy: 'Գաղտնիություն',
+      terms: 'Պայմաններ',
+      cookies: 'Cookie-ներ',
+      delivery: 'Առաքում',
+      stores: 'Խանութներ',
+    },
+  },
+  ru: {
+    stock: {
+      inStock: 'В наличии',
+      outOfStock: 'Нет в наличии',
+    },
+    cart: {
+      title: 'Корзина покупок',
+      empty: 'Ваша корзина пуста',
+      orderSummary: 'Сводка заказа',
+      subtotal: 'Промежуточный итог',
+      shipping: 'Доставка',
+      tax: 'Налог',
+      total: 'Итого',
+      free: 'Бесплатно',
+      proceedToCheckout: 'Перейти к оплате',
+      remove: 'Удалить',
+      items: 'товаров',
+      item: 'товар',
+    },
+    product: {
+      addToCart: 'Добавить в корзину',
+      viewProduct: 'Просмотреть товар',
+      viewDetails: 'Просмотреть детали',
+      productInformation: 'Информация о товаре',
+      browseProducts: 'Просмотреть товары',
+    },
+    breadcrumb: {
+      home: 'Главная',
+      products: 'Товары',
+      categories: 'Категории',
+      cart: 'Корзина',
+      checkout: 'Оформление',
+      profile: 'Профиль',
+      orders: 'Заказы',
+      login: 'Вход',
+      register: 'Регистрация',
+      about: 'О нас',
+      contact: 'Контакты',
+      admin: 'Админ',
+      faq: 'FAQ',
+      shipping: 'Доставка',
+      returns: 'Возврат',
+      support: 'Поддержка',
+      privacy: 'Конфиденциальность',
+      terms: 'Условия',
+      cookies: 'Cookie',
+      delivery: 'Доставка',
+      stores: 'Магазины',
+    },
+  },
+  ka: {
+    stock: {
+      inStock: 'მარაგშია',
+      outOfStock: 'არ არის მარაგში',
+    },
+    cart: {
+      title: 'საყიდლების კალათა',
+      empty: 'თქვენი კალათა ცარიელია',
+      orderSummary: 'შეკვეთის შეჯამება',
+      subtotal: 'ქვეჯამი',
+      shipping: 'მიწოდება',
+      tax: 'გადასახადი',
+      total: 'სულ',
+      free: 'უფასო',
+      proceedToCheckout: 'გადახდაზე გადასვლა',
+      remove: 'წაშლა',
+      items: 'ნივთი',
+      item: 'ნივთი',
+    },
+    product: {
+      addToCart: 'კალათაში დამატება',
+      viewProduct: 'პროდუქტის ნახვა',
+      viewDetails: 'დეტალების ნახვა',
+      productInformation: 'პროდუქტის ინფორმაცია',
+      browseProducts: 'პროდუქტების ნახვა',
+    },
+    breadcrumb: {
+      home: 'მთავარი',
+      products: 'პროდუქტები',
+      categories: 'კატეგორიები',
+      cart: 'კალათა',
+      checkout: 'გადახდა',
+      profile: 'პროფილი',
+      orders: 'შეკვეთები',
+      login: 'შესვლა',
+      register: 'რეგისტრაცია',
+      about: 'ჩვენს შესახებ',
+      contact: 'კონტაქტი',
+      admin: 'ადმინი',
+      faq: 'FAQ',
+      shipping: 'მიწოდება',
+      returns: 'დაბრუნება',
+      support: 'მხარდაჭერა',
+      privacy: 'კონფიდენციალურობა',
+      terms: 'პირობები',
+      cookies: 'Cookie-ები',
+      delivery: 'მიწოდება',
+      stores: 'მაღაზიები',
+    },
+  },
+} as const;
+
+export type TranslationKey = keyof typeof translations.en;
+
+export function getTranslation(key: string, language?: LanguageCode): string {
+  const lang = language || getStoredLanguage();
+  const keys = key.split('.');
+  let value: any = translations[lang];
+
+  for (const k of keys) {
+    if (value && typeof value === 'object' && k in value) {
+      value = value[k as keyof typeof value];
+    } else {
+      value = translations.en;
+      for (const fallbackKey of keys) {
+        if (value && typeof value === 'object' && fallbackKey in value) {
+          value = value[fallbackKey as keyof typeof value];
+        } else {
+          return key;
+        }
+      }
+      break;
+    }
+  }
+
+  return typeof value === 'string' ? value : key;
+}
+
+export function useTranslation() {
+  return {
+    t: (key: string) => getTranslation(key),
+  };
+}

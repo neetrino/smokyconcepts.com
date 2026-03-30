@@ -1,0 +1,158 @@
+{
+  "buttons": {
+    "addToCart": "Add to Cart",
+    "viewProduct": "View Product",
+    "viewDetails": "View Details",
+    "browseProducts": "Browse Products",
+    "proceedToCheckout": "Proceed to Checkout",
+    "remove": "Remove",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "login": "Login",
+    "register": "Register",
+    "search": "Search",
+    "shop": "Shop",
+    "shopNow": "Shop Now",
+    "viewMore": "View More",
+    "close": "Close"
+  },
+  "navigation": {
+    "home": "Home",
+    "products": "Products",
+    "categories": "Categories",
+    "cart": "Cart",
+    "checkout": "Checkout",
+    "profile": "Profile",
+    "orders": "Orders",
+    "login": "Login",
+    "register": "Register",
+    "about": "About",
+    "contact": "Contact",
+    "admin": "Admin",
+    "adminPanel": "Admin Panel",
+    "logout": "Logout",
+    "faq": "FAQ",
+    "shipping": "Shipping",
+    "returns": "Returns",
+    "support": "Support",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "cookies": "Cookies",
+    "delivery": "Delivery",
+    "stores": "Stores"
+  },
+  "stock": {
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock"
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "empty": "Your cart is empty",
+    "orderSummary": "Order Summary",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "tax": "Tax",
+    "total": "Total",
+    "free": "Free",
+    "items": "items",
+    "item": "item"
+  },
+  "messages": {
+    "addedToCart": "Added to cart",
+    "removedFromCart": "Removed from cart",
+    "errorAddingToCart": "Error adding to cart",
+    "loading": "Loading...",
+    "loadingFilters": "Loading filters...",
+    "noImage": "No image",
+    "noProductsFound": "No products found",
+    "selectColor": "Please select a color",
+    "selectSize": "Please select a size",
+    "selectColorAndSize": "Please select size and color",
+    "selectOptions": "Select options",
+    "adding": "Adding...",
+    "pcs": "pcs",
+    "invalidProduct": "Invalid product. Please refresh the page and try again.",
+    "noVariantsAvailable": "No variants available",
+    "stockExceeded": "Available quantity is {stock} pcs. You cannot add more:",
+    "quantityUpdated": "Quantity updated",
+    "failedToUpdateQuantity": "Failed to update quantity",
+    "stockInsufficient": "Available quantity is insufficient",
+    "availableQuantity": "Available quantity is {stock} pcs",
+    "addQuantity": "Add quantity",
+    "product": "Product",
+    "quantity": "Quantity",
+    "subtotal": "Subtotal",
+    "sku": "SKU"
+  },
+  "alerts": {
+    "invalidProduct": "Invalid product. Please refresh the page and try again.",
+    "noVariantsAvailable": "No variants available",
+    "stockExceeded": "Available quantity is {stock} pcs. You cannot add more:",
+    "stockInsufficient": "Available quantity is insufficient: {message}",
+    "noMoreStockAvailable": "No more stock available",
+    "productNotFound": "Product not found. Please refresh the page and try again.",
+    "failedToAddToCart": "Failed to add product to cart. Please try again."
+  },
+  "ariaLabels": {
+    "addToCart": "Add to cart",
+    "removeFromCart": "Remove from cart",
+    "outOfStock": "Out of stock",
+    "search": "Search",
+    "searchPlaceholder": "Search products",
+    "openMenu": "Open navigation menu",
+    "closeMenu": "Close navigation menu",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "linkedin": "LinkedIn",
+    "color": "Color: {color}",
+    "previousImage": "Previous image",
+    "nextImage": "Next image",
+    "goToSlide": "Go to slide {number}",
+    "removeItem": "Remove item",
+    "decreaseQuantity": "Decrease quantity",
+    "increaseQuantity": "Increase quantity",
+    "previousThumbnail": "Previous thumbnail",
+    "nextThumbnail": "Next thumbnail",
+    "fullscreenImage": "Fullscreen image"
+  },
+  "placeholders": {
+    "search": "Search products"
+  },
+  "defaults": {
+    "category": "Grocery"
+  },
+  "footer": {
+    "shop": "Shop",
+    "description": "Professional e-commerce platform for modern shopping experience.",
+    "quickLinks": "Quick Links",
+    "legal": "Legal",
+    "contactInfo": "Contact Information",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "cookiePolicy": "Cookie Policy",
+    "refundPolicy": "Refund Policy",
+    "deliveryTerms": "Delivery Terms",
+    "copyright": "© {year} Shop. All rights reserved.",
+    "paymentMethods": "Payment Methods:"
+  },
+  "product": {
+    "product": "product",
+    "products": "products"
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {totalPages}"
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "description": "The page you are looking for does not exist or has been moved.",
+    "goHome": "Go Home"
+  }
+}
+
+
+
+
+
+
