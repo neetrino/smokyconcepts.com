@@ -12,6 +12,7 @@ import {
   getCategoryLabel,
   getColorLabel,
   getSizeLabel,
+  productMatchesCategoryFilter,
   shouldNudgeCatalogProductImage,
 } from './catalogProductLabels';
 
@@ -111,11 +112,10 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
 
   const visibleProducts = useMemo(() => {
     const filtered = products.filter((product) => {
-      const sectionLabels = getProductSectionLabels(product);
       const colorLabel = getColorLabel(product);
       const sizeLabel = getSizeLabel(product);
 
-      if (selectedCollection !== 'all' && !sectionLabels.includes(selectedCollection)) return false;
+      if (!productMatchesCategoryFilter(product, selectedCollection)) return false;
       if (selectedColor !== 'all' && colorLabel !== selectedColor) return false;
       if (selectedSize !== 'all' && sizeLabel !== selectedSize) return false;
 

@@ -70,6 +70,34 @@ export function getProductSectionLabels(product: CatalogProduct): string[] {
   return Array.from(new Set(labels));
 }
 
+/**
+ * Match catalog `category` query (slug from links or section title from dropdown) to products.
+ */
+export function productMatchesCategoryFilter(
+  product: CatalogProduct,
+  selectedCollection: string
+): boolean {
+  if (selectedCollection === 'all') {
+    return true;
+  }
+
+  if (product.categories.some((c) => c.slug === selectedCollection)) {
+    return true;
+  }
+
+  const sectionLabels = getProductSectionLabels(product);
+  if (sectionLabels.includes(selectedCollection)) {
+    return true;
+  }
+
+  const labelFromKnownSlug = SECTION_NAME_BY_CATEGORY_SLUG[selectedCollection];
+  if (labelFromKnownSlug && sectionLabels.includes(labelFromKnownSlug)) {
+    return true;
+  }
+
+  return false;
+}
+
 export function getSectionLabel(product: CatalogProduct): string {
   return getProductSectionLabels(product)[0] ?? 'Classic';
 }
