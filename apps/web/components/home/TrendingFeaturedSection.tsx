@@ -37,6 +37,10 @@ interface ApiProduct {
   brand?: { id: string; name: string } | null;
   skus?: string[];
   colors?: string[];
+  originalPrice?: number | null;
+  defaultVariantId?: string | null;
+  defaultVariantStock?: number;
+  defaultSku?: string;
 }
 
 interface ProductsResponse {
@@ -56,6 +60,10 @@ function mapApiProductToCatalogProduct(product: ApiProduct): CatalogProduct {
     image: product.image,
     images: product.images,
     inStock: product.inStock,
+    originalPrice: product.originalPrice ?? null,
+    defaultVariantId: product.defaultVariantId ?? null,
+    defaultVariantStock: product.defaultVariantStock ?? 0,
+    defaultSku: product.defaultSku ?? '',
     categories: product.categories,
     skus: product.skus,
     colors: product.colors,

@@ -18,6 +18,10 @@ interface ProductOptionValue extends AttributeGroupValue {
   colors?: string[] | string | null;
 }
 
+/**
+ * PDP actions — add/buy handlers are wired to `useProductCartActions` on the parent page
+ * (fast snapshot + optional POST, no extra GET before add).
+ */
 interface ProductInfoAndActionsProps {
   product: Product;
   price: number;

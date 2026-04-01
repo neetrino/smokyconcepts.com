@@ -32,6 +32,10 @@ export function toCatalogProduct(input: {
   image: string | null;
   images?: string[];
   inStock?: boolean;
+  originalPrice?: number | null;
+  defaultVariantId?: string | null;
+  defaultVariantStock?: number;
+  defaultSku?: string;
   categories?: Array<{ id: string; slug: string; title: string }>;
   skus?: string[];
   colors?: string[];
@@ -44,6 +48,10 @@ export function toCatalogProduct(input: {
     image: input.image ?? null,
     images: Array.isArray(input.images) ? input.images : [],
     inStock: input.inStock ?? true,
+    originalPrice: input.originalPrice ?? null,
+    defaultVariantId: input.defaultVariantId ?? null,
+    defaultVariantStock: input.defaultVariantStock ?? 0,
+    defaultSku: input.defaultSku ?? '',
     categories: Array.isArray(input.categories) ? input.categories : [],
     skus: Array.isArray(input.skus) ? input.skus : [],
     colors: input.colors,

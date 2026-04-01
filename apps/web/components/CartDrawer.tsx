@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { getStoredCurrency, formatPrice, type CurrencyCode } from '../lib/currency';
 import { useTranslation } from '../lib/i18n-client';
-import { fetchGuestCart } from '../app/cart/cart-fetcher';
+import { readGuestCartFromStorage } from '../app/cart/cart-fetcher';
 import { handleRemoveItem, handleUpdateQuantity } from '../app/cart/cart-handlers';
 import type { Cart } from '../app/cart/types';
 
@@ -45,7 +45,6 @@ export function CartDrawer() {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [cart, setCart] = useState<Cart | null>(null);
-  const [loading, setLoading] = useState(false);
   const [currency, setCurrency] = useState(getStoredCurrency());
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
   const [recentlyAddedProductId, setRecentlyAddedProductId] = useState<string | null>(null);
@@ -54,13 +53,7 @@ export function CartDrawer() {
   const currencyCode = currency as CurrencyCode;
 
   async function loadCart() {
-    try {
-      setLoading(true);
-      const cartData = await fetchGuestCart(t, 'en');
-      setCart(cartData);
-    } finally {
-      setLoading(false);
-    }
+    setCart(readGuestCartFromStorage());
   }
 
   useEffect(() => {
@@ -103,7 +96,7 @@ export function CartDrawer() {
       window.removeEventListener('currency-updated', handleCurrencyUpdate);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, t]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!recentlyAddedProductId) {
@@ -190,21 +183,7 @@ export function CartDrawer() {
           </div>
 
           <div className="scrollbar-hide mt-8 min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-1">
-            {loading ? (
-              <div className="space-y-8">
-                {Array.from({ length: 2 }).map((_, index) => (
-                  <div key={index} className="flex animate-pulse gap-5">
-                    <div className="h-[7.25rem] w-[7rem] rounded-[0.875rem] bg-white" />
-                    <div className="flex-1 space-y-3">
-                      <div className="h-5 w-40 rounded bg-white/80" />
-                      <div className="h-3 w-24 rounded bg-white/70" />
-                      <div className="h-7 w-20 rounded bg-white/80" />
-                      <div className="h-5 w-16 rounded bg-white/80" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : cart && cart.items.length > 0 ? (
+            {cart && cart.items.length > 0 ? (
               <div className="space-y-8">
                 {cart.items.map((item) => (
                   <div

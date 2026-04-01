@@ -1,40 +1,14 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { t } from '../../../lib/i18n';
+import { t, getProductText } from '../../../lib/i18n';
 import { RelatedProducts } from '../../../components/RelatedProducts';
 import { ProductImageGallery } from './ProductImageGallery';
 import { ProductInfoAndActions } from './ProductInfoAndActions';
 import { useProductPage } from './useProductPage';
+import { useProductCartActions } from './useProductCartActions';
 import type { ProductPageProps } from './types';
 
-type GuestCartLine = {
-  variantId: string;
-  quantity: number;
-  productId?: string;
-  productSlug?: string;
-};
-
-function upsertGuestCartLine(
-  productId: string,
-  productSlug: string,
-  variantId: string,
-  quantityToAdd: number
-): void {
-  const stored = localStorage.getItem('shop_cart_guest');
-  const cart = stored ? JSON.parse(stored) : [];
-  const existing = cart.find(
-    (i: unknown): i is GuestCartLine =>
-      typeof i === 'object' && i !== null && 'variantId' in i && (i as GuestCartLine).variantId === variantId
-  );
-  if (existing) existing.quantity += quantityToAdd;
-  else cart.push({ productId, productSlug, variantId, quantity: quantityToAdd });
-  localStorage.setItem('shop_cart_guest', JSON.stringify(cart));
-  window.dispatchEvent(new Event('cart-updated'));
-}
-
 export default function ProductPage({ params }: ProductPageProps) {
-  const router = useRouter();
   const {
     product,
     loading,
@@ -65,33 +39,22 @@ export default function ProductPage({ params }: ProductPageProps) {
     handleSizeSelect,
   } = useProductPage(params);
 
-  const handleAddToCart = async () => {
-    if (!canAddToCart || !product || !currentVariant) return;
-    setIsAddingToCart(true);
-    try {
-      upsertGuestCartLine(product.id, product.slug, currentVariant.id, quantity);
-      setShowMessage(`${t(language, 'product.addedToCart')} ${quantity} ${t(language, 'product.pcs')}`);
-    } catch {
-      setShowMessage(t(language, 'product.errorAddingToCart'));
-    } finally {
-      setIsAddingToCart(false);
-      setTimeout(() => setShowMessage(null), 2000);
-    }
-  };
+  const productDisplayTitle = product
+    ? getProductText(language, product.id, 'title') || product.title
+    : '';
 
-  const handleBuyNow = async () => {
-    if (!canAddToCart || !product || !currentVariant) return;
-    setIsAddingToCart(true);
-    try {
-      upsertGuestCartLine(product.id, product.slug, currentVariant.id, quantity);
-      router.push('/checkout');
-    } catch {
-      setShowMessage(t(language, 'product.errorAddingToCart'));
-      setTimeout(() => setShowMessage(null), 2000);
-    } finally {
-      setIsAddingToCart(false);
-    }
-  };
+  const { handleAddToCart, handleBuyNow } = useProductCartActions({
+    product,
+    currentVariant,
+    quantity,
+    price,
+    originalPrice,
+    language,
+    canAddToCart,
+    productDisplayTitle,
+    setIsAddingToCart,
+    setShowMessage,
+  });
 
   if (loading || !product) {
     return (

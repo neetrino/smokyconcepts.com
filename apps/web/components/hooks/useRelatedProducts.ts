@@ -26,6 +26,9 @@ interface RelatedProduct {
     title: string;
   }>;
   skus?: string[];
+  defaultVariantId?: string | null;
+  defaultVariantStock?: number;
+  defaultSku?: string;
   variants?: Array<{
     options?: Array<{
       key: string;

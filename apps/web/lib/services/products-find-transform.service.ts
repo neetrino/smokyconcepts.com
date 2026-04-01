@@ -262,6 +262,10 @@ class ProductsFindTransformService {
         slug: translation?.slug || "",
         title: translation?.title || "",
         brand: null,
+        /** Pricing/default variant — required for fast client-only cart lines from catalog cards */
+        defaultVariantId: defaultVariant?.id ?? null,
+        defaultVariantStock: defaultVariant?.stock ?? 0,
+        defaultSku: defaultVariant?.sku?.trim() ?? "",
         categories,
         skus: (selectableVariants.length > 0 ? selectableVariants : variants)
           .map((item) => item.sku?.trim() || "")

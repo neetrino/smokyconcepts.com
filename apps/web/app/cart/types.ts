@@ -40,13 +40,22 @@ export interface Cart {
 }
 
 /**
- * Guest cart item (variantId optional when added from ProductCard without API)
+ * Guest cart line in localStorage (`shop_cart_guest`).
+ * Full line snapshot (PDP or catalog) — `readGuestCartFromStorage` builds the cart without network.
  */
 export interface GuestCartItem {
   productId: string;
   productSlug?: string;
   variantId?: string;
   quantity: number;
+  title?: string;
+  image?: string | null;
+  price?: number;
+  originalPrice?: number | null;
+  stock?: number;
+  sku?: string;
+  sizeLabel?: string | null;
+  categoryLabel?: string | null;
 }
 
 

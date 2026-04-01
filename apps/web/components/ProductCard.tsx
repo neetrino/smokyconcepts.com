@@ -33,6 +33,9 @@ interface Product {
   originalPrice?: number | null;
   globalDiscount?: number | null;
   discountPercent?: number | null;
+  defaultVariantId?: string | null;
+  defaultVariantStock?: number;
+  defaultSku?: string;
 }
 
 type ViewMode = 'list' | 'grid-2' | 'grid-3';
@@ -54,6 +57,10 @@ export function ProductCard({ product, viewMode = 'grid-3' }: ProductCardProps) 
     image: product.image,
     images: product.images,
     inStock: product.inStock,
+    originalPrice: product.originalPrice ?? null,
+    defaultVariantId: product.defaultVariantId ?? null,
+    defaultVariantStock: product.defaultVariantStock ?? 0,
+    defaultSku: product.defaultSku ?? '',
     categories: product.categories,
     skus: product.skus,
     colors: product.colors,

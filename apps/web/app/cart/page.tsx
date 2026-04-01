@@ -4,14 +4,14 @@ import { useState, useEffect, useRef } from 'react';
 import { getStoredCurrency } from '../../lib/currency';
 import { useTranslation } from '../../lib/i18n-client';
 import type { Cart } from './types';
-import { fetchGuestCart } from './cart-fetcher';
+import { readGuestCartFromStorage } from './cart-fetcher';
 import { handleRemoveItem, handleUpdateQuantity } from './cart-handlers';
 import { CartTable, OrderSummary } from './cart-components';
 import { EmptyCart } from './empty-cart';
 import { LoadingState } from './loading-state';
 
 export default function CartPage() {
-  const { t, lang } = useTranslation();
+  const { t } = useTranslation();
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [currency, setCurrency] = useState(getStoredCurrency());
@@ -50,18 +50,12 @@ export default function CartPage() {
       window.removeEventListener('cart-updated', handleCartUpdate);
       window.removeEventListener('auth-updated', handleAuthUpdate);
     };
-  }, [t, lang]);
+  }, []);
 
   async function loadCart() {
-    try {
-      setLoading(true);
-      const cartData = await fetchGuestCart(t, lang);
-      setCart(cartData);
-    } catch (error: unknown) {
-      setCart(null);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    setCart(readGuestCartFromStorage());
+    setLoading(false);
   }
 
   async function onRemoveItem(itemId: string) {

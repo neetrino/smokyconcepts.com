@@ -29,6 +29,11 @@ export interface CatalogProductCardItem {
   image: string | null;
   images?: string[];
   inStock: boolean;
+  originalPrice?: number | null;
+  /** From list API — required for local-only cart lines */
+  defaultVariantId?: string | null;
+  defaultVariantStock?: number;
+  defaultSku?: string;
 }
 
 interface ProductsCatalogCardProps {
@@ -71,7 +76,16 @@ export function ProductsCatalogCard({
   const { isAddingToCart, addToCart } = useAddToCart({
     productId: product.id,
     productSlug: product.slug,
+    title: product.title,
+    price: product.price ?? 0,
+    image: product.image,
+    originalPrice: product.originalPrice ?? null,
     inStock: product.inStock,
+    defaultVariantId: product.defaultVariantId ?? null,
+    defaultVariantStock: product.defaultVariantStock ?? 0,
+    defaultSku: product.defaultSku ?? '',
+    sizeLabel,
+    categoryLabel,
   });
   const productImages = useMemo(() => {
     const rawImages = product.images && product.images.length > 0 ? product.images : [product.image];

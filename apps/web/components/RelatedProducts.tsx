@@ -76,6 +76,10 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
                 image: product.image,
                 images: product.images,
                 inStock: product.inStock,
+                originalPrice: product.originalPrice ?? null,
+                defaultVariantId: product.defaultVariantId ?? null,
+                defaultVariantStock: product.defaultVariantStock ?? 0,
+                defaultSku: product.defaultSku ?? '',
                 categories: product.categories ?? [],
                 skus: product.skus,
               });
