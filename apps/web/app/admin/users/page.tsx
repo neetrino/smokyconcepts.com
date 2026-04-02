@@ -6,6 +6,7 @@ import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card, Button, Input } from '@shop/ui';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
+import { ADMIN_PAGE_SHELL_CLASS } from '../constants/adminShell.constants';
 
 interface User {
   id: string;
@@ -186,8 +187,8 @@ export default function UsersPage() {
         );
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className={ADMIN_PAGE_SHELL_CLASS}>
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <button
             onClick={() => router.push('/admin')}

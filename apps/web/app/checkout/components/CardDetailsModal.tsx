@@ -7,7 +7,6 @@ import { PaymentMethodLogo } from './PaymentMethodLogo';
 import { CardInputFields } from './CardInputFields';
 import { OrderSummaryModal } from './OrderSummaryModal';
 import { CheckoutFormData, Cart } from '../types';
-import type { CurrencyCode } from '../../../lib/currency';
 
 interface CardDetailsModalProps {
   isOpen: boolean;
@@ -27,7 +26,6 @@ interface CardDetailsModalProps {
     shippingDisplay: number;
     totalDisplay: number;
   };
-  currency: CurrencyCode;
   loadingDeliveryPrice: boolean;
   deliveryPrice: number | null;
   logoErrors: Record<string, boolean>;
@@ -48,7 +46,6 @@ export function CardDetailsModal({
   shippingCity,
   cart,
   orderSummary,
-  currency,
   loadingDeliveryPrice,
   deliveryPrice,
   logoErrors,
@@ -143,7 +140,6 @@ export function CardDetailsModal({
           <OrderSummaryModal
             cart={cart}
             orderSummary={orderSummary}
-            currency={currency}
             shippingMethod={shippingMethod}
             shippingCity={shippingCity}
             loadingDeliveryPrice={loadingDeliveryPrice}

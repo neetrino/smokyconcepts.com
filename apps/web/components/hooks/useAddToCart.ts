@@ -2,14 +2,27 @@
 
 import { useState } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
+import { logger } from '../../lib/services/utils/logger';
+import {
+  buildCatalogGuestCartSnapshot,
+  upsertGuestCartLineSnapshot,
+} from '@/app/products/[slug]/product-cart-snapshot';
 
-const CART_KEY = 'shop_cart_guest';
 const CART_DRAWER_OPEN_EVENT = 'cart-drawer-open';
 
 interface UseAddToCartProps {
   productId: string;
   productSlug: string;
+  title: string;
+  price: number;
+  image: string | null;
+  originalPrice: number | null;
   inStock: boolean;
+  defaultVariantId: string | null;
+  defaultVariantStock: number;
+  defaultSku: string;
+  sizeLabel: string;
+  categoryLabel: string;
 }
 
 interface AddToCartOptions {
@@ -17,10 +30,22 @@ interface AddToCartOptions {
 }
 
 /**
- * Adds product to cart via localStorage only (no API/database).
- * ProductCard uses this to add by id/slug immediately.
+ * Adds a catalog line with a full local snapshot (no network).
  */
-export function useAddToCart({ productId, productSlug, inStock }: UseAddToCartProps) {
+export function useAddToCart({
+  productId,
+  productSlug,
+  title,
+  price,
+  image,
+  originalPrice,
+  inStock,
+  defaultVariantId,
+  defaultVariantStock,
+  defaultSku,
+  sizeLabel,
+  categoryLabel,
+}: UseAddToCartProps) {
   const { t } = useTranslation();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
@@ -28,31 +53,35 @@ export function useAddToCart({ productId, productSlug, inStock }: UseAddToCartPr
     if (!inStock) return;
 
     if (!productId || !productSlug || productSlug.trim() === '' || productSlug.includes(' ')) {
-      console.error('❌ [PRODUCT CARD] Invalid product id or slug:', { productId, productSlug });
+      logger.warn('Invalid product id or slug for add to cart', { productId, productSlug });
+      alert(t('common.alerts.invalidProduct'));
+      return;
+    }
+
+    if (!defaultVariantId) {
+      logger.warn('Missing defaultVariantId for catalog add to cart', { productId });
       alert(t('common.alerts.invalidProduct'));
       return;
     }
 
     setIsAddingToCart(true);
     try {
-      const stored = localStorage.getItem(CART_KEY);
-      const cart: Array<{ productId: string; productSlug: string; variantId?: string; quantity: number }> = stored ? JSON.parse(stored) : [];
+      const line = buildCatalogGuestCartSnapshot({
+        productId,
+        productSlug: productSlug.trim(),
+        title,
+        price,
+        originalPrice,
+        image,
+        variantId: defaultVariantId,
+        stock: defaultVariantStock,
+        sku: defaultSku,
+        sizeLabel,
+        categoryLabel,
+        quantity: 1,
+      });
+      upsertGuestCartLineSnapshot(line);
 
-      const existingItem = cart.find((item) => item.productId === productId);
-
-      if (existingItem) {
-        existingItem.quantity += 1;
-        if (!existingItem.productSlug) existingItem.productSlug = productSlug.trim();
-      } else {
-        cart.push({
-          productId,
-          productSlug: productSlug.trim(),
-          quantity: 1,
-        });
-      }
-
-      localStorage.setItem(CART_KEY, JSON.stringify(cart));
-      window.dispatchEvent(new Event('cart-updated'));
       if (openDrawer) {
         window.dispatchEvent(
           new CustomEvent(CART_DRAWER_OPEN_EVENT, {
@@ -63,7 +92,7 @@ export function useAddToCart({ productId, productSlug, inStock }: UseAddToCartPr
         );
       }
     } catch (error: unknown) {
-      console.error('❌ [PRODUCT CARD] Error adding to cart:', error);
+      logger.error('Error adding catalog product to cart', { error, productId });
       alert(t('common.alerts.failedToAddToCart'));
     } finally {
       setIsAddingToCart(false);
@@ -72,7 +101,3 @@ export function useAddToCart({ productId, productSlug, inStock }: UseAddToCartPr
 
   return { isAddingToCart, addToCart };
 }
-
-
-
-

@@ -204,7 +204,7 @@ model Order {
   shippingAmount    Float        @default(0)
   taxAmount         Float        @default(0)
   total             Float
-  currency          String       @default("AMD")
+  currency          String       @default("USD")
   customerEmail     String?
   customerPhone     String?
   customerLocale    String       @default("en")
@@ -260,7 +260,7 @@ model Payment {
   providerTransactionId String?
   method                String?
   amount                Float
-  currency              String    @default("AMD")
+  currency              String    @default("USD")
   status                String    @default("pending")
   cardLast4             String?
   cardBrand             String?

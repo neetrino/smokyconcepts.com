@@ -1,13 +1,11 @@
 'use client';
 
 import { useEffect } from 'react';
-import { convertPrice, type CurrencyCode } from '@/lib/currency';
 import type { GeneratedVariant } from '../types';
 
 interface UseProductVariantConversionProps {
   productId: string | null;
   attributes: any[];
-  defaultCurrency: CurrencyCode;
   setSelectedAttributesForVariants: (attrs: Set<string>) => void;
   setSelectedAttributeValueIds: (ids: Record<string, string[]>) => void;
   setGeneratedVariants: (variants: GeneratedVariant[]) => void;
@@ -17,7 +15,6 @@ interface UseProductVariantConversionProps {
 export function useProductVariantConversion({
   productId,
   attributes,
-  defaultCurrency,
   setSelectedAttributesForVariants,
   setSelectedAttributeValueIds,
   setGeneratedVariants,
@@ -197,18 +194,24 @@ export function useProductVariantConversion({
           console.log(`🖼️ [ADMIN] Variant ${variantIndex} has no imageUrl`);
         }
         
-        const priceInDefaultCurrency = variant.price !== undefined && variant.price !== null 
-          ? convertPrice(variant.price, 'USD', defaultCurrency)
-          : 0;
-        const compareAtPriceInDefaultCurrency = variant.compareAtPrice !== undefined && variant.compareAtPrice !== null 
-          ? convertPrice(variant.compareAtPrice, 'USD', defaultCurrency)
-          : null;
-        
+        const priceUsd =
+          variant.price !== undefined && variant.price !== null
+            ? typeof variant.price === 'number'
+              ? variant.price
+              : parseFloat(String(variant.price)) || 0
+            : 0;
+        const compareAtUsd =
+          variant.compareAtPrice !== undefined && variant.compareAtPrice !== null
+            ? typeof variant.compareAtPrice === 'number'
+              ? variant.compareAtPrice
+              : parseFloat(String(variant.compareAtPrice)) || null
+            : null;
+
         variantDataList.push({
           id: variant.id || `variant-${Date.now()}-${variantIndex}-${Math.random()}`,
           selectedValueIds: selectedValueIds.sort(),
-          price: priceInDefaultCurrency,
-          compareAtPrice: compareAtPriceInDefaultCurrency,
+          price: priceUsd,
+          compareAtPrice: compareAtUsd,
           stock: variant.stock !== undefined && variant.stock !== null ? variant.stock : 0,
           sku: variant.sku || '',
           image: variantImage,
@@ -304,6 +307,6 @@ export function useProductVariantConversion({
     } else if (productId && attributes.length > 0) {
       console.log('ℹ️ [ADMIN] Waiting for variants to convert. Attributes loaded:', attributes.length);
     }
-  }, [productId, attributes, defaultCurrency, setSelectedAttributesForVariants, setSelectedAttributeValueIds, setGeneratedVariants, setHasVariantsToLoad]);
+  }, [productId, attributes, setSelectedAttributesForVariants, setSelectedAttributeValueIds, setGeneratedVariants, setHasVariantsToLoad]);
 }
 

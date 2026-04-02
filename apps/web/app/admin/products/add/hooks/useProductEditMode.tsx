@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
-import { convertPrice, type CurrencyCode } from '@/lib/currency';
 import { cleanImageUrls } from '@/lib/services/utils/image-utils';
 import { isDefaultPricingVariant } from '@/lib/default-pricing-variant';
 import type { ProductData } from '../types';
@@ -11,7 +10,6 @@ interface UseProductEditModeProps {
   productId: string | null;
   isLoggedIn: boolean;
   isAdmin: boolean;
-  defaultCurrency: CurrencyCode;
   setLoadingProduct: (loading: boolean) => void;
   setFormData: (updater: (prev: unknown) => unknown) => void;
   setUseNewCategory: (use: boolean) => void;
@@ -26,7 +24,6 @@ export function useProductEditMode({
   productId,
   isLoggedIn,
   isAdmin,
-  defaultCurrency,
   setLoadingProduct,
   setFormData,
   setUseNewCategory,
@@ -100,8 +97,8 @@ export function useProductEditMode({
             return {
               id: v.id || `variant-${Date.now()}-${Math.random().toString(36).slice(2)}`,
               selectedValueIds: Array.isArray(v.selectedValueIds) ? v.selectedValueIds : [],
-              price: String(convertPrice(priceNum, 'USD', defaultCurrency)),
-              compareAtPrice: compareNum ? String(convertPrice(compareNum, 'USD', defaultCurrency)) : '',
+              price: String(priceNum),
+              compareAtPrice: compareNum ? String(compareNum) : '',
               stock: String(stockNum),
               sku: v.sku || '',
               image: v.imageUrl ?? null,
@@ -117,14 +114,9 @@ export function useProductEditMode({
               ? defaultPricingVariant.compareAtPrice
               : parseFloat(String(defaultPricingVariant?.compareAtPrice)) || 0;
           setSimpleProductData({
-            price:
-              defaultPricingVariant
-                ? String(convertPrice(defaultPriceNum, 'USD', defaultCurrency))
-                : generated[0]?.price || '',
+            price: defaultPricingVariant ? String(defaultPriceNum) : generated[0]?.price || '',
             compareAtPrice:
-              defaultPricingVariant && defaultCompareAtPriceNum > 0
-                ? String(convertPrice(defaultCompareAtPriceNum, 'USD', defaultCurrency))
-                : '',
+              defaultPricingVariant && defaultCompareAtPriceNum > 0 ? String(defaultCompareAtPriceNum) : '',
             sku: '',
             quantity: '0',
           });
@@ -147,8 +139,6 @@ export function useProductEditMode({
     };
 
     loadProduct();
-    // Re-run when defaultCurrency changes so variant prices are converted
-    // using the current admin currency (prevents stale/wrong default prices).
     // eslint-disable-next-line react-hooks/exhaustive-deps -- setter props are intentionally omitted
-  }, [productId, isLoggedIn, isAdmin, router, defaultCurrency]);
+  }, [productId, isLoggedIn, isAdmin, router]);
 }

@@ -3,8 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@shop/ui';
-import { formatPrice } from '../../lib/currency';
-import type { CurrencyCode } from '../../lib/currency';
+import { formatStorePriceForDisplay } from '../../lib/currency';
 import type { Cart, CartItem } from './types';
 
 /**
@@ -12,7 +11,6 @@ import type { Cart, CartItem } from './types';
  */
 interface CartItemRowProps {
   item: CartItem;
-  currency: string;
   updatingItems: Set<string>;
   onRemove: (itemId: string) => void;
   onUpdateQuantity: (itemId: string, quantity: number) => void;
@@ -21,13 +19,11 @@ interface CartItemRowProps {
 
 export function CartItemRow({
   item,
-  currency,
   updatingItems,
   onRemove,
   onUpdateQuantity,
   t,
 }: CartItemRowProps) {
-  const currencyCode = currency as CurrencyCode;
   return (
     <div
       className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 px-4 sm:px-6 py-6 hover:bg-gray-50 transition-colors relative"
@@ -128,11 +124,11 @@ export function CartItemRow({
         </p>
         <div className="flex flex-col gap-1 mt-1 md:mt-0">
           <span className="text-lg font-semibold text-gray-900">
-            {formatPrice(item.total, currencyCode)}
+            {formatStorePriceForDisplay(item.total)}
           </span>
           {item.originalPrice && item.originalPrice > item.price && (
             <span className="text-sm text-gray-500 line-through">
-              {formatPrice(item.originalPrice * item.quantity, currencyCode)}
+              {formatStorePriceForDisplay(item.originalPrice * item.quantity)}
             </span>
           )}
         </div>
@@ -146,7 +142,6 @@ export function CartItemRow({
  */
 interface CartTableProps {
   cart: Cart;
-  currency: string;
   updatingItems: Set<string>;
   onRemove: (itemId: string) => void;
   onUpdateQuantity: (itemId: string, quantity: number) => void;
@@ -155,7 +150,6 @@ interface CartTableProps {
 
 export function CartTable({
   cart,
-  currency,
   updatingItems,
   onRemove,
   onUpdateQuantity,
@@ -184,7 +178,6 @@ export function CartTable({
             <CartItemRow
               key={item.id}
               item={item}
-              currency={currency}
               updatingItems={updatingItems}
               onRemove={onRemove}
               onUpdateQuantity={onUpdateQuantity}
@@ -202,13 +195,10 @@ export function CartTable({
  */
 interface OrderSummaryProps {
   cart: Cart;
-  currency: string;
   t: (key: string) => string;
 }
 
-export function OrderSummary({ cart, currency, t }: OrderSummaryProps) {
-  const currencyCode = currency as CurrencyCode;
-  
+export function OrderSummary({ cart, t }: OrderSummaryProps) {
   return (
     <div className="lg:col-span-1">
       <div className="bg-white rounded-2xl border border-gray-200 p-6 lg:sticky lg:top-24">
@@ -218,7 +208,7 @@ export function OrderSummary({ cart, currency, t }: OrderSummaryProps) {
         <div className="space-y-4 mb-6">
           <div className="flex justify-between text-gray-600">
             <span>{t('common.cart.subtotal')}</span>
-            <span>{formatPrice(cart.totals.subtotal, currencyCode)}</span>
+            <span>{formatStorePriceForDisplay(cart.totals.subtotal)}</span>
           </div>
           <div className="flex justify-between text-gray-600">
             <span>{t('common.cart.shipping')}</span>
@@ -227,7 +217,7 @@ export function OrderSummary({ cart, currency, t }: OrderSummaryProps) {
           <div className="border-t border-gray-200 pt-4">
             <div className="flex justify-between text-lg font-bold text-gray-900">
               <span>{t('common.cart.total')}</span>
-              <span>{formatPrice(cart.totals.total, currencyCode)}</span>
+              <span>{formatStorePriceForDisplay(cart.totals.total)}</span>
             </div>
           </div>
         </div>

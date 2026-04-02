@@ -112,27 +112,6 @@ export default function TermsPage() {
             {t('terms.limitationOfLiability.description')}
           </p>
     
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('terms.revisionsAndErrata.title')}</h2>
-          <p className="text-gray-600">
-            {t('terms.revisionsAndErrata.description')}
-          </p>
- 
-
-        
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('terms.governingLaw.title')}</h2>
-          <p className="text-gray-600">
-            {t('terms.governingLaw.description')}
-          </p>
-     
-
-       
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('terms.contactInformation.title')}</h2>
-          <p className="text-gray-600">
-            {t('terms.contactInformation.description')}{' '}
-            <a href="mailto:legal@whiteshop.com" className="text-blue-600 hover:underline">
-              legal@whiteshop.com
-            </a>
-          </p>
         </Card>
         </div>
       </div>

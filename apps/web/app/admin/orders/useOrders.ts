@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
-import { formatPriceInCurrency, convertPrice, getStoredCurrency, initializeCurrencyRates, CurrencyCode } from '../../../lib/currency';
+import { formatPriceInCurrency, amountToUsd } from '../../../lib/currency';
 
 export interface Order {
   id: string;
@@ -102,7 +102,6 @@ export function useOrders() {
   const searchParams = useSearchParams();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currency, setCurrency] = useState<CurrencyCode>(getStoredCurrency());
   const [statusFilter, setStatusFilter] = useState('');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -155,71 +154,13 @@ export function useOrders() {
     }
   }, [page, statusFilter, paymentStatusFilter, searchQuery, sortBy, sortOrder]);
 
-  // Initialize currency rates and listen for currency changes
-  useEffect(() => {
-    const updateCurrency = () => {
-      const newCurrency = getStoredCurrency();
-      console.log('💱 [ADMIN ORDERS] Currency updated to:', newCurrency);
-      setCurrency(newCurrency);
-    };
-    
-    // Initialize currency rates
-    initializeCurrencyRates().catch(console.error);
-    
-    // Load currency on mount
-    updateCurrency();
-    
-    // Listen for currency changes
-    if (typeof window !== 'undefined') {
-      window.addEventListener('currency-updated', updateCurrency);
-      // Also listen for currency rates updates
-      const handleCurrencyRatesUpdate = () => {
-        console.log('💱 [ADMIN ORDERS] Currency rates updated, refreshing currency...');
-        updateCurrency();
-      };
-      window.addEventListener('currency-rates-updated', handleCurrencyRatesUpdate);
-      
-      return () => {
-        window.removeEventListener('currency-updated', updateCurrency);
-        window.removeEventListener('currency-rates-updated', handleCurrencyRatesUpdate);
-      };
-    }
-  }, []);
-
   useEffect(() => {
     fetchOrders();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, statusFilter, paymentStatusFilter, searchQuery, sortBy, sortOrder]);
 
-  const formatCurrency: (amount: number, orderCurrency?: string, fromCurrency?: CurrencyCode) => string = (amount: number, orderCurrency: string = 'AMD', fromCurrency: CurrencyCode = 'USD') => {
-    // Use the selected display currency instead of order currency
-    const displayCurrency = currency;
-    
-    // Order subtotal and tax are stored in USD, but shipping and total are in AMD
-    // We need to handle conversion based on the source currency
-    if (displayCurrency === 'AMD') {
-      if (fromCurrency === 'USD') {
-        // Convert USD to AMD
-        const convertedAmount = convertPrice(amount, 'USD', 'AMD');
-        return formatPriceInCurrency(convertedAmount, 'AMD');
-      } else {
-        // Already in AMD, no conversion needed
-        return formatPriceInCurrency(amount, 'AMD');
-      }
-    } else {
-      // Convert from fromCurrency to display currency
-      if (fromCurrency === 'USD') {
-        // First convert USD to AMD, then to display currency
-        const amdAmount = convertPrice(amount, 'USD', 'AMD');
-        const convertedAmount = convertPrice(amdAmount, 'AMD', displayCurrency);
-        return formatPriceInCurrency(convertedAmount, displayCurrency);
-      } else {
-        // Already in AMD, convert to display currency
-        const convertedAmount = convertPrice(amount, 'AMD', displayCurrency);
-        return formatPriceInCurrency(convertedAmount, displayCurrency);
-      }
-    }
-  };
+  const formatCurrency = (amount: number, _orderCurrency?: string, storedAs?: string) =>
+    formatPriceInCurrency(amountToUsd(amount, storedAs ?? 'USD'), 'USD');
 
 
   const handleViewOrderDetails = (orderId: string) => {
@@ -397,7 +338,6 @@ export function useOrders() {
     // State
     orders,
     loading,
-    currency,
     statusFilter,
     paymentStatusFilter,
     searchQuery,

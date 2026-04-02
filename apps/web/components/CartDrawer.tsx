@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { getStoredCurrency, formatPrice, type CurrencyCode } from '../lib/currency';
+import { formatStorePriceForDisplay } from '../lib/currency';
 import { useTranslation } from '../lib/i18n-client';
-import { fetchGuestCart } from '../app/cart/cart-fetcher';
+import { readGuestCartFromStorage } from '../app/cart/cart-fetcher';
 import { handleRemoveItem, handleUpdateQuantity } from '../app/cart/cart-handlers';
 import type { Cart } from '../app/cart/types';
 
@@ -45,22 +45,12 @@ export function CartDrawer() {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [cart, setCart] = useState<Cart | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [currency, setCurrency] = useState(getStoredCurrency());
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
   const [recentlyAddedProductId, setRecentlyAddedProductId] = useState<string | null>(null);
   const isLocalUpdateRef = useRef(false);
 
-  const currencyCode = currency as CurrencyCode;
-
   async function loadCart() {
-    try {
-      setLoading(true);
-      const cartData = await fetchGuestCart(t, 'en');
-      setCart(cartData);
-    } finally {
-      setLoading(false);
-    }
+    setCart(readGuestCartFromStorage());
   }
 
   useEffect(() => {
@@ -82,10 +72,6 @@ export function CartDrawer() {
       }
     };
 
-    const handleCurrencyUpdate = () => {
-      setCurrency(getStoredCurrency());
-    };
-
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setIsOpen(false);
@@ -94,16 +80,14 @@ export function CartDrawer() {
 
     window.addEventListener(CART_DRAWER_OPEN_EVENT, handleOpen);
     window.addEventListener('cart-updated', handleCartUpdate);
-    window.addEventListener('currency-updated', handleCurrencyUpdate);
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener(CART_DRAWER_OPEN_EVENT, handleOpen);
       window.removeEventListener('cart-updated', handleCartUpdate);
-      window.removeEventListener('currency-updated', handleCurrencyUpdate);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, t]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!recentlyAddedProductId) {
@@ -190,21 +174,7 @@ export function CartDrawer() {
           </div>
 
           <div className="scrollbar-hide mt-8 min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-1">
-            {loading ? (
-              <div className="space-y-8">
-                {Array.from({ length: 2 }).map((_, index) => (
-                  <div key={index} className="flex animate-pulse gap-5">
-                    <div className="h-[7.25rem] w-[7rem] rounded-[0.875rem] bg-white" />
-                    <div className="flex-1 space-y-3">
-                      <div className="h-5 w-40 rounded bg-white/80" />
-                      <div className="h-3 w-24 rounded bg-white/70" />
-                      <div className="h-7 w-20 rounded bg-white/80" />
-                      <div className="h-5 w-16 rounded bg-white/80" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : cart && cart.items.length > 0 ? (
+            {cart && cart.items.length > 0 ? (
               <div className="space-y-8">
                 {cart.items.map((item) => (
                   <div
@@ -278,7 +248,7 @@ export function CartDrawer() {
                         </div>
 
                         <div className="mt-2 text-[1.125rem] font-extrabold leading-none text-black">
-                          {formatPrice(item.total, currencyCode)}
+                          {formatStorePriceForDisplay(item.total)}
                         </div>
                       </div>
 
@@ -307,11 +277,11 @@ export function CartDrawer() {
             <div className="mt-6 space-y-3 text-[1rem] leading-none text-[#414141]">
               <div className="flex items-center justify-between font-medium">
                 <span>Subtotal</span>
-                <span>{formatPrice(cart?.totals.subtotal ?? 0, currencyCode)}</span>
+                <span>{formatStorePriceForDisplay(cart?.totals.subtotal ?? 0)}</span>
               </div>
               <div className="flex items-center justify-between font-medium">
                 <span>Shipping</span>
-                <span>{formatPrice(cart?.totals.shipping ?? 0, currencyCode)}</span>
+                <span>{formatStorePriceForDisplay(cart?.totals.shipping ?? 0)}</span>
               </div>
             </div>
 
@@ -319,7 +289,7 @@ export function CartDrawer() {
 
             <div className="mt-4 flex items-center justify-between text-[1.375rem] font-extrabold leading-none text-[#414141]">
               <span>TOTAL</span>
-              <span>{formatPrice(cart?.totals.total ?? 0, currencyCode)}</span>
+              <span>{formatStorePriceForDisplay(cart?.totals.total ?? 0)}</span>
             </div>
 
             <button

@@ -36,7 +36,6 @@ function AddProductPageContent() {
     isAdmin,
     isLoading,
     setCategories: formState.setCategories,
-    setDefaultCurrency: formState.setDefaultCurrency,
     categoriesExpanded: formState.categoriesExpanded,
     setCategoriesExpanded: formState.setCategoriesExpanded,
   });
@@ -45,7 +44,6 @@ function AddProductPageContent() {
     productId,
     isLoggedIn,
     isAdmin,
-    defaultCurrency: formState.defaultCurrency,
     setLoadingProduct: formState.setLoadingProduct,
     setFormData: (updater) => formState.setFormData((prev) => updater(prev) as typeof formState.formData),
     setUseNewCategory: formState.setUseNewCategory,
@@ -224,7 +222,6 @@ function AddProductPageContent() {
     productType: formState.productType,
     simpleProductData: formState.simpleProductData,
     generatedVariants: formState.generatedVariants,
-    defaultCurrency: formState.defaultCurrency,
     useNewCategory: formState.useNewCategory,
     newCategoryName: formState.newCategoryName,
     isEditMode,
@@ -252,7 +249,7 @@ function AddProductPageContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div>
           <PageHeader isEditMode={isEditMode} />
 
@@ -261,7 +258,6 @@ function AddProductPageContent() {
             productType={formState.productType}
             simpleProductData={formState.simpleProductData}
             categories={formState.categories}
-            defaultCurrency={formState.defaultCurrency}
             isEditMode={isEditMode}
             loading={formState.loading}
             imageUploadLoading={formState.imageUploadLoading}

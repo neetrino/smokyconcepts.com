@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button, Card } from '@shop/ui';
-import { formatPriceInCurrency, convertPrice, type CurrencyCode } from '../../lib/currency';
+import { amountToUsd, formatPriceInCurrency } from '../../lib/currency';
 import { getStatusColor, getPaymentStatusColor } from './utils';
 import type { OrderListItem } from './types';
 
@@ -15,7 +15,6 @@ interface ProfileOrdersProps {
     limit: number;
     totalPages: number;
   } | null;
-  currency: CurrencyCode;
   onOrderClick: (orderNumber: string, e: React.MouseEvent<HTMLAnchorElement>) => void;
   t: (key: string) => string;
 }
@@ -26,7 +25,6 @@ export function ProfileOrders({
   ordersPage,
   setOrdersPage,
   ordersMeta,
-  currency,
   onOrderClick,
   t,
 }: ProfileOrdersProps) {
@@ -94,20 +92,19 @@ export function ProfileOrders({
               <div className="text-right ml-4">
                 <p className="text-lg font-bold text-gray-900">
                   {(() => {
-                    if (order.subtotal !== undefined && order.discountAmount !== undefined && order.taxAmount !== undefined) {
-                      const subtotalAMD = convertPrice(order.subtotal, 'USD', 'AMD');
-                      const discountAMD = convertPrice(order.discountAmount, 'USD', 'AMD');
-                      const taxAMD = convertPrice(order.taxAmount, 'USD', 'AMD');
-                      const totalWithoutShippingAMD = subtotalAMD - discountAMD + taxAMD;
-                      const totalDisplay = currency === 'AMD' ? totalWithoutShippingAMD : convertPrice(totalWithoutShippingAMD, 'AMD', currency);
-                      return formatPriceInCurrency(totalDisplay, currency);
-                    } else {
-                      const totalAMD = convertPrice(order.total, 'USD', 'AMD');
-                      const shippingAMD = order.shippingAmount || 0;
-                      const totalWithoutShippingAMD = totalAMD - shippingAMD;
-                      const totalDisplay = currency === 'AMD' ? totalWithoutShippingAMD : convertPrice(totalWithoutShippingAMD, 'AMD', currency);
-                      return formatPriceInCurrency(totalDisplay, currency);
+                    if (
+                      order.subtotal !== undefined &&
+                      order.discountAmount !== undefined &&
+                      order.taxAmount !== undefined
+                    ) {
+                      const subtotalUsd = amountToUsd(order.subtotal, order.currency);
+                      const discountUsd = amountToUsd(order.discountAmount, order.currency);
+                      const taxUsd = amountToUsd(order.taxAmount, order.currency);
+                      return formatPriceInCurrency(subtotalUsd - discountUsd + taxUsd, 'USD');
                     }
+                    const totalUsd = amountToUsd(order.total, order.currency);
+                    const shippingUsd = amountToUsd(order.shippingAmount || 0, order.currency);
+                    return formatPriceInCurrency(totalUsd - shippingUsd, 'USD');
                   })()}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">{t('profile.dashboard.viewDetails')}</p>

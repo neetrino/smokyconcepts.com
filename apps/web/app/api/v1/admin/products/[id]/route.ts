@@ -109,7 +109,7 @@ export async function PUT(
 
 /**
  * DELETE /api/v1/admin/products/[id]
- * Delete a product (soft delete)
+ * Permanently delete a product (database + search index)
  */
 export async function DELETE(
   req: NextRequest,

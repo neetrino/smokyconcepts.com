@@ -1,28 +1,25 @@
 import { useMemo } from 'react';
-import { convertPrice } from '../../../lib/currency';
-import type { CurrencyCode } from '../../../lib/currency';
+import { amountToUsd, catalogPriceToUsd } from '../../../lib/currency';
 import type { Cart } from '../types';
 
 interface UseOrderSummaryProps {
   cart: Cart | null;
   shippingMethod: 'pickup' | 'delivery';
   deliveryPrice: number | null;
-  currency: CurrencyCode;
 }
 
 export function useOrderSummary({
   cart,
   shippingMethod,
   deliveryPrice,
-  currency,
 }: UseOrderSummaryProps) {
   const orderSummary = useMemo(() => {
     if (!cart || cart.items.length === 0) {
       return {
-        subtotalAMD: 0,
-        taxAMD: 0,
-        shippingAMD: 0,
-        totalAMD: 0,
+        subtotalUsd: 0,
+        taxUsd: 0,
+        shippingUsd: 0,
+        totalUsd: 0,
         subtotalDisplay: 0,
         taxDisplay: 0,
         shippingDisplay: 0,
@@ -30,31 +27,25 @@ export function useOrderSummary({
       };
     }
 
-    const subtotalAMD = convertPrice(cart.totals.subtotal, 'USD', 'AMD');
-    const taxAMD = convertPrice(cart.totals.tax, 'USD', 'AMD');
-    const shippingAMD = shippingMethod === 'delivery' && deliveryPrice !== null ? deliveryPrice : 0;
-    const totalAMD = subtotalAMD + taxAMD + shippingAMD;
-    
-    const subtotalDisplay = convertPrice(subtotalAMD, 'AMD', currency);
-    const taxDisplay = convertPrice(taxAMD, 'AMD', currency);
-    const shippingDisplay = convertPrice(shippingAMD, 'AMD', currency);
-    const totalDisplay = convertPrice(totalAMD, 'AMD', currency);
-    
+    const cartMoneyCurrency = cart.totals.currency?.trim() || 'USD';
+    const subtotalUsd = amountToUsd(cart.totals.subtotal, cartMoneyCurrency);
+    const discountUsd = amountToUsd(cart.totals.discount, cartMoneyCurrency);
+    const taxUsd = amountToUsd(cart.totals.tax, cartMoneyCurrency);
+    const shippingUsd =
+      shippingMethod === 'delivery' && deliveryPrice !== null ? catalogPriceToUsd(deliveryPrice) : 0;
+    const totalUsd = subtotalUsd - discountUsd + taxUsd + shippingUsd;
+
     return {
-      subtotalAMD,
-      taxAMD,
-      shippingAMD,
-      totalAMD,
-      subtotalDisplay,
-      taxDisplay,
-      shippingDisplay,
-      totalDisplay,
+      subtotalUsd,
+      taxUsd,
+      shippingUsd,
+      totalUsd,
+      subtotalDisplay: subtotalUsd,
+      taxDisplay: taxUsd,
+      shippingDisplay: shippingUsd,
+      totalDisplay: totalUsd,
     };
-  }, [cart, shippingMethod, deliveryPrice, currency]);
+  }, [cart, shippingMethod, deliveryPrice]);
 
   return { orderSummary };
 }
-
-
-
-

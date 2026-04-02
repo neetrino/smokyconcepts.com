@@ -3,7 +3,7 @@
 import { useState, type ChangeEvent, type RefObject } from 'react';
 import { Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../../lib/i18n-client';
-import { CURRENCIES, type CurrencyCode } from '../../../../../lib/currency';
+import { CURRENCIES } from '../../../../../lib/currency';
 import type { GeneratedVariant } from '../types';
 import type { CategoryAttribute } from '@/lib/category-attributes';
 import { VariantRowAttributeSelectors } from './VariantRowAttributeSelectors';
@@ -21,7 +21,6 @@ interface VariantBuilderProps {
   onEnabledAttributeIdsChange: (next: Record<string, boolean>) => void;
   isEditMode: boolean;
   hasVariantsToLoad: boolean;
-  defaultCurrency: CurrencyCode;
   imageUploadLoading: boolean;
   slug: string;
   title: string;
@@ -42,7 +41,6 @@ export function VariantBuilder({
   onEnabledAttributeIdsChange,
   isEditMode,
   hasVariantsToLoad,
-  defaultCurrency,
   imageUploadLoading,
   slug,
   title,
@@ -318,7 +316,7 @@ export function VariantBuilder({
                             min="0"
                             step="0.01"
                           />
-                          <span className="text-xs text-gray-500">{CURRENCIES[defaultCurrency].symbol}</span>
+                          <span className="text-xs text-gray-500">{CURRENCIES.USD.symbol}</span>
                         </div>
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap">
@@ -336,7 +334,7 @@ export function VariantBuilder({
                             min="0"
                             step="0.01"
                           />
-                          <span className="text-xs text-gray-500">{CURRENCIES[defaultCurrency].symbol}</span>
+                          <span className="text-xs text-gray-500">{CURRENCIES.USD.symbol}</span>
                         </div>
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap">

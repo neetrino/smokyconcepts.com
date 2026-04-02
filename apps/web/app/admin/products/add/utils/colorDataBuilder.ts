@@ -1,8 +1,7 @@
 /**
- * Utilities for building color data map from variants
+ * Utilities for building color data map from variants (USD amounts as in API).
  */
 
-import { convertPrice, type CurrencyCode } from '@/lib/currency';
 import { smartSplitUrls } from '@/lib/services/utils/image-utils';
 import type { ColorData } from '../types';
 
@@ -24,18 +23,12 @@ interface Attribute {
   }>;
 }
 
-/**
- * Converts price to default currency
- */
-function convertPriceToDefaultCurrency(
-  price: number | string | null | undefined,
-  defaultCurrency: CurrencyCode
-): number {
+function variantPriceToFormString(price: number | string | null | undefined): number {
   if (price === undefined || price === null) {
     return 0;
   }
   const priceNum = typeof price === 'number' ? price : parseFloat(String(price || '0'));
-  return convertPrice(priceNum, 'USD', defaultCurrency);
+  return Number.isFinite(priceNum) ? priceNum : 0;
 }
 
 /**
@@ -73,27 +66,21 @@ function addImagesToColorData(colorData: ColorData, imageUrl: string | undefined
  */
 export function createDefaultColorData(
   variant: Variant,
-  defaultCurrency: CurrencyCode,
   defaultColorLabel: string,
   size: string,
   stockValue: string
 ): ColorData {
-  const priceInDefaultCurrency = convertPriceToDefaultCurrency(variant.price, defaultCurrency);
-  const compareAtPriceInDefaultCurrency = convertPriceToDefaultCurrency(
-    variant.compareAtPrice,
-    defaultCurrency
-  );
+  const priceNum = variantPriceToFormString(variant.price);
+  const compareNum = variantPriceToFormString(variant.compareAtPrice);
 
   const colorData: ColorData = {
     colorValue: 'default',
     colorLabel: defaultColorLabel,
     images: smartSplitUrls(variant.imageUrl),
     stock: size ? '' : stockValue,
-    price: variant.price !== undefined && variant.price !== null ? String(priceInDefaultCurrency) : '',
+    price: variant.price !== undefined && variant.price !== null ? String(priceNum) : '',
     compareAtPrice:
-      variant.compareAtPrice !== undefined && variant.compareAtPrice !== null
-        ? String(compareAtPriceInDefaultCurrency)
-        : '',
+      variant.compareAtPrice !== undefined && variant.compareAtPrice !== null ? String(compareNum) : '',
     sizes: [],
     sizeStocks: {},
     sizePrices: {},
@@ -106,10 +93,10 @@ export function createDefaultColorData(
     colorData.sizes = [size];
     colorData.sizeStocks = { [size]: stockValue };
     if (variant.price !== undefined && variant.price !== null) {
-      colorData.sizePrices![size] = String(priceInDefaultCurrency);
+      colorData.sizePrices![size] = String(priceNum);
     }
     if (variant.compareAtPrice !== undefined && variant.compareAtPrice !== null) {
-      colorData.sizeCompareAtPrices![size] = String(compareAtPriceInDefaultCurrency);
+      colorData.sizeCompareAtPrices![size] = String(compareNum);
     }
   }
 
@@ -122,7 +109,6 @@ export function createDefaultColorData(
 export function updateDefaultColorData(
   colorData: ColorData,
   variant: Variant,
-  defaultCurrency: CurrencyCode,
   size: string,
   stockValue: string
 ): void {
@@ -137,18 +123,13 @@ export function updateDefaultColorData(
       colorData.sizePrices = {};
     }
     if (variant.price !== undefined && variant.price !== null) {
-      const priceInDefaultCurrency = convertPriceToDefaultCurrency(variant.price, defaultCurrency);
-      colorData.sizePrices[size] = String(priceInDefaultCurrency);
+      colorData.sizePrices[size] = String(variantPriceToFormString(variant.price));
     }
     if (!colorData.sizeCompareAtPrices) {
       colorData.sizeCompareAtPrices = {};
     }
     if (variant.compareAtPrice !== undefined && variant.compareAtPrice !== null) {
-      const compareAtPriceInDefaultCurrency = convertPriceToDefaultCurrency(
-        variant.compareAtPrice,
-        defaultCurrency
-      );
-      colorData.sizeCompareAtPrices[size] = String(compareAtPriceInDefaultCurrency);
+      colorData.sizeCompareAtPrices[size] = String(variantPriceToFormString(variant.compareAtPrice));
     }
   } else {
     const currentStockNum = parseInt(colorData.stock) || 0;
@@ -164,7 +145,6 @@ export function createColorData(
   variant: Variant,
   color: string,
   attributes: Attribute[],
-  defaultCurrency: CurrencyCode,
   size: string,
   stockValue: string
 ): ColorData {
@@ -173,22 +153,17 @@ export function createColorData(
   const colorLabel =
     colorValueObj?.label || (color.charAt(0).toUpperCase() + color.slice(1).replace(/-/g, ' '));
 
-  const priceInDefaultCurrency = convertPriceToDefaultCurrency(variant.price, defaultCurrency);
-  const compareAtPriceInDefaultCurrency = convertPriceToDefaultCurrency(
-    variant.compareAtPrice,
-    defaultCurrency
-  );
+  const priceNum = variantPriceToFormString(variant.price);
+  const compareNum = variantPriceToFormString(variant.compareAtPrice);
 
   const colorData: ColorData = {
     colorValue: color,
     colorLabel: colorLabel,
     images: smartSplitUrls(variant.imageUrl),
     stock: size ? '' : stockValue,
-    price: variant.price !== undefined && variant.price !== null ? String(priceInDefaultCurrency) : '',
+    price: variant.price !== undefined && variant.price !== null ? String(priceNum) : '',
     compareAtPrice:
-      variant.compareAtPrice !== undefined && variant.compareAtPrice !== null
-        ? String(compareAtPriceInDefaultCurrency)
-        : '',
+      variant.compareAtPrice !== undefined && variant.compareAtPrice !== null ? String(compareNum) : '',
     sizes: [],
     sizeStocks: {},
     sizePrices: {},
@@ -201,10 +176,10 @@ export function createColorData(
     colorData.sizes = [size];
     colorData.sizeStocks = { [size]: stockValue };
     if (variant.price !== undefined && variant.price !== null) {
-      colorData.sizePrices![size] = String(priceInDefaultCurrency);
+      colorData.sizePrices![size] = String(priceNum);
     }
     if (variant.compareAtPrice !== undefined && variant.compareAtPrice !== null) {
-      colorData.sizeCompareAtPrices![size] = String(compareAtPriceInDefaultCurrency);
+      colorData.sizeCompareAtPrices![size] = String(compareNum);
     }
     if (variant.sizeLabel) {
       colorData.sizeLabels = { [size]: variant.sizeLabel };
@@ -220,7 +195,6 @@ export function createColorData(
 export function updateColorData(
   colorData: ColorData,
   variant: Variant,
-  defaultCurrency: CurrencyCode,
   size: string,
   stockValue: string
 ): void {
@@ -235,18 +209,13 @@ export function updateColorData(
       colorData.sizePrices = {};
     }
     if (variant.price !== undefined && variant.price !== null) {
-      const priceInDefaultCurrency = convertPriceToDefaultCurrency(variant.price, defaultCurrency);
-      colorData.sizePrices[size] = String(priceInDefaultCurrency);
+      colorData.sizePrices[size] = String(variantPriceToFormString(variant.price));
     }
     if (!colorData.sizeCompareAtPrices) {
       colorData.sizeCompareAtPrices = {};
     }
     if (variant.compareAtPrice !== undefined && variant.compareAtPrice !== null) {
-      const compareAtPriceInDefaultCurrency = convertPriceToDefaultCurrency(
-        variant.compareAtPrice,
-        defaultCurrency
-      );
-      colorData.sizeCompareAtPrices[size] = String(compareAtPriceInDefaultCurrency);
+      colorData.sizeCompareAtPrices[size] = String(variantPriceToFormString(variant.compareAtPrice));
     }
     if (variant.sizeLabel) {
       if (!colorData.sizeLabels) {
@@ -264,4 +233,3 @@ export function updateColorData(
     colorData.isFeatured = true;
   }
 }
-

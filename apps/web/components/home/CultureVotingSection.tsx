@@ -172,9 +172,9 @@ export function CultureVotingSection() {
 
   if (error) {
     return (
-      <section className="flex flex-col gap-8">
+      <section className="flex flex-col gap-10">
         <div className="flex min-h-[4rem] items-center justify-center">
-          <div className="w-full max-w-[52rem] px-4 text-center">
+          <div className="w-full max-w-[52rem] px-4 pb-1 text-center sm:pb-2">
             <HomeSectionTitle
               title={t('home.homepage.culture.title')}
               description={t('home.homepage.culture.description')}
@@ -198,9 +198,9 @@ export function CultureVotingSection() {
 
   if (loading) {
     return (
-      <section className="flex flex-col gap-8">
+      <section className="flex flex-col gap-10">
         <div className="flex min-h-[4rem] items-center justify-center">
-          <div className="w-full max-w-[52rem] px-4 text-center">
+          <div className="w-full max-w-[52rem] px-4 pb-1 text-center sm:pb-2">
             <HomeSectionTitle
               title={t('home.homepage.culture.title')}
               description={t('home.homepage.culture.description')}
@@ -224,9 +224,9 @@ export function CultureVotingSection() {
   }
 
   return (
-    <section className="flex flex-col gap-8 overflow-visible pb-10 sm:pb-6">
+    <section className="flex flex-col gap-10 overflow-visible pb-10 sm:pb-6">
       <div className="flex min-h-[4rem] items-center justify-center">
-        <div className="w-full max-w-[52rem] px-4 text-center">
+        <div className="w-full max-w-[52rem] px-4 pb-1 text-center sm:pb-2">
           <HomeSectionTitle
             title={t('home.homepage.culture.title')}
             description={t('home.homepage.culture.description')}

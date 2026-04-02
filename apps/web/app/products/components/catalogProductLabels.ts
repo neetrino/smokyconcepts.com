@@ -32,6 +32,10 @@ export function toCatalogProduct(input: {
   image: string | null;
   images?: string[];
   inStock?: boolean;
+  originalPrice?: number | null;
+  defaultVariantId?: string | null;
+  defaultVariantStock?: number;
+  defaultSku?: string;
   categories?: Array<{ id: string; slug: string; title: string }>;
   skus?: string[];
   colors?: string[];
@@ -44,6 +48,10 @@ export function toCatalogProduct(input: {
     image: input.image ?? null,
     images: Array.isArray(input.images) ? input.images : [],
     inStock: input.inStock ?? true,
+    originalPrice: input.originalPrice ?? null,
+    defaultVariantId: input.defaultVariantId ?? null,
+    defaultVariantStock: input.defaultVariantStock ?? 0,
+    defaultSku: input.defaultSku ?? '',
     categories: Array.isArray(input.categories) ? input.categories : [],
     skus: Array.isArray(input.skus) ? input.skus : [],
     colors: input.colors,
@@ -60,6 +68,34 @@ export function getProductSectionLabels(product: CatalogProduct): string[] {
   }
 
   return Array.from(new Set(labels));
+}
+
+/**
+ * Match catalog `category` query (slug from links or section title from dropdown) to products.
+ */
+export function productMatchesCategoryFilter(
+  product: CatalogProduct,
+  selectedCollection: string
+): boolean {
+  if (selectedCollection === 'all') {
+    return true;
+  }
+
+  if (product.categories.some((c) => c.slug === selectedCollection)) {
+    return true;
+  }
+
+  const sectionLabels = getProductSectionLabels(product);
+  if (sectionLabels.includes(selectedCollection)) {
+    return true;
+  }
+
+  const labelFromKnownSlug = SECTION_NAME_BY_CATEGORY_SLUG[selectedCollection];
+  if (labelFromKnownSlug && sectionLabels.includes(labelFromKnownSlug)) {
+    return true;
+  }
+
+  return false;
 }
 
 export function getSectionLabel(product: CatalogProduct): string {

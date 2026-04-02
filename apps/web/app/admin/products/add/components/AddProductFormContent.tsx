@@ -5,7 +5,6 @@ import { Card, Input } from '@shop/ui';
 import { CURRENCIES } from '@/lib/currency';
 import { useTranslation } from '@/lib/i18n-client';
 import type { Category, Variant, ProductLabel, GeneratedVariant } from '../types';
-import type { CurrencyCode } from '@/lib/currency';
 import type { CategoryAttribute } from '@/lib/category-attributes';
 import { BasicInformation } from './BasicInformation';
 import { ProductImages } from './ProductImages';
@@ -38,7 +37,6 @@ interface AddProductFormContentProps {
     quantity: string;
   };
   categories: Category[];
-  defaultCurrency: CurrencyCode;
   isEditMode: boolean;
   loading: boolean;
   imageUploadLoading: boolean;
@@ -93,7 +91,6 @@ export function AddProductFormContent({
   productType,
   simpleProductData,
   categories,
-  defaultCurrency,
   isEditMode,
   loading,
   imageUploadLoading,
@@ -191,7 +188,7 @@ export function AddProductFormContent({
                   min="0"
                   step="0.01"
                 />
-                <span className="text-sm text-gray-500">{CURRENCIES[defaultCurrency].symbol}</span>
+                <span className="text-sm text-gray-500">{CURRENCIES.USD.symbol}</span>
               </div>
               <div className="flex items-center gap-2">
                 <label className="text-sm font-medium text-gray-600 shrink-0">
@@ -208,7 +205,7 @@ export function AddProductFormContent({
                   min="0"
                   step="0.01"
                 />
-                <span className="text-sm text-gray-500">{CURRENCIES[defaultCurrency].symbol}</span>
+                <span className="text-sm text-gray-500">{CURRENCIES.USD.symbol}</span>
               </div>
             </div>
           </div>
@@ -236,7 +233,6 @@ export function AddProductFormContent({
             compareAtPrice={simpleProductData.compareAtPrice}
             sku={simpleProductData.sku}
             quantity={simpleProductData.quantity}
-            defaultCurrency={defaultCurrency}
             onPriceChange={onPriceChange}
             onCompareAtPriceChange={onCompareAtPriceChange}
             onSkuChange={onSkuChange}
@@ -253,7 +249,6 @@ export function AddProductFormContent({
             onEnabledAttributeIdsChange={onEnabledAttributeIdsChange}
             isEditMode={isEditMode}
             hasVariantsToLoad={hasVariantsToLoad}
-            defaultCurrency={defaultCurrency}
             imageUploadLoading={imageUploadLoading}
             slug={formData.slug}
             title={formData.title}

@@ -37,6 +37,10 @@ interface ApiProduct {
   brand?: { id: string; name: string } | null;
   skus?: string[];
   colors?: string[];
+  originalPrice?: number | null;
+  defaultVariantId?: string | null;
+  defaultVariantStock?: number;
+  defaultSku?: string;
 }
 
 interface ProductsResponse {
@@ -56,6 +60,10 @@ function mapApiProductToCatalogProduct(product: ApiProduct): CatalogProduct {
     image: product.image,
     images: product.images,
     inStock: product.inStock,
+    originalPrice: product.originalPrice ?? null,
+    defaultVariantId: product.defaultVariantId ?? null,
+    defaultVariantStock: product.defaultVariantStock ?? 0,
+    defaultSku: product.defaultSku ?? '',
     categories: product.categories,
     skus: product.skus,
     colors: product.colors,
@@ -175,12 +183,12 @@ export function TrendingFeaturedSection() {
         currentPage += 1;
       } while (currentPage <= totalPages);
 
-      const seenSlugs = new Set<string>();
+      const seenIds = new Set<string>();
       const mapped: CatalogProduct[] = aggregatedItems
         .filter((p) => {
-          const slug = p.slug ?? p.id;
-          if (seenSlugs.has(slug)) return false;
-          seenSlugs.add(slug);
+          const id = p.id?.trim() ?? '';
+          if (!id || seenIds.has(id)) return false;
+          seenIds.add(id);
           return true;
         })
         .map((p) => {
@@ -207,6 +215,14 @@ export function TrendingFeaturedSection() {
   useEffect(() => {
     setCurrentPage(0);
   }, [items.length]);
+
+  /** Duplicating the track lets the carousel loop when there are many items; with ≤3, it shows the same product twice in the viewport. */
+  const duplicateDesktopTrack = n > TRENDING_ITEMS_PER_PAGE;
+  const desktopTrackItems = duplicateDesktopTrack ? [...items, ...items] : items;
+  const desktopTrackWidthRem =
+    desktopTrackItems.length > 0
+      ? desktopTrackItems.length * TRENDING_TRACK_STEP_REM - TRENDING_CARD_GAP_REM
+      : undefined;
 
   const firstVisible = visibleItems[0];
   const firstSection = firstVisible ? getSectionLabel(firstVisible) : '';
@@ -356,11 +372,11 @@ export function TrendingFeaturedSection() {
             className="flex touch-pan-y items-end justify-start gap-3 transition-transform duration-300 ease-out"
             style={{
               transform: `translateX(-${startIndex * TRENDING_TRACK_STEP_REM}rem)`,
-              width: n > 0 ? `${(n * 2) * TRENDING_TRACK_STEP_REM - TRENDING_CARD_GAP_REM}rem` : undefined,
+              width: desktopTrackWidthRem !== undefined ? `${desktopTrackWidthRem}rem` : undefined,
             }}
           >
             {n > 0 &&
-              [...items, ...items].map((product, index) => {
+              desktopTrackItems.map((product, index) => {
                 const isMiddle = index === startIndex + 1;
                 const section = getSectionLabel(product);
                 return (

@@ -1,7 +1,6 @@
 'use client';
 
 import { useTranslation } from '../../../../lib/i18n-client';
-import { CurrencyCode } from '../../../../lib/currency';
 import { OrderDetailsSummary } from './OrderDetailsSummary';
 import { OrderDetailsAddresses } from './OrderDetailsAddresses';
 import { OrderDetailsTotals } from './OrderDetailsTotals';
@@ -13,7 +12,7 @@ interface OrderDetailsModalProps {
   loading: boolean;
   currency: string;
   onClose: () => void;
-  formatCurrency: (amount: number, orderCurrency?: string, fromCurrency?: CurrencyCode) => string;
+  formatCurrency: (amount: number, orderCurrency?: string, storedCurrency?: string) => string;
 }
 
 export function OrderDetailsModal({

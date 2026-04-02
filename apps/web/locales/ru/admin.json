@@ -729,6 +729,8 @@
     "update": "Обновить",
     "saving": "Сохранение...",
     "back": "Назад",
-    "backToAdmin": "Вернуться в панель администратора"
+    "backToAdmin": "Вернуться в панель администратора",
+    "themeSwitchToLight": "Светлая тема",
+    "themeSwitchToDark": "Тёмная тема"
   }
 }

@@ -3,7 +3,6 @@
 import { Button } from '@shop/ui';
 import { useTranslation } from '../../lib/i18n-client';
 import { formatPriceInCurrency } from '../../lib/currency';
-import type { CurrencyCode } from '../../lib/currency';
 
 interface Cart {
   id: string;
@@ -27,7 +26,6 @@ interface OrderSummaryProps {
     shippingDisplay: number;
     totalDisplay: number;
   };
-  currency: CurrencyCode;
   shippingMethod: 'pickup' | 'delivery';
   shippingCity: string | undefined;
   loadingDeliveryPrice: boolean;
@@ -40,7 +38,6 @@ interface OrderSummaryProps {
 export function OrderSummary({
   cart,
   orderSummary,
-  currency,
   shippingMethod,
   shippingCity,
   loadingDeliveryPrice,
@@ -58,7 +55,7 @@ export function OrderSummary({
         <div className="space-y-4 mb-6">
           <div className="flex justify-between text-gray-600">
             <span>{t('checkout.summary.subtotal')}</span>
-            <span>{formatPriceInCurrency(orderSummary.subtotalDisplay, currency)}</span>
+            <span>{formatPriceInCurrency(orderSummary.subtotalDisplay)}</span>
           </div>
           <div className="flex justify-between text-gray-600">
             <span>{t('checkout.summary.shipping')}</span>
@@ -68,7 +65,7 @@ export function OrderSummary({
                 : loadingDeliveryPrice
                   ? t('checkout.shipping.loading')
                   : deliveryPrice !== null
-                    ? formatPriceInCurrency(orderSummary.shippingDisplay, currency) + (shippingCity ? ` (${shippingCity})` : ` (${t('checkout.shipping.delivery')})`)
+                    ? formatPriceInCurrency(orderSummary.shippingDisplay) + (shippingCity ? ` (${shippingCity})` : ` (${t('checkout.shipping.delivery')})`)
                     : t('checkout.shipping.enterCity')}
             </span>
           </div>
@@ -76,7 +73,7 @@ export function OrderSummary({
             <div className="flex justify-between text-lg font-bold text-gray-900">
               <span>{t('checkout.summary.total')}</span>
               <span>
-                {formatPriceInCurrency(orderSummary.totalDisplay, currency)}
+                {formatPriceInCurrency(orderSummary.totalDisplay)}
               </span>
             </div>
           </div>

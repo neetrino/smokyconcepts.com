@@ -1,52 +1,43 @@
 {
-  "title": "Returns and Refunds",
-  "returnPolicy": {
-    "title": "30-Day Return Policy",
-    "description": "You have 30 days from the date of purchase to return items in their original condition with tags attached."
+  "title": "Return and Exchange Policy",
+  "lastUpdated": "Last updated:",
+  "intro": "We want you to be completely satisfied with your purchase. If for any reason your order does not meet your expectations, we are here to assist you with exchanges or returns.",
+  "exchange": {
+    "title": "1. Exchange",
+    "bullet1": "Purchased items (except custom orders) are eligible for exchange within 14 days.",
+    "bullet2": "The item must be unused, in its original condition, and in its original packaging.",
+    "bullet3": "An official receipt or proof of purchase is required for exchanges."
   },
-  "returnConditions": {
-    "title": "Return Conditions",
-    "items": {
-      "unworn": "Items must be unworn, unwashed and in original packaging",
-      "tags": "All tags and labels must be attached",
-      "saleable": "Items must be in saleable condition",
-      "proof": "Proof of purchase required"
-    }
+  "productReturn": {
+    "title": "2. Returns",
+    "bullet1": "Purchased items (except custom orders) can be returned within 14 days.",
+    "bullet2": "The item must be unused, undamaged, and in its original packaging.",
+    "bullet3": "An official receipt or proof of purchase is required for returns.",
+    "bullet4": "If we mistakenly sent the wrong item, the customer may return it or exchange it for the correct product at no additional charge.",
+    "bullet5": "For security reasons, returned items must not contain any engravings or markings, such as \"Gold,\" \"Jewelry,\" or similar inscriptions."
   },
-  "howToReturn": {
-    "title": "How to Return",
-    "steps": {
-      "contact": "Contact our customer service team to initiate a return",
-      "authorization": "Get a return authorization number",
-      "package": "Package items securely with return form",
-      "ship": "Ship the package to our return address",
-      "process": "After receipt we will process your refund within 5-7 business days"
-    }
+  "moneyRefund": {
+    "title": "3. Refunds",
+    "bullet1": "If the returned item meets the stated conditions, a refund will be issued using the same payment method used for the original purchase.",
+    "bullet2": "Refunds for card payments will be processed within up to 7 business days, depending on the bank’s processing time.",
+    "bullet3": "Shipping fees are non-refundable, except in cases where we have sent the wrong item."
   },
-  "refundProcess": {
-    "title": "Refund Process",
-    "description": "Refunds will be processed to the original payment method. Please allow 5-7 business days for the refund to appear on your account."
+  "orderCancellation": {
+    "title": "4. Order Cancellation",
+    "bullet1": "Orders can be canceled before shipment.",
+    "bullet2": "If the order has already been shipped, cancellation is not possible."
+  },
+  "personalizedOrders": {
+    "title": "5. Personalized Orders",
+    "description": "Personalized items, including engraved and custom-made products, cannot be returned or exchanged."
   },
   "nonReturnable": {
-    "title": "Non-Returnable Items",
-    "items": {
-      "personalized": "Personalized or custom-made items",
-      "packaging": "Items without original packaging",
-      "damaged": "Items damaged due to misuse",
-      "sale": "Sale items (unless defective)"
-    }
+    "title": "6. Non-Returnable Items",
+    "bullet1": "Personalized orders (engraved, custom-made products)",
+    "bullet2": "Items containing engravings or markings (e.g., \"Gold,\" \"Jewelry\") due to security reasons"
   },
-  "needMoreInfo": {
-    "title": "Need More Information?",
-    "description1": "For detailed delivery and return information, visit our",
-    "deliveryLink": "Delivery and Returns page",
-    "description2": "If you have questions, please",
-    "contactLink": "contact our support team"
+  "specialNote": {
+    "label": "Special Note:",
+    "body": "If your item arrives damaged or there is an issue during delivery, please contact us immediately so we can find the best solution."
   }
 }
-
-
-
-
-
-

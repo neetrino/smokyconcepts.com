@@ -6,8 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { useAddToCart } from '../../../components/hooks/useAddToCart';
-import { useCurrency } from '../../../components/hooks/useCurrency';
-import { formatPrice } from '../../../lib/currency';
+import { formatCatalogPrice } from '../../../lib/currency';
 
 const BAG_ICON_PATH = '/assets/home/icons/bag.svg';
 const CATALOG_BAG_ICON_PATH = '/assets/home/icons/bag-catalog.svg';
@@ -29,6 +28,11 @@ export interface CatalogProductCardItem {
   image: string | null;
   images?: string[];
   inStock: boolean;
+  originalPrice?: number | null;
+  /** From list API — required for local-only cart lines */
+  defaultVariantId?: string | null;
+  defaultVariantStock?: number;
+  defaultSku?: string;
 }
 
 interface ProductsCatalogCardProps {
@@ -67,11 +71,19 @@ export function ProductsCatalogCard({
   shouldBlockProductNavigation,
 }: ProductsCatalogCardProps) {
   const router = useRouter();
-  const currency = useCurrency();
   const { isAddingToCart, addToCart } = useAddToCart({
     productId: product.id,
     productSlug: product.slug,
+    title: product.title,
+    price: product.price ?? 0,
+    image: product.image,
+    originalPrice: product.originalPrice ?? null,
     inStock: product.inStock,
+    defaultVariantId: product.defaultVariantId ?? null,
+    defaultVariantStock: product.defaultVariantStock ?? 0,
+    defaultSku: product.defaultSku ?? '',
+    sizeLabel,
+    categoryLabel,
   });
   const productImages = useMemo(() => {
     const rawImages = product.images && product.images.length > 0 ? product.images : [product.image];
@@ -240,7 +252,7 @@ export function ProductsCatalogCard({
 
         <div className={compactLayout ? 'mt-2 flex items-center justify-between gap-2' : 'mt-5 flex items-center justify-between gap-3'}>
           <span className={`font-extrabold leading-none text-black ${priceClassName}`}>
-            {formatPrice(product.price ?? 0, currency)}
+            {formatCatalogPrice(product.price ?? 0)}
           </span>
 
           <div className="flex items-center gap-[0.625rem]">

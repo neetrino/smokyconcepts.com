@@ -7,7 +7,6 @@ import { ContactInformation } from './ContactInformation';
 import { CardInputFields } from './CardInputFields';
 import { OrderSummaryModal } from './OrderSummaryModal';
 import { CheckoutFormData, Cart } from '../types';
-import type { CurrencyCode } from '../../../lib/currency';
 
 interface ShippingAddressModalProps {
   isOpen: boolean;
@@ -26,7 +25,6 @@ interface ShippingAddressModalProps {
     shippingDisplay: number;
     totalDisplay: number;
   };
-  currency: CurrencyCode;
   shippingCity?: string;
   loadingDeliveryPrice: boolean;
   deliveryPrice: number | null;
@@ -45,7 +43,6 @@ export function ShippingAddressModal({
   paymentMethod,
   cart,
   orderSummary,
-  currency,
   shippingCity,
   loadingDeliveryPrice,
   deliveryPrice,
@@ -162,7 +159,6 @@ export function ShippingAddressModal({
             <OrderSummaryModal
               cart={cart}
               orderSummary={orderSummary}
-              currency={currency}
               shippingMethod={shippingMethod}
               shippingCity={shippingCity}
               loadingDeliveryPrice={loadingDeliveryPrice}
@@ -203,7 +199,6 @@ export function ShippingAddressModal({
             <OrderSummaryModal
               cart={cart}
               orderSummary={orderSummary}
-              currency={currency}
               shippingMethod={shippingMethod}
               shippingCity={shippingCity}
               loadingDeliveryPrice={loadingDeliveryPrice}

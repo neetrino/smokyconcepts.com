@@ -2,7 +2,6 @@
 
 import { useTranslation } from '../../../../lib/i18n-client';
 import { Card } from '@shop/ui';
-import { CurrencyCode } from '../../../../lib/currency';
 import { OrderRow } from './OrderRow';
 import { OrdersPagination } from './OrdersPagination';
 import type { Order } from '../useOrders';
@@ -24,7 +23,6 @@ interface OrdersTableProps {
   onStatusChange: (orderId: string, newStatus: string) => void;
   onPaymentStatusChange: (orderId: string, newPaymentStatus: string) => void;
   onPageChange: (newPage: number) => void;
-  formatCurrency: (amount: number, orderCurrency?: string, fromCurrency?: CurrencyCode) => string;
 }
 
 export function OrdersTable({
@@ -44,7 +42,6 @@ export function OrdersTable({
   onStatusChange,
   onPaymentStatusChange,
   onPageChange,
-  formatCurrency,
 }: OrdersTableProps) {
   const { t } = useTranslation();
 
@@ -160,7 +157,6 @@ export function OrdersTable({
                 onViewDetails={() => onViewDetails(order.id)}
                 onStatusChange={(newStatus) => onStatusChange(order.id, newStatus)}
                 onPaymentStatusChange={(newPaymentStatus) => onPaymentStatusChange(order.id, newPaymentStatus)}
-                formatCurrency={formatCurrency}
               />
             ))}
           </tbody>

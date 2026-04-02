@@ -2,16 +2,15 @@
 
 import { Card } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
-import type { CurrencyCode } from '../../../../lib/currency';
 import { OrderItem } from './OrderItem';
 import type { OrderItem as OrderItemType } from '../types';
 
 interface OrderItemsProps {
   items: OrderItemType[];
-  currency: CurrencyCode;
+  orderTotalsCurrency: string;
 }
 
-export function OrderItems({ items, currency }: OrderItemsProps) {
+export function OrderItems({ items, orderTotalsCurrency }: OrderItemsProps) {
   const { t } = useTranslation();
 
   return (
@@ -19,7 +18,7 @@ export function OrderItems({ items, currency }: OrderItemsProps) {
       <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('orders.orderItems.title')}</h2>
       <div className="space-y-4">
         {items.map((item, index) => (
-          <OrderItem key={index} item={item} currency={currency} />
+          <OrderItem key={index} item={item} orderTotalsCurrency={orderTotalsCurrency} />
         ))}
       </div>
     </Card>

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, use, useMemo } from 'react';
-import { getStoredCurrency } from '../../../lib/currency';
 import { getStoredLanguage, type LanguageCode } from '../../../lib/language';
 import { useProductImages } from './hooks/useProductImages';
 import { useProductFetch } from './hooks/useProductFetch';
@@ -15,7 +14,6 @@ import { switchToVariantImage } from './utils/image-switching';
 
 export function useProductPage(params: Promise<{ slug?: string }>) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [currency, setCurrency] = useState(getStoredCurrency());
   const [language, setLanguage] = useState<LanguageCode>('en');
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [showMessage, setShowMessage] = useState<string | null>(null);
@@ -68,19 +66,6 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
 
   useEffect(() => {
     setLanguage(getStoredLanguage());
-  }, []);
-
-  useEffect(() => {
-    const handleCurrencyUpdate = () => setCurrency(getStoredCurrency());
-    const handleCurrencyRatesUpdate = () => setCurrency(getStoredCurrency());
-    
-    window.addEventListener('currency-updated', handleCurrencyUpdate);
-    window.addEventListener('currency-rates-updated', handleCurrencyRatesUpdate);
-    
-    return () => {
-      window.removeEventListener('currency-updated', handleCurrencyUpdate);
-      window.removeEventListener('currency-rates-updated', handleCurrencyRatesUpdate);
-    };
   }, []);
 
   useEffect(() => {
@@ -196,7 +181,6 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     setCurrentImageIndex: handleImageIndexChange,
     thumbnailStartIndex,
     setThumbnailStartIndex,
-    currency,
     language,
     selectedColor,
     selectedSize,

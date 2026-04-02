@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { apiClient } from '@/lib/api-client';
-import { CURRENCIES, type CurrencyCode } from '@/lib/currency';
 import type { Category } from '../types';
 
 interface UseProductDataLoadingProps {
@@ -10,7 +9,6 @@ interface UseProductDataLoadingProps {
   isAdmin: boolean;
   isLoading: boolean;
   setCategories: (categories: Category[]) => void;
-  setDefaultCurrency: (currency: CurrencyCode) => void;
   categoriesExpanded: boolean;
   setCategoriesExpanded: (expanded: boolean) => void;
 }
@@ -20,7 +18,6 @@ export function useProductDataLoading({
   isAdmin,
   isLoading,
   setCategories,
-  setDefaultCurrency,
   categoriesExpanded,
   setCategoriesExpanded,
 }: UseProductDataLoadingProps) {
@@ -35,27 +32,6 @@ export function useProductDataLoading({
       }
     }
   }, [isLoggedIn, isAdmin, isLoading, router]);
-
-  // Load default currency from settings
-  useEffect(() => {
-    const loadDefaultCurrency = async () => {
-      try {
-        const settingsRes = await apiClient.get<{ defaultCurrency?: string }>('/api/v1/admin/settings');
-        const currency = (settingsRes.defaultCurrency || 'USD') as CurrencyCode;
-        if (currency in CURRENCIES) {
-          setDefaultCurrency(currency);
-          console.log('✅ [ADMIN] Default currency loaded:', currency);
-        }
-      } catch (err) {
-        console.error('❌ [ADMIN] Error loading default currency:', err);
-        setDefaultCurrency('USD');
-      }
-    };
-    
-    if (isLoggedIn && isAdmin) {
-      loadDefaultCurrency();
-    }
-  }, [isLoggedIn, isAdmin, setDefaultCurrency]);
 
   // Fetch categories once when admin is ready (setCategories is stable from useState)
   useEffect(() => {

@@ -5,11 +5,11 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../lib/auth/AuthContext';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
-import { getStoredCurrency, initializeCurrencyRates, type CurrencyCode } from '../../../lib/currency';
 import { ProductFilters } from './components/ProductFilters';
 import { ProductsTable } from './components/ProductsTable';
 import { useProductHandlers } from './hooks/useProductHandlers';
 import type { Product, ProductsResponse, Category } from './types';
+import { ADMIN_CENTERED_LOADING_CLASS, ADMIN_PAGE_SHELL_CLASS } from '../constants/adminShell.constants';
 
 export default function ProductsPage() {
   const { t } = useTranslation();
@@ -32,7 +32,6 @@ export default function ProductsPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [togglingAllFeatured, setTogglingAllFeatured] = useState(false);
-  const [currency, setCurrency] = useState<CurrencyCode>('USD');
 
   useEffect(() => {
     if (!isLoading) {
@@ -42,36 +41,6 @@ export default function ProductsPage() {
       }
     }
   }, [isLoggedIn, isAdmin, isLoading, router]);
-
-  // Initialize currency rates and listen for currency changes
-  useEffect(() => {
-    const updateCurrency = () => {
-      const newCurrency = getStoredCurrency();
-      console.log('💱 [ADMIN PRODUCTS] Currency updated to:', newCurrency);
-      setCurrency(newCurrency);
-    };
-    
-    // Initialize currency rates
-    initializeCurrencyRates().catch(console.error);
-    
-    // Load currency on mount
-    updateCurrency();
-    
-    // Listen for currency changes
-    if (typeof window !== 'undefined') {
-      window.addEventListener('currency-updated', updateCurrency);
-      const handleCurrencyRatesUpdate = () => {
-        console.log('💱 [ADMIN PRODUCTS] Currency rates updated, refreshing currency...');
-        updateCurrency();
-      };
-      window.addEventListener('currency-rates-updated', handleCurrencyRatesUpdate);
-      
-      return () => {
-        window.removeEventListener('currency-updated', updateCurrency);
-        window.removeEventListener('currency-rates-updated', handleCurrencyRatesUpdate);
-      };
-    }
-  }, []);
 
   // Fetch categories on mount
   useEffect(() => {
@@ -297,9 +266,9 @@ export default function ProductsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className={ADMIN_CENTERED_LOADING_CLASS}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4" />
           <p className="text-gray-600">{t('admin.common.loading')}</p>
         </div>
       </div>
@@ -311,8 +280,8 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className={ADMIN_PAGE_SHELL_CLASS}>
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="mb-6">
           <button
             onClick={() => router.push('/admin')}
@@ -387,7 +356,6 @@ export default function ProductsPage() {
               toggleSelectAll={handlers.toggleSelectAll}
               sortBy={sortBy}
               handleHeaderSort={handleHeaderSort}
-              currency={currency}
               handleDeleteProduct={handlers.handleDeleteProduct}
               handleDuplicateProduct={handlers.handleDuplicateProduct}
               handleTogglePublished={handlers.handleTogglePublished}

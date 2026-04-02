@@ -25,6 +25,10 @@ interface ApiProduct {
   skus?: string[];
   categories?: Array<{ id: string; slug: string; title: string }>;
   brand?: { id: string; name: string } | null;
+  originalPrice?: number | null;
+  defaultVariantId?: string | null;
+  defaultVariantStock?: number;
+  defaultSku?: string;
 }
 
 interface ProductsResponse {
@@ -198,6 +202,10 @@ export function UpcomingProductsSection() {
               image: item.image,
               images: item.images,
               inStock: item.inStock,
+              originalPrice: item.originalPrice ?? null,
+              defaultVariantId: item.defaultVariantId ?? null,
+              defaultVariantStock: item.defaultVariantStock ?? 0,
+              defaultSku: item.defaultSku ?? '',
               categories: item.categories,
               skus: item.skus,
             });

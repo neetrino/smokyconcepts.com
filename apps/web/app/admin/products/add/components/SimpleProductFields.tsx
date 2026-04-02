@@ -2,14 +2,13 @@
 
 import { Input } from '@shop/ui';
 import { useTranslation } from '../../../../../lib/i18n-client';
-import { CURRENCIES, type CurrencyCode } from '../../../../../lib/currency';
+import { CURRENCIES } from '../../../../../lib/currency';
 
 interface SimpleProductFieldsProps {
   price: string;
   compareAtPrice: string;
   sku: string;
   quantity: string;
-  defaultCurrency: CurrencyCode;
   onPriceChange: (value: string) => void;
   onCompareAtPriceChange: (value: string) => void;
   onSkuChange: (value: string) => void;
@@ -21,7 +20,6 @@ export function SimpleProductFields({
   compareAtPrice,
   sku,
   quantity,
-  defaultCurrency,
   onPriceChange,
   onCompareAtPriceChange,
   onSkuChange,
@@ -50,7 +48,7 @@ export function SimpleProductFields({
                 step="0.01"
                 required
               />
-              <span className="text-sm text-gray-500 whitespace-nowrap">{CURRENCIES[defaultCurrency].symbol}</span>
+              <span className="text-sm text-gray-500 whitespace-nowrap">{CURRENCIES.USD.symbol}</span>
             </div>
           </div>
 
@@ -69,7 +67,7 @@ export function SimpleProductFields({
                 min="0"
                 step="0.01"
               />
-              <span className="text-sm text-gray-500 whitespace-nowrap">{CURRENCIES[defaultCurrency].symbol}</span>
+              <span className="text-sm text-gray-500 whitespace-nowrap">{CURRENCIES.USD.symbol}</span>
             </div>
           </div>
 

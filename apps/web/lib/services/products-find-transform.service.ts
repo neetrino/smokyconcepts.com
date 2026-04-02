@@ -1,5 +1,5 @@
 import { db } from "@white-shop/db";
-import { processImageUrl } from "./utils/image-utils";
+import { buildCatalogGalleryImages } from "./products-list-gallery-images";
 import { t } from "../i18n";
 import { ProductWithRelations } from "./products-find-query.service";
 import { isDefaultPricingVariant } from "@/lib/default-pricing-variant";
@@ -27,18 +27,6 @@ function getVariantOptions(attributes: unknown): VariantOptionFromAttributes[] {
 const getOutOfStockLabel = (lang: string = "en"): string => {
   return t(lang as "en" | "hy" | "ru", "common.stock.outOfStock");
 };
-
-function extractProductImages(media: unknown): string[] {
-  if (!Array.isArray(media)) {
-    return [];
-  }
-
-  return media
-    .map((item) =>
-      processImageUrl(item as string | null | undefined | { url?: string; src?: string; value?: string })
-    )
-    .filter((url, index, urls): url is string => url !== null && urls.indexOf(url) === index);
-}
 
 class ProductsFindTransformService {
   /**
@@ -255,13 +243,17 @@ class ProductsFindTransformService {
         if (primary) categories = [primary];
       }
 
-      const productImages = extractProductImages(product.media);
+      const productImages = buildCatalogGalleryImages(product.media, variants);
 
       return {
         id: product.id,
         slug: translation?.slug || "",
         title: translation?.title || "",
         brand: null,
+        /** Pricing/default variant — required for fast client-only cart lines from catalog cards */
+        defaultVariantId: defaultVariant?.id ?? null,
+        defaultVariantStock: defaultVariant?.stock ?? 0,
+        defaultSku: defaultVariant?.sku?.trim() ?? "",
         categories,
         skus: (selectableVariants.length > 0 ? selectableVariants : variants)
           .map((item) => item.sku?.trim() || "")

@@ -726,6 +726,8 @@
     "update": "Թարմացնել",
     "saving": "Պահվում է...",
     "back": "Վերադառնալ",
-    "backToAdmin": "Վերադառնալ ադմինիստրատորի վահան"
+    "backToAdmin": "Վերադառնալ ադմինիստրատորի վահան",
+    "themeSwitchToLight": "Թեթև ռեժիմ",
+    "themeSwitchToDark": "Մուգ ռեժիմ"
   }
 }

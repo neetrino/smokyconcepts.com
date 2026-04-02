@@ -22,7 +22,7 @@ export function HomeSectionTitle({
         {title}
       </h2>
       {description ? (
-        <p className="max-w-[52rem] text-base font-medium leading-[1.375] text-[#414141] sm:leading-relaxed">
+        <p className="max-w-[52rem] whitespace-pre-line text-base font-medium leading-[1.375] text-[#414141] sm:leading-relaxed">
           {description}
         </p>
       ) : null}

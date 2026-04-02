@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { getStoredCurrency } from '../../lib/currency';
 import { getStoredLanguage } from '../../lib/language';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { useTranslation } from '../../lib/i18n-client';
@@ -20,7 +19,6 @@ export function useCheckout() {
   const { isLoggedIn, isLoading } = useAuth();
   const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
-  const [currency, setCurrency] = useState(getStoredCurrency());
   const [language, setLanguage] = useState(getStoredLanguage());
   const [logoErrors, setLogoErrors] = useState<Record<string, boolean>>({});
   const [showShippingModal, setShowShippingModal] = useState(false);
@@ -71,7 +69,6 @@ export function useCheckout() {
     cart,
     shippingMethod,
     deliveryPrice,
-    currency,
   });
 
   useEffect(() => {
@@ -81,26 +78,14 @@ export function useCheckout() {
 
     fetchCart();
 
-    const handleCurrencyUpdate = () => {
-      setCurrency(getStoredCurrency());
-    };
-
     const handleLanguageUpdate = () => {
       setLanguage(getStoredLanguage());
     };
 
-    const handleCurrencyRatesUpdate = () => {
-      setCurrency(getStoredCurrency());
-    };
-
-    window.addEventListener('currency-updated', handleCurrencyUpdate);
     window.addEventListener('language-updated', handleLanguageUpdate);
-    window.addEventListener('currency-rates-updated', handleCurrencyRatesUpdate);
 
     return () => {
-      window.removeEventListener('currency-updated', handleCurrencyUpdate);
       window.removeEventListener('language-updated', handleLanguageUpdate);
-      window.removeEventListener('currency-rates-updated', handleCurrencyRatesUpdate);
     };
   }, [isLoggedIn, isLoading, fetchCart]);
 
@@ -140,7 +125,6 @@ export function useCheckout() {
     loading,
     error,
     setError,
-    currency,
     logoErrors,
     setLogoErrors,
     showShippingModal,

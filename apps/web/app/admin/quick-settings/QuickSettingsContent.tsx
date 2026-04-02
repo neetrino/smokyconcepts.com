@@ -8,6 +8,7 @@ import { GlobalDiscountCard } from './components/GlobalDiscountCard';
 import { QuickInfoCard } from './components/QuickInfoCard';
 import { CategoryDiscountsCard } from './components/CategoryDiscountsCard';
 import { ProductDiscountsCard, type Product } from './components/ProductDiscountsCard';
+import { ADMIN_PAGE_SHELL_CLASS } from '../constants/adminShell.constants';
 
 interface AdminCategory {
   id: string;
@@ -63,8 +64,8 @@ export function QuickSettingsContent({
   savingProductId,
 }: QuickSettingsContentProps) {
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className={ADMIN_PAGE_SHELL_CLASS}>
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">{t('admin.quickSettings.title')}</h1>

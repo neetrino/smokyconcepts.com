@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { apiClient } from '../../../lib/api-client';
-import { getStoredCurrency } from '../../../lib/currency';
 import { useTranslation } from '../../../lib/i18n-client';
 import { LoadingState } from './components/LoadingState';
 import { ErrorState } from './components/ErrorState';
@@ -19,22 +18,11 @@ export default function OrderPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currency, setCurrency] = useState(getStoredCurrency());
   const [calculatedShipping, setCalculatedShipping] = useState<number | null>(null);
   const [loadingShipping, setLoadingShipping] = useState(false);
 
   useEffect(() => {
-    fetchOrder();
-
-    const handleCurrencyUpdate = () => {
-      setCurrency(getStoredCurrency());
-    };
-
-    window.addEventListener('currency-updated', handleCurrencyUpdate);
-
-    return () => {
-      window.removeEventListener('currency-updated', handleCurrencyUpdate);
-    };
+    void fetchOrder();
   }, [params.number]);
 
   async function fetchOrder() {
@@ -103,7 +91,7 @@ export default function OrderPage() {
             status={order.status}
             paymentStatus={order.paymentStatus}
           />
-          <OrderItems items={order.items} currency={currency} />
+          <OrderItems items={order.items} orderTotalsCurrency={order.totals.currency} />
           {order.shippingAddress && (
             <ShippingAddress shippingAddress={order.shippingAddress} />
           )}
@@ -111,7 +99,6 @@ export default function OrderPage() {
 
         <OrderSummary
           order={order}
-          currency={currency}
           calculatedShipping={calculatedShipping}
           loadingShipping={loadingShipping}
         />

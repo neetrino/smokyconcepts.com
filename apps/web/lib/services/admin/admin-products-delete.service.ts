@@ -1,15 +1,17 @@
 import { db } from "@white-shop/db";
+import { deleteProduct as removeProductFromSearchIndex } from "@/lib/services/search.service";
 
 class AdminProductsDeleteService {
   /**
-   * Delete product (soft delete)
+   * Permanently removes the product from the database (variants, translations, labels cascade).
+   * Order items keep title/sku snapshots; `variantId` is cleared in DB (ON DELETE SET NULL).
    */
   async deleteProduct(productId: string) {
-    const product = await db.product.findUnique({
+    const result = await db.product.deleteMany({
       where: { id: productId },
     });
 
-    if (!product) {
+    if (result.count === 0) {
       throw {
         status: 404,
         type: "https://api.shop.am/problems/not-found",
@@ -18,13 +20,7 @@ class AdminProductsDeleteService {
       };
     }
 
-    await db.product.update({
-      where: { id: productId },
-      data: {
-        deletedAt: new Date(),
-        published: false,
-      },
-    });
+    await removeProductFromSearchIndex(productId);
 
     return { success: true };
   }

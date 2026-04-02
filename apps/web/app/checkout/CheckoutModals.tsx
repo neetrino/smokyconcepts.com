@@ -4,7 +4,6 @@ import { UseFormRegister, UseFormSetValue, UseFormHandleSubmit, FieldErrors } fr
 import { ShippingAddressModal } from './components/ShippingAddressModal';
 import { CardDetailsModal } from './components/CardDetailsModal';
 import { CheckoutFormData, Cart } from './types';
-import type { CurrencyCode } from '../../lib/currency';
 
 interface CheckoutModalsProps {
   showShippingModal: boolean;
@@ -26,7 +25,6 @@ interface CheckoutModalsProps {
     shippingDisplay: number;
     totalDisplay: number;
   };
-  currency: CurrencyCode;
   loadingDeliveryPrice: boolean;
   deliveryPrice: number | null;
   logoErrors: Record<string, boolean>;
@@ -49,7 +47,6 @@ export function CheckoutModals({
   shippingCity,
   cart,
   orderSummary,
-  currency,
   loadingDeliveryPrice,
   deliveryPrice,
   logoErrors,
@@ -70,7 +67,6 @@ export function CheckoutModals({
         paymentMethod={paymentMethod}
         cart={cart}
         orderSummary={orderSummary}
-        currency={currency}
         shippingCity={shippingCity}
         loadingDeliveryPrice={loadingDeliveryPrice}
         deliveryPrice={deliveryPrice}
@@ -90,7 +86,6 @@ export function CheckoutModals({
         shippingCity={shippingCity}
         cart={cart}
         orderSummary={orderSummary}
-        currency={currency}
         loadingDeliveryPrice={loadingDeliveryPrice}
         deliveryPrice={deliveryPrice}
         logoErrors={logoErrors}

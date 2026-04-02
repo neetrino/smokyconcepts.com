@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslation } from '../../../../lib/i18n-client';
-import { convertPrice, CurrencyCode } from '../../../../lib/currency';
+import { amountToUsd, formatPriceInCurrency } from '../../../../lib/currency';
 import { getStatusColor, getPaymentStatusColor } from '../utils/orderUtils';
 import type { Order } from '../useOrders';
 
@@ -14,7 +14,6 @@ interface OrderRowProps {
   onViewDetails: () => void;
   onStatusChange: (newStatus: string) => void;
   onPaymentStatusChange: (newPaymentStatus: string) => void;
-  formatCurrency: (amount: number, orderCurrency?: string, fromCurrency?: CurrencyCode) => string;
 }
 
 export function OrderRow({
@@ -26,23 +25,19 @@ export function OrderRow({
   onViewDetails,
   onStatusChange,
   onPaymentStatusChange,
-  formatCurrency,
 }: OrderRowProps) {
   const { t } = useTranslation();
 
   const calculateTotalWithoutShipping = () => {
     if (order.subtotal !== undefined && order.discountAmount !== undefined && order.taxAmount !== undefined) {
-      const subtotalAMD = convertPrice(order.subtotal, 'USD', 'AMD');
-      const discountAMD = convertPrice(order.discountAmount, 'USD', 'AMD');
-      const taxAMD = convertPrice(order.taxAmount, 'USD', 'AMD');
-      const totalWithoutShippingAMD = subtotalAMD - discountAMD + taxAMD;
-      return formatCurrency(totalWithoutShippingAMD, order.currency, 'AMD');
-    } else {
-      const totalAMD = convertPrice(order.total, 'USD', 'AMD');
-      const shippingAMD = order.shippingAmount || 0;
-      const totalWithoutShippingAMD = totalAMD - shippingAMD;
-      return formatCurrency(totalWithoutShippingAMD, order.currency, 'AMD');
+      const subtotalUsd = amountToUsd(order.subtotal, order.currency);
+      const discountUsd = amountToUsd(order.discountAmount, order.currency);
+      const taxUsd = amountToUsd(order.taxAmount, order.currency);
+      return formatPriceInCurrency(subtotalUsd - discountUsd + taxUsd, 'USD');
     }
+    const totalUsd = amountToUsd(order.total, order.currency);
+    const shippingUsd = amountToUsd(order.shippingAmount || 0, order.currency);
+    return formatPriceInCurrency(totalUsd - shippingUsd, 'USD');
   };
 
   return (
@@ -126,4 +121,3 @@ export function OrderRow({
     </tr>
   );
 }
-

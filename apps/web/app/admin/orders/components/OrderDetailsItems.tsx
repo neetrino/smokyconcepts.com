@@ -2,13 +2,12 @@
 
 import { useTranslation } from '../../../../lib/i18n-client';
 import { Card } from '@shop/ui';
-import { CurrencyCode } from '../../../../lib/currency';
 import { getColorValue } from '../utils/orderUtils';
 import type { OrderDetails } from '../useOrders';
 
 interface OrderDetailsItemsProps {
   orderDetails: OrderDetails;
-  formatCurrency: (amount: number, orderCurrency?: string, fromCurrency?: CurrencyCode) => string;
+  formatCurrency: (amount: number, orderCurrency?: string, storedCurrency?: string) => string;
 }
 
 export function OrderDetailsItems({
@@ -102,10 +101,10 @@ export function OrderDetailsItems({
                   </td>
                   <td className="px-3 py-2 text-right">{item.quantity}</td>
                   <td className="px-3 py-2 text-right">
-                    {formatCurrency(item.unitPrice, orderDetails.currency || 'USD', 'USD')}
+                    {formatCurrency(item.unitPrice, 'USD', orderDetails.currency)}
                   </td>
                   <td className="px-3 py-2 text-right">
-                    {formatCurrency(item.total, orderDetails.currency || 'USD', 'USD')}
+                    {formatCurrency(item.total, 'USD', orderDetails.currency)}
                   </td>
                 </tr>
               );

@@ -1,54 +1,43 @@
 {
-  "title": "Refund Policy",
-  "lastUpdated": "Last Updated:",
-  "overview": {
-    "title": "Overview",
-    "description": "We want you to be satisfied with every purchase. This policy explains how returns and refunds work, including timelines and eligibility requirements."
+  "title": "Return and Exchange Policy",
+  "lastUpdated": "Last updated:",
+  "intro": "We want you to be completely satisfied with your purchase. If for any reason your order does not meet your expectations, we are here to assist you with exchanges or returns.",
+  "exchange": {
+    "title": "1. Exchange",
+    "bullet1": "Purchased items (except custom orders) are eligible for exchange within 14 days.",
+    "bullet2": "The item must be unused, in its original condition, and in its original packaging.",
+    "bullet3": "An official receipt or proof of purchase is required for exchanges."
   },
-  "eligibility": {
-    "title": "Refund Eligibility",
-    "description": "To be eligible for a refund, please ensure that:",
-    "items": {
-      "condition": "The item is unused, in original condition and in original packaging.",
-      "timeline": "The return request is submitted within 14 days of delivery, unless otherwise stated.",
-      "proof": "Proof of purchase is provided (order number or receipt).",
-      "excluded": "Items marked as final sale or non-returnable are excluded."
-    }
+  "productReturn": {
+    "title": "2. Returns",
+    "bullet1": "Purchased items (except custom orders) can be returned within 14 days.",
+    "bullet2": "The item must be unused, undamaged, and in its original packaging.",
+    "bullet3": "An official receipt or proof of purchase is required for returns.",
+    "bullet4": "If we mistakenly sent the wrong item, the customer may return it or exchange it for the correct product at no additional charge.",
+    "bullet5": "For security reasons, returned items must not contain any engravings or markings, such as \"Gold,\" \"Jewelry,\" or similar inscriptions."
   },
-  "howToInitiate": {
-    "title": "How to Initiate a Return",
-    "steps": {
-      "contact": "Contact our support team with your order number and reason for return.",
-      "authorization": "Receive return authorization and instructions.",
-      "ship": "Ship the item via trackable method; include all original accessories and tags."
-    },
-    "description": "After receiving and inspecting the item, we will confirm refund approval or denial."
+  "moneyRefund": {
+    "title": "3. Refunds",
+    "bullet1": "If the returned item meets the stated conditions, a refund will be issued using the same payment method used for the original purchase.",
+    "bullet2": "Refunds for card payments will be processed within up to 7 business days, depending on the bank’s processing time.",
+    "bullet3": "Shipping fees are non-refundable, except in cases where we have sent the wrong item."
   },
-  "refundMethod": {
-    "title": "Refund Method and Timing",
-    "items": {
-      "method": "Approved refunds are issued to the original payment method.",
-      "timing": "Processing time is typically 5–10 business days after approval; bank times may vary.",
-      "shipping": "Shipping fees are not refunded unless the return is due to our error or a defective item."
-    }
+  "orderCancellation": {
+    "title": "4. Order Cancellation",
+    "bullet1": "Orders can be canceled before shipment.",
+    "bullet2": "If the order has already been shipped, cancellation is not possible."
   },
-  "nonRefundable": {
-    "title": "Non-Refundable Items",
-    "items": {
-      "giftCards": "Gift cards and digital items after delivery.",
-      "personalized": "Personalized or custom-made items, unless defective.",
-      "unauthorized": "Items returned without prior authorization.",
-      "condition": "Items not in original condition, damaged or with missing parts for reasons not due to our error."
-    }
+  "personalizedOrders": {
+    "title": "5. Personalized Orders",
+    "description": "Personalized items, including engraved and custom-made products, cannot be returned or exchanged."
   },
-  "contact": {
-    "title": "Contact Us",
-    "description": "For questions about this Refund Policy or to initiate a return, write to us at"
+  "nonReturnable": {
+    "title": "6. Non-Returnable Items",
+    "bullet1": "Personalized orders (engraved, custom-made products)",
+    "bullet2": "Items containing engravings or markings (e.g., \"Gold,\" \"Jewelry\") due to security reasons"
+  },
+  "specialNote": {
+    "label": "Special Note:",
+    "body": "If your item arrives damaged or there is an issue during delivery, please contact us immediately so we can find the best solution."
   }
 }
-
-
-
-
-
-

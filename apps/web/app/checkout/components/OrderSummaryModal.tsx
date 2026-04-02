@@ -2,7 +2,6 @@
 
 import { useTranslation } from '../../../lib/i18n-client';
 import { formatPriceInCurrency } from '../../../lib/currency';
-import type { CurrencyCode } from '../../../lib/currency';
 import { Cart } from '../types';
 
 interface OrderSummaryModalProps {
@@ -13,7 +12,6 @@ interface OrderSummaryModalProps {
     shippingDisplay: number;
     totalDisplay: number;
   };
-  currency: CurrencyCode;
   shippingMethod: 'pickup' | 'delivery';
   shippingCity?: string;
   loadingDeliveryPrice: boolean;
@@ -23,7 +21,6 @@ interface OrderSummaryModalProps {
 export function OrderSummaryModal({
   cart,
   orderSummary,
-  currency,
   shippingMethod,
   shippingCity,
   loadingDeliveryPrice,
@@ -40,7 +37,7 @@ export function OrderSummaryModal({
     : loadingDeliveryPrice
       ? t('checkout.shipping.loading')
       : deliveryPrice !== null
-        ? formatPriceInCurrency(orderSummary.shippingDisplay, currency) + 
+        ? formatPriceInCurrency(orderSummary.shippingDisplay) + 
           (shippingCity ? ` (${shippingCity})` : ` (${t('checkout.shipping.delivery')})`)
         : t('checkout.shipping.enterCity');
 
@@ -52,7 +49,7 @@ export function OrderSummaryModal({
       </div>
       <div className="flex justify-between text-sm">
         <span className="text-gray-600">{t('checkout.summary.subtotal')}:</span>
-        <span className="font-medium">{formatPriceInCurrency(orderSummary.subtotalDisplay, currency)}</span>
+        <span className="font-medium">{formatPriceInCurrency(orderSummary.subtotalDisplay)}</span>
       </div>
       <div className="flex justify-between text-sm">
         <span className="text-gray-600">{t('checkout.summary.shipping')}:</span>
@@ -60,13 +57,13 @@ export function OrderSummaryModal({
       </div>
       <div className="flex justify-between text-sm">
         <span className="text-gray-600">{t('checkout.summary.tax')}:</span>
-        <span className="font-medium">{formatPriceInCurrency(orderSummary.taxDisplay, currency)}</span>
+        <span className="font-medium">{formatPriceInCurrency(orderSummary.taxDisplay)}</span>
       </div>
       <div className="border-t border-gray-200 pt-2 mt-2">
         <div className="flex justify-between">
           <span className="font-semibold text-gray-900">{t('checkout.summary.total')}:</span>
           <span className="font-bold text-gray-900">
-            {formatPriceInCurrency(orderSummary.totalDisplay, currency)}
+            {formatPriceInCurrency(orderSummary.totalDisplay)}
           </span>
         </div>
       </div>

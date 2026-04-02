@@ -41,6 +41,9 @@ interface Product {
   }>;
   colors?: string[];
   discountPercent?: number | null;
+  defaultVariantId?: string | null;
+  defaultVariantStock?: number;
+  defaultSku?: string;
 }
 
 interface ProductsResponse {
@@ -141,6 +144,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     labels: p.labels ?? [],
     colors: Array.isArray(p.colors) ? p.colors : [],
     discountPercent: p.discountPercent ?? null,
+    defaultVariantId: p.defaultVariantId ?? null,
+    defaultVariantStock: p.defaultVariantStock ?? 0,
+    defaultSku: p.defaultSku ?? '',
   }));
 
   return (

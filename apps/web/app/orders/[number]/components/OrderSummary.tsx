@@ -3,56 +3,46 @@
 import Link from 'next/link';
 import { Card, Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
-import { formatPriceInCurrency, convertPrice } from '../../../../lib/currency';
-import type { CurrencyCode } from '../../../../lib/currency';
+import { amountToUsd, catalogPriceToUsd, formatPriceInCurrency } from '../../../../lib/currency';
 import type { Order } from '../types';
 
 interface OrderSummaryProps {
   order: Order;
-  currency: CurrencyCode;
   calculatedShipping: number | null;
   loadingShipping: boolean;
 }
 
 export function OrderSummary({
   order,
-  currency,
   calculatedShipping,
   loadingShipping,
 }: OrderSummaryProps) {
   const { t } = useTranslation();
+  const storedCurrency = order.totals.currency;
 
-  const subtotalDisplay = (() => {
-    const subtotalAMD = convertPrice(order.totals.subtotal, 'USD', 'AMD');
-    return currency === 'AMD' ? subtotalAMD : convertPrice(subtotalAMD, 'AMD', currency);
-  })();
+  const subtotalUsd = amountToUsd(order.totals.subtotal, storedCurrency);
 
-  const discountDisplay = order.totals.discount > 0 ? (() => {
-    const discountAMD = convertPrice(order.totals.discount, 'USD', 'AMD');
-    return currency === 'AMD' ? discountAMD : convertPrice(discountAMD, 'AMD', currency);
-  })() : null;
+  const discountUsd =
+    order.totals.discount > 0 ? amountToUsd(order.totals.discount, storedCurrency) : 0;
 
-  const shippingDisplay = order.shippingMethod === 'pickup' 
-    ? t('checkout.shipping.freePickup')
-    : loadingShipping
-      ? t('checkout.shipping.loading')
-      : (() => {
-          const shippingAMD = calculatedShipping !== null ? calculatedShipping : order.totals.shipping;
-          const shippingDisplayValue = currency === 'AMD' 
-            ? shippingAMD 
-            : convertPrice(shippingAMD, 'AMD', currency);
-          return formatPriceInCurrency(shippingDisplayValue, currency) + 
-            (order.shippingAddress?.city ? ` (${order.shippingAddress.city})` : '');
-        })();
+  const shippingUsd =
+    order.shippingMethod === 'pickup'
+      ? 0
+      : calculatedShipping !== null
+        ? catalogPriceToUsd(calculatedShipping)
+        : amountToUsd(order.totals.shipping, storedCurrency);
 
-  const totalDisplay = (() => {
-    const subtotalAMD = convertPrice(order.totals.subtotal, 'USD', 'AMD');
-    const discountAMD = convertPrice(order.totals.discount, 'USD', 'AMD');
-    const shippingAMD = calculatedShipping !== null ? calculatedShipping : order.totals.shipping;
-    const taxAMD = convertPrice(order.totals.tax, 'USD', 'AMD');
-    const totalAMD = subtotalAMD - discountAMD + shippingAMD + taxAMD;
-    return currency === 'AMD' ? totalAMD : convertPrice(totalAMD, 'AMD', currency);
-  })();
+  const taxUsd = amountToUsd(order.totals.tax, storedCurrency);
+
+  const totalUsd = subtotalUsd - discountUsd + shippingUsd + taxUsd;
+
+  const shippingDisplay =
+    order.shippingMethod === 'pickup'
+      ? t('checkout.shipping.freePickup')
+      : loadingShipping
+        ? t('checkout.shipping.loading')
+        : formatPriceInCurrency(shippingUsd, 'USD') +
+          (order.shippingAddress?.city ? ` (${order.shippingAddress.city})` : '');
 
   return (
     <Card className="p-6 sticky top-4">
@@ -62,12 +52,12 @@ export function OrderSummary({
           <>
             <div className="flex justify-between text-gray-600">
               <span>{t('orders.orderSummary.subtotal')}</span>
-              <span>{formatPriceInCurrency(subtotalDisplay, currency)}</span>
+              <span>{formatPriceInCurrency(subtotalUsd, 'USD')}</span>
             </div>
             {order.totals.discount > 0 && (
               <div className="flex justify-between text-gray-600">
                 <span>{t('orders.orderSummary.discount')}</span>
-                <span>-{formatPriceInCurrency(discountDisplay!, currency)}</span>
+                <span>-{formatPriceInCurrency(discountUsd, 'USD')}</span>
               </div>
             )}
             <div className="flex justify-between text-gray-600">
@@ -77,7 +67,7 @@ export function OrderSummary({
             <div className="border-t border-gray-200 pt-4">
               <div className="flex justify-between text-lg font-bold text-gray-900">
                 <span>{t('orders.orderSummary.total')}</span>
-                <span>{formatPriceInCurrency(totalDisplay, currency)}</span>
+                <span>{formatPriceInCurrency(totalUsd, 'USD')}</span>
               </div>
             </div>
           </>
@@ -101,7 +91,3 @@ export function OrderSummary({
     </Card>
   );
 }
-
-
-
-

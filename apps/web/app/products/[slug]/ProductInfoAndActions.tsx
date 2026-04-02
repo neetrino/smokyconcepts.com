@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { ChevronDown } from 'lucide-react';
-import { formatPrice, type CurrencyCode } from '../../../lib/currency';
+import { formatCatalogPrice } from '../../../lib/currency';
 import { t, getProductText } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import { Button } from '../../../components/ui/buttons';
@@ -18,13 +18,16 @@ interface ProductOptionValue extends AttributeGroupValue {
   colors?: string[] | string | null;
 }
 
+/**
+ * PDP actions — add/buy handlers are wired to `useProductCartActions` on the parent page
+ * (fast snapshot + optional POST, no extra GET before add).
+ */
 interface ProductInfoAndActionsProps {
   product: Product;
   price: number;
   originalPrice: number | null;
   compareAtPrice: number | null;
   discountPercent: number | null;
-  currency: string;
   language: LanguageCode;
   isOutOfStock: boolean;
   canAddToCart: boolean;
@@ -95,7 +98,6 @@ export function ProductInfoAndActions({
   originalPrice,
   compareAtPrice,
   discountPercent,
-  currency,
   language,
   isOutOfStock,
   canAddToCart,
@@ -316,11 +318,11 @@ export function ProductInfoAndActions({
       <div className="mt-[48px] flex flex-wrap items-center gap-4">
         <div className="flex items-end gap-3">
           <p className="font-montserrat text-[30px] font-extrabold leading-none text-black sm:text-[32px]">
-            {formatPrice(price, currency as CurrencyCode)}
+            {formatCatalogPrice(price)}
           </p>
           {(originalPrice || (compareAtPrice && compareAtPrice > price)) && (
             <p className="pb-0.5 text-[15px] leading-none text-[#9d9d9d] line-through sm:text-[16px]">
-              {formatPrice(originalPrice || compareAtPrice || 0, currency as CurrencyCode)}
+              {formatCatalogPrice(originalPrice || compareAtPrice || 0)}
             </p>
           )}
           {discountPercent && discountPercent > 0 && (

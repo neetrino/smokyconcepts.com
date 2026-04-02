@@ -1,13 +1,12 @@
 import Link from 'next/link';
 import { Button, Card } from '@shop/ui';
-import { formatPriceInCurrency, convertPrice, type CurrencyCode } from '../../lib/currency';
+import { amountToUsd, formatPriceInCurrency } from '../../lib/currency';
 import { getStatusColor, getPaymentStatusColor } from './utils';
 import type { DashboardData, ProfileTab } from './types';
 
 interface ProfileDashboardProps {
   dashboardData: DashboardData | null;
   dashboardLoading: boolean;
-  currency: CurrencyCode;
   onTabChange: (tab: ProfileTab) => void;
   onOrderClick: (orderNumber: string, e: React.MouseEvent<HTMLAnchorElement>) => void;
   t: (key: string) => string;
@@ -16,7 +15,6 @@ interface ProfileDashboardProps {
 export function ProfileDashboard({
   dashboardData,
   dashboardLoading,
-  currency,
   onTabChange,
   onOrderClick,
   t,
@@ -63,7 +61,7 @@ export function ProfileDashboard({
             <div className="min-w-0 flex-1 overflow-hidden">
               <p className="text-sm font-medium text-gray-600">{t('profile.dashboard.totalSpent')}</p>
               <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1 break-words overflow-wrap-anywhere">
-                {formatPriceInCurrency(dashboardData.stats.totalSpent, currency)}
+                {formatPriceInCurrency(dashboardData.stats.totalSpent, 'USD')}
               </p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -160,20 +158,19 @@ export function ProfileDashboard({
                   <div className="text-right ml-4">
                     <p className="text-lg font-bold text-gray-900">
                       {(() => {
-                        if (order.subtotal !== undefined && order.discountAmount !== undefined && order.taxAmount !== undefined) {
-                          const subtotalAMD = convertPrice(order.subtotal, 'USD', 'AMD');
-                          const discountAMD = convertPrice(order.discountAmount, 'USD', 'AMD');
-                          const taxAMD = convertPrice(order.taxAmount, 'USD', 'AMD');
-                          const totalWithoutShippingAMD = subtotalAMD - discountAMD + taxAMD;
-                          const totalDisplay = currency === 'AMD' ? totalWithoutShippingAMD : convertPrice(totalWithoutShippingAMD, 'AMD', currency);
-                          return formatPriceInCurrency(totalDisplay, currency);
-                        } else {
-                          const totalAMD = convertPrice(order.total, 'USD', 'AMD');
-                          const shippingAMD = order.shippingAmount || 0;
-                          const totalWithoutShippingAMD = totalAMD - shippingAMD;
-                          const totalDisplay = currency === 'AMD' ? totalWithoutShippingAMD : convertPrice(totalWithoutShippingAMD, 'AMD', currency);
-                          return formatPriceInCurrency(totalDisplay, currency);
+                        if (
+                          order.subtotal !== undefined &&
+                          order.discountAmount !== undefined &&
+                          order.taxAmount !== undefined
+                        ) {
+                          const subtotalUsd = amountToUsd(order.subtotal, order.currency);
+                          const discountUsd = amountToUsd(order.discountAmount, order.currency);
+                          const taxUsd = amountToUsd(order.taxAmount, order.currency);
+                          return formatPriceInCurrency(subtotalUsd - discountUsd + taxUsd, 'USD');
                         }
+                        const totalUsd = amountToUsd(order.total, order.currency);
+                        const shippingUsd = amountToUsd(order.shippingAmount || 0, order.currency);
+                        return formatPriceInCurrency(totalUsd - shippingUsd, 'USD');
                       })()}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">{t('profile.dashboard.viewDetails')}</p>

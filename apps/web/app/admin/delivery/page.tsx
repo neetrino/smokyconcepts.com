@@ -116,7 +116,7 @@ export default function DeliveryPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="lg:hidden mb-6">
             <AdminMenuDrawer tabs={adminTabs} currentPath="/admin/delivery" />

@@ -1,6 +1,5 @@
 import type { FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { convertPrice, type CurrencyCode } from '@/lib/currency';
 import type { Category, Variant, GeneratedVariant } from '../types';
 import { useBrandAndCategoryCreation } from './useBrandAndCategoryCreation';
 import { useVariantValidation } from './useVariantValidation';
@@ -37,7 +36,6 @@ interface UseProductFormHandlersProps {
     quantity: string;
   };
   generatedVariants: GeneratedVariant[];
-  defaultCurrency: CurrencyCode;
   useNewCategory: boolean;
   newCategoryName: string;
   isEditMode: boolean;
@@ -54,7 +52,6 @@ export function useProductFormHandlers({
   productType,
   simpleProductData,
   generatedVariants,
-  defaultCurrency,
   useNewCategory,
   newCategoryName,
   isEditMode,
@@ -110,9 +107,9 @@ export function useProductFormHandlers({
       const variantSkuSet = new Set<string>();
 
       if (productType === 'simple') {
-        const priceUSD = convertPrice(parseFloat(simpleProductData.price), defaultCurrency, 'USD');
+        const priceUSD = parseFloat(simpleProductData.price);
         const compareAtPriceUSD = simpleProductData.compareAtPrice && simpleProductData.compareAtPrice.trim() !== ''
-          ? convertPrice(parseFloat(simpleProductData.compareAtPrice), defaultCurrency, 'USD')
+          ? parseFloat(simpleProductData.compareAtPrice)
           : undefined;
         const simpleVariant: any = {
           price: priceUSD,
@@ -134,12 +131,12 @@ export function useProductFormHandlers({
           defaultVariantCompareAtPriceText !== '' ? parseFloat(defaultVariantCompareAtPriceText) : NaN;
 
         const defaultVariantCompareAtPriceUSD = Number.isFinite(defaultVariantCompareAtPrice)
-          ? convertPrice(defaultVariantCompareAtPrice, defaultCurrency, 'USD')
+          ? defaultVariantCompareAtPrice
           : undefined;
         const defaultVariantSku = `${(currentFormData.slug || 'PROD').toUpperCase()}-DEFAULT`;
 
         variants.push({
-          price: convertPrice(Number.isFinite(defaultVariantPrice) ? defaultVariantPrice : 0, defaultCurrency, 'USD'),
+          price: Number.isFinite(defaultVariantPrice) ? defaultVariantPrice : 0,
           compareAtPrice: defaultVariantCompareAtPriceUSD,
           stock: 0,
           sku: defaultVariantSku,
@@ -151,11 +148,7 @@ export function useProductFormHandlers({
         generatedVariants.forEach((genVariant, variantIndex) => {
           const variantPriceText = String(genVariant.price || '').trim();
           const variantPriceRaw = variantPriceText !== '' ? parseFloat(variantPriceText) : NaN;
-          const variantPriceUSD = convertPrice(
-            Number.isFinite(variantPriceRaw) ? variantPriceRaw : 0,
-            defaultCurrency,
-            'USD'
-          );
+          const variantPriceUSD = Number.isFinite(variantPriceRaw) ? variantPriceRaw : 0;
 
           const variantCompareAtPriceText = String(genVariant.compareAtPrice || '').trim();
           const variantCompareAtPriceRaw =
@@ -163,7 +156,7 @@ export function useProductFormHandlers({
               ? parseFloat(variantCompareAtPriceText)
               : NaN;
           const variantCompareAtPriceUSD = Number.isFinite(variantCompareAtPriceRaw)
-            ? convertPrice(variantCompareAtPriceRaw, defaultCurrency, 'USD')
+            ? variantCompareAtPriceRaw
             : undefined;
           const finalSku = (genVariant.sku && genVariant.sku.trim() !== '')
             ? genVariant.sku.trim()

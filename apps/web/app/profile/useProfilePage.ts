@@ -5,7 +5,6 @@ import { usePassword } from './hooks/usePassword';
 import { useDashboard } from './hooks/useDashboard';
 import { useOrders } from './hooks/useOrders';
 import { useProfileTabs } from './hooks/useProfileTabs';
-import { useCurrency } from './hooks/useCurrency';
 import { useTranslation } from '../../lib/i18n-client';
 
 export function useProfilePage() {
@@ -80,9 +79,6 @@ export function useProfilePage() {
     onSuccess: setSuccess,
   });
 
-  // Currency hook
-  const { currency } = useCurrency();
-
   return {
     // Auth & loading
     isLoggedIn,
@@ -144,10 +140,7 @@ export function useProfilePage() {
     isReordering: orders.isReordering,
     handleOrderClick: orders.handleOrderClick,
     handleReOrder: orders.handleReOrder,
-    
-    // Currency
-    currency,
-    
+
     // Translation
     t,
   };

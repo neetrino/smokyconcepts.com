@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { Card, Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
-import { formatPrice, type CurrencyCode } from '../../../../lib/currency';
+import { formatPrice } from '../../../../lib/currency';
 import type { Product, ProductsResponse } from '../types';
 
 interface ProductsTableProps {
@@ -15,7 +15,6 @@ interface ProductsTableProps {
   toggleSelectAll: () => void;
   sortBy: string;
   handleHeaderSort: (field: 'price' | 'createdAt' | 'title' | 'stock') => void;
-  currency: CurrencyCode;
   handleDeleteProduct: (productId: string, productTitle: string) => void;
   handleDuplicateProduct: (productId: string) => void;
   handleTogglePublished: (productId: string, currentStatus: boolean, productTitle: string) => void;
@@ -48,7 +47,6 @@ export function ProductsTable({
   toggleSelectAll,
   sortBy,
   handleHeaderSort,
-  currency,
   handleDeleteProduct,
   handleDuplicateProduct,
   handleTogglePublished,
@@ -290,7 +288,7 @@ export function ProductsTable({
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex flex-col">
                           <div className="text-sm font-medium text-gray-900">
-                            {formatPrice(product.price, currency)}
+                            {formatPrice(product.price)}
                           </div>
                           {(product.compareAtPrice && product.compareAtPrice > product.price) || 
                            (product.discountPercent && product.discountPercent > 0) ? (
@@ -298,8 +296,7 @@ export function ProductsTable({
                               {formatPrice(
                                 product.compareAtPrice && product.compareAtPrice > product.price
                                   ? product.compareAtPrice
-                                  : product.price / (1 - (product.discountPercent || 0) / 100),
-                                currency
+                                  : product.price / (1 - (product.discountPercent || 0) / 100)
                               )}
                             </div>
                           ) : null}

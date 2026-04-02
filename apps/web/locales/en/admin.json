@@ -729,7 +729,9 @@
     "update": "Update",
     "saving": "Saving...",
     "back": "Back",
-    "backToAdmin": "Back to Admin Dashboard"
+    "backToAdmin": "Back to Admin Dashboard",
+    "themeSwitchToLight": "Switch to light mode",
+    "themeSwitchToDark": "Switch to dark mode"
   }
 }
 
