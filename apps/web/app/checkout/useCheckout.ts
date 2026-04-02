@@ -38,7 +38,7 @@ export function useCheckout() {
       lastName: '',
       email: '',
       phone: '',
-      shippingMethod: 'pickup',
+      shippingMethod: 'delivery',
       paymentMethod: 'cash_on_delivery',
       shippingAddress: '',
       shippingCity: '',
@@ -90,19 +90,17 @@ export function useCheckout() {
   const handlePlaceOrder = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (shippingMethod === 'delivery') {
-      const formData = watch();
-      const hasShippingAddress = formData.shippingAddress && formData.shippingAddress.trim().length > 0;
-      const hasShippingCity = formData.shippingCity && formData.shippingCity.trim().length > 0;
-      
-      if (!hasShippingAddress || !hasShippingCity) {
-        setError(t('checkout.errors.fillShippingAddress'));
-        const shippingSection = document.querySelector('[data-shipping-section]');
-        if (shippingSection) {
-          shippingSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        return;
+    const formData = watch();
+    const hasShippingAddress = formData.shippingAddress && formData.shippingAddress.trim().length > 0;
+    const hasShippingCity = formData.shippingCity && formData.shippingCity.trim().length > 0;
+
+    if (!hasShippingAddress || !hasShippingCity) {
+      setError(t('checkout.errors.fillShippingAddress'));
+      const shippingSection = document.querySelector('[data-shipping-section]');
+      if (shippingSection) {
+        shippingSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
+      return;
     }
     
     if (paymentMethod === 'arca' || paymentMethod === 'idram') {

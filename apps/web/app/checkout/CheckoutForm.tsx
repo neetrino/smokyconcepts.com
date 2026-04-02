@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, Input } from '@shop/ui';
-import { UseFormRegister, UseFormSetValue, FieldErrors, UseFormWatch } from 'react-hook-form';
+import { UseFormRegister, UseFormSetValue, FieldErrors } from 'react-hook-form';
 import { useTranslation } from '../../lib/i18n-client';
 import { CheckoutFormData } from './types';
 
@@ -10,7 +10,6 @@ interface CheckoutFormProps {
   setValue: UseFormSetValue<CheckoutFormData>;
   errors: FieldErrors<CheckoutFormData>;
   isSubmitting: boolean;
-  shippingMethod: 'pickup' | 'delivery';
   paymentMethod: 'idram' | 'arca' | 'cash_on_delivery';
   paymentMethods: Array<{
     id: 'idram' | 'arca' | 'cash_on_delivery';
@@ -29,7 +28,6 @@ export function CheckoutForm({
   setValue,
   errors,
   isSubmitting,
-  shippingMethod,
   paymentMethod,
   paymentMethods,
   logoErrors,
@@ -41,6 +39,7 @@ export function CheckoutForm({
 
   return (
     <div className="lg:col-span-2 space-y-6">
+      <input type="hidden" {...register('shippingMethod')} />
       {/* Contact Information */}
       <Card className="p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('checkout.contactInformation')}</h2>
@@ -81,63 +80,8 @@ export function CheckoutForm({
         </div>
       </Card>
 
-      {/* Shipping Method */}
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('checkout.shippingMethod')}</h2>
-        {errors.shippingMethod && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600">{errors.shippingMethod.message}</p>
-          </div>
-        )}
-        <div className="space-y-3">
-          <label
-            className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${
-              shippingMethod === 'pickup'
-                ? 'border-[#dcc090] bg-[#dcc090]/10'
-                : 'border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            <input
-              type="radio"
-              {...register('shippingMethod')}
-              value="pickup"
-              checked={shippingMethod === 'pickup'}
-              onChange={(e) => setValue('shippingMethod', e.target.value as 'pickup' | 'delivery')}
-              className="mr-4"
-              disabled={isSubmitting}
-            />
-            <div className="flex-1">
-              <div className="font-medium text-gray-900">{t('checkout.shipping.storePickup')}</div>
-              <div className="text-sm text-gray-600">{t('checkout.shipping.storePickupDescription')}</div>
-            </div>
-          </label>
-          <label
-            className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${
-              shippingMethod === 'delivery'
-                ? 'border-[#dcc090] bg-[#dcc090]/10'
-                : 'border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            <input
-              type="radio"
-              {...register('shippingMethod')}
-              value="delivery"
-              checked={shippingMethod === 'delivery'}
-              onChange={(e) => setValue('shippingMethod', e.target.value as 'pickup' | 'delivery')}
-              className="mr-4"
-              disabled={isSubmitting}
-            />
-            <div className="flex-1">
-              <div className="font-medium text-gray-900">{t('checkout.shipping.delivery')}</div>
-              <div className="text-sm text-gray-600">{t('checkout.shipping.deliveryDescription')}</div>
-            </div>
-          </label>
-        </div>
-      </Card>
-
-      {/* Shipping Address - Only show for delivery */}
-      {shippingMethod === 'delivery' && (
-        <Card className="p-6" data-shipping-section>
+      {/* Shipping address — checkout is delivery-only (shippingMethod fixed in form defaults) */}
+      <Card className="p-6" data-shipping-section>
           <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('checkout.shippingAddress')}</h2>
           {(error && error.includes('shipping address')) || (errors.shippingAddress || errors.shippingCity) ? (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -150,22 +94,6 @@ export function CheckoutForm({
             </div>
           ) : null}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Input
-                label={t('checkout.form.address')}
-                type="text"
-                placeholder={t('checkout.placeholders.address')}
-                {...register('shippingAddress', {
-                  onChange: () => {
-                    if (error && error.includes('shipping address')) {
-                      setError(null);
-                    }
-                  }
-                })}
-                error={errors.shippingAddress?.message}
-                disabled={isSubmitting}
-              />
-            </div>
             <div>
               <Input
                 label={t('checkout.form.city')}
@@ -182,9 +110,24 @@ export function CheckoutForm({
                 disabled={isSubmitting}
               />
             </div>
+            <div>
+              <Input
+                label={t('checkout.form.address')}
+                type="text"
+                placeholder={t('checkout.placeholders.address')}
+                {...register('shippingAddress', {
+                  onChange: () => {
+                    if (error && error.includes('shipping address')) {
+                      setError(null);
+                    }
+                  }
+                })}
+                error={errors.shippingAddress?.message}
+                disabled={isSubmitting}
+              />
+            </div>
           </div>
         </Card>
-      )}
 
       {/* Payment Method */}
       <Card className="p-6">
