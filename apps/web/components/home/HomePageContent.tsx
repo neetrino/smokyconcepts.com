@@ -181,14 +181,14 @@ export function HomePageContent({ coverCollections, heroSlides }: HomePageConten
                 <Link
                   key={item.slug}
                   href={`/products?category=${item.slug}`}
-                  className="mt-7 block overflow-visible rounded-[1.5rem] bg-white px-4 pb-3 pt-0 shadow-[0_6px_24px_rgba(18,42,38,0.05)] transition-transform duration-200 hover:-translate-y-1 sm:mt-10 sm:rounded-[2.5rem] sm:px-6 sm:pb-4"
+                  className="group relative z-0 mt-7 block overflow-visible rounded-[1.5rem] bg-white px-4 pb-3 pt-0 shadow-[0_6px_24px_rgba(18,42,38,0.05)] transition-shadow duration-200 hover:z-10 hover:shadow-[0_12px_32px_rgba(18,42,38,0.12)] focus-visible:z-10 focus-within:z-10 sm:mt-10 sm:rounded-[2.5rem] sm:px-6 sm:pb-4"
                 >
                   <div className="relative -mt-16 h-44 overflow-visible sm:-mt-24 sm:h-[22rem]">
                     {item.imageSrc ? (
                       <img
                         src={item.imageSrc}
                         alt={item.title}
-                        className="h-full w-full object-contain object-top"
+                        className="h-full w-full origin-bottom object-contain object-top transition-transform duration-300 ease-out group-hover:scale-110 group-hover:drop-shadow-[0_12px_24px_rgba(18,42,38,0.18)]"
                         loading="lazy"
                         decoding="async"
                       />
@@ -197,7 +197,7 @@ export function HomePageContent({ coverCollections, heroSlides }: HomePageConten
                         <img
                           src={HOME_ASSET_PATHS.packMark}
                           alt=""
-                          className="h-20 w-16 object-contain opacity-60"
+                          className="h-20 w-16 origin-bottom object-contain opacity-60 transition-transform duration-300 ease-out group-hover:scale-110"
                           aria-hidden="true"
                         />
                       </div>

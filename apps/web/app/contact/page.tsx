@@ -1,9 +1,8 @@
 'use client';
 
 import { Input } from '@shop/ui';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
-import { getStoredLanguage } from '@/lib/language';
 import { useTranslation } from '../../lib/i18n-client';
 import { apiClient } from '../../lib/api-client';
 import contactData from '../../../../json/contact.json';
@@ -30,23 +29,13 @@ const MapPinIcon = () => (
 
 export default function ContactPage() {
   const { t } = useTranslation();
-  const [language, setLanguage] = useState<'en' | 'ru' | 'am'>('en');
   const [formData, setFormData] = useState({
     name: '',
-    subject: '',
+    email: '',
+    phone: '',
     message: '',
   });
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    const storedLang = getStoredLanguage();
-    const mappedLang = storedLang === 'hy' ? 'am' : (storedLang === 'ka' ? 'en' : storedLang);
-    if (mappedLang === 'am' || mappedLang === 'ru' || mappedLang === 'en') {
-      setLanguage(mappedLang as 'en' | 'ru' | 'am');
-    } else {
-      setLanguage('en');
-    }
-  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -55,9 +44,8 @@ export default function ContactPage() {
     try {
       await apiClient.post('/api/v1/contact', {
         name: formData.name,
-        // Backend requires email; contact form now uses Name/Subject/Comment only.
-        email: 'contact-form@smokyconcepts.com',
-        subject: formData.subject,
+        email: formData.email,
+        phone: formData.phone,
         message: formData.message,
       }, {
         skipAuth: true, // Contact form doesn't require authentication
@@ -66,7 +54,8 @@ export default function ContactPage() {
       // Reset form
       setFormData({
         name: '',
-        subject: '',
+        email: '',
+        phone: '',
         message: '',
       });
       
@@ -86,8 +75,6 @@ export default function ContactPage() {
     });
   };
 
-  const address = contactData.address[language] || contactData.address.en;
-
   return (
     <div className="bg-white">
       {/* Top Section: Contact Info and Form */}
@@ -104,7 +91,10 @@ export default function ContactPage() {
                 <h3 className="text-xl font-semibold text-gray-900">{t('contact.callToUs.title')}</h3>
               </div>
               <p className="text-gray-600 mb-2">{t('contact.callToUs.description')}</p>
-              <a href={`tel:${contactData.phone}`} className="text-orange-500 hover:text-orange-600 font-medium">
+              <a
+                href={`tel:+${contactData.whatsappPhoneDigits}`}
+                className="font-medium text-[#dcc090]/80 transition-colors hover:text-[#dcc090]"
+              >
                 {contactData.phone}
               </a>
             </div>
@@ -118,7 +108,10 @@ export default function ContactPage() {
                 <h3 className="text-xl font-semibold text-gray-900">{t('contact.writeToUs.title')}</h3>
               </div>
               <p className="text-gray-600 mb-2">{t('contact.writeToUs.description')}</p>
-              <a href={`mailto:${contactData.email}`} className="text-orange-500 hover:text-orange-600 font-medium">
+              <a
+                href={`mailto:${contactData.email}`}
+                className="font-medium text-[#dcc090]/80 transition-colors hover:text-[#dcc090]"
+              >
                 {t('contact.writeToUs.emailLabel')} {contactData.email}
               </a>
             </div>
@@ -135,9 +128,6 @@ export default function ContactPage() {
                 <p>{t('contact.headquarter.hours.weekdays')}</p>
                 <p>{t('contact.headquarter.hours.saturday')}</p>
               </div>
-              <p className="text-orange-500 hover:text-orange-600 font-medium">
-                {address}
-              </p>
             </div>
           </div>
 
@@ -160,18 +150,35 @@ export default function ContactPage() {
                 />
               </div>
               <div>
-                <label htmlFor="subject" className="block text-sm font-medium text-gray-900 mb-2">
-                  {t('contact.form.subject')}
+                <label htmlFor="email" className="block text-sm font-medium text-gray-900 mb-2">
+                  {t('contact.form.email')}
                 </label>
                 <Input
-                  id="subject"
-                  name="subject"
-                  type="text"
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
                   required
-                  value={formData.subject}
+                  value={formData.email}
                   onChange={handleChange}
                   className="w-full"
-                  placeholder={t('contact.form.subjectPlaceholder')}
+                  placeholder={t('contact.form.emailPlaceholder')}
+                />
+              </div>
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-900 mb-2">
+                  {t('contact.form.phone')}
+                </label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  required
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="w-full"
+                  placeholder={t('contact.form.phonePlaceholder')}
                 />
               </div>
               <div>
@@ -198,20 +205,6 @@ export default function ContactPage() {
             </form>
           </div>
         </div>
-      </div>
-
-      {/* Bottom Section: Map */}
-      <div className="w-full h-[500px] bg-gray-100">
-        <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.1234567890123!2d44.5150!3d40.1812!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x406aa2dab8fc8b5b%3A0x3d1479ab4e9b8c5e!2sAbovyan%20St%2C%20Yerevan%2C%20Armenia!5e0!3m2!1sen!2sam!4v1234567890123!5m2!1sen!2sam"
-          width="100%"
-          height="100%"
-          style={{ border: 0 }}
-          allowFullScreen
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          className="w-full h-full"
-        />
       </div>
     </div>
   );

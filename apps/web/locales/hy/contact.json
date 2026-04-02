@@ -1,7 +1,14 @@
 {
+  "contactStrip": {
+    "ariaLabel": "Կոնտակտային տվյալներ"
+  },
   "callToUs": {
-    "title": "Զանգահարեք մեզ:",
-    "description": "Մենք հասանելի ենք շաբաթվա 7 օր, օրվա 24 ժամ:"
+    "title": "Զանգեք մեզ:",
+    "description": "Կապվեք մեզ հետ հեռախոսով աշխատանքային ժամերին։"
+  },
+  "whatsapp": {
+    "title": "WhatsApp:",
+    "description": "Գրեք մեզ WhatsApp-ով։"
   },
   "writeToUs": {
     "title": "Գրեք մեզ:",
@@ -16,12 +23,12 @@
     }
   },
   "form": {
-    "name": "Անուն *",
-    "namePlaceholder": "Ձեր անունը",
+    "name": "Լրիվ անուն *",
+    "namePlaceholder": "Ձեր լրիվ անունը",
     "email": "Էլ. փոստ *",
     "emailPlaceholder": "your@email.com",
-    "subject": "Թեմա *",
-    "subjectPlaceholder": "Ինչի՞ մասին է",
+    "phone": "Հեռախոս *",
+    "phonePlaceholder": "+374 XX XXX XXX",
     "comment": "Մեկնաբանություն",
     "commentPlaceholder": "Գրեք ձեր մեկնաբանությունը",
     "message": "Հաղորդագրություն",

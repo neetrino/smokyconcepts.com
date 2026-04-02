@@ -1,7 +1,14 @@
 {
+  "contactStrip": {
+    "ariaLabel": "Contact information"
+  },
   "callToUs": {
-    "title": "Call Us:",
-    "description": "We are available 24/7, 7 days a week."
+    "title": "Call us:",
+    "description": "Reach us by phone during business hours."
+  },
+  "whatsapp": {
+    "title": "WhatsApp:",
+    "description": "Message us on WhatsApp."
   },
   "writeToUs": {
     "title": "Write to Us:",
@@ -16,12 +23,12 @@
     }
   },
   "form": {
-    "name": "Name *",
-    "namePlaceholder": "Your name",
+    "name": "Full name *",
+    "namePlaceholder": "Your full name",
     "email": "E-mail *",
     "emailPlaceholder": "your@email.com",
-    "subject": "Subject *",
-    "subjectPlaceholder": "What is this about?",
+    "phone": "Phone *",
+    "phonePlaceholder": "+374 XX XXX XXX",
     "comment": "Comment",
     "commentPlaceholder": "Write your comment",
     "message": "Message",

@@ -18,12 +18,15 @@ interface ProductImageGalleryProps {
 
 /**
  * Pulls the hero block above the white card top edge (same idea as HomePageContent cover cards).
- * Must pair with outer top padding so parents do not clip the overlap.
+ * Must pair with outer wrapper top padding so parents do not clip the overlap.
  */
 const HERO_PULL_ABOVE_CARD = '-mt-28 sm:-mt-32 lg:-mt-40';
 
 /** Max rendered height for the hero product image (Tailwind arbitrary values). */
 const MAIN_IMAGE_MAX_HEIGHT_CLASSES = 'max-h-[420px] sm:max-h-[480px] lg:max-h-[650px]';
+
+/** Nudge only the hero `<img>` upward (thumbnails / card layout unchanged). */
+const HERO_IMAGE_SHIFT_UP = '-translate-y-2 sm:-translate-y-3 lg:-translate-y-4';
 
 /** Pull thumbnail row + arrows closer to the main image (reduces vertical gap). */
 const THUMBNAIL_ROW_OFFSET_UP = '-mt-16 sm:-mt-18 lg:-mt-24';
@@ -79,12 +82,14 @@ export function ProductImageGallery({
   };
 
   return (
-    <div className="overflow-visible pt-28 sm:pt-32 lg:pt-40">
-      <div className="overflow-visible rounded-[20px] bg-white px-3 pb-2 pt-0 shadow-[0_1px_0_rgba(18,42,38,0.04)] sm:rounded-[24px] sm:px-5 sm:pb-3">
+    <div className="overflow-visible pt-28 sm:pt-32 lg:pt-36">
+      <div className="relative z-0 overflow-visible rounded-[20px] bg-white px-3 pb-2 pt-0 shadow-[0_1px_0_rgba(18,42,38,0.04)] transition-shadow duration-200 has-[.product-hero:hover]:z-10 has-[.product-hero:hover]:shadow-[0_12px_32px_rgba(18,42,38,0.12)] sm:rounded-[24px] sm:px-5 sm:pb-3">
         <div className="flex flex-col items-center overflow-visible">
           <div
             className={`flex w-full justify-center overflow-visible ${
-              images.length > 0 ? `relative z-10 ${HERO_PULL_ABOVE_CARD}` : 'min-h-[200px] items-center sm:min-h-[220px]'
+              images.length > 0
+                ? `product-hero group relative z-10 ${HERO_PULL_ABOVE_CARD}`
+                : 'min-h-[200px] items-center sm:min-h-[220px]'
             }`}
           >
             {images.length > 0 ? (
@@ -93,7 +98,7 @@ export function ProductImageGallery({
                 alt={product.title}
                 decoding="async"
                 draggable={false}
-                className={`relative block h-auto w-auto max-w-full object-contain object-top ${MAIN_IMAGE_MAX_HEIGHT_CLASSES}`}
+                className={`relative block h-auto w-auto max-w-full origin-bottom object-contain object-top transition-transform duration-300 ease-out ${HERO_IMAGE_SHIFT_UP} group-hover:scale-110 group-hover:drop-shadow-[0_12px_24px_rgba(18,42,38,0.18)] ${MAIN_IMAGE_MAX_HEIGHT_CLASSES}`}
               />
             ) : (
               <div className="flex w-full items-center justify-center text-[#9d9d9d]">

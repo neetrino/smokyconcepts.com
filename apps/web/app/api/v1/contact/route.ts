@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@white-shop/db";
 import { logger } from "@/lib/utils/logger";
 
+/** Stored in DB `subject` column (schema); form field is the visitor's phone. */
+const CONTACT_PHONE_MIN_LENGTH = 3;
+const CONTACT_PHONE_MAX_LENGTH = 40;
+
 /**
  * POST /api/v1/contact
  * Submit contact form
@@ -9,7 +13,10 @@ import { logger } from "@/lib/utils/logger";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, subject, message } = body;
+    const { name, email, message } = body;
+    const phoneRaw = body.phone ?? body.subject;
+    const phone =
+      typeof phoneRaw === "string" ? phoneRaw.trim() : "";
 
     // Validation
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
@@ -38,13 +45,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!subject || typeof subject !== 'string' || subject.trim().length === 0) {
+    if (
+      phone.length < CONTACT_PHONE_MIN_LENGTH ||
+      phone.length > CONTACT_PHONE_MAX_LENGTH
+    ) {
       return NextResponse.json(
         {
           type: "https://api.shop.am/problems/validation-error",
           title: "Validation Error",
           status: 400,
-          detail: "Field 'subject' is required",
+          detail: "Field 'phone' is required and must be a valid length",
           instance: req.url,
         },
         { status: 400 }
@@ -84,7 +94,7 @@ export async function POST(req: NextRequest) {
       data: {
         name: name.trim(),
         email: email.trim(),
-        subject: subject.trim(),
+        subject: phone,
         message: message.trim(),
       },
     });
@@ -97,6 +107,7 @@ export async function POST(req: NextRequest) {
           id: contactMessage.id,
           name: contactMessage.name,
           email: contactMessage.email,
+          phone: contactMessage.subject,
           subject: contactMessage.subject,
           message: contactMessage.message,
           createdAt: contactMessage.createdAt,

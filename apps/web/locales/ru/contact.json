@@ -1,7 +1,14 @@
 {
+  "contactStrip": {
+    "ariaLabel": "Контактная информация"
+  },
   "callToUs": {
     "title": "Позвоните нам:",
-    "description": "Мы доступны 24/7, 7 дней в неделю."
+    "description": "Свяжитесь с нами по телефону в рабочие часы."
+  },
+  "whatsapp": {
+    "title": "WhatsApp:",
+    "description": "Напишите нам в WhatsApp."
   },
   "writeToUs": {
     "title": "Напишите нам:",
@@ -16,12 +23,12 @@
     }
   },
   "form": {
-    "name": "Имя *",
-    "namePlaceholder": "Ваше имя",
+    "name": "Полное имя *",
+    "namePlaceholder": "Ваше полное имя",
     "email": "E-mail *",
     "emailPlaceholder": "your@email.com",
-    "subject": "Тема *",
-    "subjectPlaceholder": "О чем это?",
+    "phone": "Телефон *",
+    "phonePlaceholder": "+374 XX XXX XXX",
     "comment": "Комментарий",
     "commentPlaceholder": "Напишите ваш комментарий",
     "message": "Сообщение",

@@ -178,7 +178,7 @@ export function ProductInfoAndActions({
   }, [activeTab, language, productDescription, productDetails]);
 
   return (
-    <div className="max-w-[763px] pt-1 xl:pt-40 2xl:pt-38">
+    <div className="max-w-[763px] pt-1 xl:pt-36 2xl:pt-40">
       <h1 className="font-montserrat text-[26px] font-black leading-tight text-[#414141] sm:text-[30px]">
         {productTitle}
       </h1>
