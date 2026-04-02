@@ -9,29 +9,38 @@
   "useLicense": {
     "title": "2. KEY DEFINITIONS",
     "description": "The following definitions apply in these Terms:",
-    "restrictions": {
-      "modify": "Website – The online platform smokyconcepts.com offering services, content, and various functionalities.",
-      "commercial": "User – Any individual or legal entity accessing or using the Website.",
-      "reverse": "Services – All products, services, content, and tools available via the Website.",
-      "copyright": "Content – Any text, images, videos, audio, or other materials available on the Website.",
-      "transfer": "Intellectual Property and Transaction – Website name, logo, texts, software, and other protected elements, and any purchase, service registration, or other contractual agreement on the Website."
-    }
+    "definitionItems": [
+      "Website – The online platform smokyconcepts.com offering services, content, and various functionalities.",
+      "User – Any individual or legal entity accessing or using the Website.",
+      "Services – All products, services, content, and tools available via the Website.",
+      "Content – Any text, images, videos, audio, or other materials available on the Website.",
+      "Intellectual Property – Website name, logo, texts, software, and other elements protected by copyright or trademark law.",
+      "Transaction – Any purchase, service registration, or other contractual agreement on the Website."
+    ]
   },
   "accountRegistration": {
     "title": "3. USER OBLIGATIONS",
     "description": "3.1. The User agrees to:",
-    "requirements": {
-      "accurate": "Use the Website only for lawful purposes.",
-      "maintain": "Not interfere with the Website's technical operation.",
-      "security": "Not distribute viruses, malware, or any harmful code.",
-      "responsibility": "Not attempt to illegally access Website servers or data.",
-      "notify": "Not publish or distribute illegal, offensive, defamatory, or hate-inducing content. 3.2. The Website reserves the right to block any User who violates these Terms."
-    }
+    "obligationItems": [
+      "Use the Website only for lawful purposes.",
+      "Not interfere with the Website's technical operation.",
+      "Not distribute viruses, malware, or any harmful code.",
+      "Not attempt to illegally access Website servers or data.",
+      "Not publish or distribute illegal, offensive, defamatory, or hate-inducing content."
+    ],
+    "paragraph32": "3.2. The Website reserves the right to block any User who violates these Terms."
   },
   "productInformation": {
     "title": "4. LIMITATION OF LIABILITY",
-    "description1": "4.1. The Website is provided \"as is\" without any warranties. 4.2. The Website is not responsible for any errors or technical malfunctions, as well as incorrect or false information entered by Users.",
-    "description2": "The Website is also not responsible for damages resulting from third-party interactions with the Website or for the accuracy, reliability, or timeliness of the provided content. 4.3. The Website is not liable for indirect damages, including lost revenue or data loss."
+    "paragraph41": "4.1. The Website is provided \"as is\" without any warranties.",
+    "paragraph42Intro": "4.2. The Website is not responsible for:",
+    "liabilityBullets": [
+      "Any errors or technical malfunctions.",
+      "Incorrect or false information entered by Users.",
+      "Damages resulting from third-party interactions with the Website.",
+      "The accuracy, reliability, or timeliness of the content provided."
+    ],
+    "paragraph43": "4.3. The Website is not liable for indirect damages, including lost revenue or data loss."
   },
   "pricingAndPayment": {
     "title": "5. INTELLECTUAL PROPERTY",
@@ -52,13 +61,12 @@
   "prohibitedUses": {
     "title": "8. FORCE MAJEURE",
     "description": "8.1. The Website is not responsible for failure or delay in fulfilling obligations due to force majeure circumstances, including:",
-    "items": {
-      "violate": "Natural disasters (earthquakes, floods, fires, etc.).",
-      "transmit": "Governmental restrictions or prohibitions.",
-      "impersonate": "Military conflicts, terrorism, or civil unrest.",
-      "infringe": "Technical failures beyond the Website's control.",
-      "automated": "Other extraordinary circumstances beyond the Website's control."
-    }
+    "forceMajeureItems": [
+      "Natural disasters (earthquakes, floods, fires, etc.).",
+      "Governmental restrictions or prohibitions.",
+      "Military conflicts, terrorism, or civil unrest.",
+      "Technical failures beyond the Website's control."
+    ]
   },
   "limitationOfLiability": {
     "title": "9. PRIVACY AND DATA PROTECTION",
@@ -77,9 +85,3 @@
     "description": ""
   }
 }
-
-
-
-
-
-

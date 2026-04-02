@@ -5,8 +5,6 @@ import './globals.css';
 import { ClientProviders } from '../components/ClientProviders';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import { MobileBottomNav } from '../components/MobileBottomNav';
-
 const inter = Inter({ subsets: ['latin'] });
 
 /** Geometric sans for homepage ritual steps (matches process / steps UI). */
@@ -34,13 +32,12 @@ export default function RootLayout({
       >
         <Suspense fallback={null}>
           <ClientProviders>
-            <div className="flex min-h-screen flex-col overflow-x-visible overflow-y-visible pb-16 lg:pb-0">
+            <div className="flex min-h-screen flex-col overflow-x-visible overflow-y-visible">
               <Header />
               <main className="flex-1 w-full overflow-x-visible overflow-y-visible">
                 {children}
               </main>
               <Footer />
-              <MobileBottomNav />
             </div>
           </ClientProviders>
         </Suspense>
