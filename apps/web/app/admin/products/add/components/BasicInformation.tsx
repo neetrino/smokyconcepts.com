@@ -6,6 +6,8 @@ import { useTranslation } from '../../../../../lib/i18n-client';
 
 interface BasicInformationProps {
   productType: 'simple' | 'variable';
+  /** When false, only Simple is shown (product has no attribute variants). */
+  variableProductTypeAllowed: boolean;
   setProductType: (type: 'simple' | 'variable') => void;
   title: string;
   slug: string;
@@ -18,6 +20,7 @@ interface BasicInformationProps {
 
 export function BasicInformation({
   productType,
+  variableProductTypeAllowed,
   setProductType,
   title,
   slug,
@@ -39,32 +42,40 @@ export function BasicInformation({
             {t('admin.products.add.productType')} *
           </label>
           <p className="text-xs text-gray-500 mb-3">
-            {t('admin.products.add.productTypeDescription')}
+            {variableProductTypeAllowed
+              ? t('admin.products.add.productTypeDescription')
+              : t('admin.products.add.productTypeSimpleOnlyDescription')}
           </p>
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="productType"
-                value="simple"
-                checked={productType === 'simple'}
-                onChange={(e) => setProductType(e.target.value as 'simple' | 'variable')}
-                className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-              />
-              <span className="text-sm text-gray-700">{t('admin.products.add.productTypeSimple')}</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="productType"
-                value="variable"
-                checked={productType === 'variable'}
-                onChange={(e) => setProductType(e.target.value as 'simple' | 'variable')}
-                className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-              />
-              <span className="text-sm text-gray-700">{t('admin.products.add.productTypeVariable')}</span>
-            </label>
-          </div>
+          {variableProductTypeAllowed ? (
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="productType"
+                  value="simple"
+                  checked={productType === 'simple'}
+                  onChange={(e) => setProductType(e.target.value as 'simple' | 'variable')}
+                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-700">{t('admin.products.add.productTypeSimple')}</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="productType"
+                  value="variable"
+                  checked={productType === 'variable'}
+                  onChange={(e) => setProductType(e.target.value as 'simple' | 'variable')}
+                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-700">{t('admin.products.add.productTypeVariable')}</span>
+              </label>
+            </div>
+          ) : (
+            <div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800">
+              {t('admin.products.add.productTypeSimple')}
+            </div>
+          )}
         </div>
 
         <div>

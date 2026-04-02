@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
 import { cleanImageUrls } from '@/lib/services/utils/image-utils';
 import { isDefaultPricingVariant } from '@/lib/default-pricing-variant';
+import { DEFAULT_SIMPLE_PRODUCT_DATA } from '../constants/defaultSimpleProductData.constants';
 import type { ProductData } from '../types';
 import type { GeneratedVariant } from '../types';
 
@@ -18,6 +19,7 @@ interface UseProductEditModeProps {
   setProductType: (type: 'simple' | 'variable') => void;
   setSimpleProductData: (data: unknown) => void;
   setGeneratedVariants: (variants: GeneratedVariant[]) => void;
+  setVariableProductTypeAllowed: (allowed: boolean) => void;
 }
 
 export function useProductEditMode({
@@ -32,6 +34,7 @@ export function useProductEditMode({
   setProductType,
   setSimpleProductData,
   setGeneratedVariants,
+  setVariableProductTypeAllowed,
 }: UseProductEditModeProps) {
   const router = useRouter();
 
@@ -86,49 +89,99 @@ export function useProductEditMode({
         setHasVariantsToLoad(false);
 
         const variants = product.variants || [];
-        if (variants.length > 0) {
-          type VariantItem = NonNullable<ProductData['variants']>[number];
-          const defaultPricingVariant = variants.find((variant) => isDefaultPricingVariant(variant));
-          const selectableVariants = variants.filter((variant) => !isDefaultPricingVariant(variant));
-          const generated: GeneratedVariant[] = selectableVariants.map((v: VariantItem) => {
-            const priceNum = typeof v.price === 'number' ? v.price : parseFloat(String(v.price)) || 0;
-            const compareNum = typeof v.compareAtPrice === 'number' ? v.compareAtPrice : parseFloat(String(v.compareAtPrice)) || 0;
-            const stockNum = typeof v.stock === 'number' ? v.stock : parseInt(String(v.stock), 10) || 0;
-            return {
-              id: v.id || `variant-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-              selectedValueIds: Array.isArray(v.selectedValueIds) ? v.selectedValueIds : [],
-              price: String(priceNum),
-              compareAtPrice: compareNum ? String(compareNum) : '',
-              stock: String(stockNum),
-              sku: v.sku || '',
-              image: v.imageUrl ?? null,
-            };
-          });
-          setGeneratedVariants(generated);
-          const defaultPriceNum =
-            typeof defaultPricingVariant?.price === 'number'
-              ? defaultPricingVariant.price
-              : parseFloat(String(defaultPricingVariant?.price)) || 0;
-          const defaultCompareAtPriceNum =
-            typeof defaultPricingVariant?.compareAtPrice === 'number'
-              ? defaultPricingVariant.compareAtPrice
-              : parseFloat(String(defaultPricingVariant?.compareAtPrice)) || 0;
-          setSimpleProductData({
-            price: defaultPricingVariant ? String(defaultPriceNum) : generated[0]?.price || '',
-            compareAtPrice:
-              defaultPricingVariant && defaultCompareAtPriceNum > 0 ? String(defaultCompareAtPriceNum) : '',
-            sku: '',
-            quantity: '0',
-          });
-          setProductType('variable');
-        } else {
+        type VariantItem = NonNullable<ProductData['variants']>[number];
+
+        if (variants.length === 0) {
+          setGeneratedVariants([]);
           setProductType('simple');
           setSimpleProductData({
-            price: '',
-            compareAtPrice: '',
-            sku: '',
-            quantity: '0',
+            price: DEFAULT_SIMPLE_PRODUCT_DATA.price,
+            compareAtPrice: DEFAULT_SIMPLE_PRODUCT_DATA.compareAtPrice,
+            sku: DEFAULT_SIMPLE_PRODUCT_DATA.sku,
+            quantity: DEFAULT_SIMPLE_PRODUCT_DATA.quantity,
           });
+          setVariableProductTypeAllowed(false);
+        } else {
+          const defaultPricingVariant = variants.find((variant) => isDefaultPricingVariant(variant));
+          const selectableVariants = variants.filter((variant) => !isDefaultPricingVariant(variant));
+
+          if (selectableVariants.length === 0) {
+            const source: VariantItem = defaultPricingVariant ?? variants[0];
+            const priceNum =
+              typeof source.price === 'number' ? source.price : parseFloat(String(source.price)) || 0;
+            const compareNum =
+              typeof source.compareAtPrice === 'number'
+                ? source.compareAtPrice
+                : parseFloat(String(source.compareAtPrice ?? '')) || 0;
+            const stockNum =
+              typeof source.stock === 'number' ? source.stock : parseInt(String(source.stock ?? '0'), 10) || 0;
+            const skuFromApi =
+              typeof source.sku === 'string' && source.sku.trim() !== ''
+                ? source.sku.trim()
+                : DEFAULT_SIMPLE_PRODUCT_DATA.sku;
+            setGeneratedVariants([]);
+            setProductType('simple');
+            setSimpleProductData({
+              price: String(priceNum || DEFAULT_SIMPLE_PRODUCT_DATA.price),
+              compareAtPrice: compareNum > 0 ? String(compareNum) : '',
+              sku: skuFromApi,
+              quantity: String(stockNum),
+            });
+            setVariableProductTypeAllowed(false);
+          } else {
+            const generated: GeneratedVariant[] = selectableVariants.map((v: VariantItem) => {
+              const priceNum = typeof v.price === 'number' ? v.price : parseFloat(String(v.price)) || 0;
+              const compareNum =
+                typeof v.compareAtPrice === 'number' ? v.compareAtPrice : parseFloat(String(v.compareAtPrice)) || 0;
+              const stockNum = typeof v.stock === 'number' ? v.stock : parseInt(String(v.stock), 10) || 0;
+              return {
+                id: v.id || `variant-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                selectedValueIds: Array.isArray(v.selectedValueIds) ? v.selectedValueIds : [],
+                price: String(priceNum),
+                compareAtPrice: compareNum ? String(compareNum) : '',
+                stock: String(stockNum),
+                sku: v.sku || '',
+                image: v.imageUrl ?? null,
+              };
+            });
+            setGeneratedVariants(generated);
+            const defaultPriceNum =
+              typeof defaultPricingVariant?.price === 'number'
+                ? defaultPricingVariant.price
+                : parseFloat(String(defaultPricingVariant?.price)) || 0;
+            const defaultCompareAtPriceNum =
+              typeof defaultPricingVariant?.compareAtPrice === 'number'
+                ? defaultPricingVariant.compareAtPrice
+                : parseFloat(String(defaultPricingVariant?.compareAtPrice)) || 0;
+            const fallbackPriceFromVariant = generated[0]?.price;
+            const resolvedPrice =
+              defaultPricingVariant !== undefined
+                ? String(defaultPriceNum)
+                : fallbackPriceFromVariant && String(fallbackPriceFromVariant).trim() !== ''
+                  ? String(fallbackPriceFromVariant)
+                  : DEFAULT_SIMPLE_PRODUCT_DATA.price;
+            const defaultStockNum =
+              defaultPricingVariant !== undefined
+                ? typeof defaultPricingVariant.stock === 'number'
+                  ? defaultPricingVariant.stock
+                  : parseInt(String(defaultPricingVariant.stock ?? '0'), 10) || 0
+                : parseInt(DEFAULT_SIMPLE_PRODUCT_DATA.quantity, 10) || 0;
+            const defaultSkuFromApi =
+              defaultPricingVariant &&
+              typeof defaultPricingVariant.sku === 'string' &&
+              defaultPricingVariant.sku.trim() !== ''
+                ? defaultPricingVariant.sku.trim()
+                : DEFAULT_SIMPLE_PRODUCT_DATA.sku;
+            setSimpleProductData({
+              price: resolvedPrice,
+              compareAtPrice:
+                defaultPricingVariant && defaultCompareAtPriceNum > 0 ? String(defaultCompareAtPriceNum) : '',
+              sku: defaultSkuFromApi,
+              quantity: String(defaultStockNum),
+            });
+            setProductType('variable');
+            setVariableProductTypeAllowed(true);
+          }
         }
       } catch (err: unknown) {
         console.error('Error loading product:', err);

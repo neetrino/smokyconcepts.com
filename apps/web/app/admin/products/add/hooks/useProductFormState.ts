@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import type { Category, Variant, ProductLabel, GeneratedVariant } from '../types';
 import type { CategoryAttribute } from '@/lib/category-attributes';
+import { DEFAULT_SIMPLE_PRODUCT_DATA } from '../constants/defaultSimpleProductData.constants';
 
 export function useProductFormState() {
   const [loading, setLoading] = useState(false);
@@ -31,10 +32,10 @@ export function useProductFormState() {
   const [useNewCategory, setUseNewCategory] = useState(false);
   const [productType, setProductType] = useState<'simple' | 'variable'>('variable');
   const [simpleProductData, setSimpleProductData] = useState({
-    price: '',
-    compareAtPrice: '',
-    sku: '',
-    quantity: '',
+    price: DEFAULT_SIMPLE_PRODUCT_DATA.price,
+    compareAtPrice: DEFAULT_SIMPLE_PRODUCT_DATA.compareAtPrice,
+    sku: DEFAULT_SIMPLE_PRODUCT_DATA.sku,
+    quantity: DEFAULT_SIMPLE_PRODUCT_DATA.quantity,
   });
   const [generatedVariants, setGeneratedVariants] = useState<GeneratedVariant[]>([]);
   const [hasVariantsToLoad, setHasVariantsToLoad] = useState(false);
@@ -42,6 +43,8 @@ export function useProductFormState() {
   const [selectedAttributeValueIds, setSelectedAttributeValueIds] = useState<Record<string, string[]>>({});
   /** Which global attributes participate in this product (checkbox in Select attributes). */
   const [enabledAttributeIds, setEnabledAttributeIds] = useState<Record<string, boolean>>({});
+  /** When false (edit: product has no selectable variants), only Simple type is shown. */
+  const [variableProductTypeAllowed, setVariableProductTypeAllowed] = useState(true);
 
   return {
     loading,
@@ -80,6 +83,8 @@ export function useProductFormState() {
     setSelectedAttributeValueIds,
     enabledAttributeIds,
     setEnabledAttributeIds,
+    variableProductTypeAllowed,
+    setVariableProductTypeAllowed,
   };
 }
 

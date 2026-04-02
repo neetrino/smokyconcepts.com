@@ -52,7 +52,14 @@ function AddProductPageContent() {
     setProductType: formState.setProductType,
     setSimpleProductData: (value) => formState.setSimpleProductData(value as SetStateAction<typeof formState.simpleProductData>),
     setGeneratedVariants: formState.setGeneratedVariants,
+    setVariableProductTypeAllowed: formState.setVariableProductTypeAllowed,
   });
+
+  useEffect(() => {
+    if (!isEditMode) {
+      formState.setVariableProductTypeAllowed(true);
+    }
+  }, [isEditMode, formState.setVariableProductTypeAllowed]);
 
   const { applyToAllVariants } = useVariantGeneration({
     setGeneratedVariants: formState.setGeneratedVariants,
@@ -247,6 +254,13 @@ function AddProductPageContent() {
     return null;
   }
 
+  const handleProductTypeChange = (type: 'simple' | 'variable') => {
+    if (!formState.variableProductTypeAllowed && type === 'variable') {
+      return;
+    }
+    formState.setProductType(type);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -277,7 +291,8 @@ function AddProductPageContent() {
             onSlugChange={(e) => formState.setFormData((prev) => ({ ...prev, slug: e.target.value }))}
             onSlugBlur={handleSlugBlur}
             onDescriptionChange={(e) => formState.setFormData((prev) => ({ ...prev, descriptionHtml: e.target.value }))}
-            onProductTypeChange={formState.setProductType}
+            variableProductTypeAllowed={formState.variableProductTypeAllowed}
+            onProductTypeChange={handleProductTypeChange}
             onUploadImages={handleUploadImages}
             onRemoveImage={removeImageUrl}
             onSetFeaturedImage={setFeaturedImage}

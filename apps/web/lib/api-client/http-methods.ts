@@ -210,7 +210,9 @@ export async function postRequest<T>(
       ...options,
     });
 
-    console.log('📥 [API CLIENT] Response status:', response.status, response.statusText);
+    if (response.ok || shouldLogError(response.status)) {
+      console.log('📥 [API CLIENT] Response status:', response.status, response.statusText);
+    }
 
     if (!response.ok) {
       const isUnauthorized = response.status === 401;

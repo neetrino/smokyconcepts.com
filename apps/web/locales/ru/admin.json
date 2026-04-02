@@ -387,6 +387,7 @@
       "productTypeSimple": "Простой",
       "productTypeVariable": "Вариантный",
       "productTypeDescription": "Выберите тип товара: Простой (без вариантов) или Вариантный (с вариантами)",
+      "productTypeSimpleOnlyDescription": "У этого товара нет вариантов по атрибутам; доступен только тип «Простой».",
       "title": "Название",
       "slug": "Slug",
       "description": "Описание",

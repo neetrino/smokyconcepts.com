@@ -133,12 +133,19 @@ export function useProductFormHandlers({
         const defaultVariantCompareAtPriceUSD = Number.isFinite(defaultVariantCompareAtPrice)
           ? defaultVariantCompareAtPrice
           : undefined;
-        const defaultVariantSku = `${(currentFormData.slug || 'PROD').toUpperCase()}-DEFAULT`;
+        const defaultSkuInput = String(simpleProductData.sku || '').trim();
+        const defaultVariantSku =
+          defaultSkuInput !== ''
+            ? defaultSkuInput
+            : `${(currentFormData.slug || 'PROD').toUpperCase()}-DEFAULT`;
+        const defaultStockRaw = parseInt(String(simpleProductData.quantity || '0'), 10);
+        const defaultVariantStock =
+          Number.isFinite(defaultStockRaw) && defaultStockRaw >= 0 ? defaultStockRaw : 0;
 
         variants.push({
           price: Number.isFinite(defaultVariantPrice) ? defaultVariantPrice : 0,
           compareAtPrice: defaultVariantCompareAtPriceUSD,
-          stock: 0,
+          stock: defaultVariantStock,
           sku: defaultVariantSku,
           attributes: buildDefaultPricingAttributes(),
           published: true,

@@ -148,13 +148,21 @@ class OrdersService {
               },
             });
 
-            if (!variant || variant.productId !== productId) {
+            if (!variant) {
               throw {
                 status: 404,
                 type: "https://api.shop.am/problems/not-found",
                 title: "Product variant not found",
-                detail: `Variant ${variantId} not found for product ${productId}`,
+                detail: `Variant ${variantId} not found`,
               };
+            }
+
+            if (variant.productId !== productId) {
+              logger.warn("Checkout item productId mismatch; using variant owner product", {
+                clientProductId: productId,
+                variantId,
+                actualProductId: variant.productId,
+              });
             }
 
             // Check stock
