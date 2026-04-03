@@ -107,7 +107,7 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    // Validate stepSizePerCurrency (optional map: { USD })
+    // Validate stepSizePerCurrency (optional map, e.g. { USD })
     if (data.stepSizePerCurrency !== null && data.stepSizePerCurrency !== undefined) {
       if (typeof data.stepSizePerCurrency !== 'object') {
         return NextResponse.json(
@@ -122,7 +122,7 @@ export async function PUT(req: NextRequest) {
         );
       }
 
-      const allowedCurrencies = ['USD'];
+      const allowedCurrencies = ['RUB', 'USD'];
       for (const [code, value] of Object.entries(data.stepSizePerCurrency)) {
         if (!allowedCurrencies.includes(code)) {
           return NextResponse.json(

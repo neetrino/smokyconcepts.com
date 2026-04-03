@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslation } from '../../../../lib/i18n-client';
-import { amountToUsd, formatPriceInCurrency } from '../../../../lib/currency';
+import { ADMIN_PRICE_CURRENCY, amountToUsd, formatPriceInCurrency } from '../../../../lib/currency';
 import { getStatusColor, getPaymentStatusColor } from '../utils/orderUtils';
 import type { Order } from '../useOrders';
 
@@ -33,11 +33,11 @@ export function OrderRow({
       const subtotalUsd = amountToUsd(order.subtotal, order.currency);
       const discountUsd = amountToUsd(order.discountAmount, order.currency);
       const taxUsd = amountToUsd(order.taxAmount, order.currency);
-      return formatPriceInCurrency(subtotalUsd - discountUsd + taxUsd, 'USD');
+      return formatPriceInCurrency(subtotalUsd - discountUsd + taxUsd, ADMIN_PRICE_CURRENCY);
     }
     const totalUsd = amountToUsd(order.total, order.currency);
     const shippingUsd = amountToUsd(order.shippingAmount || 0, order.currency);
-    return formatPriceInCurrency(totalUsd - shippingUsd, 'USD');
+    return formatPriceInCurrency(totalUsd - shippingUsd, ADMIN_PRICE_CURRENCY);
   };
 
   return (

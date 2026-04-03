@@ -1,5 +1,8 @@
 import { db } from "@white-shop/db";
 
+import { isR2Configured, uploadVotingImageToR2 } from "@/lib/services/r2.service";
+import { parseDataImageUrl } from "@/lib/services/utils/data-url-image";
+
 interface VotingProblem {
   status: number;
   type: string;
@@ -40,6 +43,34 @@ function requireTrimmedValue(value: string | undefined, fieldName: string): stri
   }
 
   return trimmedValue;
+}
+
+/**
+ * Inline data URLs are uploaded to R2 (voting/…); HTTPS URLs are stored as-is.
+ */
+async function resolveVotingImageUrl(imageUrl: string): Promise<string> {
+  if (!imageUrl.startsWith("data:image/")) {
+    return imageUrl;
+  }
+
+  if (!isR2Configured()) {
+    throw buildProblem(
+      503,
+      "Image storage unavailable",
+      "R2 is not configured; cannot save inline images. Upload a file or configure R2.",
+    );
+  }
+
+  const parsed = parseDataImageUrl(imageUrl);
+  if (!parsed) {
+    throw buildProblem(
+      400,
+      "Invalid image",
+      "Image must be a valid data URL or a public image URL.",
+    );
+  }
+
+  return uploadVotingImageToR2(parsed.buffer, parsed.contentType);
 }
 
 function getTopLikedId(items: VotingItemRecord[]): string | null {
@@ -137,7 +168,8 @@ class AdminVotingService {
 
   async createVotingItem(data: VotingItemInput) {
     const title = requireTrimmedValue(data.title, "Title");
-    const imageUrl = requireTrimmedValue(data.imageUrl, "Image");
+    const rawImageUrl = requireTrimmedValue(data.imageUrl, "Image");
+    const imageUrl = await resolveVotingImageUrl(rawImageUrl);
 
     const item = await db.votingItem.create({
       data: {
@@ -179,7 +211,8 @@ class AdminVotingService {
     }
 
     const title = requireTrimmedValue(data.title, "Title");
-    const imageUrl = requireTrimmedValue(data.imageUrl, "Image");
+    const rawImageUrl = requireTrimmedValue(data.imageUrl, "Image");
+    const imageUrl = await resolveVotingImageUrl(rawImageUrl);
 
     const item = await db.votingItem.update({
       where: {

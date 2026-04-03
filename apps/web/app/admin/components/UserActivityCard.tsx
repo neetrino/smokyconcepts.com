@@ -1,6 +1,7 @@
 'use client';
 
 import { Card } from '@shop/ui';
+import { ADMIN_PRICE_CURRENCY } from '@/lib/currency';
 import { useTranslation } from '../../../lib/i18n-client';
 import { formatCurrency, formatDate } from '../utils/dashboardUtils';
 
@@ -77,7 +78,7 @@ export function UserActivityCard({ userActivity, userActivityLoading }: UserActi
                       <p className="text-sm font-medium text-gray-900">{user.name}</p>
                       <p className="text-xs text-gray-600">{user.email || user.phone || 'N/A'}</p>
                       <p className="text-xs text-gray-500 mt-1">
-                        {t('admin.dashboard.ordersCount').replace('{count}', user.orderCount.toString())} • {formatCurrency(user.totalSpent, 'USD')}
+                        {t('admin.dashboard.ordersCount').replace('{count}', user.orderCount.toString())} • {formatCurrency(user.totalSpent, ADMIN_PRICE_CURRENCY)}
                       </p>
                     </div>
                   </div>

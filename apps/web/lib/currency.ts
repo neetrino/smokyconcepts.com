@@ -1,8 +1,13 @@
-// USD-only storefront. Legacy rows with currency = AMD are converted with a fixed dram-per-USD rate.
+// Storefront catalog and admin UI use USD for pricing (see ADMIN_PRICE_CURRENCY).
+// Legacy rows with currency = AMD are converted with a fixed dram-per-USD rate.
 
 export const CURRENCIES = {
   USD: { code: 'USD', symbol: '$', name: 'US Dollar', rate: 1 },
+  RUB: { code: 'RUB', symbol: '₽', name: 'Russian Ruble', rate: 1 },
 } as const;
+
+/** Admin dashboard and product forms: display and label currency. */
+export const ADMIN_PRICE_CURRENCY = 'USD' as const;
 
 export type CurrencyCode = keyof typeof CURRENCIES;
 
@@ -95,8 +100,17 @@ export function amountToUsd(amount: number, storedCurrency: string | undefined):
   return amount;
 }
 
-export function formatStoredMoney(amount: number, storedCurrency: string | undefined): string {
-  return formatPriceInCurrency(amountToUsd(amount, storedCurrency), 'USD');
+/** Format a raw order line amount for admin (normalizes legacy AMD, displays in {@link ADMIN_PRICE_CURRENCY}). */
+export function formatAdminOrderAmount(amount: number, storedCurrency?: string): string {
+  return formatPriceInCurrency(amountToUsd(amount, storedCurrency), ADMIN_PRICE_CURRENCY);
+}
+
+export function formatStoredMoney(
+  amount: number,
+  storedCurrency: string | undefined,
+  displayCurrency: string = 'USD',
+): string {
+  return formatPriceInCurrency(amountToUsd(amount, storedCurrency), displayCurrency);
 }
 
 export const STORE_PRICE_CURRENCY: CurrencyCode = 'USD';
@@ -105,11 +119,22 @@ export function formatStorePriceForDisplay(amount: number, _displayCurrency: Cur
   return formatPriceInCurrency(amount, 'USD');
 }
 
-export function formatPriceInCurrency(price: number, _currency: CurrencyCode = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(price);
+export function formatPriceInCurrency(price: number, currency: string = 'USD'): string {
+  const code = currency.trim().toUpperCase();
+  const locale = code === 'RUB' ? 'ru-RU' : 'en-US';
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: code,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(price);
+  } catch {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(price);
+  }
 }

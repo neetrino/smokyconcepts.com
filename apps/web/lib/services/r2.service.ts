@@ -1,6 +1,6 @@
 /**
  * Cloudflare R2 upload service (S3-compatible API).
- * Used for product images in admin add/edit.
+ * Used for product images, voting images, and other admin uploads.
  */
 
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
@@ -61,13 +61,22 @@ function getS3Client(): S3Client {
   return _s3Client;
 }
 
+const R2_OBJECT_PREFIX = {
+  products: "products",
+  voting: "voting",
+  homeHero: "home-hero",
+} as const;
+
+export type R2ImageObjectPrefix = keyof typeof R2_OBJECT_PREFIX;
+
 /**
  * Upload a buffer to R2 and return the public URL.
- * Key format: products/YYYY/MM/uuid.ext
+ * Key format: {prefix}/YYYY/MM/uuid.ext
  */
-export async function uploadProductImageToR2(
+export async function uploadImageToR2(
   body: Buffer,
-  contentType: string
+  contentType: string,
+  objectPrefix: R2ImageObjectPrefix
 ): Promise<string> {
   const config = getR2Config();
   if (!config) {
@@ -84,7 +93,8 @@ export async function uploadProductImageToR2(
   const now = new Date();
   const year = now.getUTCFullYear();
   const month = String(now.getUTCMonth() + 1).padStart(2, "0");
-  const key = `products/${year}/${month}/${randomUUID()}.${ext}`;
+  const folder = R2_OBJECT_PREFIX[objectPrefix];
+  const key = `${folder}/${year}/${month}/${randomUUID()}.${ext}`;
 
   await getS3Client().send(
     new PutObjectCommand({
@@ -96,6 +106,30 @@ export async function uploadProductImageToR2(
   );
 
   return `${config.publicUrl}/${key}`;
+}
+
+/** Key format: products/YYYY/MM/uuid.ext */
+export async function uploadProductImageToR2(
+  body: Buffer,
+  contentType: string
+): Promise<string> {
+  return uploadImageToR2(body, contentType, "products");
+}
+
+/** Key format: voting/YYYY/MM/uuid.ext */
+export async function uploadVotingImageToR2(
+  body: Buffer,
+  contentType: string
+): Promise<string> {
+  return uploadImageToR2(body, contentType, "voting");
+}
+
+/** Key format: home-hero/YYYY/MM/uuid.ext */
+export async function uploadHomeHeroImageToR2(
+  body: Buffer,
+  contentType: string
+): Promise<string> {
+  return uploadImageToR2(body, contentType, "homeHero");
 }
 
 export function isR2Configured(): boolean {

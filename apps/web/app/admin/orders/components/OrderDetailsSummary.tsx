@@ -2,7 +2,7 @@
 
 import { useTranslation } from '../../../../lib/i18n-client';
 import { Card } from '@shop/ui';
-import { amountToUsd, formatPriceInCurrency } from '../../../../lib/currency';
+import { ADMIN_PRICE_CURRENCY, amountToUsd, formatPriceInCurrency } from '../../../../lib/currency';
 import type { OrderDetails } from '../useOrders';
 
 interface OrderDetailsSummaryProps {
@@ -72,9 +72,9 @@ export function OrderDetailsSummary({
         );
         const taxUsd = amountToUsd(orderDetails.totals.tax, orderDetails.totals.currency);
         const totalUsd = subtotalUsd - discountUsd + shippingUsd + taxUsd;
-        return formatPriceInCurrency(totalUsd, 'USD');
+        return formatPriceInCurrency(totalUsd, ADMIN_PRICE_CURRENCY);
       })()
-    : formatCurrency(orderDetails.total, 'USD', orderDetails.currency || 'USD');
+    : formatCurrency(orderDetails.total, ADMIN_PRICE_CURRENCY, orderDetails.currency || 'USD');
 
   return (
     <Card className="p-4 md:p-5">

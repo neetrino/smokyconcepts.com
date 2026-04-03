@@ -16,7 +16,7 @@ export default function PriceFilterSettingsPage() {
   const pathname = usePathname();
   const [minPrice, setMinPrice] = useState<string>('');
   const [maxPrice, setMaxPrice] = useState<string>('');
-  const [stepSizeUSD, setStepSizeUSD] = useState<string>('');
+  const [stepSizeUsd, setStepSizeUsd] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   
@@ -33,6 +33,7 @@ export default function PriceFilterSettingsPage() {
         maxPrice?: number;
         stepSize?: number;
         stepSizePerCurrency?: {
+          RUB?: number;
           USD?: number;
         };
       }>('/api/v1/admin/settings/price-filter');
@@ -43,7 +44,8 @@ export default function PriceFilterSettingsPage() {
       
       setMinPrice(minPriceStr);
       setMaxPrice(maxPriceStr);
-      setStepSizeUSD(per.USD !== undefined ? per.USD.toString() : fallbackStep);
+      const stepFromPer = per.USD !== undefined ? per.USD : per.RUB;
+      setStepSizeUsd(stepFromPer !== undefined ? stepFromPer.toString() : fallbackStep);
       prevStepSizeRef.current = fallbackStep;
       
       console.log('✅ [PRICE FILTER SETTINGS] Settings loaded:', response);
@@ -52,14 +54,14 @@ export default function PriceFilterSettingsPage() {
       // If settings don't exist, use empty values
       setMinPrice('');
       setMaxPrice('');
-      setStepSizeUSD('');
+      setStepSizeUsd('');
       prevStepSizeRef.current = '';
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Обработчик изменения базового Step Size (USD) - синхронизирует minPrice и maxPrice
+  // Base step size (USD) — syncs minPrice / maxPrice when both are set
   const handleStepSizeChange = (newValue: string) => {
     if (isUpdatingRef.current) return;
     
@@ -68,7 +70,7 @@ export default function PriceFilterSettingsPage() {
     // Если предыдущее значение пустое, просто обновляем
     if (!prevStep) {
       prevStepSizeRef.current = newValue;
-      setStepSizeUSD(newValue);
+      setStepSizeUsd(newValue);
       return;
     }
     
@@ -78,7 +80,7 @@ export default function PriceFilterSettingsPage() {
     // Если новое значение невалидно, просто обновляем stepSize
     if (isNaN(newStepNum) || newValue.trim() === '') {
       prevStepSizeRef.current = newValue;
-      setStepSizeUSD(newValue);
+      setStepSizeUsd(newValue);
       return;
     }
     
@@ -99,7 +101,7 @@ export default function PriceFilterSettingsPage() {
         
         // Обновляем все значения
         isUpdatingRef.current = true;
-        setStepSizeUSD(newValue);
+        setStepSizeUsd(newValue);
         setMinPrice(newMinNum > 0 ? newMinNum.toString() : '');
         setMaxPrice(newMaxNum > 0 ? newMaxNum.toString() : '');
         prevStepSizeRef.current = newValue;
@@ -124,13 +126,13 @@ export default function PriceFilterSettingsPage() {
     
     // Если min/max не заполнены, просто обновляем stepSize
     prevStepSizeRef.current = newValue;
-    setStepSizeUSD(newValue);
+    setStepSizeUsd(newValue);
   };
 
   const handleSave = async () => {
     const minValue = minPrice.trim() ? parseFloat(minPrice) : null;
     const maxValue = maxPrice.trim() ? parseFloat(maxPrice) : null;
-    const stepValueUSD = stepSizeUSD.trim() ? parseFloat(stepSizeUSD) : null;
+    const stepValueUsd = stepSizeUsd.trim() ? parseFloat(stepSizeUsd) : null;
 
     if (minValue !== null && (isNaN(minValue) || minValue < 0)) {
       alert(t('admin.priceFilter.minPriceInvalid'));
@@ -150,7 +152,7 @@ export default function PriceFilterSettingsPage() {
       return true;
     };
 
-    if (!validateStep(stepValueUSD, t('admin.priceFilter.stepSizeUsd'))) return;
+    if (!validateStep(stepValueUsd, t('admin.priceFilter.stepSizeUsd'))) return;
 
     if (minValue !== null && maxValue !== null && minValue >= maxValue) {
       alert(t('admin.priceFilter.minMustBeLess'));
@@ -162,18 +164,18 @@ export default function PriceFilterSettingsPage() {
       console.log('⚙️ [PRICE FILTER SETTINGS] Saving settings...', {
         minValue,
         maxValue,
-        stepValueUSD,
+        stepValueUsd,
       });
 
       const stepSizePerCurrency: {
         USD?: number;
       } = {};
 
-      if (stepValueUSD !== null) stepSizePerCurrency.USD = stepValueUSD;
+      if (stepValueUsd !== null) stepSizePerCurrency.USD = stepValueUsd;
       await apiClient.put('/api/v1/admin/settings/price-filter', {
         minPrice: minValue,
         maxPrice: maxValue,
-        stepSize: stepValueUSD, // keep legacy field for backwards compatibility (USD as base)
+        stepSize: stepValueUsd,
         stepSizePerCurrency: Object.keys(stepSizePerCurrency).length ? stepSizePerCurrency : null,
       });
       
@@ -316,7 +318,7 @@ export default function PriceFilterSettingsPage() {
                       </label>
                       <Input
                         type="number"
-                        value={stepSizeUSD}
+                        value={stepSizeUsd}
                         onChange={(e) => handleStepSizeChange(e.target.value)}
                         placeholder="100"
                         min="1"
@@ -364,7 +366,7 @@ export default function PriceFilterSettingsPage() {
                       onClick={() => {
                         setMinPrice('');
                         setMaxPrice('');
-                        setStepSizeUSD('');
+                        setStepSizeUsd('');
                         prevStepSizeRef.current = '';
                       }}
                     >

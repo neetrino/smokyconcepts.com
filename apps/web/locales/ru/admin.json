@@ -507,6 +507,7 @@
     "defaultCurrency": "Валюта по умолчанию",
     "amd": "AMD - Армянский драм",
     "usd": "USD - Доллар США",
+    "rub": "RUB - Российский рубль",
     "eur": "EUR - Евро",
     "enableOnlinePayments": "Включить онлайн-платежи",
     "saveSettings": "Сохранить настройки",
@@ -517,6 +518,7 @@
     "siteNamePlaceholder": "Мой магазин",
     "siteDescriptionPlaceholder": "Описание вашего магазина",
     "currencyRates": "Курсы валют",
+    "usdOnlyNote": "Для цен в админке используется только USD. Редактирование курсов отключено.",
     "currencyRatesDescription": "Установите курсы валют относительно USD. Эти курсы используются для конвертации цен товаров.",
     "baseCurrency": "Базовая валюта (всегда 1)",
     "rateToUSD": "Курс к USD (1 USD = указанное значение)"

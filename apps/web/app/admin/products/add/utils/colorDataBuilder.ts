@@ -1,5 +1,5 @@
 /**
- * Utilities for building color data map from variants (USD amounts as in API).
+ * Utilities for building color data map from variants (amounts as returned by API).
  */
 
 import { smartSplitUrls } from '@/lib/services/utils/image-utils';

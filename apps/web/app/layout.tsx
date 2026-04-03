@@ -16,8 +16,8 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: 'Shop - Professional E-commerce',
-  description: 'Modern e-commerce platform',
+  title: 'Smoky Concepts',
+  description: 'Smoky Concepts is a premium  shop.',
 };
 
 export default function RootLayout({

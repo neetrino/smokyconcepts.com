@@ -6,7 +6,7 @@ import { Card } from '@shop/ui';
 
 import { apiClient } from '../../../../lib/api-client';
 import { useTranslation } from '../../../../lib/i18n-client';
-import { formatPriceInCurrency, amountToUsd } from '../../../../lib/currency';
+import { ADMIN_PRICE_CURRENCY, formatAdminOrderAmount } from '../../../../lib/currency';
 import { OrderDetailsSummary } from '../components/OrderDetailsSummary';
 import { OrderDetailsAddresses } from '../components/OrderDetailsAddresses';
 import { OrderDetailsItems } from '../components/OrderDetailsItems';
@@ -49,7 +49,7 @@ export default function AdminOrderDetailsPage() {
   }, [orderId, t]);
 
   const formatCurrency = (amount: number, _orderCurrency?: string, storedAs?: string): string =>
-    formatPriceInCurrency(amountToUsd(amount, storedAs ?? 'USD'), 'USD');
+    formatAdminOrderAmount(amount, storedAs);
 
   const handleStatusChange = async (newStatus: string) => {
     if (!orderId || !orderDetails || updatingStatus || orderDetails.status === newStatus) {
@@ -141,7 +141,7 @@ export default function AdminOrderDetailsPage() {
         <div className="space-y-6">
           <OrderDetailsSummary
             orderDetails={orderDetails}
-            currency="USD"
+            currency={ADMIN_PRICE_CURRENCY}
             formatCurrency={formatCurrency}
             updatingStatus={updatingStatus}
             updatingPaymentStatus={updatingPaymentStatus}

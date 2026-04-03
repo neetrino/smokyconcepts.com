@@ -178,9 +178,7 @@ export default function SettingsPage() {
         {/* Currency Exchange Rates */}
         <Card className="p-6 mb-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('admin.settings.currencyRates')}</h2>
-          <p className="text-sm text-gray-600">
-            USD fixed as the only available currency. Exchange rates are disabled.
-          </p>
+          <p className="text-sm text-gray-600">{t('admin.settings.usdOnlyNote')}</p>
         </Card>
 
         {/* Actions */}

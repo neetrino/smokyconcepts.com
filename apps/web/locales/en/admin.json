@@ -507,6 +507,7 @@
     "defaultCurrency": "Default Currency",
     "amd": "AMD - Armenian Dram",
     "usd": "USD - US Dollar",
+    "rub": "RUB - Russian Ruble",
     "eur": "EUR - Euro",
     "enableOnlinePayments": "Enable Online Payments",
     "saveSettings": "Save Settings",
@@ -517,6 +518,7 @@
     "siteNamePlaceholder": "My Shop",
     "siteDescriptionPlaceholder": "Your shop description",
     "currencyRates": "Currency Rates",
+    "usdOnlyNote": "USD is the only currency for admin pricing. Exchange rates are disabled.",
     "currencyRatesDescription": "Set currency rates relative to USD. These rates are used for product price conversion.",
     "baseCurrency": "Base Currency (always 1)",
     "rateToUSD": "Rate to USD (1 USD = specified value)"
@@ -582,6 +584,7 @@
     "gelPlaceholder": "10",
     "howItWorks": "How It Works:",
     "stepSizeControls": "Step size controls how the price slider moves (e.g., 100 = increments of 100)",
+    "defaultRange": "Default min/max range is derived from actual product prices",
     "differentStepSizes": "You can set different step sizes for USD, AMD, RUB and GEL",
     "usersCanAdjust": "Users can still adjust the full range using the slider on products page",
     "changesTakeEffect": "Changes take effect immediately after saving",

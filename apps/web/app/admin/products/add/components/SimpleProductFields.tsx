@@ -2,7 +2,7 @@
 
 import { Input } from '@shop/ui';
 import { useTranslation } from '../../../../../lib/i18n-client';
-import { CURRENCIES } from '../../../../../lib/currency';
+import { ADMIN_PRICE_CURRENCY, CURRENCIES } from '../../../../../lib/currency';
 
 interface SimpleProductFieldsProps {
   price: string;
@@ -48,7 +48,7 @@ export function SimpleProductFields({
                 step="0.01"
                 required
               />
-              <span className="text-sm text-gray-500 whitespace-nowrap">{CURRENCIES.USD.symbol}</span>
+              <span className="text-sm text-gray-500 whitespace-nowrap">{CURRENCIES[ADMIN_PRICE_CURRENCY].symbol}</span>
             </div>
           </div>
 
@@ -67,7 +67,7 @@ export function SimpleProductFields({
                 min="0"
                 step="0.01"
               />
-              <span className="text-sm text-gray-500 whitespace-nowrap">{CURRENCIES.USD.symbol}</span>
+              <span className="text-sm text-gray-500 whitespace-nowrap">{CURRENCIES[ADMIN_PRICE_CURRENCY].symbol}</span>
             </div>
           </div>
 

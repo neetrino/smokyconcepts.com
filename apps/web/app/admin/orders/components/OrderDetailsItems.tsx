@@ -2,6 +2,7 @@
 
 import { useTranslation } from '../../../../lib/i18n-client';
 import { Card } from '@shop/ui';
+import { ADMIN_PRICE_CURRENCY } from '../../../../lib/currency';
 import { getColorValue } from '../utils/orderUtils';
 import type { OrderDetails } from '../useOrders';
 
@@ -101,10 +102,10 @@ export function OrderDetailsItems({
                   </td>
                   <td className="px-3 py-2 text-right">{item.quantity}</td>
                   <td className="px-3 py-2 text-right">
-                    {formatCurrency(item.unitPrice, 'USD', orderDetails.currency)}
+                    {formatCurrency(item.unitPrice, ADMIN_PRICE_CURRENCY, orderDetails.currency)}
                   </td>
                   <td className="px-3 py-2 text-right">
-                    {formatCurrency(item.total, 'USD', orderDetails.currency)}
+                    {formatCurrency(item.total, ADMIN_PRICE_CURRENCY, orderDetails.currency)}
                   </td>
                 </tr>
               );

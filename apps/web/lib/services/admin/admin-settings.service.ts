@@ -1,6 +1,9 @@
 import { db } from "@white-shop/db";
 
-import { parseHomeHeroConfigForAdmin } from "@/lib/services/home-hero.service";
+import {
+  parseHomeHeroConfigForAdmin,
+  resolveHomeHeroInlineImagesForR2,
+} from "@/lib/services/home-hero.service";
 import { homeHeroConfigSchema } from "@/lib/validation/home-hero.schema";
 
 class AdminSettingsService {
@@ -140,14 +143,15 @@ class AdminSettingsService {
         create: {
           key: 'currencyRates',
           value: data.currencyRates,
-          description: 'Currency exchange rates relative to USD (USD only)',
+          description: 'Currency exchange rates (USD-only fixed)',
         },
       });
       console.log('✅ [ADMIN SERVICE] Currency rates updated:', data.currencyRates);
     }
 
     if (data.homeHero !== undefined) {
-      const parsed = homeHeroConfigSchema.parse(data.homeHero);
+      const withR2Urls = await resolveHomeHeroInlineImagesForR2(data.homeHero);
+      const parsed = homeHeroConfigSchema.parse(withR2Urls);
       await db.settings.upsert({
         where: { key: "homeHero" },
         update: {
@@ -190,6 +194,7 @@ class AdminSettingsService {
       maxPrice?: number;
       stepSize?: number;
       stepSizePerCurrency?: {
+        RUB?: number;
         USD?: number;
       };
     };
@@ -211,6 +216,8 @@ class AdminSettingsService {
     stepSize?: number | null;
     stepSizePerCurrency?: {
       USD?: number | null;
+      /** Legacy stored settings only; new admin UI saves USD. */
+      RUB?: number | null;
     } | null;
   }) {
     console.log('⚙️ [ADMIN SERVICE] Updating price filter settings...', data);
@@ -221,6 +228,7 @@ class AdminSettingsService {
       stepSize?: number;
       stepSizePerCurrency?: {
         USD?: number;
+        RUB?: number;
       };
     } = {};
     
@@ -234,7 +242,10 @@ class AdminSettingsService {
       value.stepSize = data.stepSize;
     }
     if (data.stepSizePerCurrency) {
-      const cleaned: { USD?: number } = {};
+      const cleaned: { RUB?: number; USD?: number } = {};
+      if (data.stepSizePerCurrency.RUB !== null && data.stepSizePerCurrency.RUB !== undefined) {
+        cleaned.RUB = data.stepSizePerCurrency.RUB;
+      }
       if (data.stepSizePerCurrency.USD !== null && data.stepSizePerCurrency.USD !== undefined) {
         cleaned.USD = data.stepSizePerCurrency.USD;
       }

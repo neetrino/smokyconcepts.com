@@ -2,6 +2,7 @@
 
 import { Card } from '@shop/ui';
 import { useRouter } from 'next/navigation';
+import { ADMIN_PRICE_CURRENCY } from '@/lib/currency';
 import { useTranslation } from '../../../lib/i18n-client';
 import { formatCurrency } from '../utils/dashboardUtils';
 
@@ -103,7 +104,7 @@ export function StatsGrid({ stats, statsLoading }: StatsGridProps) {
               <div className="animate-pulse h-8 w-24 bg-gray-200 rounded mt-1"></div>
             ) : (
               <p className="text-2xl font-bold text-gray-900 mt-1">
-                {stats ? formatCurrency(stats.revenue.total, stats.revenue.currency) : '0 USD'}
+                {stats ? formatCurrency(stats.revenue.total, stats.revenue.currency) : formatCurrency(0, ADMIN_PRICE_CURRENCY)}
               </p>
             )}
           </div>

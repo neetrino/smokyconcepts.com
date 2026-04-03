@@ -14,7 +14,7 @@ import { useTranslation } from '@/lib/i18n-client';
 import { processImageFile } from '@/lib/services/utils/image-utils';
 import type { HomeHeroSlide } from '@/lib/types/home-hero.types';
 
-const UPLOAD_IMAGES_ENDPOINT = '/api/v1/admin/products/upload-images';
+const UPLOAD_IMAGES_ENDPOINT = '/api/v1/admin/home-hero/upload-images';
 
 interface SettingsResponse {
   homeHero?: { slides: HomeHeroSlide[] };

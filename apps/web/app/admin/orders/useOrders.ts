@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
-import { formatPriceInCurrency, amountToUsd } from '../../../lib/currency';
+import { formatAdminOrderAmount } from '../../../lib/currency';
 
 export interface Order {
   id: string;
@@ -160,7 +160,7 @@ export function useOrders() {
   }, [page, statusFilter, paymentStatusFilter, searchQuery, sortBy, sortOrder]);
 
   const formatCurrency = (amount: number, _orderCurrency?: string, storedAs?: string) =>
-    formatPriceInCurrency(amountToUsd(amount, storedAs ?? 'USD'), 'USD');
+    formatAdminOrderAmount(amount, storedAs);
 
 
   const handleViewOrderDetails = (orderId: string) => {

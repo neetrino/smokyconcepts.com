@@ -1,5 +1,6 @@
 'use client';
 
+import { ADMIN_PRICE_CURRENCY } from '@/lib/currency';
 import { useTranslation } from '../../../lib/i18n-client';
 
 interface LineChartData {
@@ -17,7 +18,7 @@ export function LineChart({ data }: LineChartProps) {
 
   if (!data || data.length === 0) return null;
 
-  const formatCurrency = (amount: number, currency: string = 'USD') => {
+  const formatCurrency = (amount: number, currency: string = ADMIN_PRICE_CURRENCY) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency,

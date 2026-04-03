@@ -3,7 +3,8 @@
 import { Card, Button } from '@shop/ui';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../../lib/i18n-client';
-import { formatCurrency, formatDate } from '../utils/dashboardUtils';
+import { formatAdminOrderAmount } from '../../../lib/currency';
+import { formatDate } from '../utils/dashboardUtils';
 
 interface RecentOrder {
   id: string;
@@ -87,7 +88,7 @@ export function RecentOrdersCard({ recentOrders, recentOrdersLoading }: RecentOr
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold text-gray-900">
-                    {formatCurrency(order.total, order.currency)}
+                    {formatAdminOrderAmount(order.total, order.currency)}
                   </p>
                 </div>
               </div>

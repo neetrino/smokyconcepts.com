@@ -11,7 +11,7 @@ import { useTranslation } from '@/lib/i18n-client';
 
 import type { VotingFormData } from '../types';
 
-const UPLOAD_IMAGES_ENDPOINT = '/api/v1/admin/products/upload-images';
+const UPLOAD_IMAGES_ENDPOINT = '/api/v1/admin/voting/upload-images';
 
 function getOutputFileType(file: File): string {
   if (file.type === 'image/png') {

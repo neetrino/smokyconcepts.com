@@ -2,7 +2,7 @@
 
 import { type ChangeEvent } from 'react';
 import { Card, Input } from '@shop/ui';
-import { CURRENCIES } from '@/lib/currency';
+import { ADMIN_PRICE_CURRENCY, CURRENCIES } from '@/lib/currency';
 import { useTranslation } from '@/lib/i18n-client';
 import type { Category, Variant, ProductLabel, GeneratedVariant } from '../types';
 import type { CategoryAttribute } from '@/lib/category-attributes';
@@ -193,7 +193,7 @@ export function AddProductFormContent({
                     min="0"
                     step="0.01"
                   />
-                  <span className="text-sm text-gray-500">{CURRENCIES.USD.symbol}</span>
+                  <span className="text-sm text-gray-500">{CURRENCIES[ADMIN_PRICE_CURRENCY].symbol}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-gray-600 shrink-0">
@@ -210,7 +210,7 @@ export function AddProductFormContent({
                     min="0"
                     step="0.01"
                   />
-                  <span className="text-sm text-gray-500">{CURRENCIES.USD.symbol}</span>
+                  <span className="text-sm text-gray-500">{CURRENCIES[ADMIN_PRICE_CURRENCY].symbol}</span>
                 </div>
               </div>
               <div className="flex flex-wrap gap-6">

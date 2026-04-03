@@ -1,24 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
-import { uploadProductImageToR2, isR2Configured } from "@/lib/services/r2.service";
+import { isR2Configured, uploadVotingImageToR2 } from "@/lib/services/r2.service";
 import { parseDataImageUrl } from "@/lib/services/utils/data-url-image";
 import { logger } from "@/lib/utils/logger";
 
 /**
- * POST /api/v1/admin/products/upload-images
- * Upload images to Cloudflare R2 and return public URLs.
+ * POST /api/v1/admin/voting/upload-images
+ * Upload voting images to Cloudflare R2 (prefix voting/YYYY/MM/).
  *
- * Request body: { images: string[] } — array of base64 data URLs (data:image/...)
- * Response: { urls: string[] } — array of R2 public URLs
+ * Request body: { images: string[] } — base64 data URLs (data:image/...)
+ * Response: { urls: string[] }
  */
 export async function POST(req: NextRequest) {
   const requestStartTime = Date.now();
-  logger.debug("Upload images API: POST received", { url: req.url });
+  logger.debug("Voting upload images API: POST received", { url: req.url });
 
   try {
     const user = await authenticateToken(req);
     if (!user || !requireAdmin(user)) {
-      logger.warn("Upload images: unauthorized", { userId: user?.id });
+      logger.warn("Voting upload images: unauthorized", { userId: user?.id });
       return NextResponse.json(
         {
           type: "https://api.shop.am/problems/forbidden",
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (!isR2Configured()) {
-      logger.error("Upload images: R2 not configured");
+      logger.error("Voting upload images: R2 not configured");
       return NextResponse.json(
         {
           type: "https://api.shop.am/problems/config-error",
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     try {
       body = await req.json();
     } catch (parseError) {
-      logger.error("Upload images: JSON parse error", { error: parseError });
+      logger.error("Voting upload images: JSON parse error", { error: parseError });
       return NextResponse.json(
         {
           type: "https://api.shop.am/problems/validation-error",
@@ -106,22 +106,22 @@ export async function POST(req: NextRequest) {
       validImages.push(image);
     }
 
-    logger.debug("Upload images: uploading to R2", { count: validImages.length });
+    logger.debug("Voting upload images: uploading to R2", { count: validImages.length });
 
     const uploadResults = await Promise.all(
       validImages.map(async (dataUrl, i) => {
         const parsed = parseDataImageUrl(dataUrl);
         if (!parsed) {
-          logger.warn("Upload images: skip invalid data URL", { index: i });
+          logger.warn("Voting upload images: skip invalid data URL", { index: i });
           return null;
         }
-        return uploadProductImageToR2(parsed.buffer, parsed.contentType);
+        return uploadVotingImageToR2(parsed.buffer, parsed.contentType);
       })
     );
     const urls = uploadResults.filter((u): u is string => u !== null);
 
     const totalTime = Date.now() - requestStartTime;
-    logger.info("Upload images: R2 upload complete", {
+    logger.info("Voting upload images: R2 upload complete", {
       count: urls.length,
       timeMs: totalTime,
     });
@@ -129,8 +129,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ urls }, { status: 200 });
   } catch (error: unknown) {
     const totalTime = Date.now() - requestStartTime;
-    const err = error as { message?: string; status?: number; type?: string; title?: string; detail?: string };
-    logger.error("Upload images: POST error", {
+    const err = error as {
+      message?: string;
+      status?: number;
+      type?: string;
+      title?: string;
+      detail?: string;
+    };
+    logger.error("Voting upload images: POST error", {
       message: err?.message,
       status: err?.status,
       timeMs: totalTime,
@@ -148,4 +154,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

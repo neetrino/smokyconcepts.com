@@ -107,18 +107,18 @@ export function useProductFormHandlers({
       const variantSkuSet = new Set<string>();
 
       if (productType === 'simple') {
-        const priceUSD = parseFloat(simpleProductData.price);
-        const compareAtPriceUSD = simpleProductData.compareAtPrice && simpleProductData.compareAtPrice.trim() !== ''
+        const priceRub = parseFloat(simpleProductData.price);
+        const compareAtPriceRub = simpleProductData.compareAtPrice && simpleProductData.compareAtPrice.trim() !== ''
           ? parseFloat(simpleProductData.compareAtPrice)
           : undefined;
         const simpleVariant: any = {
-          price: priceUSD,
+          price: priceRub,
           stock: parseInt(simpleProductData.quantity) || 0,
           sku: simpleProductData.sku.trim(),
           published: true,
         };
-        if (compareAtPriceUSD) {
-          simpleVariant.compareAtPrice = compareAtPriceUSD;
+        if (compareAtPriceRub) {
+          simpleVariant.compareAtPrice = compareAtPriceRub;
         }
         variants.push(simpleVariant);
         variantSkuSet.add(simpleProductData.sku.trim());
@@ -130,7 +130,7 @@ export function useProductFormHandlers({
         const defaultVariantCompareAtPrice =
           defaultVariantCompareAtPriceText !== '' ? parseFloat(defaultVariantCompareAtPriceText) : NaN;
 
-        const defaultVariantCompareAtPriceUSD = Number.isFinite(defaultVariantCompareAtPrice)
+        const defaultVariantCompareAtPriceRub = Number.isFinite(defaultVariantCompareAtPrice)
           ? defaultVariantCompareAtPrice
           : undefined;
         const defaultSkuInput = String(simpleProductData.sku || '').trim();
@@ -144,7 +144,7 @@ export function useProductFormHandlers({
 
         variants.push({
           price: Number.isFinite(defaultVariantPrice) ? defaultVariantPrice : 0,
-          compareAtPrice: defaultVariantCompareAtPriceUSD,
+          compareAtPrice: defaultVariantCompareAtPriceRub,
           stock: defaultVariantStock,
           sku: defaultVariantSku,
           attributes: buildDefaultPricingAttributes(),
@@ -155,14 +155,14 @@ export function useProductFormHandlers({
         generatedVariants.forEach((genVariant, variantIndex) => {
           const variantPriceText = String(genVariant.price || '').trim();
           const variantPriceRaw = variantPriceText !== '' ? parseFloat(variantPriceText) : NaN;
-          const variantPriceUSD = Number.isFinite(variantPriceRaw) ? variantPriceRaw : 0;
+          const variantPriceRub = Number.isFinite(variantPriceRaw) ? variantPriceRaw : 0;
 
           const variantCompareAtPriceText = String(genVariant.compareAtPrice || '').trim();
           const variantCompareAtPriceRaw =
             variantCompareAtPriceText !== ''
               ? parseFloat(variantCompareAtPriceText)
               : NaN;
-          const variantCompareAtPriceUSD = Number.isFinite(variantCompareAtPriceRaw)
+          const variantCompareAtPriceRub = Number.isFinite(variantCompareAtPriceRaw)
             ? variantCompareAtPriceRaw
             : undefined;
           const finalSku = (genVariant.sku && genVariant.sku.trim() !== '')
@@ -176,8 +176,8 @@ export function useProductFormHandlers({
           }
           variantSkuSet.add(uniqueSku);
           variants.push({
-            price: variantPriceUSD,
-            compareAtPrice: variantCompareAtPriceUSD,
+            price: variantPriceRub,
+            compareAtPrice: variantCompareAtPriceRub,
             stock: parseInt(genVariant.stock || '0') || 0,
             sku: uniqueSku,
             imageUrl: genVariant.image || undefined,
