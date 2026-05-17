@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { HomeActionButton } from './HomeActionButton';
+import { CoverCollectionProductCard } from './CoverCollectionProductCard';
 import { CultureVotingSection } from './CultureVotingSection';
 import { HomeHeroSection } from './HomeHeroSection';
 import { HomeSectionTitle } from './HomeSectionTitle';
@@ -36,6 +37,9 @@ const MASONRY_ROW2_RIGHT = 'min-w-0 flex-[1.3] sm:flex-[1.26]';
 /** Row 3 — Documents narrower, Wallets wider (sub-xl masonry). */
 const MASONRY_ROW3_LEFT = 'min-w-0 flex-[1.48] sm:flex-[1.44]';
 const MASONRY_ROW3_RIGHT = 'min-w-0 flex-[1.02] sm:flex-[1.06]';
+/** Figma Mob — 2×2 grid; tight horizontal gap so tiles stay side-by-side on narrow viewports. */
+const COVER_COLLECTIONS_MOBILE_GRID_GAP_X_CLASS = 'max-sm:gap-x-3';
+const COVER_COLLECTIONS_MOBILE_GRID_GAP_Y_CLASS = 'max-sm:gap-y-16';
 
 function PackFitCard({
   title,
@@ -332,45 +336,11 @@ export function HomePageContent({ coverCollections, heroSlides }: HomePageConten
               title={t('home.homepage.coverCollections.title')}
               className="-translate-y-10 sm:-translate-y-4 lg:-translate-y-6"
             />
-            <div className="mt-4 grid grid-cols-2 items-start gap-x-2 gap-y-16 overflow-visible sm:mt-0 sm:grid-cols-4 sm:gap-8">
+            <div
+              className={`mt-4 grid w-full min-w-0 grid-cols-2 items-start justify-items-stretch gap-x-2 gap-y-16 overflow-visible sm:mt-0 sm:grid-cols-4 sm:gap-8 ${COVER_COLLECTIONS_MOBILE_GRID_GAP_X_CLASS} ${COVER_COLLECTIONS_MOBILE_GRID_GAP_Y_CLASS}`}
+            >
               {coverCollections.map((item) => (
-                <Link
-                  key={item.slug}
-                  href={`/products?category=${item.slug}`}
-                  className="group relative z-0 mt-4 max-sm:translate-y-2 flex min-h-0 w-[96%] min-w-0 justify-self-center flex-col overflow-visible rounded-[1rem] max-sm:bg-transparent bg-white px-2 pb-8 pt-0 shadow-none transition-shadow duration-200 hover:z-10 hover:shadow-none focus-visible:z-10 focus-within:z-10 sm:mt-8 sm:w-full sm:translate-y-0 sm:rounded-[2rem] sm:px-6 sm:pb-8 sm:shadow-[0_6px_24px_rgba(18,42,38,0.05)] sm:hover:shadow-[0_12px_32px_rgba(18,42,38,0.12)]"
-                >
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 -z-10 hidden max-sm:block rounded-[1rem] bg-white shadow-[0_8px_28px_rgba(18,42,38,0.12)] transition-shadow duration-200 max-sm:-translate-y-6 group-hover:shadow-[0_12px_32px_rgba(18,42,38,0.12)]"
-                  />
-                  <div className="relative -mt-14 translate-y-2 h-40 w-[88%] self-center shrink-0 overflow-visible sm:-mt-28 sm:translate-y-0 sm:h-[22rem] sm:w-full">
-                    {item.imageSrc ? (
-                      <img
-                        src={item.imageSrc}
-                        alt={item.title}
-                        className="h-full w-full origin-bottom object-contain object-top transition-transform duration-300 ease-out translate-y-9 scale-x-[1.78] scale-y-[1.62] sm:translate-y-[8.25rem] sm:scale-x-[1.45] sm:scale-y-[1.42] sm:group-hover:translate-y-[7.75rem] sm:group-hover:scale-x-[1.55] sm:group-hover:scale-y-[1.52]"
-                        loading="eager"
-                        decoding="async"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center">
-                        <img
-                          src={HOME_ASSET_PATHS.packMark}
-                          alt=""
-                          className="h-20 w-16 origin-bottom object-contain opacity-60 transition-transform duration-300 ease-out scale-x-[1.34] scale-y-[1.2] sm:h-24 sm:w-[4.5rem] sm:group-hover:-translate-y-2 sm:group-hover:scale-[1.3]"
-                          aria-hidden="true"
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <h3
-                    className={`relative z-[1] max-sm:-mt-1 text-base font-black leading-tight text-[#414141] sm:mt-12 sm:translate-y-3 sm:text-2xl lg:text-3xl ${
-                      item.slug === 'special-edition' ? 'line-clamp-1 whitespace-nowrap' : 'line-clamp-2'
-                    }`}
-                  >
-                    {item.title}
-                  </h3>
-                </Link>
+                <CoverCollectionProductCard key={item.slug} item={item} />
               ))}
             </div>
           </section>
