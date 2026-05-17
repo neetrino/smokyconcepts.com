@@ -71,9 +71,9 @@ const CULTURE_MOBILE_CARD_WRAPPER_CLASS_NAME =
 const CULTURE_MOBILE_BOTTOM_CARD_WRAPPER_CLASS_NAME =
   'max-sm:mx-auto max-sm:w-full max-sm:max-w-[12rem]';
 /** Extra space before the bottom-row card so hero overflow does not overlap the row above. */
-const CULTURE_MOBILE_BOTTOM_ROW_CARD_CLASS_NAME = 'max-sm:mt-4';
+const CULTURE_MOBILE_BOTTOM_ROW_CARD_CLASS_NAME = 'max-sm:mt-10';
 const CULTURE_MOBILE_GRID_CLASS_NAME =
-  'grid-cols-2 items-stretch justify-items-center gap-x-4 gap-y-7 max-sm:justify-items-stretch max-sm:gap-x-5 max-sm:gap-y-10 sm:grid-cols-3 sm:justify-items-center sm:gap-x-3 sm:gap-y-7';
+  'grid-cols-2 items-stretch justify-items-center gap-x-4 gap-y-7 max-sm:justify-items-stretch max-sm:gap-x-5 max-sm:gap-y-12 sm:grid-cols-3 sm:justify-items-center sm:gap-x-3 sm:gap-y-7';
 /**
  * Full viewport bleed on mobile — escapes home `px-5` on both left and right
  * (`overflow-x-hidden` clips `-mx` alone; `w-screen` + centering fixes the right edge too).
@@ -191,7 +191,11 @@ export function CultureVotingSection() {
 
           const sortedUpdatedItems = sortCultureVotingItems(updatedItems);
           const activeLikedItem = sortedUpdatedItems.find((item) => item.likedByCurrentUser);
-          nextEarlyAccessItemId = activeLikedItem?.id ?? sortedUpdatedItems[0]?.id ?? null;
+          const toggledItem = updatedItems.find((item) => item.id === itemId);
+          nextEarlyAccessItemId =
+            toggledItem?.likedByCurrentUser
+              ? itemId
+              : activeLikedItem?.id ?? sortedUpdatedItems[0]?.id ?? null;
           return updatedItems;
         });
         setEarlyAccessItemId(nextEarlyAccessItemId);
@@ -206,9 +210,10 @@ export function CultureVotingSection() {
         const nextLikedState = !likedByCurrentUser;
         const optimisticItems = applyOptimisticLike(items, itemId, nextLikedState);
         const sortedOptimisticItems = sortCultureVotingItems(optimisticItems);
-        const optimisticLikedItem = sortedOptimisticItems.find((item) => item.likedByCurrentUser);
         setItems(optimisticItems);
-        setEarlyAccessItemId(optimisticLikedItem?.id ?? sortedOptimisticItems[0]?.id ?? null);
+        setEarlyAccessItemId(
+          nextLikedState ? itemId : sortedOptimisticItems.find((item) => item.likedByCurrentUser)?.id ?? sortedOptimisticItems[0]?.id ?? null,
+        );
 
         const updatesByItemId = new Map<string, VotingLikeResponse['data']>();
 

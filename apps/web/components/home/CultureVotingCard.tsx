@@ -32,8 +32,9 @@ const VARIANT_TONE_CLASS_NAMES: Record<CultureVotingVariantTone, string> = {
 const CULTURE_MOBILE_CARD_WIDTH_CLASS_NAME = 'w-full max-sm:max-w-none';
 /** Matches `ProductsCatalogCard` / `UpcomingProductsSection` mobile card elevation. */
 const CULTURE_CARD_SHADOW_CLASS_NAME = 'shadow-[0_4px_22.5px_rgba(0,0,0,0.08)]';
-/** Slightly taller white surface on narrow viewports. */
-const CULTURE_MOBILE_CARD_SURFACE_CLASS_NAME = 'max-sm:pb-[1.125rem]';
+/** Extra bottom padding on narrow viewports — extends white card surface (1.625rem). */
+const CULTURE_MOBILE_CARD_SURFACE_CLASS_NAME = 'max-sm:pb-[1.625rem]';
+const CULTURE_DESKTOP_CARD_BOTTOM_PADDING_CLASS_NAME = 'sm:pb-6';
 /** Shifts hero + text inside the white card; article background position stays fixed. */
 const CULTURE_MOBILE_INNER_CONTENT_OFFSET_CLASS_NAME = 'max-sm:translate-y-4';
 /** Nudges hero toward image-switch dots on narrow viewports. */
@@ -46,6 +47,8 @@ const CULTURE_DOTS_ROW_CLASS_NAME =
   'mb-1 flex min-h-3 w-full items-center justify-center gap-1 sm:-mt-5 sm:mb-1 sm:gap-[0.3125rem]';
 const CULTURE_COMPACT_EARLY_ACCESS_BUTTON_CLASS_NAME =
   'inline-flex h-[1.375rem] min-w-[2.75rem] items-center justify-center rounded-[0.4375rem] border-2 border-[#dcc090] px-1.5 text-[0.6875rem] font-extrabold leading-tight text-[#dcc090] transition-colors hover:bg-[#dcc090]/10 sm:h-auto sm:min-h-0 sm:rounded-lg sm:px-2 sm:py-1 sm:text-sm';
+/** Inactive like control sits below the white card (Figma mobile). */
+const CULTURE_EXTERNAL_HEART_ROW_CLASS_NAME = 'mt-2 flex w-full justify-center sm:mt-2.5';
 
 interface CultureVotingImageDotsProps {
   itemId: string;
@@ -117,6 +120,41 @@ function HeartIcon({ filled }: { filled: boolean }) {
   );
 }
 
+interface CultureVotingLikeButtonProps {
+  itemId: string;
+  title: string;
+  likedByCurrentUser: boolean;
+  pending: boolean;
+  onToggleLike: (itemId: string, likedByCurrentUser: boolean) => Promise<void>;
+}
+
+function CultureVotingLikeButton({
+  itemId,
+  title,
+  likedByCurrentUser,
+  pending,
+  onToggleLike,
+}: CultureVotingLikeButtonProps) {
+  const heartButtonClassName = `inline-flex shrink-0 items-center justify-center rounded-lg p-1.5 transition-colors sm:p-1 ${
+    likedByCurrentUser
+      ? 'text-[#731818] hover:bg-[#731818]/10'
+      : 'text-[#CBCBCB] hover:bg-[#CBCBCB]/20'
+  } ${pending ? 'cursor-not-allowed opacity-60' : ''}`;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onToggleLike(itemId, likedByCurrentUser)}
+      disabled={pending}
+      className={heartButtonClassName}
+      aria-pressed={likedByCurrentUser}
+      aria-label={likedByCurrentUser ? `Remove like from ${title}` : `Like ${title}`}
+    >
+      <HeartIcon filled={likedByCurrentUser} />
+    </button>
+  );
+}
+
 function useCultureVotingCardGallery(images: string[], id: string) {
   const displayImages = useMemo(() => {
     const trimmed = images.map((u) => u.trim()).filter(Boolean);
@@ -180,16 +218,21 @@ export function CultureVotingCard({
     onHeroImageError,
   } = useCultureVotingCardGallery(images, id);
 
-  const heartButtonClassName = `inline-flex shrink-0 items-center justify-center rounded-lg p-1.5 transition-colors sm:p-1 ${
-    likedByCurrentUser
-      ? 'text-[#731818] hover:bg-[#731818]/10'
-      : 'text-[#CBCBCB] hover:bg-[#CBCBCB]/20'
-  } ${pending ? 'cursor-not-allowed opacity-60' : ''}`;
   const variantToneClassName = VARIANT_TONE_CLASS_NAMES[variantTone];
+  const likeButtonProps = {
+    itemId: id,
+    title,
+    likedByCurrentUser,
+    pending,
+    onToggleLike,
+  };
 
   return (
+    <div
+      className={`mx-auto flex min-h-0 w-full ${CULTURE_MOBILE_CARD_WIDTH_CLASS_NAME} flex-col items-center sm:max-w-[11.75rem] lg:max-w-[11.6rem]`}
+    >
     <article
-      className={`relative z-0 mx-auto flex min-h-0 ${CULTURE_MOBILE_CARD_WIDTH_CLASS_NAME} flex-col overflow-visible rounded-[1.125rem] bg-white px-2.5 pb-2.5 pt-2 ${CULTURE_MOBILE_CARD_SURFACE_CLASS_NAME} ${CULTURE_CARD_SHADOW_CLASS_NAME} hover:z-[20] focus-within:z-[20] sm:h-full sm:max-w-[11.75rem] sm:rounded-3xl sm:px-3 sm:pt-2.5 sm:pb-5 lg:max-w-[11.6rem]`}
+      className={`relative z-0 flex min-h-0 w-full flex-col overflow-visible rounded-[1.125rem] bg-white px-2.5 pb-2.5 pt-2 ${CULTURE_MOBILE_CARD_SURFACE_CLASS_NAME} ${CULTURE_DESKTOP_CARD_BOTTOM_PADDING_CLASS_NAME} ${CULTURE_CARD_SHADOW_CLASS_NAME} hover:z-[20] focus-within:z-[20] sm:h-full sm:rounded-3xl sm:px-3 sm:pt-2.5`}
     >
       <div
         className={`flex min-h-0 flex-1 flex-col ${CULTURE_MOBILE_INNER_CONTENT_OFFSET_CLASS_NAME} sm:translate-y-0`}
@@ -231,8 +274,9 @@ export function CultureVotingCard({
           </h3>
 
           {sizeLabel || variantLabel ? (
-            <div className="mt-0.5 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1">
+            <div
+              className="mt-0.5 flex items-center gap-1"
+            >
                 {sizeLabel ? (
                   <span className="inline-flex items-center text-[0.5625rem] font-semibold leading-tight text-[#122a26] sm:text-[10px] sm:font-medium sm:text-[#9d9d9d]">
                     {sizeLabel}
@@ -245,36 +289,8 @@ export function CultureVotingCard({
                     {variantLabel}
                   </span>
                 ) : null}
-              </div>
-              {!showEarlyAccess ? (
-                <button
-                  type="button"
-                  onClick={() => onToggleLike(id, likedByCurrentUser)}
-                  disabled={pending}
-                  className={heartButtonClassName}
-                  aria-pressed={likedByCurrentUser}
-                  aria-label={likedByCurrentUser ? `Remove like from ${title}` : `Like ${title}`}
-                >
-                  <HeartIcon filled={likedByCurrentUser} />
-                </button>
-              ) : null}
             </div>
-          ) : (
-            !showEarlyAccess ? (
-              <div className="mt-0.5 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => onToggleLike(id, likedByCurrentUser)}
-                  disabled={pending}
-                  className={heartButtonClassName}
-                  aria-pressed={likedByCurrentUser}
-                  aria-label={likedByCurrentUser ? `Remove like from ${title}` : `Like ${title}`}
-                >
-                  <HeartIcon filled={likedByCurrentUser} />
-                </button>
-              </div>
-            ) : null
-          )}
+          ) : null}
         </div>
 
         {showEarlyAccess ? (
@@ -290,20 +306,17 @@ export function CultureVotingCard({
             >
               {earlyAccessLabel}
             </button>
-            <button
-              type="button"
-              onClick={() => onToggleLike(id, likedByCurrentUser)}
-              disabled={pending}
-              className={heartButtonClassName}
-              aria-pressed={likedByCurrentUser}
-              aria-label={likedByCurrentUser ? `Remove like from ${title}` : `Like ${title}`}
-            >
-              <HeartIcon filled={likedByCurrentUser} />
-            </button>
+            {likedByCurrentUser ? <CultureVotingLikeButton {...likeButtonProps} /> : null}
           </div>
         ) : null}
       </div>
       </div>
     </article>
+    {!likedByCurrentUser ? (
+      <div className={CULTURE_EXTERNAL_HEART_ROW_CLASS_NAME}>
+        <CultureVotingLikeButton {...likeButtonProps} />
+      </div>
+    ) : null}
+    </div>
   );
 }
