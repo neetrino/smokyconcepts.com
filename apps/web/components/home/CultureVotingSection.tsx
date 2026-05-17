@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useAuth } from '../../lib/auth/AuthContext';
@@ -61,9 +61,53 @@ function applyOptimisticLike(
 }
 
 const CULTURE_SECTION_TITLE_CLASS_NAME =
-  'text-[1.45rem] font-black leading-[1.12] tracking-[-0.01em] sm:text-[2.1rem] sm:leading-[1.06]';
+  'text-[2.125rem] font-extrabold leading-[1.235] tracking-normal sm:text-[2.1rem] sm:font-black sm:leading-[1.06] sm:tracking-[-0.01em]';
 const CULTURE_SECTION_COPY_CLASS_NAME =
-  'gap-3 [&_p]:max-w-[38rem] [&_p]:text-[0.9rem] [&_p]:font-semibold [&_p]:leading-[1.42] sm:[&_p]:text-[0.95rem]';
+  'gap-[1.75rem] sm:gap-3 [&_p]:max-w-[24.125rem] [&_p]:text-base [&_p]:font-medium [&_p]:leading-[1.375] sm:[&_p]:max-w-[38rem] sm:[&_p]:text-[0.95rem] sm:[&_p]:font-semibold sm:[&_p]:leading-[1.42]';
+/** Top-row cards: fill the grid column (width comes from reduced mobile padding/gap). */
+const CULTURE_MOBILE_CARD_WRAPPER_CLASS_NAME =
+  'max-sm:w-full max-sm:max-w-none max-sm:translate-y-3';
+/** Bottom-row card: centered, can use full two-column span. */
+const CULTURE_MOBILE_BOTTOM_CARD_WRAPPER_CLASS_NAME =
+  'max-sm:mx-auto max-sm:w-full max-sm:max-w-[12rem]';
+/** Extra space before the bottom-row card so hero overflow does not overlap the row above. */
+const CULTURE_MOBILE_BOTTOM_ROW_CARD_CLASS_NAME = 'max-sm:mt-4';
+const CULTURE_MOBILE_GRID_CLASS_NAME =
+  'grid-cols-2 items-stretch justify-items-center gap-x-4 gap-y-7 max-sm:justify-items-stretch max-sm:gap-x-5 max-sm:gap-y-10 sm:grid-cols-3 sm:justify-items-center sm:gap-x-3 sm:gap-y-7';
+/**
+ * Full viewport bleed on mobile — escapes home `px-5` on both left and right
+ * (`overflow-x-hidden` clips `-mx` alone; `w-screen` + centering fixes the right edge too).
+ */
+const CULTURE_MOBILE_BLEED_WRAPPER_CLASS_NAME =
+  'flex w-full flex-col gap-10 max-sm:relative max-sm:left-1/2 max-sm:w-screen max-sm:-translate-x-1/2 max-sm:px-4 sm:static sm:left-auto sm:w-full sm:translate-x-0';
+const CULTURE_MOBILE_GRID_CONTAINER_CLASS_NAME =
+  'mx-auto w-full max-w-[30rem] pt-[0.5rem] max-sm:pt-[5.125rem] sm:max-w-[43rem] sm:pt-3';
+const CULTURE_MOBILE_TITLE_CONTAINER_CLASS_NAME = 'w-full max-w-[52rem] pb-1 text-center sm:pb-2';
+
+function getCultureVotingDisplayRank(item: VotingItem): number {
+  const normalizedTitle = item.title.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+  if (normalizedTitle.includes('forest') || normalizedTitle.includes('green')) {
+    return 0;
+  }
+
+  if (normalizedTitle.includes('red') || normalizedTitle.includes('black a')) {
+    return 1;
+  }
+
+  if (normalizedTitle === 'black' || normalizedTitle.includes('mystique')) {
+    return 2;
+  }
+
+  return 3;
+}
+
+function sortCultureVotingItems(items: VotingItem[]): VotingItem[] {
+  return [...items].sort((firstItem, secondItem) => {
+    const rankDifference = getCultureVotingDisplayRank(firstItem) - getCultureVotingDisplayRank(secondItem);
+    return rankDifference || items.indexOf(firstItem) - items.indexOf(secondItem);
+  });
+}
 
 export function CultureVotingSection() {
   const { t } = useTranslation();
@@ -75,6 +119,7 @@ export function CultureVotingSection() {
   const [error, setError] = useState<string | null>(null);
   const [pendingItemId, setPendingItemId] = useState<string | null>(null);
   const [earlyAccessPendingId, setEarlyAccessPendingId] = useState<string | null>(null);
+  const displayItems = useMemo(() => sortCultureVotingItems(items), [items]);
 
   const fetchVotingItems = useCallback(async () => {
     try {
@@ -95,23 +140,23 @@ export function CultureVotingSection() {
   }, [fetchVotingItems]);
 
   useEffect(() => {
-    if (items.length === 0) {
+    if (displayItems.length === 0) {
       setEarlyAccessItemId(null);
       return;
     }
 
-    const likedItem = items.find((item) => item.likedByCurrentUser);
+    const likedItem = displayItems.find((item) => item.likedByCurrentUser);
 
-    if (!earlyAccessItemId || !items.some((item) => item.id === earlyAccessItemId)) {
-      setEarlyAccessItemId(likedItem?.id ?? items[0]?.id ?? null);
+    if (!earlyAccessItemId || !displayItems.some((item) => item.id === earlyAccessItemId)) {
+      setEarlyAccessItemId(likedItem?.id ?? displayItems[0]?.id ?? null);
       return;
     }
 
-    const activeEarlyAccessItem = items.find((item) => item.id === earlyAccessItemId);
+    const activeEarlyAccessItem = displayItems.find((item) => item.id === earlyAccessItemId);
     if (activeEarlyAccessItem && !activeEarlyAccessItem.likedByCurrentUser && likedItem) {
       setEarlyAccessItemId(likedItem.id);
     }
-  }, [items, earlyAccessItemId]);
+  }, [displayItems, earlyAccessItemId]);
 
   const handleToggleLike = useCallback(
     async (itemId: string, likedByCurrentUser: boolean) => {
@@ -144,8 +189,9 @@ export function CultureVotingSection() {
             return item;
           });
 
-          const activeLikedItem = updatedItems.find((item) => item.likedByCurrentUser);
-          nextEarlyAccessItemId = activeLikedItem?.id ?? updatedItems[0]?.id ?? null;
+          const sortedUpdatedItems = sortCultureVotingItems(updatedItems);
+          const activeLikedItem = sortedUpdatedItems.find((item) => item.likedByCurrentUser);
+          nextEarlyAccessItemId = activeLikedItem?.id ?? sortedUpdatedItems[0]?.id ?? null;
           return updatedItems;
         });
         setEarlyAccessItemId(nextEarlyAccessItemId);
@@ -159,9 +205,10 @@ export function CultureVotingSection() {
         setPendingItemId(itemId);
         const nextLikedState = !likedByCurrentUser;
         const optimisticItems = applyOptimisticLike(items, itemId, nextLikedState);
-        const optimisticLikedItem = optimisticItems.find((item) => item.likedByCurrentUser);
+        const sortedOptimisticItems = sortCultureVotingItems(optimisticItems);
+        const optimisticLikedItem = sortedOptimisticItems.find((item) => item.likedByCurrentUser);
         setItems(optimisticItems);
-        setEarlyAccessItemId(optimisticLikedItem?.id ?? optimisticItems[0]?.id ?? null);
+        setEarlyAccessItemId(optimisticLikedItem?.id ?? sortedOptimisticItems[0]?.id ?? null);
 
         const updatesByItemId = new Map<string, VotingLikeResponse['data']>();
 
@@ -199,8 +246,9 @@ export function CultureVotingSection() {
           if (selectedItemUpdate?.likedByCurrentUser) {
             nextEarlyAccessItemId = itemId;
           } else if (earlyAccessItemId === itemId) {
-            const fallbackLikedItem = updatedItems.find((item) => item.likedByCurrentUser);
-            nextEarlyAccessItemId = fallbackLikedItem?.id ?? updatedItems[0]?.id ?? null;
+            const sortedUpdatedItems = sortCultureVotingItems(updatedItems);
+            const fallbackLikedItem = sortedUpdatedItems.find((item) => item.likedByCurrentUser);
+            nextEarlyAccessItemId = fallbackLikedItem?.id ?? sortedUpdatedItems[0]?.id ?? null;
           }
 
           return updatedItems;
@@ -296,14 +344,15 @@ export function CultureVotingSection() {
     );
   }
 
-  if (items.length === 0) {
+  if (displayItems.length === 0) {
     return null;
   }
 
   return (
-    <section className="flex flex-col gap-10 overflow-visible pb-10 sm:pb-6">
-      <div className="flex min-h-[4rem] items-center justify-center">
-        <div className="w-full max-w-[52rem] px-4 pb-1 text-center sm:pb-2 md:-translate-y-5">
+    <section className="overflow-visible pb-10 sm:pb-6">
+      <div className={CULTURE_MOBILE_BLEED_WRAPPER_CLASS_NAME}>
+        <div className="flex min-h-[4rem] items-center justify-center">
+        <div className={`${CULTURE_MOBILE_TITLE_CONTAINER_CLASS_NAME} md:-translate-y-5`}>
           <HomeSectionTitle
             title={t('home.homepage.culture.title')}
             description={t('home.homepage.culture.description')}
@@ -313,9 +362,11 @@ export function CultureVotingSection() {
           />
         </div>
       </div>
-      <div className="mx-auto w-full max-w-[24rem] px-4 pt-2 sm:max-w-[43rem] sm:pt-3">
-        <div className="mx-auto grid grid-cols-2 items-stretch justify-items-center gap-x-4 gap-y-16 sm:grid-cols-3 sm:gap-x-3 sm:gap-y-7 lg:max-w-[36.5rem] lg:[grid-template-columns:repeat(3,minmax(0,1fr))]">
-          {items.map((item, index) => {
+      <div className={CULTURE_MOBILE_GRID_CONTAINER_CLASS_NAME}>
+        <div
+          className={`mx-auto grid lg:max-w-[36.5rem] lg:[grid-template-columns:repeat(3,minmax(0,1fr))] ${CULTURE_MOBILE_GRID_CLASS_NAME}`}
+        >
+          {displayItems.map((item, index) => {
             const sizeLabel =
               index === 0 || index === 2
                 ? t('home.homepage.culture.labels.kingSize')
@@ -330,13 +381,16 @@ export function CultureVotingSection() {
                   : index === 2
                     ? t('home.homepage.culture.labels.atelier')
                     : undefined;
-            const showEarlyAccess = item.likedByCurrentUser;
+            const variantTone = index === 0 ? 'special' : index === 2 ? 'atelier' : 'classic';
+            const showEarlyAccess = item.id === earlyAccessItemId;
             return (
               <div
                 key={item.id}
-                className={`flex h-full w-full min-h-0 ${
-                  index % 3 === 2 ? 'col-span-2 justify-center sm:col-span-1' : ''
-                }`}
+                className={`flex h-full min-h-0 w-full ${
+                  index === 2
+                    ? `${CULTURE_MOBILE_BOTTOM_CARD_WRAPPER_CLASS_NAME} ${CULTURE_MOBILE_BOTTOM_ROW_CARD_CLASS_NAME}`
+                    : CULTURE_MOBILE_CARD_WRAPPER_CLASS_NAME
+                } ${index % 3 === 2 ? 'col-span-2 justify-center sm:col-span-1' : ''}`}
               >
                 <CultureVotingCard
                   id={item.id}
@@ -353,10 +407,9 @@ export function CultureVotingSection() {
                   earlyAccessPending={earlyAccessPendingId === item.id}
                   onToggleLike={handleToggleLike}
                   onEarlyAccess={handleEarlyAccessCheckout}
-                  imageNudgeDown={index === 1}
-                  mobileCompactBack={index === 1}
                   sizeLabel={sizeLabel}
                   variantLabel={variantLabel}
+                  variantTone={variantTone}
                   showEarlyAccess={showEarlyAccess}
                   earlyAccessLabel={t('home.homepage.culture.labels.earlyAccess')}
                 />
@@ -364,6 +417,7 @@ export function CultureVotingSection() {
             );
           })}
         </div>
+      </div>
       </div>
     </section>
   );

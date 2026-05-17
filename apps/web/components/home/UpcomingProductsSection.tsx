@@ -57,6 +57,8 @@ const UPCOMING_PAGE_STAGGER_DELAY_CLASSES = [
 ] as const;
 /** Max pagination segments on narrow viewports (matches `!isSmUp` / below `sm`). */
 const UPCOMING_MAX_MOBILE_PAGINATION_DOTS = 5;
+/** Mobile strip gap — matches trending `MobilePageCluster` `gap-x-4`. Card cap: `max-sm:max-w-[10rem]` (= trending middle card). */
+const UPCOMING_MOBILE_CARD_GAP_CLASS_NAME = 'max-sm:gap-4';
 
 /**
  * Returns page indices (1-based) to render as pagination tabs on mobile.
@@ -96,6 +98,12 @@ function getUpcomingSmViewportSnapshot(): boolean {
 function getServerUpcomingSmViewportSnapshot(): boolean {
   return false;
 }
+
+const UPCOMING_MOBILE_CARD_CLASS_NAME = '!h-auto w-full max-w-none';
+/** Shifts the full card (not the hero image) down on narrow viewports. */
+const UPCOMING_MOBILE_CARD_OFFSET_CLASS_NAME = 'max-sm:translate-y-3';
+/** Nudges hero image toward image-switch dots on narrow viewports only. */
+const UPCOMING_MOBILE_IMAGE_FRAME_CLASS_NAME = 'max-sm:translate-y-5';
 
 /** Matches `TrendingFeaturedSection` shop CTA sizing and xl placement. */
 const UPCOMING_SHOP_BUTTON_CLASS_NAME =
@@ -310,7 +318,7 @@ export function UpcomingProductsSection() {
   };
 
   const scrollContainerClassName =
-    'scrollbar-hide mt-3 snap-x snap-mandatory overflow-x-auto pt-[7.25rem] pb-4 sm:mt-6 sm:pt-[7.5rem]';
+    'scrollbar-hide mt-3 snap-x snap-mandatory overflow-x-auto pb-4 max-sm:pt-[7.25rem] sm:mt-6 sm:pt-[7.5rem]';
 
   return (
     <section className="relative isolate flex flex-col gap-4 sm:gap-5 xl:mr-[calc(50%_-_50vw)] xl:overflow-x-clip">
@@ -320,7 +328,7 @@ export function UpcomingProductsSection() {
         onScroll={handleScroll}
         className={scrollContainerClassName}
       >
-        <div className="flex min-w-max items-stretch gap-6">
+        <div className={`flex min-w-max items-stretch gap-6 ${UPCOMING_MOBILE_CARD_GAP_CLASS_NAME}`}>
           {items.map((item, index) => {
             const pageIndex = Math.floor(index / cardsPerPage);
             const indexInPage = index % cardsPerPage;
@@ -367,7 +375,7 @@ export function UpcomingProductsSection() {
                 }}
                 className={`flex min-h-0 shrink-0 flex-col self-stretch transition-transform transition-shadow duration-300 ease-out will-change-transform ${pageMotionClass} ${pageDelayClass} ${
                   isPageStart ? 'snap-start snap-always' : ''
-                }`}
+                } max-sm:w-full max-sm:max-w-[10rem] max-sm:justify-center ${UPCOMING_MOBILE_CARD_OFFSET_CLASS_NAME}`}
               >
                 <ProductsCatalogCard
                   product={catalogProduct}
@@ -377,7 +385,12 @@ export function UpcomingProductsSection() {
                   buyButtonLabel={t('home.homepage.upcoming.orderCta')}
                   imageNudgeDown={shouldNudgeCatalogProductImage(index)}
                   imageScaleBoost={getUpcomingImageScaleBoost(index)}
-                  className="group h-full min-h-0 lg:w-[12.75rem] xl:w-[13rem]"
+                  imageFrameClassName={UPCOMING_MOBILE_IMAGE_FRAME_CLASS_NAME}
+                  className={
+                    isSmUp
+                      ? 'group h-full min-h-0 lg:w-[12.75rem] xl:w-[13rem]'
+                      : `group ${UPCOMING_MOBILE_CARD_CLASS_NAME}`
+                  }
                   compactLayout
                   eagerProductImage
                 />
