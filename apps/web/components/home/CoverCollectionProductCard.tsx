@@ -69,7 +69,7 @@ interface CoverCollectionProductCardProps {
  * (`#414141`). **Desktop:** single white card with hero image overlap.
  */
 export function CoverCollectionProductCard({ item }: CoverCollectionProductCardProps) {
-  const href = `/products?category=${item.slug}`;
+  const href = '/products';
   const isSpecialEdition = item.slug === 'special-edition';
   const titleClampClass = isSpecialEdition
     ? 'line-clamp-1 truncate whitespace-nowrap max-[389px]:leading-snug'
