@@ -39,7 +39,7 @@ const MASONRY_ROW3_LEFT = 'min-w-0 flex-[1.48] sm:flex-[1.44]';
 const MASONRY_ROW3_RIGHT = 'min-w-0 flex-[1.02] sm:flex-[1.06]';
 /** Figma Mob — 2×2 grid; horizontal gap between cards in the same row. */
 const COVER_COLLECTIONS_MOBILE_GRID_GAP_X_CLASS = 'max-sm:gap-x-6';
-const COVER_COLLECTIONS_MOBILE_GRID_GAP_Y_CLASS = 'max-sm:gap-y-10';
+const COVER_COLLECTIONS_MOBILE_GRID_GAP_Y_CLASS = 'max-sm:gap-y-18';
 /** Mobile: pull card grid closer to section title. */
 const COVER_COLLECTIONS_MOBILE_SECTION_GAP_CLASS = 'max-sm:gap-5';
 const COVER_COLLECTIONS_MOBILE_GRID_MARGIN_TOP_CLASS = 'max-sm:mt-0';
