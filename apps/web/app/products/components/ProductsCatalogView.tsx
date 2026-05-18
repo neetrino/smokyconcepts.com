@@ -51,6 +51,20 @@ const SECTION_ORDER = ['Classic', 'Premium', 'Atelier', 'Special'] as const;
 const CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME =
   'flex w-full max-w-[calc(100vw-2rem)] flex-nowrap items-center gap-1.5';
 
+/** rAF frames where scrollLeft must stay constant before treating smooth scroll as settled. */
+const CATALOG_SCROLL_SETTLE_STABLE_FRAMES = 4;
+/** Safety cap so programmatic-scroll flag is always released even if scroll never reports settling. */
+const CATALOG_SCROLL_SETTLE_MAX_WAIT_MS = 1500;
+/** Tolerance (px) when matching live scrollLeft to the target page anchor. */
+const CATALOG_SCROLL_TARGET_TOLERANCE_PX = 2;
+
+/** Scroll offset of `element` within `container` (works when `offsetParent` chain differs). */
+function getScrollLeftForElementWithin(container: HTMLElement, element: HTMLElement): number {
+  const containerRect = container.getBoundingClientRect();
+  const elementRect = element.getBoundingClientRect();
+  return container.scrollLeft + (elementRect.left - containerRect.left);
+}
+
 function resolveSectionPageFromScrollAnchors(
   container: HTMLDivElement,
   pageStartAnchors: Array<HTMLDivElement | null | undefined>
@@ -64,7 +78,8 @@ function resolveSectionPageFromScrollAnchors(
     if (!anchor) {
       continue;
     }
-    const distance = Math.abs(scrollLeft - anchor.offsetLeft);
+    const anchorScrollLeft = getScrollLeftForElementWithin(container, anchor);
+    const distance = Math.abs(scrollLeft - anchorScrollLeft);
     if (distance < bestDistance) {
       bestDistance = distance;
       bestPage = pageIndex;
@@ -154,6 +169,9 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
   const sectionScrollRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const sectionPageStartRefs = useRef<Record<string, Array<HTMLDivElement | null>>>({});
   const sectionScrollIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sectionProgrammaticScrollRef = useRef<Record<string, boolean>>({});
+  const sectionScrollSettleRafRef = useRef<Record<string, number | null>>({});
+  const sectionScrollSettleTimerRef = useRef<Record<string, ReturnType<typeof setTimeout> | null>>({});
   const isSmUp = useSyncExternalStore(
     subscribeCatalogProductsSmViewport,
     getCatalogProductsSmViewportSnapshot,
@@ -515,16 +533,71 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
     router.replace('/products', { scroll: false });
   };
 
+  const waitForSectionScrollToSettle = (
+    title: string,
+    container: HTMLDivElement,
+    targetScrollLeft: number
+  ) => {
+    const existingRaf = sectionScrollSettleRafRef.current[title];
+    if (existingRaf !== null && existingRaf !== undefined) {
+      cancelAnimationFrame(existingRaf);
+      sectionScrollSettleRafRef.current[title] = null;
+    }
+    const existingTimer = sectionScrollSettleTimerRef.current[title];
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+      sectionScrollSettleTimerRef.current[title] = null;
+    }
+
+    let previousScrollLeft = container.scrollLeft;
+    let stableFrames = 0;
+
+    const releaseFlag = () => {
+      sectionProgrammaticScrollRef.current[title] = false;
+      const rafId = sectionScrollSettleRafRef.current[title];
+      if (rafId !== null && rafId !== undefined) {
+        cancelAnimationFrame(rafId);
+        sectionScrollSettleRafRef.current[title] = null;
+      }
+      const timerId = sectionScrollSettleTimerRef.current[title];
+      if (timerId) {
+        clearTimeout(timerId);
+        sectionScrollSettleTimerRef.current[title] = null;
+      }
+    };
+
+    const tick = () => {
+      const current = container.scrollLeft;
+      const movedTooLittle = Math.abs(current - previousScrollLeft) < 0.5;
+      const reachedTarget = Math.abs(current - targetScrollLeft) <= CATALOG_SCROLL_TARGET_TOLERANCE_PX;
+
+      if (movedTooLittle || reachedTarget) {
+        stableFrames += 1;
+      } else {
+        stableFrames = 0;
+      }
+      previousScrollLeft = current;
+
+      if (stableFrames >= CATALOG_SCROLL_SETTLE_STABLE_FRAMES) {
+        releaseFlag();
+        return;
+      }
+      sectionScrollSettleRafRef.current[title] = requestAnimationFrame(tick);
+    };
+
+    sectionScrollSettleRafRef.current[title] = requestAnimationFrame(tick);
+    sectionScrollSettleTimerRef.current[title] = setTimeout(releaseFlag, CATALOG_SCROLL_SETTLE_MAX_WAIT_MS);
+  };
+
   const handleSectionPageChange = (title: string, pageIndex: number) => {
     if (!isCategoryFilteredView) {
       const container = sectionScrollRefs.current[title];
       if (container) {
+        let targetScrollLeft = 0;
+
         if (!isSmUp) {
           const anchor = sectionPageStartRefs.current[title]?.[pageIndex];
-          container.scrollTo({
-            left: anchor?.offsetLeft ?? 0,
-            behavior: 'smooth',
-          });
+          targetScrollLeft = anchor ? getScrollLeftForElementWithin(container, anchor) : 0;
         } else {
           const maxScrollLeft = container.scrollWidth - container.clientWidth;
           const sectionMeta = sections.find((section) => section.title === title);
@@ -532,16 +605,25 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
           const startLeft = getCatalogStripPeekStartScroll(container);
           const span = Math.max(0, maxScrollLeft - startLeft);
           const denominator = Math.max(1, totalPages - 1);
-          const targetScrollLeft =
+          targetScrollLeft =
             maxScrollLeft <= 0
               ? 0
               : Math.min(maxScrollLeft, startLeft + (span * pageIndex) / denominator);
-
-          container.scrollTo({
-            left: targetScrollLeft,
-            behavior: 'smooth',
-          });
         }
+
+        sectionProgrammaticScrollRef.current[title] = true;
+
+        if (sectionScrollIdleTimerRef.current) {
+          clearTimeout(sectionScrollIdleTimerRef.current);
+          sectionScrollIdleTimerRef.current = null;
+        }
+
+        container.scrollTo({
+          left: targetScrollLeft,
+          behavior: 'smooth',
+        });
+
+        waitForSectionScrollToSettle(title, container, targetScrollLeft);
       }
     }
 
@@ -565,6 +647,10 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
       return;
     }
 
+    if (sectionProgrammaticScrollRef.current[title]) {
+      return;
+    }
+
     const commitPage = (nextPage: number) => {
       setSectionPages((currentPages) => {
         if (currentPages[title] === nextPage) {
@@ -584,6 +670,9 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
       }
 
       sectionScrollIdleTimerRef.current = setTimeout(() => {
+        if (sectionProgrammaticScrollRef.current[title]) {
+          return;
+        }
         const anchors = sectionPageStartRefs.current[title] ?? [];
         const nextPage = resolveSectionPageFromScrollAnchors(container, anchors);
         commitPage(nextPage);
@@ -594,19 +683,41 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
     const maxScrollLeft = container.scrollWidth - container.clientWidth;
     const startLeft = getCatalogStripPeekStartScroll(container);
     const span = Math.max(0, maxScrollLeft - startLeft);
-    const adjustedLeft = Math.max(0, container.scrollLeft - startLeft);
-    const nextPage =
-      span <= 0 || section.totalPages <= 1
-        ? 0
-        : Math.round((adjustedLeft / span) * (section.totalPages - 1));
+    const scrollLeft = container.scrollLeft;
+    const adjustedLeft = Math.max(0, scrollLeft - startLeft);
 
-    commitPage(nextPage);
+    let nextPage: number;
+    if (span <= 0 || section.totalPages <= 1) {
+      nextPage = 0;
+    } else if (scrollLeft <= startLeft + CATALOG_SCROLL_TARGET_TOLERANCE_PX) {
+      nextPage = 0;
+    } else if (scrollLeft >= maxScrollLeft - CATALOG_SCROLL_TARGET_TOLERANCE_PX) {
+      nextPage = section.totalPages - 1;
+    } else {
+      nextPage = Math.round((adjustedLeft / span) * (section.totalPages - 1));
+    }
+
+    commitPage(Math.max(0, Math.min(section.totalPages - 1, nextPage)));
   };
 
   useEffect(() => {
     return () => {
       if (sectionScrollIdleTimerRef.current) {
         clearTimeout(sectionScrollIdleTimerRef.current);
+      }
+      const rafMap = sectionScrollSettleRafRef.current;
+      for (const key of Object.keys(rafMap)) {
+        const rafId = rafMap[key];
+        if (rafId !== null && rafId !== undefined) {
+          cancelAnimationFrame(rafId);
+        }
+      }
+      const timerMap = sectionScrollSettleTimerRef.current;
+      for (const key of Object.keys(timerMap)) {
+        const timerId = timerMap[key];
+        if (timerId) {
+          clearTimeout(timerId);
+        }
       }
     };
   }, []);

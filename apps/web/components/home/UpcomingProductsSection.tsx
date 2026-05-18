@@ -50,6 +50,12 @@ const UPCOMING_CARDS_PER_PAGE_MOBILE = 2;
 const UPCOMING_CARDS_PER_PAGE_SM_UP = 6;
 const UPCOMING_PAGE_ANIMATION_DURATION_MS = 300;
 const UPCOMING_SCROLL_IDLE_UPDATE_DELAY_MS = 90;
+/** rAF frames where scrollLeft must stay constant before treating smooth scroll as settled. */
+const UPCOMING_SCROLL_SETTLE_STABLE_FRAMES = 4;
+/** Safety cap so programmatic-scroll flag is always released even if scroll never reports settling. */
+const UPCOMING_SCROLL_SETTLE_MAX_WAIT_MS = 1500;
+/** Tolerance (px) when matching live scrollLeft to the target page anchor. */
+const UPCOMING_SCROLL_TARGET_TOLERANCE_PX = 2;
 const UPCOMING_PAGE_STAGGER_DELAY_CLASSES = [
   'delay-[10ms]',
   'delay-[50ms]',
@@ -58,21 +64,11 @@ const UPCOMING_PAGE_STAGGER_DELAY_CLASSES = [
   'delay-[428ms]',
   'delay-[516ms]',
 ] as const;
-/** Max pagination segments on narrow viewports (matches `!isSmUp` / below `sm`). */
-const UPCOMING_MAX_MOBILE_PAGINATION_DOTS = 5;
-
 /**
- * Returns page indices (1-based) to render as pagination tabs on mobile.
- * When `totalPages` exceeds {@link UPCOMING_MAX_MOBILE_PAGINATION_DOTS}, uses a sliding window around `safePage`.
+ * Mobile/sm+ pagination tabs — always one tab per page; dot widths flex to fit one row on narrow viewports.
  */
-function getUpcomingMobileVisiblePageNumbers(totalPages: number, safePage: number): number[] {
-  if (totalPages <= UPCOMING_MAX_MOBILE_PAGINATION_DOTS) {
-    return Array.from({ length: totalPages }, (_, i) => i + 1);
-  }
-  const half = Math.floor(UPCOMING_MAX_MOBILE_PAGINATION_DOTS / 2);
-  let start = safePage - half;
-  start = Math.max(1, Math.min(start, totalPages - UPCOMING_MAX_MOBILE_PAGINATION_DOTS + 1));
-  return Array.from({ length: UPCOMING_MAX_MOBILE_PAGINATION_DOTS }, (_, i) => start + i);
+function getUpcomingVisiblePageNumbers(totalPages: number): number[] {
+  return Array.from({ length: totalPages }, (_, i) => i + 1);
 }
 
 function subscribeUpcomingSmViewport(onStoreChange: () => void): () => void {
@@ -91,6 +87,83 @@ function getUpcomingSmViewportSnapshot(): boolean {
 /** SSR: assume mobile pagination (2 per step) to avoid layout jump on narrow clients. */
 function getServerUpcomingSmViewportSnapshot(): boolean {
   return false;
+}
+
+/** Scroll offset of `element` within `container` (works when `offsetLeft` chain differs). */
+function getScrollLeftForElementWithin(container: HTMLDivElement, element: HTMLElement): number {
+  const containerRect = container.getBoundingClientRect();
+  const elementRect = element.getBoundingClientRect();
+  return container.scrollLeft + (elementRect.left - containerRect.left);
+}
+
+function resolveUpcomingPageFromMobileAnchors(
+  container: HTMLDivElement,
+  pageStartAnchors: Array<HTMLDivElement | null | undefined>,
+  totalPages: number
+): number {
+  if (totalPages <= 1) {
+    return 1;
+  }
+
+  const scrollLeft = container.scrollLeft;
+  let bestPage = 1;
+  let bestDistance = Number.POSITIVE_INFINITY;
+
+  for (let pageIndex = 0; pageIndex < totalPages; pageIndex += 1) {
+    const anchor = pageStartAnchors[pageIndex];
+    if (!anchor) {
+      continue;
+    }
+    const anchorScrollLeft = getScrollLeftForElementWithin(container, anchor);
+    const distance = Math.abs(scrollLeft - anchorScrollLeft);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestPage = pageIndex + 1;
+    }
+  }
+
+  return bestPage;
+}
+
+function resolveUpcomingPageFromProportionalScroll(
+  container: HTMLDivElement,
+  totalPages: number
+): number {
+  if (totalPages <= 1) {
+    return 1;
+  }
+
+  const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth);
+  if (maxScrollLeft <= 0) {
+    return 1;
+  }
+
+  const scrollLeft = container.scrollLeft;
+
+  if (scrollLeft <= UPCOMING_SCROLL_TARGET_TOLERANCE_PX) {
+    return 1;
+  }
+  if (scrollLeft >= maxScrollLeft - UPCOMING_SCROLL_TARGET_TOLERANCE_PX) {
+    return totalPages;
+  }
+
+  const pageIndex = Math.round((scrollLeft / maxScrollLeft) * (totalPages - 1));
+  return Math.min(totalPages, Math.max(1, pageIndex + 1));
+}
+
+function getUpcomingProportionalScrollLeft(
+  container: HTMLDivElement,
+  page: number,
+  totalPages: number
+): number {
+  const pageIndex = Math.max(0, Math.min(totalPages - 1, page - 1));
+  const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth);
+  if (maxScrollLeft <= 0 || totalPages <= 1) {
+    return 0;
+  }
+
+  const denominator = Math.max(1, totalPages - 1);
+  return Math.min(maxScrollLeft, (maxScrollLeft * pageIndex) / denominator);
 }
 
 /** Matches `TrendingFeaturedSection` shop CTA sizing and xl placement. */
@@ -134,6 +207,9 @@ export function UpcomingProductsSection() {
   const [pageDirection, setPageDirection] = useState<1 | -1>(1);
   const pageTransitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isProgrammaticScrollRef = useRef(false);
+  const programmaticScrollRafRef = useRef<number | null>(null);
+  const programmaticScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSmUp = useSyncExternalStore(
     subscribeUpcomingSmViewport,
     getUpcomingSmViewportSnapshot,
@@ -169,9 +245,10 @@ export function UpcomingProductsSection() {
   }, [fetchUpcoming]);
 
   useEffect(() => {
+    pageStartRefs.current = [];
     setCurrentPage(1);
     scrollContainerRef.current?.scrollTo({ left: 0 });
-  }, [isSmUp]);
+  }, [isSmUp, items.length, cardsPerPage]);
 
   useEffect(() => {
     return () => {
@@ -180,6 +257,12 @@ export function UpcomingProductsSection() {
       }
       if (scrollIdleTimerRef.current) {
         clearTimeout(scrollIdleTimerRef.current);
+      }
+      if (programmaticScrollTimerRef.current) {
+        clearTimeout(programmaticScrollTimerRef.current);
+      }
+      if (programmaticScrollRafRef.current !== null) {
+        cancelAnimationFrame(programmaticScrollRafRef.current);
       }
     };
   }, []);
@@ -226,39 +309,81 @@ export function UpcomingProductsSection() {
 
   const totalPages = Math.max(1, Math.ceil(items.length / cardsPerPage));
   const safePage = Math.min(currentPage, totalPages);
-  const visiblePaginationPages = isSmUp
-    ? Array.from({ length: totalPages }, (_, i) => i + 1)
-    : getUpcomingMobileVisiblePageNumbers(totalPages, safePage);
+  const visiblePaginationPages = getUpcomingVisiblePageNumbers(totalPages);
 
   const getScrollLeftForPage = (page: number, container: HTMLDivElement): number => {
+    if (isSmUp) {
+      return getUpcomingProportionalScrollLeft(container, page, totalPages);
+    }
+
     const pageIndex = Math.max(0, Math.min(totalPages - 1, page - 1));
     const anchor = pageStartRefs.current[pageIndex];
     if (!anchor) {
       return 0;
     }
+
     const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth);
-    return Math.min(anchor.offsetLeft, maxScrollLeft);
+    return Math.min(getScrollLeftForElementWithin(container, anchor), maxScrollLeft);
   };
 
   const resolvePageFromScrollLeft = (container: HTMLDivElement): number => {
-    if (totalPages <= 1) {
-      return 1;
+    if (isSmUp) {
+      return resolveUpcomingPageFromProportionalScroll(container, totalPages);
     }
-    const scrollLeft = container.scrollLeft;
-    let bestPage = 1;
-    let bestDistance = Number.POSITIVE_INFINITY;
-    for (let p = 0; p < totalPages; p += 1) {
-      const anchor = pageStartRefs.current[p];
-      if (!anchor) {
-        continue;
-      }
-      const distance = Math.abs(scrollLeft - anchor.offsetLeft);
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        bestPage = p + 1;
-      }
+
+    return resolveUpcomingPageFromMobileAnchors(container, pageStartRefs.current, totalPages);
+  };
+
+  const waitForScrollToSettle = (container: HTMLDivElement, targetScrollLeft: number) => {
+    if (programmaticScrollRafRef.current !== null) {
+      cancelAnimationFrame(programmaticScrollRafRef.current);
+      programmaticScrollRafRef.current = null;
     }
-    return bestPage;
+    if (programmaticScrollTimerRef.current) {
+      clearTimeout(programmaticScrollTimerRef.current);
+      programmaticScrollTimerRef.current = null;
+    }
+
+    let previousScrollLeft = container.scrollLeft;
+    let stableFrames = 0;
+    const startedAt =
+      typeof performance !== 'undefined' && typeof performance.now === 'function'
+        ? performance.now()
+        : Date.now();
+
+    const releaseFlag = () => {
+      isProgrammaticScrollRef.current = false;
+      if (programmaticScrollRafRef.current !== null) {
+        cancelAnimationFrame(programmaticScrollRafRef.current);
+        programmaticScrollRafRef.current = null;
+      }
+      if (programmaticScrollTimerRef.current) {
+        clearTimeout(programmaticScrollTimerRef.current);
+        programmaticScrollTimerRef.current = null;
+      }
+    };
+
+    const tick = () => {
+      const current = container.scrollLeft;
+      const movedTooLittle = Math.abs(current - previousScrollLeft) < 0.5;
+      const reachedTarget = Math.abs(current - targetScrollLeft) <= UPCOMING_SCROLL_TARGET_TOLERANCE_PX;
+
+      if (movedTooLittle || reachedTarget) {
+        stableFrames += 1;
+      } else {
+        stableFrames = 0;
+      }
+      previousScrollLeft = current;
+
+      if (stableFrames >= UPCOMING_SCROLL_SETTLE_STABLE_FRAMES) {
+        releaseFlag();
+        return;
+      }
+      programmaticScrollRafRef.current = requestAnimationFrame(tick);
+    };
+
+    programmaticScrollRafRef.current = requestAnimationFrame(tick);
+    programmaticScrollTimerRef.current = setTimeout(releaseFlag, UPCOMING_SCROLL_SETTLE_MAX_WAIT_MS);
   };
 
   const handlePageChange = (page: number) => {
@@ -282,16 +407,27 @@ export function UpcomingProductsSection() {
       return;
     }
 
+    const targetScrollLeft = getScrollLeftForPage(clampedPage, container);
+
+    isProgrammaticScrollRef.current = true;
+    setCurrentPage(clampedPage);
+
+    if (scrollIdleTimerRef.current) {
+      clearTimeout(scrollIdleTimerRef.current);
+      scrollIdleTimerRef.current = null;
+    }
+
     container.scrollTo({
-      left: getScrollLeftForPage(clampedPage, container),
+      left: targetScrollLeft,
       behavior: 'smooth',
     });
-    setCurrentPage(clampedPage);
+
+    waitForScrollToSettle(container, targetScrollLeft);
   };
 
   const handleScroll = () => {
     const container = scrollContainerRef.current;
-    if (!container || totalPages <= 1) {
+    if (!container || totalPages <= 1 || isProgrammaticScrollRef.current) {
       return;
     }
 
@@ -300,12 +436,16 @@ export function UpcomingProductsSection() {
     }
 
     scrollIdleTimerRef.current = setTimeout(() => {
+      if (isProgrammaticScrollRef.current) {
+        return;
+      }
+
       const nextPage = resolvePageFromScrollLeft(container);
       setCurrentPage((current) => (current === nextPage ? current : nextPage));
     }, UPCOMING_SCROLL_IDLE_UPDATE_DELAY_MS);
   };
 
-  const scrollContainerClassName = `scrollbar-hide mt-3 snap-x snap-mandatory overflow-x-auto pb-4 sm:mt-6 sm:pt-[7.5rem] pt-[7.5rem] ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_TOP_PADDING_CLASS_NAME}`;
+  const scrollContainerClassName = `scrollbar-hide mt-3 max-sm:snap-x max-sm:snap-mandatory overflow-x-auto pb-4 sm:mt-6 sm:pt-[7.5rem] pt-[7.5rem] ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_TOP_PADDING_CLASS_NAME}`;
 
   return (
     <section className="relative isolate flex flex-col gap-4 sm:gap-5 xl:mr-[calc(50%_-_50vw)] xl:overflow-x-clip">
@@ -361,7 +501,7 @@ export function UpcomingProductsSection() {
                   }
                 }}
                 className={`flex min-h-0 shrink-0 flex-col self-stretch transition-transform transition-shadow duration-300 ease-out will-change-transform ${pageMotionClass} ${pageDelayClass} ${
-                  isPageStart ? 'snap-start snap-always' : ''
+                  isPageStart ? 'max-sm:snap-start max-sm:snap-always' : ''
                 } ${CATALOG_PRODUCT_CARD_MOBILE_ITEM_WRAPPER_CLASS_NAME}`}
               >
                 <ProductsCatalogCard
@@ -395,7 +535,7 @@ export function UpcomingProductsSection() {
         </div>
       ) : (
         <div
-          className="mt-1 flex flex-wrap items-center justify-center gap-2 sm:mt-2 sm:gap-4"
+          className="mt-1 flex w-full max-w-[calc(100vw-2rem)] flex-nowrap items-center justify-center gap-1.5 sm:mt-2 sm:max-w-none sm:flex-wrap sm:gap-4"
           role="tablist"
           aria-label={t('home.homepage.upcoming.paginationAria')}
         >
@@ -409,7 +549,7 @@ export function UpcomingProductsSection() {
                 aria-selected={isActive}
                 aria-label={`${t('home.homepage.upcoming.pageAriaPrefix')} ${page}`}
                 onClick={() => handlePageChange(page)}
-                className={`h-1.5 w-14 shrink-0 rounded-[12px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#122a26] focus-visible:ring-offset-2 sm:h-2 sm:w-[100px] ${
+                className={`h-1.5 min-w-[1.25rem] flex-1 rounded-[12px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#122a26] focus-visible:ring-offset-2 sm:h-2 sm:w-[100px] sm:flex-none ${
                   isActive ? 'bg-[#122a26]' : 'bg-[#d9d9d9] hover:bg-[#c9c9c9]'
                 }`}
               />
