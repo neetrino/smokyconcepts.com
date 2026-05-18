@@ -103,6 +103,7 @@ function CatalogSizePagePanel({
   chunk,
   pageIdx,
   pageWidthPx,
+  itemsPerRow,
   staggerStartIndex,
   priorCount,
   selectedItemId,
@@ -112,6 +113,7 @@ function CatalogSizePagePanel({
   chunk: SizeCatalogItemDto[];
   pageIdx: number;
   pageWidthPx: number;
+  itemsPerRow: number;
   staggerStartIndex: number;
   priorCount: number;
   selectedItemId: string | null;
@@ -126,7 +128,11 @@ function CatalogSizePagePanel({
 
   return (
     <div ref={pageRef} style={slideStyle} className="box-border snap-start">
-      <div className="grid grid-cols-3 grid-rows-2 justify-items-center gap-x-2 gap-y-5 sm:gap-x-4 sm:gap-y-6 md:grid-cols-4 lg:grid-cols-7">
+      <div
+        className={`grid grid-cols-3 justify-items-center gap-x-2 gap-y-5 sm:gap-x-4 sm:gap-y-6 md:grid-cols-4 lg:grid-cols-7 ${
+          itemsPerRow > 0 && chunk.length > itemsPerRow ? 'grid-rows-2' : 'grid-rows-1'
+        }`}
+      >
         {chunk.map((item, i) => {
           const enterDelayMs = useScrollReveal
             ? SIZE_CATALOG_PAGE_CARD_STAGGER_BASE_MS + i * SIZE_CARD_STAGGER_MS
@@ -178,6 +184,7 @@ function CategorySizeCatalogPages({
             chunk={chunk}
             pageIdx={pageIdx}
             pageWidthPx={pageWidthPx}
+            itemsPerRow={itemsPerRow}
             staggerStartIndex={staggerStartIndex}
             priorCount={priorCount}
             selectedItemId={selectedItemId}
