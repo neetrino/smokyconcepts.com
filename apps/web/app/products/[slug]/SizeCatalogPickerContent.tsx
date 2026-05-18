@@ -3,6 +3,12 @@
 import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
+import type { SizeModalMotionState } from '@/lib/size-modal-animation';
+import {
+  sizeModalBlockClass,
+  sizeModalBlockTransitionDelay,
+} from '@/lib/size-modal-animation';
+import { SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS } from '@/lib/size-modal-animation.constants';
 import { CatalogCategorySizeBand } from './SizeCatalogCategoryBand';
 import {
   SIZE_CARD_STAGGER_BASE_MS,
@@ -13,6 +19,8 @@ interface SizeCatalogPickerContentProps {
   categories: SizeCatalogCategoryDto[];
   selectedItemId: string | null;
   language: LanguageCode;
+  modalMotion: SizeModalMotionState;
+  suppressEnterAnimation?: boolean;
   onSelectItem: (item: SizeCatalogItemDto) => void;
 }
 
@@ -20,6 +28,8 @@ export function SizeCatalogPickerContent({
   categories,
   selectedItemId,
   language,
+  modalMotion,
+  suppressEnterAnimation = false,
   onSelectItem,
 }: SizeCatalogPickerContentProps) {
   const hasAny = categories.some((c) => c.items.length > 0);
@@ -27,8 +37,14 @@ export function SizeCatalogPickerContent({
   if (!hasAny) {
     return (
       <p
-        className="animate-size-modal-block-in font-montserrat text-[16px] font-medium text-[#414141]"
-        style={{ animationDelay: '200ms' }}
+        className={`font-montserrat text-[16px] font-medium text-[#414141] ${sizeModalBlockClass(modalMotion)}`}
+        style={{
+          transitionDelay: sizeModalBlockTransitionDelay(
+            SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS,
+            0,
+            modalMotion
+          ),
+        }}
       >
         {t(language, 'product.size_catalog_empty')}
       </p>
@@ -54,6 +70,8 @@ export function SizeCatalogPickerContent({
             category={category}
             selectedItemId={selectedItemId}
             language={language}
+            modalMotion={modalMotion}
+            suppressEnterAnimation={suppressEnterAnimation}
             onSelectItem={onSelectItem}
             sectionHeadingDelayMs={sectionHeadingDelayMs}
             staggerStartIndex={0}

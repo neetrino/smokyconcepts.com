@@ -3,6 +3,11 @@
 import { useLayoutEffect, useMemo, type RefObject } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
+import type { SizeModalMotionState } from '@/lib/size-modal-animation';
+import {
+  sizeModalBlockClass,
+  sizeModalBlockTransitionDelay,
+} from '@/lib/size-modal-animation';
 import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
@@ -101,6 +106,7 @@ function CatalogSizePagePanel({
   staggerStartIndex,
   priorCount,
   selectedItemId,
+  suppressEnterAnimation,
   onSelectItem,
 }: {
   chunk: SizeCatalogItemDto[];
@@ -109,13 +115,14 @@ function CatalogSizePagePanel({
   staggerStartIndex: number;
   priorCount: number;
   selectedItemId: string | null;
+  suppressEnterAnimation: boolean;
   onSelectItem: (item: SizeCatalogItemDto) => void;
 }) {
   const useScrollReveal = pageIdx > 0;
   const { pageRef, revealTick } = useCatalogPageRevealOnScroll(useScrollReveal);
   const slideStyle = { width: pageWidthPx, minWidth: pageWidthPx, flexShrink: 0 } as const;
 
-  const playEnterAnimation = !useScrollReveal || revealTick > 0;
+  const playEnterAnimation = !suppressEnterAnimation && (!useScrollReveal || revealTick > 0);
 
   return (
     <div ref={pageRef} style={slideStyle} className="box-border snap-start">
@@ -147,6 +154,7 @@ function CategorySizeCatalogPages({
   pageWidthPx,
   selectedItemId,
   staggerStartIndex,
+  suppressEnterAnimation,
   onSelectItem,
 }: {
   items: SizeCatalogItemDto[];
@@ -154,6 +162,7 @@ function CategorySizeCatalogPages({
   pageWidthPx: number;
   selectedItemId: string | null;
   staggerStartIndex: number;
+  suppressEnterAnimation: boolean;
   onSelectItem: (item: SizeCatalogItemDto) => void;
 }) {
   const pageSize = itemsPerRow * 2;
@@ -172,6 +181,7 @@ function CategorySizeCatalogPages({
             staggerStartIndex={staggerStartIndex}
             priorCount={priorCount}
             selectedItemId={selectedItemId}
+            suppressEnterAnimation={suppressEnterAnimation}
             onSelectItem={onSelectItem}
           />
         );
@@ -194,6 +204,8 @@ function CatalogCategorySizeBandView({
   canScrollLeft,
   canScrollRight,
   scrollByDirection,
+  modalMotion,
+  suppressEnterAnimation,
 }: {
   category: SizeCatalogCategoryDto;
   selectedItemId: string | null;
@@ -201,6 +213,8 @@ function CatalogCategorySizeBandView({
   onSelectItem: (item: SizeCatalogItemDto) => void;
   sectionHeadingDelayMs: number;
   staggerStartIndex: number;
+  modalMotion: SizeModalMotionState;
+  suppressEnterAnimation: boolean;
   itemsPerRow: number;
   scrollerRef: RefObject<HTMLDivElement>;
   pageWidthPx: number;
@@ -221,10 +235,16 @@ function CatalogCategorySizeBandView({
           />
         ) : null}
         <h3
-          className={`animate-size-modal-block-in font-montserrat text-[22px] font-extrabold leading-none text-[#414141] sm:text-[24px] ${
+          className={`font-montserrat text-[22px] font-extrabold leading-none text-[#414141] sm:text-[24px] ${sizeModalBlockClass(modalMotion)} ${
             hasOverflow ? 'min-w-0 flex-1 truncate' : 'w-full'
           }`}
-          style={{ animationDelay: `${Math.max(0, sectionHeadingDelayMs)}ms` }}
+          style={{
+            transitionDelay: sizeModalBlockTransitionDelay(
+              Math.max(0, sectionHeadingDelayMs),
+              0,
+              modalMotion
+            ),
+          }}
         >
           {category.title}
         </h3>
@@ -249,6 +269,7 @@ function CatalogCategorySizeBandView({
               pageWidthPx={pageWidthPx}
               selectedItemId={selectedItemId}
               staggerStartIndex={staggerStartIndex}
+              suppressEnterAnimation={suppressEnterAnimation}
               onSelectItem={onSelectItem}
             />
           ) : (
@@ -267,6 +288,8 @@ export function CatalogCategorySizeBand({
   onSelectItem,
   sectionHeadingDelayMs,
   staggerStartIndex,
+  modalMotion,
+  suppressEnterAnimation = false,
 }: {
   category: SizeCatalogCategoryDto;
   selectedItemId: string | null;
@@ -274,6 +297,8 @@ export function CatalogCategorySizeBand({
   onSelectItem: (item: SizeCatalogItemDto) => void;
   sectionHeadingDelayMs: number;
   staggerStartIndex: number;
+  modalMotion: SizeModalMotionState;
+  suppressEnterAnimation?: boolean;
 }) {
   const itemsPerRow = useSizeCatalogItemsPerRow();
   const resyncToken = `${category.id}:${category.items.length}:${itemsPerRow}`;
@@ -303,6 +328,8 @@ export function CatalogCategorySizeBand({
       canScrollLeft={canScrollLeft}
       canScrollRight={canScrollRight}
       scrollByDirection={scrollByDirection}
+      modalMotion={modalMotion}
+      suppressEnterAnimation={suppressEnterAnimation}
     />
   );
 }

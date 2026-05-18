@@ -2,11 +2,16 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { SIZE_MODAL_EXIT_DURATION_MS } from '../lib/size-modal-animation.constants';
+import {
+  SIZE_MODAL_EXIT_DURATION_MS,
+  SIZE_MODAL_REDUCED_MOTION_EXIT_MS,
+} from '../lib/size-modal-animation.constants';
 
 interface UseSizeModalExitAnimationOptions {
   isOpen: boolean;
-  /** Fired after the exit transition when close started while `isOpen` was still true */
+  /** Override total exit wait (e.g. 0 when reduced motion) */
+  exitDurationMs?: number;
+  /** Fired after the exit transition when close started via `requestClose` */
   onExited?: () => void;
 }
 
@@ -15,6 +20,7 @@ interface UseSizeModalExitAnimationOptions {
  */
 export function useSizeModalExitAnimation({
   isOpen,
+  exitDurationMs = SIZE_MODAL_EXIT_DURATION_MS,
   onExited,
 }: UseSizeModalExitAnimationOptions) {
   const [isMounted, setIsMounted] = useState(isOpen);
@@ -22,6 +28,12 @@ export function useSizeModalExitAnimation({
   const [isEntered, setIsEntered] = useState(false);
   const onExitedRef = useRef(onExited);
   onExitedRef.current = onExited;
+
+  const finishExit = useCallback(() => {
+    setIsMounted(false);
+    setIsExiting(false);
+    setIsEntered(false);
+  }, []);
 
   useEffect(() => {
     if (isOpen && !isExiting) {
@@ -68,16 +80,21 @@ export function useSizeModalExitAnimation({
     if (!isExiting) {
       return;
     }
-    const timerId = window.setTimeout(() => {
-      setIsMounted(false);
-      setIsExiting(false);
-      setIsEntered(false);
+    if (exitDurationMs <= SIZE_MODAL_REDUCED_MOTION_EXIT_MS) {
+      finishExit();
       if (isOpen) {
         onExitedRef.current?.();
       }
-    }, SIZE_MODAL_EXIT_DURATION_MS);
+      return;
+    }
+    const timerId = window.setTimeout(() => {
+      finishExit();
+      if (isOpen) {
+        onExitedRef.current?.();
+      }
+    }, exitDurationMs);
     return () => window.clearTimeout(timerId);
-  }, [isExiting, isOpen]);
+  }, [isExiting, isOpen, exitDurationMs, finishExit]);
 
   return { isMounted, isExiting, isEntered, requestClose };
 }

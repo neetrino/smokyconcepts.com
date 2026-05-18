@@ -3,8 +3,23 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
+import { useSizeModalExitAnimation } from '@/hooks/useSizeModalExitAnimation';
+import {
+  SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS,
+  SIZE_MODAL_BLOCK_ENTER_DELAY_HEADER_MS,
+  SIZE_MODAL_EXIT_DURATION_MS,
+  SIZE_MODAL_REDUCED_MOTION_EXIT_MS,
+} from '@/lib/size-modal-animation.constants';
+import {
+  sizeModalBackdropClass,
+  sizeModalBlockClass,
+  sizeModalBlockTransitionDelay,
+  sizeModalContentClass,
+  sizeModalPanelClass,
+} from '@/lib/size-modal-animation';
 import { formatStorePriceForDisplay } from '../lib/currency';
 import { useTranslation } from '../lib/i18n-client';
 import { CART_DRAWER_OPEN_EVENT } from '../app/cart/constants';
@@ -47,6 +62,23 @@ export function CartDrawer() {
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
   const isLocalUpdateRef = useRef(false);
 
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const exitDurationMs = prefersReducedMotion
+    ? SIZE_MODAL_REDUCED_MOTION_EXIT_MS
+    : SIZE_MODAL_EXIT_DURATION_MS;
+  const { isMounted, isExiting, isEntered } = useSizeModalExitAnimation({
+    isOpen,
+    exitDurationMs,
+  });
+  const drawerMotion = { isEntered, isExiting };
+
+  const handleClose = useCallback(() => {
+    if (isExiting) {
+      return;
+    }
+    setIsOpen(false);
+  }, [isExiting]);
+
   async function loadCart() {
     setCart(readGuestCartFromStorage());
   }
@@ -68,25 +100,30 @@ export function CartDrawer() {
       }
     };
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-      }
-    };
-
     window.addEventListener(CART_DRAWER_OPEN_EVENT, handleOpen);
     window.addEventListener('cart-updated', handleCartUpdate);
-    window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener(CART_DRAWER_OPEN_EVENT, handleOpen);
       window.removeEventListener('cart-updated', handleCartUpdate);
-      window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isMounted) {
+      return;
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        handleClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMounted, handleClose]);
+
+  useEffect(() => {
+    if (!isMounted) {
       return;
     }
 
@@ -96,7 +133,7 @@ export function CartDrawer() {
     return () => {
       document.body.style.overflow = previousOverflow;
     };
-  }, [isOpen]);
+  }, [isMounted]);
 
   const itemCountLabel = useMemo(() => {
     const count = cart?.itemsCount ?? 0;
@@ -124,23 +161,29 @@ export function CartDrawer() {
     );
   }
 
-  if (!isOpen) {
+  if (!isMounted) {
     return null;
   }
 
   return (
-    <div className="fixed inset-0 z-[100]" role="presentation">
+    <div
+      className={`fixed inset-0 z-[100] ${isExiting ? 'pointer-events-none' : ''}`}
+      role="presentation"
+    >
       <button
         type="button"
         aria-label="Close cart drawer"
-        className="absolute inset-0 z-0 animate-size-modal-backdrop-in bg-[rgba(0,0,0,0.6)]"
-        onClick={() => setIsOpen(false)}
+        className={`absolute inset-0 z-0 bg-[rgba(0,0,0,0.6)] ${sizeModalBackdropClass(drawerMotion)}`}
+        onClick={handleClose}
       />
 
-      <aside className="absolute inset-y-0 right-0 z-10 flex h-full max-h-dvh w-full max-w-[30rem] animate-size-modal-panel-in flex-col overflow-hidden bg-[#efefef] shadow-[-8px_0_32px_rgba(0,0,0,0.12)]">
+      <aside
+        className={`absolute inset-y-0 right-0 z-10 flex h-full max-h-dvh w-full max-w-[30rem] flex-col overflow-hidden bg-[#efefef] shadow-[-8px_0_32px_rgba(0,0,0,0.12)] ${sizeModalPanelClass(drawerMotion)}`}
+        aria-hidden={isExiting}
+      >
         <button
           type="button"
-          onClick={() => setIsOpen(false)}
+          onClick={handleClose}
           className="absolute right-5 top-5 z-20 text-[#b4b4b4] transition-colors hover:text-[#414141]"
           aria-label="Close cart drawer"
         >
@@ -149,8 +192,14 @@ export function CartDrawer() {
 
         <div className="flex h-full flex-col px-8 pb-6 pt-6 font-montserrat">
           <div
-            className="flex items-center gap-4 animate-size-modal-block-in"
-            style={{ animationDelay: '90ms' }}
+            className={`flex items-center gap-4 ${sizeModalBlockClass(drawerMotion)}`}
+            style={{
+              transitionDelay: sizeModalBlockTransitionDelay(
+                SIZE_MODAL_BLOCK_ENTER_DELAY_HEADER_MS,
+                0,
+                drawerMotion
+              ),
+            }}
           >
             <h2 className="text-[1.625rem] font-extrabold leading-none text-[#414141]">My Cart</h2>
             <span className="pt-1 text-[0.875rem] font-medium leading-none text-[#414141]">
@@ -158,14 +207,24 @@ export function CartDrawer() {
             </span>
           </div>
 
-          <div className="scrollbar-hide mt-8 min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-1">
+          <div
+            className={`mt-8 flex min-h-0 flex-1 flex-col ${sizeModalContentClass(drawerMotion)}`}
+            style={{
+              transitionDelay: sizeModalBlockTransitionDelay(
+                SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS,
+                0,
+                drawerMotion
+              ),
+            }}
+          >
+          <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-1">
             {cart && cart.items.length > 0 ? (
               <div className="space-y-8">
                 {cart.items.map((item) => (
                   <div key={item.id} className="flex gap-5 rounded-[1rem] px-2 py-2 transition-all">
                     <Link
                       href={`/products/${item.variant.product.slug}`}
-                      onClick={() => setIsOpen(false)}
+                      onClick={handleClose}
                       className="relative mt-1 block h-[6.5rem] w-[6.25rem] shrink-0 rounded-[0.875rem] bg-white"
                     >
                       {item.variant.product.image ? (
@@ -184,7 +243,7 @@ export function CartDrawer() {
                       <div className="min-w-0">
                         <Link
                           href={`/products/${item.variant.product.slug}`}
-                          onClick={() => setIsOpen(false)}
+                          onClick={handleClose}
                           className="block"
                         >
                           <h3 className="line-clamp-1 text-[1.125rem] font-extrabold leading-none text-[#414141]">
@@ -249,7 +308,7 @@ export function CartDrawer() {
             )}
           </div>
 
-          <div className="mt-5 pt-5">
+          <div className="mt-5 shrink-0 pt-5">
             <h3 className="text-[1.375rem] font-extrabold leading-none text-[#414141]">Summary</h3>
 
             <div className="mt-6 space-y-3 text-[1rem] leading-none text-[#414141]">
@@ -277,13 +336,14 @@ export function CartDrawer() {
             <button
               type="button"
               onClick={() => {
-                setIsOpen(false);
+                handleClose();
                 router.push('/checkout');
               }}
               className="mt-6 inline-flex h-10 w-full items-center justify-center rounded-[0.5rem] bg-[#dcc090] text-[0.875rem] font-extrabold uppercase tracking-[0.06em] text-[#122a26] transition-opacity hover:opacity-90"
             >
               CHECKOUT
             </button>
+          </div>
           </div>
         </div>
       </aside>
