@@ -12,6 +12,15 @@ import {
   shouldNudgeCatalogProductImage,
   toCatalogProduct,
 } from '../../app/products/components/catalogProductLabels';
+import {
+  CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
+  CATALOG_PRODUCT_CARD_MOBILE_IMAGE_FRAME_CLASS_NAME,
+  CATALOG_PRODUCT_CARD_MOBILE_ITEM_WRAPPER_CLASS_NAME,
+  CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME,
+  CATALOG_PRODUCT_CARD_MOBILE_STRIP_TOP_PADDING_CLASS_NAME,
+  CATALOG_PRODUCT_CARD_SM_VIEWPORT_QUERY,
+  getCatalogProductCardImageScaleBoost,
+} from '../../app/products/components/catalogProductCardMobilePresentation';
 import { useTranslation } from '@/lib/i18n-client';
 
 interface ApiProduct {
@@ -37,14 +46,8 @@ interface ProductsResponse {
 }
 
 const UPCOMING_LIMIT = 12;
-/** Matches Tailwind `sm` (640px): below = mobile strip, at/above = wider row. */
-const UPCOMING_VIEWPORT_SM_QUERY = '(min-width: 640px)';
 const UPCOMING_CARDS_PER_PAGE_MOBILE = 2;
 const UPCOMING_CARDS_PER_PAGE_SM_UP = 6;
-const UPCOMING_IMAGE_SCALE_LARGE = 0.2;
-const UPCOMING_IMAGE_SCALE_SMALL = 0.15;
-const UPCOMING_IMAGE_SCALE_PATTERN_LENGTH = 6;
-const UPCOMING_SMALL_SCALE_POSITIONS = new Set([2, 5]);
 const UPCOMING_PAGE_ANIMATION_DURATION_MS = 300;
 const UPCOMING_SCROLL_IDLE_UPDATE_DELAY_MS = 90;
 const UPCOMING_PAGE_STAGGER_DELAY_CLASSES = [
@@ -57,8 +60,6 @@ const UPCOMING_PAGE_STAGGER_DELAY_CLASSES = [
 ] as const;
 /** Max pagination segments on narrow viewports (matches `!isSmUp` / below `sm`). */
 const UPCOMING_MAX_MOBILE_PAGINATION_DOTS = 5;
-/** Mobile strip gap — matches trending `MobilePageCluster` `gap-x-4`. Card cap: `max-sm:max-w-[10rem]` (= trending middle card). */
-const UPCOMING_MOBILE_CARD_GAP_CLASS_NAME = 'max-sm:gap-4';
 
 /**
  * Returns page indices (1-based) to render as pagination tabs on mobile.
@@ -74,36 +75,23 @@ function getUpcomingMobileVisiblePageNumbers(totalPages: number, safePage: numbe
   return Array.from({ length: UPCOMING_MAX_MOBILE_PAGINATION_DOTS }, (_, i) => start + i);
 }
 
-function getUpcomingImageScaleBoost(cardIndex: number): number {
-  const oneBasedPosition = (cardIndex % UPCOMING_IMAGE_SCALE_PATTERN_LENGTH) + 1;
-  return UPCOMING_SMALL_SCALE_POSITIONS.has(oneBasedPosition)
-    ? UPCOMING_IMAGE_SCALE_SMALL
-    : UPCOMING_IMAGE_SCALE_LARGE;
-}
-
 function subscribeUpcomingSmViewport(onStoreChange: () => void): () => void {
   if (typeof window === 'undefined') {
     return () => {};
   }
-  const mq = window.matchMedia(UPCOMING_VIEWPORT_SM_QUERY);
+  const mq = window.matchMedia(CATALOG_PRODUCT_CARD_SM_VIEWPORT_QUERY);
   mq.addEventListener('change', onStoreChange);
   return () => mq.removeEventListener('change', onStoreChange);
 }
 
 function getUpcomingSmViewportSnapshot(): boolean {
-  return typeof window !== 'undefined' && window.matchMedia(UPCOMING_VIEWPORT_SM_QUERY).matches;
+  return typeof window !== 'undefined' && window.matchMedia(CATALOG_PRODUCT_CARD_SM_VIEWPORT_QUERY).matches;
 }
 
 /** SSR: assume mobile pagination (2 per step) to avoid layout jump on narrow clients. */
 function getServerUpcomingSmViewportSnapshot(): boolean {
   return false;
 }
-
-const UPCOMING_MOBILE_CARD_CLASS_NAME = '!h-auto w-full max-w-none';
-/** Shifts the full card (not the hero image) down on narrow viewports. */
-const UPCOMING_MOBILE_CARD_OFFSET_CLASS_NAME = 'max-sm:translate-y-3';
-/** Nudges hero image toward image-switch dots on narrow viewports only. */
-const UPCOMING_MOBILE_IMAGE_FRAME_CLASS_NAME = 'max-sm:translate-y-5';
 
 /** Matches `TrendingFeaturedSection` shop CTA sizing and xl placement. */
 const UPCOMING_SHOP_BUTTON_CLASS_NAME =
@@ -317,8 +305,7 @@ export function UpcomingProductsSection() {
     }, UPCOMING_SCROLL_IDLE_UPDATE_DELAY_MS);
   };
 
-  const scrollContainerClassName =
-    'scrollbar-hide mt-3 snap-x snap-mandatory overflow-x-auto pb-4 max-sm:pt-[7.25rem] sm:mt-6 sm:pt-[7.5rem]';
+  const scrollContainerClassName = `scrollbar-hide mt-3 snap-x snap-mandatory overflow-x-auto pb-4 sm:mt-6 sm:pt-[7.5rem] pt-[7.5rem] ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_TOP_PADDING_CLASS_NAME}`;
 
   return (
     <section className="relative isolate flex flex-col gap-4 sm:gap-5 xl:mr-[calc(50%_-_50vw)] xl:overflow-x-clip">
@@ -328,7 +315,7 @@ export function UpcomingProductsSection() {
         onScroll={handleScroll}
         className={scrollContainerClassName}
       >
-        <div className={`flex min-w-max items-stretch gap-6 ${UPCOMING_MOBILE_CARD_GAP_CLASS_NAME}`}>
+        <div className={`flex min-w-max items-stretch gap-6 ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME}`}>
           {items.map((item, index) => {
             const pageIndex = Math.floor(index / cardsPerPage);
             const indexInPage = index % cardsPerPage;
@@ -375,7 +362,7 @@ export function UpcomingProductsSection() {
                 }}
                 className={`flex min-h-0 shrink-0 flex-col self-stretch transition-transform transition-shadow duration-300 ease-out will-change-transform ${pageMotionClass} ${pageDelayClass} ${
                   isPageStart ? 'snap-start snap-always' : ''
-                } max-sm:w-full max-sm:max-w-[10rem] max-sm:justify-center ${UPCOMING_MOBILE_CARD_OFFSET_CLASS_NAME}`}
+                } ${CATALOG_PRODUCT_CARD_MOBILE_ITEM_WRAPPER_CLASS_NAME}`}
               >
                 <ProductsCatalogCard
                   product={catalogProduct}
@@ -384,12 +371,12 @@ export function UpcomingProductsSection() {
                   categoryLabel={getCategoryLabel(catalogProduct, section)}
                   buyButtonLabel={t('home.homepage.upcoming.orderCta')}
                   imageNudgeDown={shouldNudgeCatalogProductImage(index)}
-                  imageScaleBoost={getUpcomingImageScaleBoost(index)}
-                  imageFrameClassName={UPCOMING_MOBILE_IMAGE_FRAME_CLASS_NAME}
+                  imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
+                  imageFrameClassName={CATALOG_PRODUCT_CARD_MOBILE_IMAGE_FRAME_CLASS_NAME}
                   className={
                     isSmUp
                       ? 'group h-full min-h-0 lg:w-[12.75rem] xl:w-[13rem]'
-                      : `group ${UPCOMING_MOBILE_CARD_CLASS_NAME}`
+                      : `group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME}`
                   }
                   compactLayout
                   eagerProductImage

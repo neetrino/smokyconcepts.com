@@ -152,7 +152,7 @@ export function ProductsCatalogCard({
   const compactArticleWidth =
     catalogStripMobilePeek && compactLayout
       ? // 3.75rem ≈ page px-4 (2rem) + strip gap; /1.5 ≈ half of next card visible in viewport
-        `${stripPeekMobileWidth} ${stripPeekMaxLg} ${stripPeekLgW} ${stripPeekXlW}`
+        `max-sm:w-full max-sm:max-w-full ${stripPeekMobileWidth} ${stripPeekMaxLg} ${stripPeekLgW} ${stripPeekXlW}`
       : widerCompactCard
         ? 'w-[12rem] max-sm:w-[10.75rem]'
         : 'w-[11rem] max-sm:w-[10.25rem]';
@@ -166,7 +166,7 @@ export function ProductsCatalogCard({
     ? widerCompactCard
       ? 'h-[15.25rem] sm:h-[18.5rem]'
       : slimCatalogGrid
-        ? 'h-[13.5rem] sm:h-[16rem]'
+        ? 'h-[14.75rem] sm:h-[17.75rem] md:h-[13.5rem] lg:h-[16rem]'
         : 'h-[14.75rem] sm:h-[17.75rem]'
     : isCompactSize
       ? 'h-[12.5rem] sm:h-60'
@@ -174,7 +174,7 @@ export function ProductsCatalogCard({
 
   const baseImagePullUpClassName = compactLayout
     ? slimCatalogGrid
-      ? '-mt-[4.75rem] sm:-mt-[5.75rem]'
+      ? '-mt-[5.125rem] sm:-mt-[6.25rem] md:-mt-[4.75rem] lg:-mt-[5.75rem]'
       : '-mt-[5.125rem] sm:-mt-[6.25rem]'
     : isCompactSize
       ? '-mt-12 sm:-mt-16'
@@ -184,7 +184,7 @@ export function ProductsCatalogCard({
   const compactInnerImageHeight = widerCompactCard
     ? 'h-[14.25rem] sm:h-[17.25rem]'
     : slimCatalogGrid
-      ? 'h-[12.5rem] sm:h-[15rem]'
+      ? 'h-[13.75rem] sm:h-[16.5rem] md:h-[12.5rem] lg:h-[15rem]'
       : 'h-[13.75rem] sm:h-[16.5rem]';
   const imageInnerClassName = compactLayout
     ? `${compactInnerImageHeight} w-full`
@@ -217,10 +217,10 @@ export function ProductsCatalogCard({
   const detailsOffsetClassName = compactLayout
     ? tightenDetailsUnderImage
       ? slimCatalogGrid
-        ? '-mt-[3.75rem] sm:-mt-[4.5rem]'
+        ? '-mt-[4.125rem] sm:-mt-[5rem] md:-mt-[3.75rem] lg:-mt-[4.5rem]'
         : '-mt-[4.125rem] sm:-mt-[5rem]'
       : slimCatalogGrid
-        ? '-mt-[2.5rem] sm:-mt-[3rem]'
+        ? '-mt-[2.75rem] sm:-mt-[3.25rem] md:-mt-[2.5rem] lg:-mt-[3rem]'
         : '-mt-[2.75rem] sm:-mt-[3.25rem]'
     : '-mt-4';
   const dotsGapClassName = compactLayout ? 'gap-1' : 'gap-[0.3125rem]';
