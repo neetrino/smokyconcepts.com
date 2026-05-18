@@ -37,9 +37,12 @@ const MASONRY_ROW2_RIGHT = 'min-w-0 flex-[1.3] sm:flex-[1.26]';
 /** Row 3 — Documents narrower, Wallets wider (sub-xl masonry). */
 const MASONRY_ROW3_LEFT = 'min-w-0 flex-[1.48] sm:flex-[1.44]';
 const MASONRY_ROW3_RIGHT = 'min-w-0 flex-[1.02] sm:flex-[1.06]';
-/** Figma Mob — 2×2 grid; tight horizontal gap so tiles stay side-by-side on narrow viewports. */
-const COVER_COLLECTIONS_MOBILE_GRID_GAP_X_CLASS = 'max-sm:gap-x-3';
-const COVER_COLLECTIONS_MOBILE_GRID_GAP_Y_CLASS = 'max-sm:gap-y-16';
+/** Figma Mob — 2×2 grid; horizontal gap between cards in the same row. */
+const COVER_COLLECTIONS_MOBILE_GRID_GAP_X_CLASS = 'max-sm:gap-x-6';
+const COVER_COLLECTIONS_MOBILE_GRID_GAP_Y_CLASS = 'max-sm:gap-y-10';
+/** Mobile: pull card grid closer to section title. */
+const COVER_COLLECTIONS_MOBILE_SECTION_GAP_CLASS = 'max-sm:gap-5';
+const COVER_COLLECTIONS_MOBILE_GRID_MARGIN_TOP_CLASS = 'max-sm:mt-0';
 
 function PackFitCard({
   title,
@@ -331,13 +334,15 @@ export function HomePageContent({ coverCollections, heroSlides }: HomePageConten
         </section>
 
         {coverCollections.length > 0 ? (
-          <section className="flex flex-col gap-8 overflow-visible pt-3 sm:gap-10 sm:pt-6">
+          <section
+            className={`flex flex-col gap-8 overflow-visible pt-3 sm:gap-10 sm:pt-6 ${COVER_COLLECTIONS_MOBILE_SECTION_GAP_CLASS}`}
+          >
             <HomeSectionTitle
               title={t('home.homepage.coverCollections.title')}
               className="-translate-y-10 sm:-translate-y-4 lg:-translate-y-6"
             />
             <div
-              className={`mt-4 grid w-full min-w-0 grid-cols-2 items-start justify-items-stretch gap-x-2 gap-y-16 overflow-visible sm:mt-0 sm:grid-cols-4 sm:gap-8 ${COVER_COLLECTIONS_MOBILE_GRID_GAP_X_CLASS} ${COVER_COLLECTIONS_MOBILE_GRID_GAP_Y_CLASS}`}
+              className={`mt-4 grid w-full min-w-0 grid-cols-2 items-start justify-items-stretch gap-x-2 gap-y-16 overflow-visible sm:mt-0 sm:grid-cols-4 sm:gap-8 ${COVER_COLLECTIONS_MOBILE_GRID_MARGIN_TOP_CLASS} ${COVER_COLLECTIONS_MOBILE_GRID_GAP_X_CLASS} ${COVER_COLLECTIONS_MOBILE_GRID_GAP_Y_CLASS}`}
             >
               {coverCollections.map((item) => (
                 <CoverCollectionProductCard key={item.slug} item={item} />
