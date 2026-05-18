@@ -4,49 +4,54 @@ import { HOME_ASSET_PATHS } from './homePage.data';
 import type { HomeCoverCollectionItem } from './homePage.types';
 
 /** Mobile: overlap above panel; image slot nudged up for visual balance. */
-const COVER_COLLECTION_MOBILE_PANEL_OVERLAP_CLASS = 'max-sm:pt-4';
+const COVER_COLLECTION_MOBILE_PANEL_OVERLAP_CLASS = 'max-sm:pt-[clamp(1.25rem,6vw,2rem)]';
 const COVER_COLLECTION_MOBILE_LINK_MARGIN_TOP_CLASS = 'max-sm:mt-1';
-/** Less negative Y = image sits lower over the white panel. */
-const COVER_COLLECTION_MOBILE_IMAGE_OVERLAP_CLASS = 'max-sm:-translate-y-7 max-sm:top-1';
+/** More negative Y = image sits higher over the white panel. */
+const COVER_COLLECTION_MOBILE_IMAGE_OVERLAP_CLASS =
+  'max-sm:-top-2 max-sm:-translate-y-12 max-[360px]:-top-1 max-[360px]:-translate-y-10';
 /** Mobile: nudge category title down inside the white panel. */
 const COVER_COLLECTION_MOBILE_TITLE_OFFSET_CLASS = 'max-sm:translate-y-4';
 /** Mobile: title aligns to block start (not centered). */
 const COVER_COLLECTION_MOBILE_TITLE_ALIGN_CLASS = 'max-sm:text-left max-sm:text-start';
-/** Mobile: inset matches centered image band left edge — see `max-w-[72%]` slot. */
-const COVER_COLLECTION_MOBILE_TITLE_IMAGE_ALIGN_CLASS = 'max-sm:pl-[14%] max-sm:pr-2';
+/** Mobile: inset follows the fluid centered image band. */
+const COVER_COLLECTION_MOBILE_TITLE_IMAGE_ALIGN_CLASS =
+  'max-sm:pl-[clamp(0.75rem,11vw,1.85rem)] max-sm:pr-2 max-[360px]:pl-3 max-[360px]:pr-1.5';
 /** White card panel height on mobile. */
-const COVER_COLLECTION_MOBILE_CARD_MIN_HEIGHT_CLASS = 'max-sm:min-h-[14rem]';
-/** Mobile: nudge white category panel left; hero image stays centered on the grid cell. */
-const COVER_COLLECTION_MOBILE_CATEGORY_TILE_OFFSET_CLASS = 'max-sm:-translate-x-2';
+const COVER_COLLECTION_MOBILE_CARD_MIN_HEIGHT_CLASS =
+  'max-sm:min-h-[clamp(9.25rem,46vw,11.5rem)] max-[360px]:min-h-[8.875rem]';
+/** Compact tile overrides at ≤360px; ~390px+ keeps standard mobile sizing. */
 /**
  * Desktop: product hero transform (uniform scale avoids raster stretch).
  * Mobile: image slot slightly above Figma Mob `4345:2059` baseline (`max-sm:`).
  */
 const COVER_COLLECTION_PRODUCT_IMAGE_TRANSFORM_CLASS =
-  'origin-bottom max-sm:translate-y-5 max-sm:scale-[1.36] translate-y-4 scale-[1.48] sm:translate-y-[8.25rem] sm:scale-[1.44] sm:group-hover:translate-y-[7.75rem] sm:group-hover:scale-[1.54]';
+  'origin-bottom max-sm:translate-y-0 max-sm:scale-[1.28] translate-y-4 scale-[1.48] sm:translate-y-[8.25rem] sm:scale-[1.44] sm:group-hover:translate-y-[7.75rem] sm:group-hover:scale-[1.54] max-[360px]:scale-[1.14] min-[390px]:max-sm:scale-[1.36]';
 
 const TITLE_MIN_HEIGHT_MOBILE = 'min-h-[3rem]';
-const COVER_COLLECTION_MOBILE_TITLE_SIZE_CLASS = 'max-sm:text-[22px]';
+const COVER_COLLECTION_COMPACT_MOBILE_TITLE_MIN_HEIGHT_CLASS = 'max-[360px]:min-h-[2.5rem]';
+const COVER_COLLECTION_MOBILE_TITLE_SIZE_CLASS =
+  'max-sm:text-[clamp(1.125rem,5.5vw,1.375rem)] max-[360px]:text-[1.0625rem]';
 /** Long label; smaller type so it fits the narrow tile. */
-const COVER_COLLECTION_MOBILE_SPECIAL_EDITION_TITLE_SIZE_CLASS = 'max-sm:text-[18px]';
+const COVER_COLLECTION_MOBILE_SPECIAL_EDITION_TITLE_SIZE_CLASS =
+  'max-sm:text-[clamp(0.875rem,4.4vw,1.125rem)] max-[360px]:text-[0.8125rem] max-[360px]:tracking-tight';
 
 /** Mobile image band width in 2-col grid. */
-const COVER_COLLECTION_IMAGE_SLOT_MAX_WIDTH_CLASS = 'max-w-[72%] sm:max-w-none';
+const COVER_COLLECTION_IMAGE_SLOT_MAX_WIDTH_CLASS =
+  'max-sm:max-w-[clamp(5.25rem,68%,8.25rem)] sm:max-w-none';
 
 const MOBILE_LINK_TOP_PADDING_CLASS = `${COVER_COLLECTION_MOBILE_PANEL_OVERLAP_CLASS} max-sm:shadow-none`;
 
 /** Figma Mob — white card shell fills grid cell; `sm:contents` hoists children for desktop layout. */
 const COVER_COLLECTION_MOBILE_CARD_WIDTH_CLASS = 'max-sm:w-full max-sm:min-w-0';
 const MOBILE_CARD_SHELL_CLASS = [
-  `max-sm:relative max-sm:flex ${COVER_COLLECTION_MOBILE_CARD_MIN_HEIGHT_CLASS} max-sm:flex-col max-sm:justify-end max-sm:overflow-visible max-sm:rounded-[24px] max-sm:bg-white max-sm:pb-2 max-sm:pl-0 max-sm:pr-2 max-sm:shadow-[0_8px_28px_rgba(18,42,38,0.12)]`,
-  COVER_COLLECTION_MOBILE_CATEGORY_TILE_OFFSET_CLASS,
+  `max-sm:relative max-sm:flex ${COVER_COLLECTION_MOBILE_CARD_MIN_HEIGHT_CLASS} max-sm:w-full max-sm:min-w-0 max-sm:flex-col max-sm:justify-end max-sm:overflow-visible max-sm:rounded-[clamp(1.125rem,6vw,1.5rem)] max-sm:bg-white max-sm:pb-[clamp(0.375rem,1.8vw,0.5rem)] max-sm:pl-0 max-sm:pr-[clamp(0.375rem,2vw,0.5rem)] max-sm:shadow-[0_8px_28px_rgba(18,42,38,0.12)]`,
   COVER_COLLECTION_MOBILE_CARD_WIDTH_CLASS,
   'sm:contents sm:mx-0 sm:w-full sm:translate-x-0',
 ].join(' ');
 
 /** Mobile: absolute image slot; desktop: existing flow layout. */
 const COVER_COLLECTION_IMAGE_OUTER_CLASS = [
-  'max-sm:absolute max-sm:left-1/2 max-sm:z-10 max-sm:flex max-sm:h-[15rem] max-sm:w-full max-sm:max-w-[92%] max-sm:-translate-x-1/2 max-sm:items-end max-sm:justify-center max-sm:overflow-visible',
+  'max-sm:absolute max-sm:left-1/2 max-sm:z-10 max-sm:flex max-sm:h-[clamp(11rem,58vw,15rem)] max-sm:w-full max-sm:-translate-x-1/2 max-sm:items-end max-sm:justify-center max-sm:overflow-visible max-[360px]:h-[10.75rem]',
   COVER_COLLECTION_MOBILE_IMAGE_OVERLAP_CLASS,
   'relative z-10 mx-auto flex h-52 w-full shrink-0 items-end justify-center sm:z-auto sm:-mt-28 sm:mb-0 sm:h-[22rem] sm:max-w-none sm:translate-y-0',
   COVER_COLLECTION_IMAGE_SLOT_MAX_WIDTH_CLASS,
@@ -67,7 +72,7 @@ export function CoverCollectionProductCard({ item }: CoverCollectionProductCardP
   const href = `/products?category=${item.slug}`;
   const isSpecialEdition = item.slug === 'special-edition';
   const titleClampClass = isSpecialEdition
-    ? 'line-clamp-1 whitespace-nowrap'
+    ? 'line-clamp-1 truncate whitespace-nowrap max-[389px]:leading-snug'
     : 'line-clamp-2 break-words';
   const titleSizeClass = isSpecialEdition
     ? COVER_COLLECTION_MOBILE_SPECIAL_EDITION_TITLE_SIZE_CLASS
@@ -101,7 +106,7 @@ export function CoverCollectionProductCard({ item }: CoverCollectionProductCardP
         </div>
         <div className="relative z-0 flex flex-1 flex-col justify-end rounded-[1rem] shadow-[0_8px_28px_rgba(18,42,38,0.12)] transition-shadow duration-200 max-sm:min-h-0 max-sm:rounded-none max-sm:bg-transparent max-sm:px-0 max-sm:pb-0 max-sm:shadow-none max-sm:group-hover:shadow-none sm:min-h-0 sm:flex-none sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
           <h3
-            className={`relative z-[1] w-full font-montserrat font-extrabold leading-normal text-[#414141] sm:mt-12 sm:px-0 sm:text-left sm:text-2xl sm:leading-tight lg:text-3xl ${TITLE_MIN_HEIGHT_MOBILE} ${titleSizeClass} ${COVER_COLLECTION_MOBILE_TITLE_ALIGN_CLASS} ${COVER_COLLECTION_MOBILE_TITLE_IMAGE_ALIGN_CLASS} ${COVER_COLLECTION_MOBILE_TITLE_OFFSET_CLASS} sm:min-h-0 sm:translate-y-3 ${titleClampClass}`}
+            className={`relative z-[1] w-full min-w-0 font-montserrat font-extrabold leading-normal text-[#414141] sm:mt-12 sm:px-0 sm:text-left sm:text-2xl sm:leading-tight lg:text-3xl ${TITLE_MIN_HEIGHT_MOBILE} ${COVER_COLLECTION_COMPACT_MOBILE_TITLE_MIN_HEIGHT_CLASS} ${titleSizeClass} ${COVER_COLLECTION_MOBILE_TITLE_ALIGN_CLASS} ${COVER_COLLECTION_MOBILE_TITLE_IMAGE_ALIGN_CLASS} ${COVER_COLLECTION_MOBILE_TITLE_OFFSET_CLASS} sm:min-h-0 sm:translate-y-3 ${titleClampClass}`}
           >
             {item.title}
           </h3>
