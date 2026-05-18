@@ -9,10 +9,8 @@ const COVER_COLLECTION_MOBILE_LINK_MARGIN_TOP_CLASS = 'max-sm:mt-1';
 const COVER_COLLECTION_MOBILE_IMAGE_OVERLAP_CLASS = 'max-sm:-translate-y-10 max-sm:top-0';
 /** White card panel height on mobile (was 15.625rem / 250px). */
 const COVER_COLLECTION_MOBILE_CARD_MIN_HEIGHT_CLASS = 'max-sm:min-h-[12.75rem]';
-/** Mobile: nudge white category panel left; image slot counter-offset keeps hero in place. */
+/** Mobile: nudge white category panel left; hero image stays centered on the grid cell. */
 const COVER_COLLECTION_MOBILE_CATEGORY_TILE_OFFSET_CLASS = 'max-sm:-translate-x-2';
-const COVER_COLLECTION_MOBILE_IMAGE_CATEGORY_TILE_COUNTER_CLASS =
-  'max-sm:-translate-x-[calc(50%-0.5rem)]';
 /**
  * Desktop: product hero transform (uniform scale avoids raster stretch).
  * Mobile: tuned for Figma Mob `4345:2059` image slot 156×220 (`max-sm:`).
@@ -38,8 +36,7 @@ const MOBILE_CARD_SHELL_CLASS = [
 
 /** Mobile: absolute image slot; desktop: existing flow layout. */
 const COVER_COLLECTION_IMAGE_OUTER_CLASS = [
-  'max-sm:absolute max-sm:left-1/2 max-sm:z-10 max-sm:flex max-sm:h-[13.75rem] max-sm:w-full max-sm:max-w-[88%] max-sm:items-end max-sm:justify-center max-sm:overflow-visible',
-  COVER_COLLECTION_MOBILE_IMAGE_CATEGORY_TILE_COUNTER_CLASS,
+  'max-sm:absolute max-sm:left-1/2 max-sm:z-10 max-sm:flex max-sm:h-[13.75rem] max-sm:w-full max-sm:max-w-[88%] max-sm:-translate-x-1/2 max-sm:items-end max-sm:justify-center max-sm:overflow-visible',
   COVER_COLLECTION_MOBILE_IMAGE_OVERLAP_CLASS,
   'relative z-10 mx-auto flex h-52 w-full shrink-0 items-end justify-center sm:z-auto sm:-mt-28 sm:mb-0 sm:h-[22rem] sm:max-w-none sm:translate-y-0',
   COVER_COLLECTION_IMAGE_SLOT_MAX_WIDTH_CLASS,
