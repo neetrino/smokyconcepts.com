@@ -18,6 +18,7 @@ interface CultureVotingCardProps {
   variantTone?: CultureVotingVariantTone;
   showEarlyAccess?: boolean;
   earlyAccessLabel?: string;
+  compactDesktopHero?: boolean;
 }
 
 type CultureVotingVariantTone = 'special' | 'classic' | 'atelier';
@@ -30,11 +31,19 @@ const VARIANT_TONE_CLASS_NAMES: Record<CultureVotingVariantTone, string> = {
 
 /** Mobile: white card fills grid column; desktop caps width below. */
 const CULTURE_MOBILE_CARD_WIDTH_CLASS_NAME = 'w-full max-sm:max-w-none';
+const CULTURE_DESKTOP_CARD_MAX_WIDTH_CLASS_NAME = 'sm:max-w-[13.25rem] lg:max-w-[13.125rem]';
 /** Matches `ProductsCatalogCard` / `UpcomingProductsSection` mobile card elevation. */
 const CULTURE_CARD_SHADOW_CLASS_NAME = 'shadow-[0_4px_22.5px_rgba(0,0,0,0.08)]';
 /** Extra bottom padding on narrow viewports — extends white card surface (1.625rem). */
 const CULTURE_MOBILE_CARD_SURFACE_CLASS_NAME = 'max-sm:pb-[1.625rem]';
-const CULTURE_DESKTOP_CARD_BOTTOM_PADDING_CLASS_NAME = 'sm:pb-6';
+const CULTURE_DESKTOP_CARD_BOTTOM_PADDING_CLASS_NAME = 'sm:pb-4';
+const CULTURE_DESKTOP_CARD_INSET_CLASS_NAME = 'sm:px-3.5 sm:pt-2.5';
+const CULTURE_DESKTOP_IMAGE_FRAME_CLASS_NAME = 'sm:-mt-[4rem] sm:mb-1 sm:h-[12.25rem]';
+const CULTURE_CARD_META_STACK_GAP_CLASS_NAME = 'gap-1 sm:gap-1.5';
+const CULTURE_DESKTOP_DETAILS_TOP_GAP_CLASS_NAME = 'sm:mt-1.5 sm:pt-0';
+const CULTURE_DESKTOP_EARLY_ACCESS_TOP_GAP_CLASS_NAME = 'sm:mt-2';
+const CULTURE_DESKTOP_FOOTER_ROW_CLASS_NAME =
+  'mt-2 hidden shrink-0 items-center justify-end sm:flex sm:min-h-[1.5rem]';
 /** Shifts hero + text inside the white card; article background position stays fixed. */
 const CULTURE_MOBILE_INNER_CONTENT_OFFSET_CLASS_NAME = 'max-sm:translate-y-4';
 /** Nudges hero toward image-switch dots on narrow viewports. */
@@ -43,12 +52,15 @@ const CULTURE_MOBILE_DETAILS_OFFSET_CLASS_NAME = 'max-sm:-mt-[3.25rem]';
 /** Dots, title, and category row — nudged down without moving the hero image. */
 const CULTURE_MOBILE_META_BLOCK_OFFSET_CLASS_NAME = 'max-sm:mt-2';
 const CULTURE_MOBILE_HERO_SCALE_CLASS_NAME = 'max-sm:scale-[1.32]';
+/** Desktop: nudge hero image only (frame slot stays fixed). */
+const CULTURE_DESKTOP_HERO_IMAGE_CLASS_NAME = 'sm:translate-y-12 sm:scale-[1.48]';
+const CULTURE_DESKTOP_COMPACT_HERO_IMAGE_CLASS_NAME = 'sm:translate-y-10 sm:scale-[1.32]';
 const CULTURE_DOTS_ROW_CLASS_NAME =
-  'mb-1 flex min-h-3 w-full items-center justify-center gap-1 sm:-mt-5 sm:mb-1 sm:gap-[0.3125rem]';
+  'mb-0 flex min-h-3 w-full items-center justify-center gap-1 max-sm:mb-1 sm:-mt-4 sm:gap-[0.3125rem]';
 const CULTURE_COMPACT_EARLY_ACCESS_BUTTON_CLASS_NAME =
   'inline-flex h-[1.375rem] min-w-[2.75rem] items-center justify-center rounded-[0.4375rem] border-2 border-[#dcc090] px-1.5 text-[0.6875rem] font-extrabold leading-tight text-[#dcc090] transition-colors hover:bg-[#dcc090]/10 sm:h-auto sm:min-h-0 sm:rounded-lg sm:px-2 sm:py-1 sm:text-sm';
-/** Inactive like control sits below the white card (Figma mobile). */
-const CULTURE_EXTERNAL_HEART_ROW_CLASS_NAME = 'mt-2 flex w-full justify-center sm:mt-2.5';
+/** Inactive like control sits below the white card (Figma mobile only). */
+const CULTURE_EXTERNAL_HEART_ROW_CLASS_NAME = 'mt-2 flex w-full justify-center max-sm:flex sm:hidden';
 
 interface CultureVotingImageDotsProps {
   itemId: string;
@@ -208,6 +220,7 @@ export function CultureVotingCard({
   variantTone = 'classic',
   showEarlyAccess = false,
   earlyAccessLabel = 'Early Access',
+  compactDesktopHero = false,
 }: CultureVotingCardProps) {
   const {
     activeImageIndex,
@@ -226,18 +239,21 @@ export function CultureVotingCard({
     pending,
     onToggleLike,
   };
+  const desktopHeroImageClassName = compactDesktopHero
+    ? CULTURE_DESKTOP_COMPACT_HERO_IMAGE_CLASS_NAME
+    : CULTURE_DESKTOP_HERO_IMAGE_CLASS_NAME;
 
   return (
     <div
-      className={`mx-auto flex min-h-0 w-full ${CULTURE_MOBILE_CARD_WIDTH_CLASS_NAME} flex-col items-center sm:max-w-[11.75rem] lg:max-w-[11.6rem]`}
+      className={`mx-auto flex min-h-0 w-full ${CULTURE_MOBILE_CARD_WIDTH_CLASS_NAME} ${CULTURE_DESKTOP_CARD_MAX_WIDTH_CLASS_NAME} flex-col items-center`}
     >
     <article
-      className={`relative z-0 flex min-h-0 w-full flex-col overflow-visible rounded-[1.125rem] bg-white px-2.5 pb-2.5 pt-2 ${CULTURE_MOBILE_CARD_SURFACE_CLASS_NAME} ${CULTURE_DESKTOP_CARD_BOTTOM_PADDING_CLASS_NAME} ${CULTURE_CARD_SHADOW_CLASS_NAME} hover:z-[20] focus-within:z-[20] sm:h-full sm:rounded-3xl sm:px-3 sm:pt-2.5`}
+      className={`relative z-0 flex min-h-0 w-full flex-col overflow-visible rounded-[1.125rem] bg-white px-2.5 pb-2.5 pt-2 ${CULTURE_MOBILE_CARD_SURFACE_CLASS_NAME} ${CULTURE_DESKTOP_CARD_BOTTOM_PADDING_CLASS_NAME} ${CULTURE_DESKTOP_CARD_INSET_CLASS_NAME} ${CULTURE_CARD_SHADOW_CLASS_NAME} hover:z-[20] focus-within:z-[20] sm:h-auto sm:rounded-3xl`}
     >
       <div
         className={`flex min-h-0 flex-1 flex-col ${CULTURE_MOBILE_INNER_CONTENT_OFFSET_CLASS_NAME} sm:translate-y-0`}
       >
-      <div className="relative z-10 mb-2 flex h-[14.75rem] shrink-0 items-end justify-center overflow-visible -mt-[5.125rem] sm:-mt-[4rem] sm:mb-1.5 sm:h-[14rem]">
+      <div className={`relative z-10 mb-2 flex h-[14.75rem] shrink-0 items-end justify-center overflow-visible -mt-[5.125rem] ${CULTURE_DESKTOP_IMAGE_FRAME_CLASS_NAME}`}>
         <div
           className={`relative h-[13.75rem] w-full ${CULTURE_MOBILE_IMAGE_FRAME_CLASS_NAME} sm:h-full`}
         >
@@ -246,7 +262,7 @@ export function CultureVotingCard({
               key={`${id}-${activeImageIndex}-${activeSrc}`}
               src={activeSrc}
               alt={title}
-              className={`h-full w-full origin-bottom object-contain ${CULTURE_MOBILE_HERO_SCALE_CLASS_NAME} sm:translate-y-3 sm:scale-[1.44]`}
+              className={`h-full w-full origin-bottom object-contain ${CULTURE_MOBILE_HERO_SCALE_CLASS_NAME} ${desktopHeroImageClassName}`}
               loading="lazy"
               onError={onHeroImageError}
             />
@@ -259,9 +275,11 @@ export function CultureVotingCard({
       </div>
 
       <div
-        className={`relative z-20 -mt-[2.75rem] flex min-h-0 flex-1 flex-col justify-between sm:mt-2 sm:pt-0 ${CULTURE_MOBILE_DETAILS_OFFSET_CLASS_NAME}`}
+        className={`relative z-20 -mt-[2.75rem] flex min-h-0 flex-1 flex-col justify-between ${CULTURE_DESKTOP_DETAILS_TOP_GAP_CLASS_NAME} ${CULTURE_MOBILE_DETAILS_OFFSET_CLASS_NAME}`}
       >
-        <div className={`min-w-0 ${CULTURE_MOBILE_META_BLOCK_OFFSET_CLASS_NAME}`}>
+        <div
+          className={`flex min-w-0 flex-col ${CULTURE_CARD_META_STACK_GAP_CLASS_NAME} ${CULTURE_MOBILE_META_BLOCK_OFFSET_CLASS_NAME}`}
+        >
           <CultureVotingImageDots
             itemId={id}
             visibleDotCount={visibleDotCount}
@@ -274,27 +292,25 @@ export function CultureVotingCard({
           </h3>
 
           {sizeLabel || variantLabel ? (
-            <div
-              className="mt-0.5 flex items-center gap-1"
-            >
-                {sizeLabel ? (
-                  <span className="inline-flex items-center text-[0.5625rem] font-semibold leading-tight text-[#122a26] sm:text-[10px] sm:font-medium sm:text-[#9d9d9d]">
-                    {sizeLabel}
-                  </span>
-                ) : null}
-                {variantLabel ? (
-                  <span
-                    className={`rounded-[0.3125rem] px-[0.3125rem] py-px text-[0.5625rem] font-medium leading-tight text-white sm:rounded-md sm:px-1.5 sm:py-0.5 sm:text-[9px] sm:font-bold ${variantToneClassName}`}
-                  >
-                    {variantLabel}
-                  </span>
-                ) : null}
+            <div className="mt-0.5 flex items-center gap-1">
+              {sizeLabel ? (
+                <span className="inline-flex items-center text-[0.5625rem] font-semibold leading-tight text-[#122a26] sm:text-[10px] sm:font-medium sm:text-[#9d9d9d]">
+                  {sizeLabel}
+                </span>
+              ) : null}
+              {variantLabel ? (
+                <span
+                  className={`rounded-[0.3125rem] px-[0.3125rem] py-px text-[0.5625rem] font-medium leading-tight text-white sm:rounded-md sm:px-1.5 sm:py-0.5 sm:text-[9px] sm:font-bold ${variantToneClassName}`}
+                >
+                  {variantLabel}
+                </span>
+              ) : null}
             </div>
           ) : null}
         </div>
 
         {showEarlyAccess ? (
-          <div className="mt-2 flex shrink-0 items-center justify-between gap-2 sm:mt-3">
+          <div className={`mt-2 flex shrink-0 items-center justify-between gap-2 ${CULTURE_DESKTOP_EARLY_ACCESS_TOP_GAP_CLASS_NAME}`}>
             <button
               type="button"
               onClick={() => onEarlyAccess?.(id)}
@@ -306,9 +322,15 @@ export function CultureVotingCard({
             >
               {earlyAccessLabel}
             </button>
-            {likedByCurrentUser ? <CultureVotingLikeButton {...likeButtonProps} /> : null}
+            <div className={likedByCurrentUser ? 'flex' : 'hidden sm:flex'}>
+              <CultureVotingLikeButton {...likeButtonProps} />
+            </div>
           </div>
-        ) : null}
+        ) : (
+          <div className={CULTURE_DESKTOP_FOOTER_ROW_CLASS_NAME}>
+            <CultureVotingLikeButton {...likeButtonProps} />
+          </div>
+        )}
       </div>
       </div>
     </article>

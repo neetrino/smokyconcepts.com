@@ -73,7 +73,7 @@ const CULTURE_MOBILE_BOTTOM_CARD_WRAPPER_CLASS_NAME =
 /** Extra space before the bottom-row card so hero overflow does not overlap the row above. */
 const CULTURE_MOBILE_BOTTOM_ROW_CARD_CLASS_NAME = 'max-sm:mt-10';
 const CULTURE_MOBILE_GRID_CLASS_NAME =
-  'grid-cols-2 items-stretch justify-items-center gap-x-4 gap-y-7 max-sm:justify-items-stretch max-sm:gap-x-5 max-sm:gap-y-12 sm:grid-cols-3 sm:justify-items-center sm:gap-x-3 sm:gap-y-7';
+  'grid-cols-2 items-stretch justify-items-center gap-x-4 gap-y-7 max-sm:justify-items-stretch max-sm:gap-x-5 max-sm:gap-y-12 sm:grid-cols-3 sm:justify-items-center sm:gap-x-5 sm:gap-y-7';
 /**
  * Full viewport bleed on mobile — escapes home `px-5` on both left and right
  * (`overflow-x-hidden` clips `-mx` alone; `w-screen` + centering fixes the right edge too).
@@ -81,7 +81,7 @@ const CULTURE_MOBILE_GRID_CLASS_NAME =
 const CULTURE_MOBILE_BLEED_WRAPPER_CLASS_NAME =
   'flex w-full flex-col gap-10 max-sm:relative max-sm:left-1/2 max-sm:w-screen max-sm:-translate-x-1/2 max-sm:px-4 sm:static sm:left-auto sm:w-full sm:translate-x-0';
 const CULTURE_MOBILE_GRID_CONTAINER_CLASS_NAME =
-  'mx-auto w-full max-w-[30rem] pt-[0.5rem] max-sm:pt-[5.125rem] sm:max-w-[43rem] sm:pt-3';
+  'mx-auto w-full max-w-[30rem] pt-[0.5rem] max-sm:pt-[5.125rem] sm:max-w-[46rem] sm:pt-3';
 const CULTURE_MOBILE_TITLE_CONTAINER_CLASS_NAME = 'w-full max-w-[52rem] pb-1 text-center sm:pb-2';
 
 function getCultureVotingDisplayRank(item: VotingItem): number {
@@ -369,7 +369,7 @@ export function CultureVotingSection() {
       </div>
       <div className={CULTURE_MOBILE_GRID_CONTAINER_CLASS_NAME}>
         <div
-          className={`mx-auto grid lg:max-w-[36.5rem] lg:[grid-template-columns:repeat(3,minmax(0,1fr))] ${CULTURE_MOBILE_GRID_CLASS_NAME}`}
+          className={`mx-auto grid lg:max-w-[44rem] lg:[grid-template-columns:repeat(3,minmax(0,1fr))] ${CULTURE_MOBILE_GRID_CLASS_NAME}`}
         >
           {displayItems.map((item, index) => {
             const sizeLabel =
@@ -398,6 +398,7 @@ export function CultureVotingSection() {
                 } ${index % 3 === 2 ? 'col-span-2 justify-center sm:col-span-1' : ''}`}
               >
                 <CultureVotingCard
+                  compactDesktopHero={index === 1}
                   id={item.id}
                   title={item.title}
                   images={
