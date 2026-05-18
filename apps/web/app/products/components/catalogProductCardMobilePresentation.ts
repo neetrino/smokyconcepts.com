@@ -34,6 +34,9 @@ const CATALOG_SMALL_SCALE_POSITIONS = new Set([2, 5]);
 /** Mobile strip gap — matches home upcoming / trending (`gap-x-4`). */
 export const CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME = 'max-sm:gap-4';
 
+/** `/products` horizontal strip — tighter spacing between cards from `sm` up. */
+export const CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME = 'gap-4 sm:gap-5 lg:gap-6';
+
 /** Top padding for overlapping product heroes in horizontal strips (mobile). */
 export const CATALOG_PRODUCT_CARD_MOBILE_STRIP_TOP_PADDING_CLASS_NAME = 'max-sm:pt-[7.25rem]';
 
@@ -56,6 +59,10 @@ export const CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME = '!h-auto w-full ma
 
 /** Nudges hero image toward image-switch dots on narrow viewports only. */
 export const CATALOG_PRODUCT_CARD_MOBILE_IMAGE_FRAME_CLASS_NAME = 'max-sm:translate-y-5';
+
+/** `/products` — hero image sits slightly lower than home strip cards. */
+export const CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME =
+  'translate-y-4 max-sm:translate-y-9 sm:translate-y-5';
 
 /**
  * Alternating hero scale boost used on home upcoming and catalog mobile cards.

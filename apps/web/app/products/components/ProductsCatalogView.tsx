@@ -13,11 +13,12 @@ import { ProductsCatalogMobileFilterSheet } from './ProductsCatalogMobileFilterS
 import { ProductsCatalogCard } from './ProductsCatalogCard';
 import {
   CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
-  CATALOG_PRODUCT_CARD_MOBILE_IMAGE_FRAME_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_TOP_PADDING_CLASS_NAME,
   CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE,
   CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS,
   getCatalogProductCardImageScaleBoost,
@@ -895,7 +896,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
                       className={
                         isCategoryFilteredView
                           ? 'grid grid-cols-2 items-start gap-x-4 gap-y-24 max-sm:justify-items-center max-sm:gap-y-16 md:grid-cols-3 md:gap-x-6 md:gap-y-24 lg:grid-cols-6 lg:gap-x-8 lg:gap-y-28'
-                          : `flex min-w-max gap-6 lg:gap-10 max-lg:pr-4 ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME}`
+                          : `flex min-w-max max-lg:pr-4 ${CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME}`
                       }
                     >
                       {(isCategoryFilteredView ? section.items : section.items).map((product, index) => {
@@ -929,7 +930,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
                             categoryLabel={getCategoryLabel(product, section.title)}
                             imageNudgeDown={shouldNudgeCatalogProductImage(index)}
                             imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
-                            imageFrameClassName={CATALOG_PRODUCT_CARD_MOBILE_IMAGE_FRAME_CLASS_NAME}
+                            imageFrameClassName={CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME}
                             className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} ${
                               isCategoryFilteredView
                                 ? '!w-full !max-w-none !min-w-0 !shrink'

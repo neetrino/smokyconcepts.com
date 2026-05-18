@@ -71,6 +71,8 @@ interface ProductsCatalogCardProps {
   catalogStripMobilePeek?: boolean;
   /** Products catalog: slightly narrower card + shorter image stack (more grid gap from parent). */
   slimCatalogGrid?: boolean;
+  /** `/products` — slightly less vertical gap between hero image and details. */
+  productsCatalogPage?: boolean;
 }
 
 /**
@@ -95,6 +97,7 @@ export function ProductsCatalogCard({
   eagerProductImage = false,
   catalogStripMobilePeek = false,
   slimCatalogGrid = false,
+  productsCatalogPage = false,
 }: ProductsCatalogCardProps) {
   const displayCurrency = useCurrency();
   const isAmdCurrency = displayCurrency === 'AMD';
@@ -219,12 +222,21 @@ export function ProductsCatalogCard({
       ? slimCatalogGrid
         ? '-mt-[4.125rem] sm:-mt-[5rem] md:-mt-[3.75rem] lg:-mt-[4.5rem]'
         : '-mt-[4.125rem] sm:-mt-[5rem]'
-      : slimCatalogGrid
-        ? '-mt-[2.75rem] sm:-mt-[3.25rem] md:-mt-[2.5rem] lg:-mt-[3rem]'
-        : '-mt-[2.75rem] sm:-mt-[3.25rem]'
+      : productsCatalogPage
+        ? slimCatalogGrid
+          ? '-mt-[3.25rem] sm:-mt-[3.75rem] md:-mt-[3rem] lg:-mt-[3.5rem]'
+          : '-mt-[3.25rem] sm:-mt-[3.75rem]'
+        : slimCatalogGrid
+          ? '-mt-[2.75rem] sm:-mt-[3.25rem] md:-mt-[2.5rem] lg:-mt-[3rem]'
+          : '-mt-[2.75rem] sm:-mt-[3.25rem]'
     : '-mt-4';
+  const imageWrapperBottomMarginClassName = compactLayout && productsCatalogPage ? 'mb-1' : 'mb-2';
   const dotsGapClassName = compactLayout ? 'gap-1' : 'gap-[0.3125rem]';
-  const dotsMarginClassName = compactLayout ? 'mb-1' : 'mb-3';
+  const dotsMarginClassName = compactLayout
+    ? productsCatalogPage
+      ? 'mb-0.5'
+      : 'mb-1'
+    : 'mb-3';
   /** Keeps strip / multi-dot rows same block height so flex row stretch aligns all catalog cards. */
   const dotsRowLayoutClassName = `flex min-h-3 items-center ${dotsGapClassName} ${dotsMarginClassName}`;
   const sizeBadgeClassName = compactLayout
@@ -259,7 +271,7 @@ export function ProductsCatalogCard({
       {...(catalogStripMobilePeek ? { 'data-catalog-strip-card': '' } : {})}
     >
       <div
-        className={`relative z-10 mb-2 flex shrink-0 items-end justify-center ${imagePullUpClassName} ${imageWrapperClassName} overflow-visible`.trim()}
+        className={`relative z-10 ${imageWrapperBottomMarginClassName} flex shrink-0 items-end justify-center ${imagePullUpClassName} ${imageWrapperClassName} overflow-visible`.trim()}
       >
         <div
           className={`relative ${imageInnerClassName} transition-transform duration-300 ease-out md:group-hover:-translate-y-1.5 md:group-hover:scale-[1.045] ${imageFrameClassName ?? ''}`.trim()}
