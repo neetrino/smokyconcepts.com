@@ -2,6 +2,7 @@
 
 import { OrderCustomizeBlock } from '@/components/orders/OrderCustomizeBlock';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { resolveShippingCountryLabel } from '../../../../lib/shipping-address-display';
 import { Card } from '@shop/ui';
 import type { OrderDetails } from '../useOrders';
 
@@ -62,6 +63,7 @@ async function exportCustomizeImage(imageUrl: string, productTitle: string): Pro
 export function OrderDetailsAddresses({ orderDetails }: OrderDetailsAddressesProps) {
   const { t } = useTranslation();
   const customSizeDescription = getCustomSizeDescription(orderDetails.notes);
+  const shippingCountry = resolveShippingCountryLabel(orderDetails.shippingAddress);
 
   const itemsWithCustomize = orderDetails.items.filter((item) => {
     const hasCustomizeText = Boolean(item.customizeHtml?.trim() || item.customizePlain?.trim());
@@ -90,6 +92,11 @@ export function OrderDetailsAddresses({ orderDetails }: OrderDetailsAddressesPro
               <span className="font-medium">{t('admin.orders.orderDetails.shippingMethod')}</span>{' '}
               {t('checkout.shipping.delivery')}
             </div>
+            {shippingCountry && (
+              <div>
+                <span className="font-medium">{t('checkout.form.country')}:</span> {shippingCountry}
+              </div>
+            )}
             {orderDetails.shippingAddress.state && (
               <div>
                 <span className="font-medium">{t('checkout.form.region')}:</span>{' '}

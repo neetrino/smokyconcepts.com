@@ -5,6 +5,7 @@ import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { clearGuestCart } from '../checkoutUtils';
 import type { CheckoutFormData, Cart, CartItem } from '../types';
+import { DEFAULT_SHIPPING_COUNTRY } from '../../../lib/shipping-address-display';
 import type { DeliveryLocationOption } from './useDeliveryLocations';
 
 interface UseOrderSubmissionProps {
@@ -23,6 +24,16 @@ function regionLabelForOrder(value: string, locations: DeliveryLocationOption[])
   }
   const loc = locations.find((l) => l.id === trimmed);
   return loc ? loc.city.trim() : trimmed;
+}
+
+function countryForOrder(value: string, locations: DeliveryLocationOption[]): string {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return DEFAULT_SHIPPING_COUNTRY;
+  }
+  const loc = locations.find((l) => l.id === trimmed);
+  const country = loc?.country?.trim();
+  return country && country.length > 0 ? country : DEFAULT_SHIPPING_COUNTRY;
 }
 
 export function useOrderSubmission({
@@ -96,6 +107,7 @@ export function useOrderSubmission({
           ? {
               address: data.shippingAddress.trim(),
               state: regionLabelForOrder(data.shippingRegion, deliveryLocations),
+              country: countryForOrder(data.shippingRegion, deliveryLocations),
             }
           : undefined;
 

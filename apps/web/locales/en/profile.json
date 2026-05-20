@@ -153,6 +153,7 @@
     "pickup": "Pickup",
     "notSpecified": "Not Specified",
     "deliveryAddress": "Delivery Address",
+    "country": "Country",
     "region": "Region (marz)",
     "phone": "Phone",
     "color": "Color",

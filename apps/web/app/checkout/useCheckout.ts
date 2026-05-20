@@ -71,6 +71,7 @@ export function useCheckout() {
   );
 
   const shippingRegionSummary = activeDeliveryLocation?.city ?? shippingRegion ?? '';
+  const shippingCountry = activeDeliveryLocation?.country;
 
   const { cart, loading, fetchCart } = useCart();
 
@@ -252,6 +253,7 @@ export function useCheckout() {
     shippingMethod,
     shippingRegion,
     shippingRegionSummary,
+    shippingCountry,
     paymentMethods,
     orderSummary,
     couponDraft,

@@ -2,6 +2,7 @@ import { Button, Card } from '@shop/ui';
 import { OrderCustomizeBlock } from '@/components/orders/OrderCustomizeBlock';
 import { useCurrency } from '../../components/hooks/useCurrency';
 import { amountToUsd, convertPrice, formatPriceInCurrency, formatStoredMoney } from '../../lib/currency';
+import { resolveShippingCountryLabel } from '../../lib/shipping-address-display';
 import { getStatusColor, getPaymentStatusColor, getColorValue } from './utils';
 import type { OrderDetails } from './types';
 
@@ -45,6 +46,7 @@ export function OrderDetailsModal({
     displayCurrency === 'AMD'
       ? collectionPriceUsd * LEGACY_COLLECTION_AMD_PER_USD
       : convertPrice(collectionPriceUsd, 'USD', displayCurrency);
+  const shippingCountry = resolveShippingCountryLabel(selectedOrder.shippingAddress);
 
   const getAttributeLabel = (key: string): string => {
     const attributeType = getAttributeType(key);
@@ -345,6 +347,11 @@ export function OrderDetailsModal({
                             {selectedOrder.shippingAddress.firstName && selectedOrder.shippingAddress.lastName && (
                               <p>{selectedOrder.shippingAddress.firstName} {selectedOrder.shippingAddress.lastName}</p>
                             )}
+                            {shippingCountry && (
+                              <p>
+                                {t('profile.orderDetails.country')}: {shippingCountry}
+                              </p>
+                            )}
                             {selectedOrder.shippingAddress.state && (
                               <p>
                                 {t('profile.orderDetails.region')}: {selectedOrder.shippingAddress.state}
@@ -364,7 +371,6 @@ export function OrderDetailsModal({
                               </p>
                             )}
                             {selectedOrder.shippingAddress.addressLine2 && <p>{selectedOrder.shippingAddress.addressLine2}</p>}
-                            {selectedOrder.shippingAddress.countryCode && <p>{selectedOrder.shippingAddress.countryCode}</p>}
                             {selectedOrder.shippingAddress.phone && <p className="mt-2">{t('profile.orderDetails.phone')}: {selectedOrder.shippingAddress.phone}</p>}
                           </div>
                         </div>

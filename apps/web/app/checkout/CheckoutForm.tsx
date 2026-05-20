@@ -4,6 +4,7 @@ import { Card, Input } from '@shop/ui';
 import { UseFormRegister, UseFormSetValue, FieldErrors } from 'react-hook-form';
 import { useTranslation } from '../../lib/i18n-client';
 import { DeliveryRegionSelect } from './components/DeliveryRegionSelect';
+import { ShippingCountryField } from './components/ShippingCountryField';
 import { CheckoutFormData } from './types';
 import type { DeliveryLocationOption } from './hooks/useDeliveryLocations';
 
@@ -25,6 +26,7 @@ interface CheckoutFormProps {
   setError: React.Dispatch<React.SetStateAction<string | null>>;
   deliveryLocations: DeliveryLocationOption[];
   loadingDeliveryLocations: boolean;
+  shippingCountry?: string;
 }
 
 export function CheckoutForm({
@@ -40,6 +42,7 @@ export function CheckoutForm({
   setError,
   deliveryLocations,
   loadingDeliveryLocations,
+  shippingCountry,
 }: CheckoutFormProps) {
   const { t } = useTranslation();
 
@@ -101,35 +104,36 @@ export function CheckoutForm({
               </p>
             </div>
           ) : null}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Input
-                label={t('checkout.form.address')}
-                type="text"
-                placeholder={t('checkout.placeholders.address')}
-                {...register('shippingAddress', {
-                  onChange: () => {
-                    if (error && error.includes('shipping address')) {
-                      setError(null);
-                    }
-                  },
-                })}
-                error={errors.shippingAddress?.message}
-                disabled={isSubmitting}
-              />
-            </div>
-            <DeliveryRegionSelect
-              register={register}
-              error={errors.shippingRegion?.message}
+          <div className="space-y-4">
+            <Input
+              label={t('checkout.form.address')}
+              type="text"
+              placeholder={t('checkout.placeholders.address')}
+              {...register('shippingAddress', {
+                onChange: () => {
+                  if (error && error.includes('shipping address')) {
+                    setError(null);
+                  }
+                },
+              })}
+              error={errors.shippingAddress?.message}
               disabled={isSubmitting}
-              locations={deliveryLocations}
-              loading={loadingDeliveryLocations}
-              onAfterChange={() => {
-                if (error && error.includes('shipping address')) {
-                  setError(null);
-                }
-              }}
             />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <DeliveryRegionSelect
+                register={register}
+                error={errors.shippingRegion?.message}
+                disabled={isSubmitting}
+                locations={deliveryLocations}
+                loading={loadingDeliveryLocations}
+                onAfterChange={() => {
+                  if (error && error.includes('shipping address')) {
+                    setError(null);
+                  }
+                }}
+              />
+              <ShippingCountryField country={shippingCountry} />
+            </div>
           </div>
         </Card>
 

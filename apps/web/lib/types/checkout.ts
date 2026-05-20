@@ -33,11 +33,13 @@ export interface CheckoutData {
   shippingAddress?: {
     firstName?: string;
     lastName?: string;
+    address?: string;
     addressLine1?: string;
     addressLine2?: string;
     city?: string;
     state?: string;
     postalCode?: string;
+    country?: string;
     countryCode?: string;
     phone?: string;
   };

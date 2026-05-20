@@ -36,6 +36,7 @@ export default function CheckoutPage() {
     paymentMethod,
     shippingMethod,
     shippingRegionSummary,
+    shippingCountry,
     deliveryLocations,
     loadingDeliveryLocations,
     paymentMethods,
@@ -157,6 +158,7 @@ export default function CheckoutPage() {
               setError={setError}
               deliveryLocations={deliveryLocations}
               loadingDeliveryLocations={loadingDeliveryLocations}
+              shippingCountry={shippingCountry}
             />
           </div>
 
@@ -195,6 +197,7 @@ export default function CheckoutPage() {
         shippingMethod={shippingMethod}
         paymentMethod={paymentMethod}
         shippingRegion={shippingRegionSummary}
+        shippingCountry={shippingCountry}
         deliveryLocations={deliveryLocations}
         loadingDeliveryLocations={loadingDeliveryLocations}
         cart={cart}

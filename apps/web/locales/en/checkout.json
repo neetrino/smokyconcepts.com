@@ -12,6 +12,7 @@
     "phone": "Phone",
     "address": "Address",
     "region": "Region",
+    "country": "Country",
     "city": "City",
     "postalCode": "Postal Code",
     "phoneNumber": "Phone Number",

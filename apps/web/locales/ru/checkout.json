@@ -12,6 +12,7 @@
     "phone": "Телефон",
     "address": "Адрес",
     "region": "Область",
+    "country": "Страна",
     "city": "Город",
     "postalCode": "Почтовый индекс",
     "phoneNumber": "Номер телефона",
