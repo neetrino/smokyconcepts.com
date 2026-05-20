@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { filterDisplayableVariantOptions } from "@/lib/default-pricing-variant";
 import { mergeSizeCatalogIntoVariantOptions } from "@/lib/orders/merge-size-catalog-into-variant-options";
 import { adminInputAmdToUsd } from "@/lib/currency";
 
@@ -105,7 +106,9 @@ export function formatOrderForList(order: {
     const previews: OrderListVariantPreview[] = [];
 
     for (const item of items) {
-      const variantOptionsBase = getVariantOptions(item.variant?.attributes).map(formatVariantOption);
+      const variantOptionsBase = filterDisplayableVariantOptions(
+        getVariantOptions(item.variant?.attributes).map(formatVariantOption)
+      );
       const variantOptions = mergeSizeCatalogIntoVariantOptions(
         variantOptionsBase,
         item.sizeCatalogTitle,
@@ -163,7 +166,9 @@ export function formatOrderForList(order: {
   ): string | null => {
     const labels = items
       .map((item) => {
-        const variantOptionsBase = getVariantOptions(item.variant?.attributes).map(formatVariantOption);
+        const variantOptionsBase = filterDisplayableVariantOptions(
+          getVariantOptions(item.variant?.attributes).map(formatVariantOption)
+        );
         const variantOptions = mergeSizeCatalogIntoVariantOptions(
           variantOptionsBase,
           item.sizeCatalogTitle,
@@ -313,7 +318,9 @@ export function formatOrderItem(item: {
   const total = item.total ?? 0;
   const unitPrice = quantity > 0 ? Number((total / quantity).toFixed(2)) : total;
 
-  const variantOptionsBase = getVariantOptions(variant?.attributes).map(formatVariantOption);
+  const variantOptionsBase = filterDisplayableVariantOptions(
+    getVariantOptions(variant?.attributes).map(formatVariantOption)
+  );
   const variantOptions = mergeSizeCatalogIntoVariantOptions(
     variantOptionsBase,
     item.sizeCatalogTitle,

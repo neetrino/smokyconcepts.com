@@ -2,6 +2,26 @@ const DEFAULT_PRICING_ATTRIBUTE_KEY = "__default_pricing__";
 const SIZE_CATALOG_CATEGORY_ID_ATTRIBUTE_KEY = "__size_catalog_category_id__";
 const SIZE_CATALOG_CATEGORY_TITLE_ATTRIBUTE_KEY = "__size_catalog_category_title__";
 
+const INTERNAL_VARIANT_ATTRIBUTE_KEYS = new Set<string>([
+  DEFAULT_PRICING_ATTRIBUTE_KEY,
+  SIZE_CATALOG_CATEGORY_ID_ATTRIBUTE_KEY,
+  SIZE_CATALOG_CATEGORY_TITLE_ATTRIBUTE_KEY,
+]);
+
+/** Keys stored on variants for pricing/catalog plumbing — not shown as color/size in orders. */
+export function isInternalVariantAttributeKey(key: string | null | undefined): boolean {
+  if (!key) {
+    return false;
+  }
+  return INTERNAL_VARIANT_ATTRIBUTE_KEYS.has(key.trim());
+}
+
+export function filterDisplayableVariantOptions<T extends { attributeKey?: string | null }>(
+  options: T[]
+): T[] {
+  return options.filter((option) => !isInternalVariantAttributeKey(option.attributeKey));
+}
+
 interface VariantAttributesEntry {
   attributeKey?: unknown;
 }

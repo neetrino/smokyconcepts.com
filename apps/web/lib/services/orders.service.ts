@@ -1,6 +1,7 @@
 import { db } from "@white-shop/db";
 import { Prisma } from "@prisma/client";
 import { adminInputAmdToUsd } from "@/lib/currency";
+import { filterDisplayableVariantOptions } from "@/lib/default-pricing-variant";
 import type { CheckoutData } from "../types/checkout";
 import {
   mergeSizeCatalogIntoVariantOptions,
@@ -1052,7 +1053,7 @@ class OrdersService {
         });
 
         const variantOptions = mergeSizeCatalogIntoVariantOptions(
-          variantOptionsBase,
+          filterDisplayableVariantOptions(variantOptionsBase),
           item.sizeCatalogTitle,
           item.sizeCatalogVersion,
           item.sizeCatalogImageUrl
