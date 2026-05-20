@@ -60,9 +60,42 @@ export const CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME = '!h-auto w-full ma
 /** Nudges hero image toward image-switch dots on narrow viewports only. */
 export const CATALOG_PRODUCT_CARD_MOBILE_IMAGE_FRAME_CLASS_NAME = 'max-sm:translate-y-5';
 
-/** `/products` — hero image sits slightly lower than home strip cards. */
+/** Mobile: pull hero up. Desktop: lifted strip layout. */
 export const CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME =
-  'translate-y-4 max-sm:translate-y-9 sm:translate-y-5';
+  'max-sm:-translate-y-2 sm:translate-y-0 sm:-translate-y-1 lg:-translate-y-2';
+
+/** Cap inline hero scale on catalog strip below `sm` (avoids spill onto pagination). */
+export const CATALOG_PRODUCTS_PAGE_MOBILE_HERO_MAX_SCALE = 1.08;
+
+/** Mobile: taller white body behind hero. Desktop: extends upward behind mid-hero. */
+export const CATALOG_PRODUCTS_PAGE_CARD_TOP_PADDING_CLASS_NAME =
+  'max-sm:pt-[2.75rem] sm:pt-[3.5rem] lg:pt-[4rem]';
+
+/** Mobile catalog strip — compact details stack (no forced min-height gap). */
+export const CATALOG_PRODUCTS_PAGE_CARD_MOBILE_DETAILS_LAYOUT_CLASS_NAME =
+  'max-sm:justify-start';
+
+/** Mobile: strong pull-up so scaled hero does not sit on pagination dots. */
+export const CATALOG_PRODUCTS_PAGE_CARD_HERO_PULL_UP_CLASS_NAME =
+  'max-sm:-mt-[7rem] sm:-mt-[5.75rem] lg:-mt-[6.25rem]';
+
+/** Mobile: tuck copy under hero without a large dead zone before price row. */
+export const CATALOG_PRODUCTS_PAGE_CARD_DETAILS_OFFSET_CLASS_NAME =
+  'max-sm:-mt-[2.75rem] sm:-mt-[4.25rem] lg:-mt-[4.5rem]';
+
+/** Mobile pagination row — all segments on one line; width shrinks as page count grows. */
+export const CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME =
+  'flex w-full max-w-[calc(100vw-2rem)] flex-nowrap items-center gap-1.5';
+
+/** `/products` horizontal strip — scroll container (section rows + PDP related). */
+export const CATALOG_PRODUCTS_PAGE_STRIP_SCROLL_CLASS_NAME = `scrollbar-hide mt-4 overflow-x-auto max-sm:overflow-y-clip overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory max-sm:pb-14 pb-10 pt-[8rem] sm:pb-12 sm:pt-[8.5rem] lg:pb-14 lg:pt-[9rem] ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_TOP_PADDING_CLASS_NAME}`;
+
+/** Pagination row spacing below catalog / related strips. */
+export const CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME =
+  'relative z-20 mt-4 flex justify-center px-4 max-sm:mt-10 sm:mt-6 sm:mt-8';
+
+/** `/products` horizontal strip — card flex row. */
+export const CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME = `flex min-w-max max-lg:pr-4 ${CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME}`;
 
 /**
  * Alternating hero scale boost used on home upcoming and catalog mobile cards.

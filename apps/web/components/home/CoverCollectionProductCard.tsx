@@ -11,6 +11,12 @@ const COVER_COLLECTION_MOBILE_IMAGE_OVERLAP_CLASS =
   'max-sm:-top-2 max-sm:-translate-y-12 max-[360px]:-top-1 max-[360px]:-translate-y-10';
 /** Mobile: nudge category title down inside the white panel. */
 const COVER_COLLECTION_MOBILE_TITLE_OFFSET_CLASS = 'max-sm:translate-y-4';
+/** Desktop: card height follows content so the grid row does not add empty space below the title. */
+const COVER_COLLECTION_DESKTOP_CARD_HEIGHT_CLASS = 'sm:h-auto';
+/** Desktop: white card padding below category title. */
+const COVER_COLLECTION_DESKTOP_CARD_PADDING_BOTTOM_CLASS = 'sm:pb-4';
+/** Desktop: slight title nudge; keep minimal to avoid empty band under label. */
+const COVER_COLLECTION_DESKTOP_TITLE_OFFSET_CLASS = 'sm:translate-y-1';
 /** Mobile: title aligns to block start (not centered). */
 const COVER_COLLECTION_MOBILE_TITLE_ALIGN_CLASS = 'max-sm:text-left max-sm:text-start';
 /** Mobile: inset follows the fluid centered image band. */
@@ -81,7 +87,7 @@ export function CoverCollectionProductCard({ item }: CoverCollectionProductCardP
   return (
     <Link
       href={href}
-      className={`group relative z-0 mt-4 flex h-full min-h-0 w-full min-w-0 flex-col overflow-visible pt-0 transition-shadow duration-200 hover:z-10 focus-visible:z-10 focus-within:z-10 max-sm:max-w-none ${COVER_COLLECTION_MOBILE_LINK_MARGIN_TOP_CLASS} ${MOBILE_LINK_TOP_PADDING_CLASS} sm:mt-8 sm:rounded-[2rem] sm:bg-white sm:px-6 sm:pb-8 sm:shadow-[0_6px_24px_rgba(18,42,38,0.05)] sm:hover:shadow-[0_12px_32px_rgba(18,42,38,0.12)]`}
+      className={`group relative z-0 mt-4 flex h-full min-h-0 w-full min-w-0 flex-col overflow-visible pt-0 transition-shadow duration-200 hover:z-10 focus-visible:z-10 focus-within:z-10 max-sm:max-w-none ${COVER_COLLECTION_MOBILE_LINK_MARGIN_TOP_CLASS} ${MOBILE_LINK_TOP_PADDING_CLASS} ${COVER_COLLECTION_DESKTOP_CARD_HEIGHT_CLASS} sm:mt-8 sm:rounded-[2rem] sm:bg-white sm:px-6 ${COVER_COLLECTION_DESKTOP_CARD_PADDING_BOTTOM_CLASS} sm:shadow-[0_6px_24px_rgba(18,42,38,0.05)] sm:hover:shadow-[0_12px_32px_rgba(18,42,38,0.12)]`}
     >
       <div className={MOBILE_CARD_SHELL_CLASS}>
         <div className={COVER_COLLECTION_IMAGE_OUTER_CLASS}>
@@ -106,7 +112,7 @@ export function CoverCollectionProductCard({ item }: CoverCollectionProductCardP
         </div>
         <div className="relative z-0 flex flex-1 flex-col justify-end rounded-[1rem] shadow-[0_8px_28px_rgba(18,42,38,0.12)] transition-shadow duration-200 max-sm:min-h-0 max-sm:rounded-none max-sm:bg-transparent max-sm:px-0 max-sm:pb-0 max-sm:shadow-none max-sm:group-hover:shadow-none sm:min-h-0 sm:flex-none sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
           <h3
-            className={`relative z-[1] w-full min-w-0 font-montserrat font-extrabold leading-normal text-[#414141] sm:mt-12 sm:px-0 sm:text-left sm:text-2xl sm:leading-tight lg:text-3xl ${TITLE_MIN_HEIGHT_MOBILE} ${COVER_COLLECTION_COMPACT_MOBILE_TITLE_MIN_HEIGHT_CLASS} ${titleSizeClass} ${COVER_COLLECTION_MOBILE_TITLE_ALIGN_CLASS} ${COVER_COLLECTION_MOBILE_TITLE_IMAGE_ALIGN_CLASS} ${COVER_COLLECTION_MOBILE_TITLE_OFFSET_CLASS} sm:min-h-0 sm:translate-y-3 ${titleClampClass}`}
+            className={`relative z-[1] w-full min-w-0 font-montserrat font-extrabold leading-normal text-[#414141] sm:mt-12 sm:px-0 sm:text-left sm:text-2xl sm:leading-tight lg:text-3xl ${TITLE_MIN_HEIGHT_MOBILE} ${COVER_COLLECTION_COMPACT_MOBILE_TITLE_MIN_HEIGHT_CLASS} ${titleSizeClass} ${COVER_COLLECTION_MOBILE_TITLE_ALIGN_CLASS} ${COVER_COLLECTION_MOBILE_TITLE_IMAGE_ALIGN_CLASS} ${COVER_COLLECTION_MOBILE_TITLE_OFFSET_CLASS} sm:min-h-0 ${COVER_COLLECTION_DESKTOP_TITLE_OFFSET_CLASS} ${titleClampClass}`}
           >
             {item.title}
           </h3>

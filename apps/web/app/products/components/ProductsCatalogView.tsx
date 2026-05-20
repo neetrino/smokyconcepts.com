@@ -12,14 +12,14 @@ import { CatalogForProductLineRow } from './CatalogForProductLineRow';
 import { ProductsCatalogMobileFilterSheet } from './ProductsCatalogMobileFilterSheet';
 import { ProductsCatalogCard } from './ProductsCatalogCard';
 import {
+  CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME,
   CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_TOP_PADDING_CLASS_NAME,
-  CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE,
+  CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_STRIP_SCROLL_CLASS_NAME,
   CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS,
   getCatalogProductCardImageScaleBoost,
   getCatalogProductsSmViewportSnapshot,
@@ -47,10 +47,6 @@ import {
 type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc';
 
 const SECTION_ORDER = ['Classic', 'Premium', 'Atelier', 'Special'] as const;
-
-/** Mobile pagination row — all segments on one line; width shrinks as page count grows. */
-const CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME =
-  'flex w-full max-w-[calc(100vw-2rem)] flex-nowrap items-center gap-1.5';
 
 /** rAF frames where scrollLeft must stay constant before treating smooth scroll as settled. */
 const CATALOG_SCROLL_SETTLE_STABLE_FRAMES = 4;
@@ -888,15 +884,15 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
                     }}
                     className={
                       isCategoryFilteredView
-                        ? `mt-4 pb-4 pt-[7.5rem] ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_TOP_PADDING_CLASS_NAME}`
-                        : `scrollbar-hide mt-4 overflow-x-auto overscroll-x-contain pb-4 pt-[7.5rem] max-sm:snap-x max-sm:snap-mandatory ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_TOP_PADDING_CLASS_NAME}`
+                        ? `mt-4 pb-4 pt-[7.5rem] max-sm:mt-0 max-sm:pt-[5rem]`
+                        : CATALOG_PRODUCTS_PAGE_STRIP_SCROLL_CLASS_NAME
                     }
                   >
                     <div
                       className={
                         isCategoryFilteredView
                           ? 'grid grid-cols-2 items-start gap-x-4 gap-y-24 max-sm:justify-items-center max-sm:gap-y-16 md:grid-cols-3 md:gap-x-6 md:gap-y-24 lg:grid-cols-6 lg:gap-x-8 lg:gap-y-28'
-                          : `flex min-w-max max-lg:pr-4 ${CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME}`
+                          : CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME
                       }
                     >
                       {(isCategoryFilteredView ? section.items : section.items).map((product, index) => {
@@ -938,6 +934,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
                             }`}
                             catalogStripMobilePeek={!isCategoryFilteredView && isSmUp}
                             compactLayout
+                            productsCatalogPage={!isCategoryFilteredView}
                             slimCatalogGrid={isCategoryFilteredView}
                             eagerProductImage={!isCategoryFilteredView}
                           />
@@ -948,7 +945,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
                   </div>
 
                   {!isCategoryFilteredView && (
-                    <div className="mt-4 flex justify-center px-4 max-sm:mt-2">
+                    <div className={CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME}>
                       <div
                         className={`${CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME} sm:max-w-none sm:justify-center sm:gap-4`}
                         role="tablist"

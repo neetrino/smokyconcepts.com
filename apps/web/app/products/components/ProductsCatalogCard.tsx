@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, type MouseEvent } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore, type MouseEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -9,6 +9,16 @@ import { useAddToCart } from '../../../components/hooks/useAddToCart';
 import { useCurrency } from '../../../components/hooks/useCurrency';
 import { formatCatalogPrice } from '../../../lib/currency';
 
+import {
+  CATALOG_PRODUCTS_PAGE_CARD_DETAILS_OFFSET_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_CARD_HERO_PULL_UP_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_CARD_MOBILE_DETAILS_LAYOUT_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_CARD_TOP_PADDING_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_MOBILE_HERO_MAX_SCALE,
+  getCatalogProductsSmViewportSnapshot,
+  getServerCatalogProductsSmViewportSnapshot,
+  subscribeCatalogProductsSmViewport,
+} from './catalogProductCardMobilePresentation';
 import { PRODUCT_SECTION_BADGE_CLASS_NAMES } from './catalogProductLabels';
 
 const BAG_ICON_PATH = '/assets/home/icons/bag.svg';
@@ -99,6 +109,11 @@ export function ProductsCatalogCard({
   slimCatalogGrid = false,
   productsCatalogPage = false,
 }: ProductsCatalogCardProps) {
+  const isSmUp = useSyncExternalStore(
+    subscribeCatalogProductsSmViewport,
+    getCatalogProductsSmViewportSnapshot,
+    getServerCatalogProductsSmViewportSnapshot
+  );
   const displayCurrency = useCurrency();
   const isAmdCurrency = displayCurrency === 'AMD';
   const router = useRouter();
@@ -161,8 +176,18 @@ export function ProductsCatalogCard({
         : 'w-[11rem] max-sm:w-[10.25rem]';
   const cardShadowClass = suppressShadow ? 'shadow-none' : CARD_SHADOW_TAILWIND;
   const articleStackClassName = 'z-0 hover:z-[8] focus-within:z-[8]';
+  const compactArticlePaddingClassName = productsCatalogPage
+    ? `px-0 pb-2.5 max-sm:pb-2 sm:pb-3 ${CATALOG_PRODUCTS_PAGE_CARD_TOP_PADDING_CLASS_NAME}`
+    : 'px-2.5 pb-2.5 pt-2 sm:px-3 sm:pb-3 sm:pt-2.5';
+  const catalogDetailsLayoutClassName =
+    compactLayout && productsCatalogPage
+      ? `flex flex-1 flex-col justify-between ${CATALOG_PRODUCTS_PAGE_CARD_MOBILE_DETAILS_LAYOUT_CLASS_NAME}`
+      : compactLayout
+        ? 'flex flex-1 flex-col justify-between'
+        : '';
+  const catalogDetailsPaddingClassName = productsCatalogPage ? 'px-2.5 sm:px-3' : '';
   const articleClassName = compactLayout
-    ? `relative ${compactArticleWidth} ${articleStackClassName} flex h-full min-h-0 shrink-0 flex-col overflow-visible rounded-[1.125rem] bg-white px-2.5 pb-2.5 pt-2 sm:px-3 sm:pb-3 sm:pt-2.5 ${cardShadowClass}`.trim()
+    ? `relative ${compactArticleWidth} ${articleStackClassName} flex h-full min-h-0 shrink-0 flex-col overflow-visible rounded-[1.125rem] bg-white ${compactArticlePaddingClassName} ${cardShadowClass}`.trim()
     : `relative w-[14.25rem] max-sm:w-[12.5rem] ${articleStackClassName} shrink-0 overflow-visible rounded-[1.375rem] bg-white px-3 pb-3 pt-2.5 sm:px-3.5 sm:pb-3.5 sm:pt-3 ${cardShadowClass}`.trim();
 
   const imageWrapperClassName = compactLayout
@@ -182,7 +207,10 @@ export function ProductsCatalogCard({
     : isCompactSize
       ? '-mt-12 sm:-mt-16'
       : '-mt-[4.5rem] sm:-mt-24';
-  const imagePullUpClassName = baseImagePullUpClassName;
+  const imagePullUpClassName =
+    productsCatalogPage && compactLayout && !slimCatalogGrid
+      ? CATALOG_PRODUCTS_PAGE_CARD_HERO_PULL_UP_CLASS_NAME
+      : baseImagePullUpClassName;
 
   const compactInnerImageHeight = widerCompactCard
     ? 'h-[14.25rem] sm:h-[17.25rem]'
@@ -193,7 +221,11 @@ export function ProductsCatalogCard({
     ? `${compactInnerImageHeight} w-full`
     : 'h-full w-full';
   const compactBaseScale = imageNudgeDown ? 1.05 : 1.12;
-  const compactImageScale = compactBaseScale + imageScaleBoost;
+  const compactImageScaleRaw = compactBaseScale + imageScaleBoost;
+  const compactImageScale =
+    productsCatalogPage && compactLayout && !isSmUp
+      ? Math.min(compactImageScaleRaw, CATALOG_PRODUCTS_PAGE_MOBILE_HERO_MAX_SCALE)
+      : compactImageScaleRaw;
   const imageClassName = compactLayout ? 'object-contain origin-bottom' : 'object-contain';
 
   // Text sizes — upcoming mobile bumped to match Figma (18 px title, 12 px meta, 20 px price).
@@ -225,12 +257,19 @@ export function ProductsCatalogCard({
       : productsCatalogPage
         ? slimCatalogGrid
           ? '-mt-[3.25rem] sm:-mt-[3.75rem] md:-mt-[3rem] lg:-mt-[3.5rem]'
-          : '-mt-[3.25rem] sm:-mt-[3.75rem]'
+          : CATALOG_PRODUCTS_PAGE_CARD_DETAILS_OFFSET_CLASS_NAME
         : slimCatalogGrid
           ? '-mt-[2.75rem] sm:-mt-[3.25rem] md:-mt-[2.5rem] lg:-mt-[3rem]'
           : '-mt-[2.75rem] sm:-mt-[3.25rem]'
     : '-mt-4';
-  const imageWrapperBottomMarginClassName = compactLayout && productsCatalogPage ? 'mb-1' : 'mb-2';
+  const imageWrapperBottomMarginClassName =
+    compactLayout && productsCatalogPage ? 'mb-1 max-sm:mb-1.5 sm:mb-1' : 'mb-2';
+  const catalogPriceRowClassName =
+    compactLayout && productsCatalogPage
+      ? 'mt-2 max-sm:mt-1 flex items-center justify-between gap-2'
+      : compactLayout
+        ? 'mt-2 flex items-center justify-between gap-2'
+        : 'mt-5 flex items-center justify-between gap-3';
   const dotsGapClassName = compactLayout ? 'gap-1' : 'gap-[0.3125rem]';
   const dotsMarginClassName = compactLayout
     ? productsCatalogPage
@@ -274,7 +313,7 @@ export function ProductsCatalogCard({
         className={`relative z-10 ${imageWrapperBottomMarginClassName} flex shrink-0 items-end justify-center ${imagePullUpClassName} ${imageWrapperClassName} overflow-visible`.trim()}
       >
         <div
-          className={`relative ${imageInnerClassName} transition-transform duration-300 ease-out md:group-hover:-translate-y-1.5 md:group-hover:scale-[1.045] ${imageFrameClassName ?? ''}`.trim()}
+          className={`relative ${imageInnerClassName} transition-transform duration-300 ease-out md:group-hover:-translate-y-1.5 md:group-hover:scale-[1.045] ${productsCatalogPage ? 'max-sm:overflow-hidden' : ''} ${imageFrameClassName ?? ''}`.trim()}
         >
           {activeImage && !imageError ? (
             <Link
@@ -304,7 +343,7 @@ export function ProductsCatalogCard({
       </div>
 
       <div
-        className={`relative z-20 min-h-0 ${compactLayout ? 'flex flex-1 flex-col justify-between' : ''} ${detailsOffsetClassName}`.trim()}
+        className={`relative z-20 min-h-0 ${catalogDetailsLayoutClassName} ${detailsOffsetClassName} ${catalogDetailsPaddingClassName}`.trim()}
       >
         <div className="min-w-0">
           {visibleDotCount > 0 ? (
@@ -367,7 +406,7 @@ export function ProductsCatalogCard({
           </div>
         </div>
 
-        <div className={compactLayout ? 'mt-2 flex items-center justify-between gap-2' : 'mt-5 flex items-center justify-between gap-3'}>
+        <div className={catalogPriceRowClassName}>
           <span className={`font-extrabold leading-tight text-black ${priceClassName}`}>
             {amountText}
             {isAmdCurrency ? <span className="ml-1 text-[0.78em]">֏</span> : null}
