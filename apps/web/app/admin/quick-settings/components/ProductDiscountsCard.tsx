@@ -1,6 +1,6 @@
 'use client';
 
-import { formatAdminUsdAmount } from '@/lib/currency';
+import { formatAdminCatalogPrice } from '@/lib/currency';
 import { useTranslation } from '../../../../lib/i18n-client';
 
 export interface Product {
@@ -30,7 +30,7 @@ export function ProductDiscountsCard({
 }: ProductDiscountsCardProps) {
   const { t } = useTranslation();
 
-  const formatPrice = (price: number) => formatAdminUsdAmount(price);
+  const formatPrice = (price: number) => formatAdminCatalogPrice(price);
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[#dcc090]/30 bg-white/90 shadow-[0_8px_30px_rgba(18,42,38,0.06)]">

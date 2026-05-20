@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { Card, Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
-import { formatAdminUsdAmount } from '../../../../lib/currency';
+import { formatAdminCatalogPrice } from '../../../../lib/currency';
 import type { Product, ProductsResponse } from '../types';
 
 interface ProductsTableProps {
@@ -285,12 +285,12 @@ export function ProductsTable({
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex flex-col">
                           <div className="text-sm font-medium text-[#122a26]">
-                            {formatAdminUsdAmount(product.price)}
+                            {formatAdminCatalogPrice(product.price)}
                           </div>
                           {(product.compareAtPrice && product.compareAtPrice > product.price) || 
                            (product.discountPercent && product.discountPercent > 0) ? (
                             <div className="text-xs text-[#414141]/50 line-through mt-0.5">
-                              {formatAdminUsdAmount(
+                              {formatAdminCatalogPrice(
                                 product.compareAtPrice && product.compareAtPrice > product.price
                                   ? product.compareAtPrice
                                   : product.price / (1 - (product.discountPercent || 0) / 100),

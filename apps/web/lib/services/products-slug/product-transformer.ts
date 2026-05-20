@@ -9,6 +9,7 @@ import { logger } from "../utils/logger";
 import { getOutOfStockLabel } from "./utils";
 import type { ProductWithFullRelations, ProductVariantWithOptions } from "./types";
 import { isDefaultPricingVariant } from "@/lib/default-pricing-variant";
+import { catalogPriceForStorefront } from "@/lib/currency";
 
 /** Option item from variant.attributes JSON (no relation in current schema) */
 type VariantOptionFromAttributes = {
@@ -203,7 +204,9 @@ function transformVariants(
   return variants
     .sort((a: { price: number }, b: { price: number }) => a.price - b.price)
     .map((variant: ProductVariantWithOptions) => {
-      const originalPrice = variant.price;
+      const originalPrice = catalogPriceForStorefront(variant.price);
+      const compareAtPriceAmd =
+        variant.compareAtPrice != null ? catalogPriceForStorefront(variant.compareAtPrice) : null;
       let finalPrice = originalPrice;
       let discountPrice = null;
 
@@ -226,8 +229,8 @@ function transformVariants(
         id: variant.id,
         sku: variant.sku || "",
         price: finalPrice,
-        originalPrice: discountPrice || variant.compareAtPrice || null,
-        compareAtPrice: variant.compareAtPrice || null,
+        originalPrice: discountPrice || compareAtPriceAmd,
+        compareAtPrice: compareAtPriceAmd,
         globalDiscount: globalDiscount > 0 ? globalDiscount : null,
         productDiscount: productDiscount > 0 ? productDiscount : null,
         stock: variant.stock,
@@ -423,15 +426,17 @@ export async function transformProduct(
     (variant) => !isDefaultPricingVariant(variant as { attributes?: unknown })
   );
   const defaultVariant = defaultPricingVariant || allVariants[0] || null;
-  const defaultVariantOriginalPrice = defaultVariant?.price || 0;
+  const defaultVariantOriginalPrice = catalogPriceForStorefront(defaultVariant?.price || 0);
+  const defaultVariantCompareAmd =
+    defaultVariant?.compareAtPrice != null
+      ? catalogPriceForStorefront(defaultVariant.compareAtPrice)
+      : null;
   const defaultVariantFinalPrice =
     actualDiscount > 0 && defaultVariantOriginalPrice > 0
       ? defaultVariantOriginalPrice * (1 - actualDiscount / 100)
       : defaultVariantOriginalPrice;
   const defaultVariantOriginalOrCompare =
-    actualDiscount > 0
-      ? defaultVariantOriginalPrice
-      : defaultVariant?.compareAtPrice || null;
+    actualDiscount > 0 ? defaultVariantOriginalPrice : defaultVariantCompareAmd;
 
   const categories = await buildMergedCategoriesForResponse(product, lang);
 
@@ -458,7 +463,7 @@ export async function transformProduct(
     defaultVariantSku: defaultVariant?.sku?.trim() ? defaultVariant.sku : "",
     defaultPrice: defaultVariantFinalPrice,
     defaultOriginalPrice: defaultVariantOriginalOrCompare,
-    defaultCompareAtPrice: defaultVariant?.compareAtPrice || null,
+    defaultCompareAtPrice: defaultVariantCompareAmd,
     globalDiscount: globalDiscount > 0 ? globalDiscount : null,
     productDiscount: productDiscount > 0 ? productDiscount : null,
     seo: {

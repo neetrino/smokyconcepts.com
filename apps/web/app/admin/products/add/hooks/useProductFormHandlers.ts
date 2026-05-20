@@ -8,7 +8,7 @@ import { createAndSubmitPayload } from './useProductPayloadCreation';
 import { buildVariantAttributePayload } from '@/lib/category-attributes';
 import type { CategoryAttribute } from '@/lib/category-attributes';
 import { buildDefaultPricingAttributes } from '@/lib/default-pricing-variant';
-import { convertPrice, initializeCurrencyRates } from '@/lib/currency';
+import { initializeCurrencyRates, normalizeAdminProductPriceInput } from '@/lib/currency';
 import { buildAutoSkuBaseFromSlug } from '../utils/autoSku';
 
 interface UseProductFormHandlersProps {
@@ -116,14 +116,15 @@ export function useProductFormHandlers({
         const compareAtPriceAmd = simpleProductData.compareAtPrice && simpleProductData.compareAtPrice.trim() !== ''
           ? parseFloat(simpleProductData.compareAtPrice)
           : undefined;
-        const priceUsd = Number.isFinite(priceAmd) ? convertPrice(priceAmd, 'AMD', 'USD') : 0;
-        const compareAtPriceUsd = compareAtPriceAmd !== undefined && Number.isFinite(compareAtPriceAmd)
-          ? convertPrice(compareAtPriceAmd, 'AMD', 'USD')
-          : undefined;
+        const priceStored = Number.isFinite(priceAmd) ? normalizeAdminProductPriceInput(priceAmd) : 0;
+        const compareAtPriceStored =
+          compareAtPriceAmd !== undefined && Number.isFinite(compareAtPriceAmd)
+            ? normalizeAdminProductPriceInput(compareAtPriceAmd)
+            : undefined;
         const resolvedSimpleSku =
           simpleProductData.sku.trim() || buildAutoSkuBaseFromSlug(currentFormData.slug);
         const simpleVariant: any = {
-          price: priceUsd,
+          price: priceStored,
           stock: parseInt(simpleProductData.quantity) || 0,
           sku: resolvedSimpleSku,
           attributes: buildDefaultPricingAttributes({
@@ -132,8 +133,8 @@ export function useProductFormHandlers({
           }),
           published: true,
         };
-        if (compareAtPriceUsd && compareAtPriceUsd > 0) {
-          simpleVariant.compareAtPrice = compareAtPriceUsd;
+        if (compareAtPriceStored && compareAtPriceStored > 0) {
+          simpleVariant.compareAtPrice = compareAtPriceStored;
         }
         variants.push(simpleVariant);
         variantSkuSet.add(resolvedSimpleSku);
@@ -145,8 +146,8 @@ export function useProductFormHandlers({
         const defaultVariantCompareAtPrice =
           defaultVariantCompareAtPriceText !== '' ? parseFloat(defaultVariantCompareAtPriceText) : NaN;
 
-        const defaultVariantCompareAtPriceUsd = Number.isFinite(defaultVariantCompareAtPrice)
-          ? convertPrice(defaultVariantCompareAtPrice, 'AMD', 'USD')
+        const defaultVariantCompareAtPriceStored = Number.isFinite(defaultVariantCompareAtPrice)
+          ? normalizeAdminProductPriceInput(defaultVariantCompareAtPrice)
           : undefined;
         const defaultSkuInput = String(simpleProductData.sku || '').trim();
         const defaultVariantSku =
@@ -158,8 +159,8 @@ export function useProductFormHandlers({
           Number.isFinite(defaultStockRaw) && defaultStockRaw >= 0 ? defaultStockRaw : 0;
 
         variants.push({
-          price: Number.isFinite(defaultVariantPrice) ? convertPrice(defaultVariantPrice, 'AMD', 'USD') : 0,
-          compareAtPrice: defaultVariantCompareAtPriceUsd,
+          price: Number.isFinite(defaultVariantPrice) ? normalizeAdminProductPriceInput(defaultVariantPrice) : 0,
+          compareAtPrice: defaultVariantCompareAtPriceStored,
           stock: defaultVariantStock,
           sku: defaultVariantSku,
           attributes: buildDefaultPricingAttributes({
@@ -173,15 +174,17 @@ export function useProductFormHandlers({
         generatedVariants.forEach((genVariant, variantIndex) => {
           const variantPriceText = String(genVariant.price || '').trim();
           const variantPriceRaw = variantPriceText !== '' ? parseFloat(variantPriceText) : NaN;
-          const variantPriceUsd = Number.isFinite(variantPriceRaw) ? convertPrice(variantPriceRaw, 'AMD', 'USD') : 0;
+          const variantPriceStored = Number.isFinite(variantPriceRaw)
+            ? normalizeAdminProductPriceInput(variantPriceRaw)
+            : 0;
 
           const variantCompareAtPriceText = String(genVariant.compareAtPrice || '').trim();
           const variantCompareAtPriceRaw =
             variantCompareAtPriceText !== ''
               ? parseFloat(variantCompareAtPriceText)
               : NaN;
-          const variantCompareAtPriceUsd = Number.isFinite(variantCompareAtPriceRaw)
-            ? convertPrice(variantCompareAtPriceRaw, 'AMD', 'USD')
+          const variantCompareAtPriceStored = Number.isFinite(variantCompareAtPriceRaw)
+            ? normalizeAdminProductPriceInput(variantCompareAtPriceRaw)
             : undefined;
           const finalSku = (genVariant.sku && genVariant.sku.trim() !== '')
             ? genVariant.sku.trim()
@@ -194,8 +197,8 @@ export function useProductFormHandlers({
           }
           variantSkuSet.add(uniqueSku);
           variants.push({
-            price: variantPriceUsd,
-            compareAtPrice: variantCompareAtPriceUsd,
+            price: variantPriceStored,
+            compareAtPrice: variantCompareAtPriceStored,
             stock: parseInt(genVariant.stock || '0') || 0,
             sku: uniqueSku,
             imageUrl: genVariant.image || undefined,

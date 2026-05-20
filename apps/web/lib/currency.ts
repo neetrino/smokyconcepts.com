@@ -1,5 +1,5 @@
-// Storefront prices are stored in USD and displayed via selected currency.
-// Admin product input uses AMD and is converted to USD on save.
+// Catalog variant prices are stored in AMD (admin input is dram, saved as-is).
+// Checkout and orders still use USD; convert at boundaries with catalogPriceToUsd.
 
 export const CURRENCIES = {
   USD: { code: 'USD', symbol: '$', name: 'US Dollar', rate: 1 },
@@ -11,6 +11,13 @@ export const CURRENCIES = {
 export const ADMIN_PRICE_CURRENCY = 'AMD' as const;
 /** Admin add/edit product form input currency. */
 export const ADMIN_PRODUCT_INPUT_CURRENCY = 'AMD' as const;
+/** Persisted product variant / catalog list price currency. */
+export const CATALOG_STORE_CURRENCY = 'AMD' as const;
+/**
+ * Legacy rows stored variant.price as USD before AMD storage.
+ * Values at or below this (USD) are converted to AMD on read until re-saved or migrated.
+ */
+export const LEGACY_USD_CATALOG_PRICE_MAX = 200;
 
 export type CurrencyCode = keyof typeof CURRENCIES;
 
@@ -177,24 +184,58 @@ export function adminInputAmdToUsd(amountAmd: number): number {
   return convertPrice(amountAmd, ADMIN_PRODUCT_INPUT_CURRENCY, 'USD');
 }
 
+/** Round dram amounts for catalog storage and AMD display. */
+export function roundCatalogAmd(amount: number): number {
+  if (!Number.isFinite(amount)) {
+    return 0;
+  }
+  return Math.max(0, Math.round(amount));
+}
+
+/** Admin product form → DB variant.price (AMD integer). */
+export function normalizeAdminProductPriceInput(amountAmd: number): number {
+  return roundCatalogAmd(amountAmd);
+}
+
+function isLegacyUsdCatalogStoredPrice(stored: number): boolean {
+  return stored > 0 && stored <= LEGACY_USD_CATALOG_PRICE_MAX;
+}
+
+/**
+ * DB variant.price → storefront/catalog AMD (handles legacy USD rows).
+ */
+export function catalogPriceForStorefront(stored: number): number {
+  const amount = Number(stored);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return 0;
+  }
+  if (isLegacyUsdCatalogStoredPrice(amount)) {
+    return roundCatalogAmd(convertPrice(amount, 'USD', CATALOG_STORE_CURRENCY));
+  }
+  return roundCatalogAmd(amount);
+}
+
 function legacyDramToUsd(amount: number): number {
   return amount / LEGACY_AMD_PER_USD;
 }
 
 /**
- * Catalog, cart snapshots, and delivery API amounts are USD.
+ * Catalog / cart snapshot unit price (AMD) → USD for checkout totals.
  */
-export function catalogPriceToUsd(amount: number): number {
-  return amount;
+export function catalogPriceToUsd(amountAmd: number): number {
+  return convertPrice(amountAmd, CATALOG_STORE_CURRENCY, 'USD');
 }
 
 /**
  * Storefront catalog / PDP: USD without redundant “.00” (e.g. $45 not $45.00).
  * Keeps up to 2 decimals when needed (e.g. $45.99).
  */
-export function formatCatalogPrice(amount: number, displayCurrency?: CurrencyCode): string {
+export function formatCatalogPrice(amountAmd: number, displayCurrency?: CurrencyCode): string {
   const currency = displayCurrency ?? (typeof window === 'undefined' ? DEFAULT_CURRENCY_CODE : getStoredCurrency());
-  const convertedAmount = convertPrice(amount, 'USD', currency);
+  const convertedAmount =
+    currency === 'AMD'
+      ? roundCatalogAmd(amountAmd)
+      : convertPrice(amountAmd, CATALOG_STORE_CURRENCY, currency);
   if (currency === 'AMD') {
     const formatted = new Intl.NumberFormat('hy-AM', {
       minimumFractionDigits: 0,
@@ -260,11 +301,16 @@ export function formatAdminUsdAmount(amountUsd: number): string {
   return formatStoredMoney(amountUsd, 'USD', ADMIN_PRICE_CURRENCY);
 }
 
+/** Format catalog variant price for admin UI (DB AMD, legacy USD rows normalized). */
+export function formatAdminCatalogPrice(stored: number): string {
+  return formatPriceInCurrency(catalogPriceForStorefront(stored), ADMIN_PRICE_CURRENCY);
+}
+
 export const STORE_PRICE_CURRENCY: CurrencyCode = DEFAULT_CURRENCY_CODE;
 
-export function formatStorePriceForDisplay(amount: number, _displayCurrency: CurrencyCode = 'USD'): string {
+export function formatStorePriceForDisplay(amountUsd: number, _displayCurrency: CurrencyCode = 'USD'): string {
   const currency = typeof window === 'undefined' ? DEFAULT_CURRENCY_CODE : getStoredCurrency();
-  const converted = convertPrice(amount, 'USD', currency);
+  const converted = convertPrice(amountUsd, 'USD', currency);
   return formatPriceInCurrency(converted, currency);
 }
 
