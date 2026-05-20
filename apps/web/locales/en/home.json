@@ -88,7 +88,9 @@
     },
     "culture": {
       "title": "Your Voice Shapes Culture",
+      "titleMobile": "Your Voice\nShapes Culture",
       "description": "Culture moves when people take part. Your choice brings\nconcepts to life – be part of the creation and get early access.",
+      "descriptionMobile": "Culture moves when people take part. Your\nchoice brings concepts to life — be part of the\ncreation and get early access.",
       "loadError": "Failed to load voting items.",
       "updateError": "Failed to update vote.",
       "loginPrompt": "Please log in to vote.",

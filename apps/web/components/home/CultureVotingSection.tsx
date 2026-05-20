@@ -303,7 +303,9 @@ export function CultureVotingSection() {
           <div className="w-full max-w-[52rem] px-4 pb-1 text-center sm:pb-2 md:-translate-y-5">
             <HomeSectionTitle
               title={t('home.homepage.culture.title')}
+              titleMobile={t('home.homepage.culture.titleMobile')}
               description={t('home.homepage.culture.description')}
+              descriptionMobile={t('home.homepage.culture.descriptionMobile')}
               centered
               className={CULTURE_SECTION_COPY_CLASS_NAME}
               titleClassName={CULTURE_SECTION_TITLE_CLASS_NAME}
@@ -331,7 +333,9 @@ export function CultureVotingSection() {
           <div className="w-full max-w-[52rem] px-4 pb-1 text-center sm:pb-2 md:-translate-y-5">
             <HomeSectionTitle
               title={t('home.homepage.culture.title')}
+              titleMobile={t('home.homepage.culture.titleMobile')}
               description={t('home.homepage.culture.description')}
+              descriptionMobile={t('home.homepage.culture.descriptionMobile')}
               centered
               className={CULTURE_SECTION_COPY_CLASS_NAME}
               titleClassName={CULTURE_SECTION_TITLE_CLASS_NAME}
@@ -360,7 +364,9 @@ export function CultureVotingSection() {
         <div className={`${CULTURE_MOBILE_TITLE_CONTAINER_CLASS_NAME} md:-translate-y-5`}>
           <HomeSectionTitle
             title={t('home.homepage.culture.title')}
+            titleMobile={t('home.homepage.culture.titleMobile')}
             description={t('home.homepage.culture.description')}
+            descriptionMobile={t('home.homepage.culture.descriptionMobile')}
             centered
             className={CULTURE_SECTION_COPY_CLASS_NAME}
             titleClassName={CULTURE_SECTION_TITLE_CLASS_NAME}
