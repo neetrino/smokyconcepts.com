@@ -31,7 +31,7 @@ const COVER_COLLECTION_MOBILE_CARD_MIN_HEIGHT_CLASS =
  * Mobile: image slot slightly above Figma Mob `4345:2059` baseline (`max-sm:`).
  */
 const COVER_COLLECTION_PRODUCT_IMAGE_TRANSFORM_CLASS =
-  'origin-bottom max-sm:translate-y-0 max-sm:scale-[1.28] translate-y-4 scale-[1.48] sm:translate-y-[8.25rem] sm:scale-[1.44] sm:group-hover:translate-y-[7.75rem] sm:group-hover:scale-[1.54] max-[360px]:scale-[1.14] min-[390px]:max-sm:scale-[1.36]';
+  'origin-bottom max-sm:translate-y-0 max-sm:scale-[1.35] translate-y-4 scale-[1.48] sm:translate-y-[8.25rem] sm:scale-[1.44] sm:group-hover:translate-y-[7.75rem] sm:group-hover:scale-[1.54] max-[360px]:scale-[1.2] min-[390px]:max-sm:scale-[1.43]';
 
 const TITLE_MIN_HEIGHT_MOBILE = 'min-h-[3rem]';
 const COVER_COLLECTION_COMPACT_MOBILE_TITLE_MIN_HEIGHT_CLASS = 'max-[360px]:min-h-[2.5rem]';
@@ -43,7 +43,7 @@ const COVER_COLLECTION_MOBILE_SPECIAL_EDITION_TITLE_SIZE_CLASS =
 
 /** Mobile image band width in 2-col grid. */
 const COVER_COLLECTION_IMAGE_SLOT_MAX_WIDTH_CLASS =
-  'max-sm:max-w-[clamp(5.25rem,68%,8.25rem)] sm:max-w-none';
+  'max-sm:max-w-[clamp(5.5rem,72%,8.75rem)] sm:max-w-none';
 
 const MOBILE_LINK_TOP_PADDING_CLASS = `${COVER_COLLECTION_MOBILE_PANEL_OVERLAP_CLASS} max-sm:shadow-none`;
 
@@ -57,7 +57,7 @@ const MOBILE_CARD_SHELL_CLASS = [
 
 /** Mobile: absolute image slot; desktop: existing flow layout. */
 const COVER_COLLECTION_IMAGE_OUTER_CLASS = [
-  'max-sm:absolute max-sm:left-1/2 max-sm:z-10 max-sm:flex max-sm:h-[clamp(11rem,58vw,15rem)] max-sm:w-full max-sm:-translate-x-1/2 max-sm:items-end max-sm:justify-center max-sm:overflow-visible max-[360px]:h-[10.75rem]',
+  'max-sm:absolute max-sm:left-1/2 max-sm:z-10 max-sm:flex max-sm:h-[clamp(11.5rem,61vw,15.75rem)] max-sm:w-full max-sm:-translate-x-1/2 max-sm:items-end max-sm:justify-center max-sm:overflow-visible max-[360px]:h-[11.25rem]',
   COVER_COLLECTION_MOBILE_IMAGE_OVERLAP_CLASS,
   'relative z-10 mx-auto flex h-52 w-full shrink-0 items-end justify-center sm:z-auto sm:-mt-28 sm:mb-0 sm:h-[22rem] sm:max-w-none sm:translate-y-0',
   COVER_COLLECTION_IMAGE_SLOT_MAX_WIDTH_CLASS,
@@ -104,7 +104,7 @@ export function CoverCollectionProductCard({ item }: CoverCollectionProductCardP
               <img
                 src={HOME_ASSET_PATHS.packMark}
                 alt=""
-                className="h-20 w-16 origin-bottom object-contain opacity-60 transition-transform duration-300 ease-out scale-[1.28] sm:h-24 sm:w-[4.5rem] sm:group-hover:-translate-y-2 sm:group-hover:scale-[1.3]"
+                className="h-20 w-16 origin-bottom object-contain opacity-60 transition-transform duration-300 ease-out max-sm:scale-[1.35] sm:h-24 sm:w-[4.5rem] sm:scale-[1.28] sm:group-hover:-translate-y-2 sm:group-hover:scale-[1.3]"
                 aria-hidden="true"
               />
             </div>

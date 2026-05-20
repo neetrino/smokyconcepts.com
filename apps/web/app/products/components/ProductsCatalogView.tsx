@@ -201,7 +201,6 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
     }
     return null;
   }, [sizeCatalogCategories, selectedSizeCatalogCategoryId]);
-  const isCategoryFilteredView = selectedCollection !== 'all';
   const selectedSectionTitle = resolveSectionLabelFromCollectionValue(selectedCollection);
   const isCollectionFilterActive = selectedCollection !== 'all';
   const isColorFilterActive = selectedColor !== 'all';
@@ -272,23 +271,9 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
     );
   }, [products]);
 
-  const productsForSizeRelevance = useMemo(() => {
-    const gateByCollection = selectedCollection !== 'all';
-    return products.filter((product) => {
-      const colorLabel = getColorLabel(product);
-      if (gateByCollection && !productMatchesCategoryFilter(product, selectedCollection)) {
-        return false;
-      }
-      if (selectedColor !== 'all' && colorLabel !== selectedColor) {
-        return false;
-      }
-      return true;
-    });
-  }, [products, selectedCollection, selectedColor]);
-
   const sizeCatalogForModal = useMemo(
-    () => filterSizeCatalogByProducts(sizeCatalogCategories, productsForSizeRelevance),
-    [sizeCatalogCategories, productsForSizeRelevance]
+    () => filterSizeCatalogByProducts(sizeCatalogCategories, products),
+    [sizeCatalogCategories, products]
   );
 
   const selectedCatalogItemId = useMemo(() => {
@@ -437,10 +422,6 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
   }, [cardsPerPage, sectionItemsByTitle, sectionPages, selectedCollection, selectedSectionTitle]);
 
   useEffect(() => {
-    if (isCategoryFilteredView) {
-      return;
-    }
-
     setSectionPages({});
     for (const title of catalogStripSectionTitles) {
       const element = sectionScrollRefs.current[title];
@@ -448,13 +429,9 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
         element.scrollLeft = 0;
       }
     }
-  }, [cardsPerPage, catalogStripSectionTitles, isCategoryFilteredView]);
+  }, [cardsPerPage, catalogStripSectionTitles]);
 
   const applyStripPeekStartScroll = useCallback(() => {
-    if (isCategoryFilteredView) {
-      return;
-    }
-
     if (typeof window === 'undefined') {
       return;
     }
@@ -476,7 +453,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
 
       element.scrollLeft = getCatalogStripPeekStartScroll(element);
     }
-  }, [catalogStripSectionTitles, isCategoryFilteredView, isSmUp, sectionItemsByTitle]);
+  }, [catalogStripSectionTitles, isSmUp, sectionItemsByTitle]);
 
   useLayoutEffect(() => {
     applyStripPeekStartScroll();
@@ -488,13 +465,9 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
   }, [applyStripPeekStartScroll]);
 
   useEffect(() => {
-    if (isCategoryFilteredView) {
-      return;
-    }
-
     window.addEventListener('resize', applyStripPeekStartScroll);
     return () => window.removeEventListener('resize', applyStripPeekStartScroll);
-  }, [applyStripPeekStartScroll, isCategoryFilteredView]);
+  }, [applyStripPeekStartScroll]);
 
   const updateQuery = (updates: Record<string, string>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -590,41 +563,39 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
   };
 
   const handleSectionPageChange = (title: string, pageIndex: number) => {
-    if (!isCategoryFilteredView) {
-      const container = sectionScrollRefs.current[title];
-      if (container) {
-        let targetScrollLeft = 0;
+    const container = sectionScrollRefs.current[title];
+    if (container) {
+      let targetScrollLeft = 0;
 
-        if (!isSmUp) {
-          const anchor = sectionPageStartRefs.current[title]?.[pageIndex];
-          targetScrollLeft = anchor ? getScrollLeftForElementWithin(container, anchor) : 0;
-        } else {
-          const maxScrollLeft = container.scrollWidth - container.clientWidth;
-          const sectionMeta = sections.find((section) => section.title === title);
-          const totalPages = sectionMeta?.totalPages ?? 1;
-          const startLeft = getCatalogStripPeekStartScroll(container);
-          const span = Math.max(0, maxScrollLeft - startLeft);
-          const denominator = Math.max(1, totalPages - 1);
-          targetScrollLeft =
-            maxScrollLeft <= 0
-              ? 0
-              : Math.min(maxScrollLeft, startLeft + (span * pageIndex) / denominator);
-        }
-
-        sectionProgrammaticScrollRef.current[title] = true;
-
-        if (sectionScrollIdleTimerRef.current) {
-          clearTimeout(sectionScrollIdleTimerRef.current);
-          sectionScrollIdleTimerRef.current = null;
-        }
-
-        container.scrollTo({
-          left: targetScrollLeft,
-          behavior: 'smooth',
-        });
-
-        waitForSectionScrollToSettle(title, container, targetScrollLeft);
+      if (!isSmUp) {
+        const anchor = sectionPageStartRefs.current[title]?.[pageIndex];
+        targetScrollLeft = anchor ? getScrollLeftForElementWithin(container, anchor) : 0;
+      } else {
+        const maxScrollLeft = container.scrollWidth - container.clientWidth;
+        const sectionMeta = sections.find((section) => section.title === title);
+        const totalPages = sectionMeta?.totalPages ?? 1;
+        const startLeft = getCatalogStripPeekStartScroll(container);
+        const span = Math.max(0, maxScrollLeft - startLeft);
+        const denominator = Math.max(1, totalPages - 1);
+        targetScrollLeft =
+          maxScrollLeft <= 0
+            ? 0
+            : Math.min(maxScrollLeft, startLeft + (span * pageIndex) / denominator);
       }
+
+      sectionProgrammaticScrollRef.current[title] = true;
+
+      if (sectionScrollIdleTimerRef.current) {
+        clearTimeout(sectionScrollIdleTimerRef.current);
+        sectionScrollIdleTimerRef.current = null;
+      }
+
+      container.scrollTo({
+        left: targetScrollLeft,
+        behavior: 'smooth',
+      });
+
+      waitForSectionScrollToSettle(title, container, targetScrollLeft);
     }
 
     setSectionPages((currentPages) => {
@@ -744,11 +715,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
         onClearAll={clearFilters}
       />
 
-      <div
-        className={`mx-auto max-w-[120rem] px-4 pb-20 pt-12 sm:px-8 lg:pt-[5.25rem] ${
-          isCategoryFilteredView ? 'lg:px-[7.5rem]' : 'lg:pl-[7.5rem] lg:pr-0'
-        }`}
-      >
+      <div className="mx-auto max-w-[120rem] px-4 pb-20 pt-12 sm:px-8 lg:pl-[7.5rem] lg:pr-0 lg:pt-[5.25rem]">
         <div className="font-montserrat">
           <div className="flex flex-col gap-8">
             <div className="flex items-start justify-between gap-4">
@@ -782,11 +749,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
               <CatalogForProductLineRow />
             </div>
 
-            <div
-              className={`hidden gap-3 lg:grid lg:grid-cols-[12.5rem_11rem_11.75rem_4.75rem_1fr_11rem] lg:items-center ${
-                isCategoryFilteredView ? '' : 'lg:pr-[7.5rem]'
-              }`}
-            >
+            <div className="hidden gap-3 lg:grid lg:grid-cols-[12.5rem_11rem_11.75rem_4.75rem_1fr_11rem] lg:items-center lg:pr-[7.5rem]">
               <label className="relative block">
                 <select
                   value={selectedCollection}
@@ -881,26 +844,13 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
                       sectionScrollRefs.current[section.title] = element;
                     }}
                     onScroll={() => {
-                      if (!isCategoryFilteredView) {
-                        handleSectionScroll(section.title);
-                      }
+                      handleSectionScroll(section.title);
                     }}
-                    className={
-                      isCategoryFilteredView
-                        ? `mt-4 pb-4 pt-[7.5rem] max-sm:mt-0 max-sm:pt-[5rem]`
-                        : CATALOG_PRODUCTS_PAGE_STRIP_SCROLL_CLASS_NAME
-                    }
+                    className={CATALOG_PRODUCTS_PAGE_STRIP_SCROLL_CLASS_NAME}
                   >
-                    <div
-                      className={
-                        isCategoryFilteredView
-                          ? 'grid grid-cols-2 items-start gap-x-4 gap-y-24 max-sm:justify-items-center max-sm:gap-y-16 md:grid-cols-3 md:gap-x-6 md:gap-y-24 lg:grid-cols-6 lg:gap-x-8 lg:gap-y-28'
-                          : CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME
-                      }
-                    >
-                      {(isCategoryFilteredView ? section.items : section.items).map((product, index) => {
-                        const isMobileStripPageStart =
-                          !isCategoryFilteredView && index % cardsPerPage === 0;
+                    <div className={CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME}>
+                      {section.items.map((product, index) => {
+                        const isMobileStripPageStart = index % cardsPerPage === 0;
                         const mobileStripPageIndex = Math.floor(index / cardsPerPage);
 
                         return (
@@ -914,13 +864,9 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
                               pageAnchors[mobileStripPageIndex] = element;
                               sectionPageStartRefs.current[section.title] = pageAnchors;
                             }}
-                            className={
-                              isCategoryFilteredView
-                                ? `min-w-0 ${CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME} sm:contents`
-                                : `${CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME}${
-                                    isMobileStripPageStart ? ' max-sm:snap-start max-sm:snap-always' : ''
-                                  }`
-                            }
+                            className={`${CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME}${
+                              isMobileStripPageStart ? ' max-sm:snap-start max-sm:snap-always' : ''
+                            }`}
                           >
                           <ProductsCatalogCard
                             product={product}
@@ -930,16 +876,11 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
                             imageNudgeDown={shouldNudgeCatalogProductImage(index)}
                             imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
                             imageFrameClassName={CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME}
-                            className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} ${
-                              isCategoryFilteredView
-                                ? '!w-full !max-w-none !min-w-0 !shrink'
-                                : 'max-sm:!w-full max-sm:!min-w-0 max-sm:!max-w-none'
-                            }`}
-                            catalogStripMobilePeek={!isCategoryFilteredView && isSmUp}
+                            className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} max-sm:!w-full max-sm:!min-w-0 max-sm:!max-w-none`}
+                            catalogStripMobilePeek={isSmUp}
                             compactLayout
-                            productsCatalogPage={!isCategoryFilteredView}
-                            slimCatalogGrid={isCategoryFilteredView}
-                            eagerProductImage={!isCategoryFilteredView}
+                            productsCatalogPage
+                            eagerProductImage
                           />
                           </div>
                         );
@@ -947,7 +888,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
                     </div>
                   </div>
 
-                  {!isCategoryFilteredView && (
+                  {section.totalPages > 1 ? (
                     <div className={CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME}>
                       <div
                         className={`${CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME} sm:max-w-none sm:justify-center sm:gap-4`}
@@ -971,7 +912,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
                         ))}
                       </div>
                     </div>
-                  )}
+                  ) : null}
                 </section>
               ))
             ) : (
