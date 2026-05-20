@@ -8,6 +8,7 @@ import type { CustomOrderDraft } from '../[slug]/CustomizeSizeOrderFallback';
 import { apiClient } from '../../../lib/api-client';
 import { getStoredLanguage, type LanguageCode } from '../../../lib/language';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
+import { preloadSizeCatalogCategories } from '@/lib/size-catalog-image-cache';
 import { CatalogForProductLineRow } from './CatalogForProductLineRow';
 import { ProductsCatalogMobileFilterSheet } from './ProductsCatalogMobileFilterSheet';
 import { ProductsCatalogCard } from './ProductsCatalogCard';
@@ -242,7 +243,9 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
       try {
         const res = await apiClient.get<{ data: SizeCatalogCategoryDto[] }>('/api/v1/size-catalog');
         if (!cancelled) {
-          setSizeCatalogCategories(Array.isArray(res.data) ? res.data : []);
+          const data = Array.isArray(res.data) ? res.data : [];
+          setSizeCatalogCategories(data);
+          void preloadSizeCatalogCategories(data);
         }
       } catch {
         if (!cancelled) {

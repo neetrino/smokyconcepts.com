@@ -8,6 +8,7 @@ import type { LanguageCode } from '../../../lib/language';
 import { useCurrency } from '../../../components/hooks/useCurrency';
 import { apiClient } from '../../../lib/api-client';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
+import { preloadSizeCatalogCategories } from '@/lib/size-catalog-image-cache';
 import { Button } from '../../../components/ui/buttons';
 import type { AttributeGroupValue, Product, ProductVariant } from './types';
 import {
@@ -231,7 +232,9 @@ export function ProductInfoAndActions({
       try {
         const res = await apiClient.get<{ data: SizeCatalogCategoryDto[] }>('/api/v1/size-catalog');
         if (!cancelled) {
-          setSizeCatalogCategories(res.data ?? []);
+          const data = res.data ?? [];
+          setSizeCatalogCategories(data);
+          void preloadSizeCatalogCategories(data);
         }
       } catch {
         if (!cancelled) {

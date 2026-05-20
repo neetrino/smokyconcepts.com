@@ -74,7 +74,6 @@ export function SizeCatalogPickerContent({
             suppressEnterAnimation={suppressEnterAnimation}
             onSelectItem={onSelectItem}
             sectionHeadingDelayMs={sectionHeadingDelayMs}
-            staggerStartIndex={0}
           />
         );
       })}

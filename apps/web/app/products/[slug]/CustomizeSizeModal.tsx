@@ -19,6 +19,7 @@ import {
   sizeModalPanelClass,
 } from '@/lib/size-modal-animation';
 import { sortSizeCatalogCategoriesByDisplayOrder } from '@/lib/constants/size-catalog-display-order.constants';
+import { preloadSizeCatalogCategories } from '@/lib/size-catalog-image-cache';
 import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
@@ -131,6 +132,13 @@ export function CustomizeSizeModal({
       document.body.style.overflow = previousOverflow;
     };
   }, [isMounted]);
+
+  useEffect(() => {
+    if (!isMounted) {
+      return;
+    }
+    void preloadSizeCatalogCategories(sizeCategories);
+  }, [isMounted, sizeCategories]);
 
   const handleDismiss = useCallback(() => {
     if (isExiting) {
