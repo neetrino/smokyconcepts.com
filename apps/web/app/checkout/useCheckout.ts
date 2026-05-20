@@ -96,7 +96,7 @@ export function useCheckout() {
   );
   useUserProfile(isLoggedIn, isLoading, setValue, deliveryLocations);
 
-  const { submitOrder } = useOrderSubmission({
+  const { submitOrder, isPlacingOrder } = useOrderSubmission({
     cart,
     deliveryPrice,
     setError,
@@ -207,20 +207,20 @@ export function useCheckout() {
       }
     };
 
-    handleSubmit(
-      (data) => {
+    void handleSubmit(
+      async (data) => {
         if (data.paymentMethod === 'arca' || data.paymentMethod === 'idram') {
           setShowCardModal(true);
           return;
         }
-        submitOrder(data);
+        await submitOrder(data);
       },
       handleValidationError,
     )(e);
   };
 
-  const onSubmit = (data: CheckoutFormData) => {
-    submitOrder(data);
+  const onSubmit = async (data: CheckoutFormData) => {
+    await submitOrder(data);
   };
 
   return {
@@ -244,6 +244,7 @@ export function useCheckout() {
     handleSubmit,
     errors,
     isSubmitting,
+    isPlacingOrder,
     setValue,
     watch,
     // Computed

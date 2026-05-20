@@ -76,6 +76,10 @@
     "itemCountSingle": "{count} товар",
     "itemCountPlural": "{count} товаров"
   },
+  "placingOrder": {
+    "title": "Оформляем заказ…",
+    "subtitle": "Пожалуйста, подождите, пока мы подтверждаем ваш заказ."
+  },
   "buttons": {
     "placeOrder": "Оформить заказ",
     "processing": "Обработка...",

@@ -76,6 +76,10 @@
     "itemCountSingle": "{count} ապրանք",
     "itemCountPlural": "{count} ապրանք"
   },
+  "placingOrder": {
+    "title": "Պատվերը ձևավորվում է…",
+    "subtitle": "Խնդրում ենք սպասել, մինչև հաստատենք ձեր պատվերը։"
+  },
   "buttons": {
     "placeOrder": "Պատվիրել",
     "processing": "Մշակվում է...",

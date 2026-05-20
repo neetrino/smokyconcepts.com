@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminInputAmdToUsd } from '../../../lib/currency';
 import { apiClient } from '../../../lib/api-client';
@@ -33,9 +34,11 @@ export function useOrderSubmission({
 }: UseOrderSubmissionProps) {
   const router = useRouter();
   const { t } = useTranslation();
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   const submitOrder = async (data: CheckoutFormData) => {
     setError(null);
+    setIsPlacingOrder(true);
 
     try {
       if (!cart) {
@@ -137,12 +140,13 @@ export function useOrderSubmission({
       const orderNumber = encodeURIComponent(response.order.number);
       router.push(`/checkout/thank-you?orderNumber=${orderNumber}`);
     } catch (err: unknown) {
+      setIsPlacingOrder(false);
       const error = err as { message?: string };
       setError(error.message || t('checkout.errors.failedToCreateOrder'));
     }
   };
 
-  return { submitOrder };
+  return { submitOrder, isPlacingOrder };
 }
 
 
