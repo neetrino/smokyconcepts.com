@@ -20,7 +20,7 @@ import {
   CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE,
   CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_STRIP_SCROLL_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME,
   CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS,
   getCatalogProductCardImageScaleBoost,
   getCatalogProductsSmViewportSnapshot,
@@ -846,7 +846,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
                     onScroll={() => {
                       handleSectionScroll(section.title);
                     }}
-                    className={CATALOG_PRODUCTS_PAGE_STRIP_SCROLL_CLASS_NAME}
+                    className={CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME}
                   >
                     <div className={CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME}>
                       {section.items.map((product, index) => {
