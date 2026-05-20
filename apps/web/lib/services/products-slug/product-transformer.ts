@@ -441,6 +441,8 @@ export async function transformProduct(
     title: translation?.title || "",
     subtitle: translation?.subtitle || null,
     description: translation?.descriptionHtml || null,
+    productDetailsHtml: translation?.productDetailsHtml || null,
+    shippingHtml: translation?.shippingHtml || null,
     categories,
     media: transformMedia(product),
     labels: transformLabels(product, lang),

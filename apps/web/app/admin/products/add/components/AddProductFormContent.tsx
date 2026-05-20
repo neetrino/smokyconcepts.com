@@ -21,6 +21,8 @@ interface AddProductFormContentProps {
     title: string;
     slug: string;
     descriptionHtml: string;
+    productDetailsHtml: string;
+    shippingHtml: string;
     categoryIds: string[];
     primaryCategoryId: string;
     sizeCatalogCategoryId: string;
@@ -61,6 +63,8 @@ interface AddProductFormContentProps {
   onSlugChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onSlugBlur?: () => void;
   onDescriptionChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+  onProductDetailsChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+  onShippingChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
   onProductTypeChange: (type: 'simple' | 'variable') => void;
   onUploadImages: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
   onUploadImageFiles: (files: File[]) => Promise<void>;
@@ -119,6 +123,8 @@ export function AddProductFormContent({
   onSlugChange,
   onSlugBlur,
   onDescriptionChange,
+  onProductDetailsChange,
+  onShippingChange,
   onProductTypeChange,
   onUploadImages,
   onUploadImageFiles,
@@ -162,10 +168,14 @@ export function AddProductFormContent({
           title={formData.title}
           slug={formData.slug}
           descriptionHtml={formData.descriptionHtml}
+          productDetailsHtml={formData.productDetailsHtml}
+          shippingHtml={formData.shippingHtml}
           onTitleChange={onTitleChange}
           onSlugChange={onSlugChange}
           onSlugBlur={onSlugBlur}
           onDescriptionChange={onDescriptionChange}
+          onProductDetailsChange={onProductDetailsChange}
+          onShippingChange={onShippingChange}
         />
 
         <ProductImages

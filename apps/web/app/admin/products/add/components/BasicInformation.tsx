@@ -12,10 +12,14 @@ interface BasicInformationProps {
   title: string;
   slug: string;
   descriptionHtml: string;
+  productDetailsHtml: string;
+  shippingHtml: string;
   onTitleChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onSlugChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onSlugBlur?: () => void;
   onDescriptionChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+  onProductDetailsChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+  onShippingChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
 }
 
 export function BasicInformation({
@@ -25,10 +29,14 @@ export function BasicInformation({
   title,
   slug,
   descriptionHtml,
+  productDetailsHtml,
+  shippingHtml,
   onTitleChange,
   onSlugChange,
   onSlugBlur,
   onDescriptionChange,
+  onProductDetailsChange,
+  onShippingChange,
 }: BasicInformationProps) {
   const { t } = useTranslation();
 
@@ -115,6 +123,32 @@ export function BasicInformation({
             value={descriptionHtml}
             onChange={onDescriptionChange}
             placeholder={t('admin.products.add.productDescriptionPlaceholder')}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {t('admin.products.add.productTabHtml')}
+          </label>
+          <textarea
+            className="w-full px-3 py-2 border border-[#dcc090]/35 rounded-md focus:outline-none focus:ring-2 focus:ring-[#dcc090] focus:border-[#dcc090]"
+            rows={5}
+            value={productDetailsHtml}
+            onChange={onProductDetailsChange}
+            placeholder={t('admin.products.add.productTabHtmlPlaceholder')}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {t('admin.products.add.shippingHtml')}
+          </label>
+          <textarea
+            className="w-full px-3 py-2 border border-[#dcc090]/35 rounded-md focus:outline-none focus:ring-2 focus:ring-[#dcc090] focus:border-[#dcc090]"
+            rows={5}
+            value={shippingHtml}
+            onChange={onShippingChange}
+            placeholder={t('admin.products.add.shippingHtmlPlaceholder')}
           />
         </div>
       </div>

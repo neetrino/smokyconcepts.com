@@ -8,6 +8,8 @@ interface FormData {
   title: string;
   slug: string;
   descriptionHtml: string;
+  productDetailsHtml: string;
+  shippingHtml: string;
   brandIds: string[];
   primaryCategoryId: string;
   categoryIds: string[];
@@ -35,6 +37,8 @@ export function buildFormData(
     title: product.title || '',
     slug: product.slug || '',
     descriptionHtml: product.descriptionHtml || '',
+    productDetailsHtml: product.productDetailsHtml || '',
+    shippingHtml: product.shippingHtml || '',
     brandIds: [],
     primaryCategoryId: product.primaryCategoryId || '',
     categoryIds: product.categoryIds || [],

@@ -70,6 +70,8 @@ export function useProductEditMode({
           title: product.title || '',
           slug: product.slug || '',
           descriptionHtml: product.descriptionHtml || '',
+          productDetailsHtml: product.productDetailsHtml || '',
+          shippingHtml: product.shippingHtml || '',
           primaryCategoryId: product.primaryCategoryId || '',
           categoryIds: product.categoryIds || [],
           sizeCatalogCategoryId: '',

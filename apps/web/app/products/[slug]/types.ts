@@ -72,6 +72,8 @@ export interface Product {
   title: string;
   subtitle?: string;
   description?: string;
+  productDetailsHtml?: string | null;
+  shippingHtml?: string | null;
   media: ProductMedia[] | string[];
   variants: ProductVariant[];
   labels?: ProductLabel[];

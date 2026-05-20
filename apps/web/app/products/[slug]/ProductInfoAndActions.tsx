@@ -40,6 +40,16 @@ const CUSTOMIZE_APPLIED_PREVIEW_MS = 1000;
 
 type ProductTabKey = 'description' | 'details' | 'shipping' | 'customize';
 
+const PRODUCT_TAB_HTML_PROSE_CLASS =
+  'prose max-w-none text-[15px] leading-[24px] text-[#414141] prose-p:my-0 prose-p:text-[15px] prose-p:leading-[24px] sm:text-[16px] sm:leading-[26px] sm:prose-p:text-[16px] sm:prose-p:leading-[26px]';
+
+function hasRenderableTabHtml(html: string | null | undefined): boolean {
+  if (!html?.trim()) {
+    return false;
+  }
+  return html.replace(/<[^>]*>/g, '').trim().length > 0;
+}
+
 interface ProductOptionValue extends AttributeGroupValue {
   colors?: string[] | string | null;
 }
@@ -204,6 +214,8 @@ export function ProductInfoAndActions({
   const productTitle = getProductText(language, product.id, 'title') || product.title;
   const productDescription =
     getProductText(language, product.id, 'longDescription') || product.description || '';
+  const productTabHtml = product.productDetailsHtml ?? '';
+  const shippingTabHtml = product.shippingHtml ?? '';
   const activeColorOption = useMemo(
     () =>
       colorOptions.find(
@@ -406,6 +418,14 @@ export function ProductInfoAndActions({
     }
 
     if (activeTab === 'shipping') {
+      if (hasRenderableTabHtml(shippingTabHtml)) {
+        return (
+          <div
+            className={PRODUCT_TAB_HTML_PROSE_CLASS}
+            dangerouslySetInnerHTML={{ __html: shippingTabHtml }}
+          />
+        );
+      }
       return (
         <p className="text-[15px] leading-[24px] text-[#414141] sm:text-[16px] sm:leading-[26px]">
           {getShippingCopy(language)}
@@ -484,6 +504,23 @@ export function ProductInfoAndActions({
       );
     }
 
+    if (hasRenderableTabHtml(productTabHtml)) {
+      return (
+        <div
+          className={PRODUCT_TAB_HTML_PROSE_CLASS}
+          dangerouslySetInnerHTML={{ __html: productTabHtml }}
+        />
+      );
+    }
+
+    if (productDetails.length === 0) {
+      return (
+        <p className="text-[15px] leading-[24px] text-[#414141] sm:text-[16px] sm:leading-[26px]">
+          {t(language, 'product.product_tab_empty')}
+        </p>
+      );
+    }
+
     return (
       <div className="space-y-2">
         {productDetails.map((item) => (
@@ -497,6 +534,8 @@ export function ProductInfoAndActions({
     activeTab,
     language,
     productDescription,
+    productTabHtml,
+    shippingTabHtml,
     productDetails,
     selectedCatalogSize,
     selectedCustomSizeRequest,

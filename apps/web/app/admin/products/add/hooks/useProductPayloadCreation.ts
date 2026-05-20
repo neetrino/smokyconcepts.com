@@ -8,6 +8,8 @@ interface CreateAndSubmitPayloadProps {
     title: string;
     slug: string;
     descriptionHtml: string;
+    productDetailsHtml: string;
+    shippingHtml: string;
     categoryIds: string[];
     published: boolean;
     featured: boolean;
@@ -51,6 +53,8 @@ export async function createAndSubmitPayload({
       title: formData.title,
       slug: uniqueSlug,
       descriptionHtml: formData.descriptionHtml || undefined,
+      productDetailsHtml: formData.productDetailsHtml || undefined,
+      shippingHtml: formData.shippingHtml || undefined,
       primaryCategoryId: finalPrimaryCategoryId || undefined,
       categoryIds: formData.categoryIds.length > 0 ? formData.categoryIds : undefined,
       published: isEditMode ? formData.published : true,

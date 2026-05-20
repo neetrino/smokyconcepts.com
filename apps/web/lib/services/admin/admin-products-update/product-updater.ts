@@ -131,7 +131,14 @@ export async function updateProductTranslation(
   data: UpdateProductData,
   tx: Prisma.TransactionClient
 ) {
-  if (data.title || data.slug || data.subtitle !== undefined || data.descriptionHtml !== undefined) {
+  if (
+    data.title ||
+    data.slug ||
+    data.subtitle !== undefined ||
+    data.descriptionHtml !== undefined ||
+    data.productDetailsHtml !== undefined ||
+    data.shippingHtml !== undefined
+  ) {
     const locale = data.locale || "en";
 
     const finalSlug = data.slug
@@ -150,6 +157,10 @@ export async function updateProductTranslation(
         ...(finalSlug && { slug: finalSlug }),
         ...(data.subtitle !== undefined && { subtitle: data.subtitle || null }),
         ...(data.descriptionHtml !== undefined && { descriptionHtml: data.descriptionHtml || null }),
+        ...(data.productDetailsHtml !== undefined && {
+          productDetailsHtml: data.productDetailsHtml || null,
+        }),
+        ...(data.shippingHtml !== undefined && { shippingHtml: data.shippingHtml || null }),
       },
       create: {
         productId,
@@ -158,6 +169,8 @@ export async function updateProductTranslation(
         slug: finalSlug || data.slug || "",
         subtitle: data.subtitle || null,
         descriptionHtml: data.descriptionHtml || null,
+        productDetailsHtml: data.productDetailsHtml || null,
+        shippingHtml: data.shippingHtml || null,
       },
     });
   }

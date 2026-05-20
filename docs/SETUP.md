@@ -55,12 +55,12 @@ cp env.example apps/web/.env
 2. **Միգրացիաներ.** Prisma schema-ն արդեն կա `packages/db/prisma/`-ում։
 
 ```bash
-# packages/db-ից (DATABASE_URL պետք է սահմանված լինի)
+# packages/db-ից — env-ը կարդացվում է root/.env.local, .env, apps/web/.env-ից
 cd packages/db
 npm run db:generate
 npm run db:push
-# կամ միգրացիաներով:
-# npm run db:migrate:deploy
+# կամ միգրացիաներով (պահանջում է DATABASE_URL; DIRECT_URL-ը optional — fallback DATABASE_URL)
+npm run db:migrate:deploy
 ```
 
 Կամ root-ից (env-ը root/.env.local կամ apps/web/.env-ից կկարդացվի, եթե Next-ը արդեն բեռնել է).

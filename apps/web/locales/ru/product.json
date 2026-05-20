@@ -65,6 +65,7 @@
   "addedToCart": "Добавлено в корзину",
   "errorAddingToCart": "Ошибка при добавлении в корзину",
   "description_empty": "Описание скоро появится.",
+  "product_tab_empty": "Сведения о товаре скоро появятся.",
   "pcs": "шт",
   "outOfStockLabel": "Нет в наличии",
   "noRelatedProducts": "Нет рекомендаций"
