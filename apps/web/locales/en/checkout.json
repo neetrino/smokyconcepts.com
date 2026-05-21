@@ -12,6 +12,7 @@
     "phone": "Phone",
     "address": "Address",
     "region": "Region",
+    "country": "Country",
     "city": "City",
     "postalCode": "Postal Code",
     "phoneNumber": "Phone Number",
@@ -75,6 +76,10 @@
     "title": "Products in your order",
     "itemCountSingle": "{count} item",
     "itemCountPlural": "{count} items"
+  },
+  "placingOrder": {
+    "title": "Placing your order…",
+    "subtitle": "Please wait while we confirm your order."
   },
   "buttons": {
     "placeOrder": "Place Order",

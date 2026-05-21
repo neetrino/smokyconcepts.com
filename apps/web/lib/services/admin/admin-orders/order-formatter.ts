@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
+import { filterDisplayableVariantOptions } from "@/lib/default-pricing-variant";
 import { mergeSizeCatalogIntoVariantOptions } from "@/lib/orders/merge-size-catalog-into-variant-options";
-import { adminInputAmdToUsd } from "@/lib/currency";
+import { adminInputAmdToUsd, catalogPriceToUsd } from "@/lib/currency";
 
 type VariantOptionFromAttributes = {
   attributeKey?: string | null;
@@ -105,7 +106,9 @@ export function formatOrderForList(order: {
     const previews: OrderListVariantPreview[] = [];
 
     for (const item of items) {
-      const variantOptionsBase = getVariantOptions(item.variant?.attributes).map(formatVariantOption);
+      const variantOptionsBase = filterDisplayableVariantOptions(
+        getVariantOptions(item.variant?.attributes).map(formatVariantOption)
+      );
       const variantOptions = mergeSizeCatalogIntoVariantOptions(
         variantOptionsBase,
         item.sizeCatalogTitle,
@@ -163,7 +166,9 @@ export function formatOrderForList(order: {
   ): string | null => {
     const labels = items
       .map((item) => {
-        const variantOptionsBase = getVariantOptions(item.variant?.attributes).map(formatVariantOption);
+        const variantOptionsBase = filterDisplayableVariantOptions(
+          getVariantOptions(item.variant?.attributes).map(formatVariantOption)
+        );
         const variantOptions = mergeSizeCatalogIntoVariantOptions(
           variantOptionsBase,
           item.sizeCatalogTitle,
@@ -214,11 +219,11 @@ export function formatOrderForList(order: {
       .reduce((sum, item) => {
         const quantity = Number(item.quantity ?? 0);
         const itemTotal = Number(item.total ?? 0);
-        const variantBasePrice = Number(item.variant?.price ?? 0);
-        if (!Number.isFinite(quantity) || !Number.isFinite(itemTotal) || !Number.isFinite(variantBasePrice)) {
+        const variantBasePriceUsd = catalogPriceToUsd(Number(item.variant?.price ?? 0));
+        if (!Number.isFinite(quantity) || !Number.isFinite(itemTotal) || !Number.isFinite(variantBasePriceUsd)) {
           return sum;
         }
-        const baseTotal = variantBasePrice * quantity;
+        const baseTotal = variantBasePriceUsd * quantity;
         const collectionSurcharge = Math.max(0, itemTotal - baseTotal);
         return sum + collectionSurcharge;
       }, 0)
@@ -313,7 +318,9 @@ export function formatOrderItem(item: {
   const total = item.total ?? 0;
   const unitPrice = quantity > 0 ? Number((total / quantity).toFixed(2)) : total;
 
-  const variantOptionsBase = getVariantOptions(variant?.attributes).map(formatVariantOption);
+  const variantOptionsBase = filterDisplayableVariantOptions(
+    getVariantOptions(variant?.attributes).map(formatVariantOption)
+  );
   const variantOptions = mergeSizeCatalogIntoVariantOptions(
     variantOptionsBase,
     item.sizeCatalogTitle,
@@ -323,14 +330,14 @@ export function formatOrderItem(item: {
   const normalizedTitle = item.sizeCatalogTitle?.trim().toLocaleLowerCase() ?? '';
   const mappedCollectionPriceAmd =
     normalizedTitle !== '' ? (sizeCatalogPriceByTitle?.get(normalizedTitle) ?? null) : null;
-  const variantBasePriceUsd = Number(variant?.price ?? Number.NaN);
+  const variantCatalogBaseUsd = catalogPriceToUsd(Number(variant?.price ?? Number.NaN));
   const usdPerAmd = adminInputAmdToUsd(1);
   const inferredCollectionPriceAmd =
-    Number.isFinite(variantBasePriceUsd) &&
+    Number.isFinite(variantCatalogBaseUsd) &&
     quantity > 0 &&
     Number.isFinite(usdPerAmd) &&
     usdPerAmd > 0
-      ? Math.max(0, Math.round((unitPrice - variantBasePriceUsd) / usdPerAmd))
+      ? Math.max(0, Math.round((unitPrice - variantCatalogBaseUsd) / usdPerAmd))
       : null;
   const sizeCatalogCategoryPriceAmd = mappedCollectionPriceAmd ?? inferredCollectionPriceAmd;
 

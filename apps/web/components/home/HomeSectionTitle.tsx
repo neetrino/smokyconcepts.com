@@ -18,6 +18,8 @@ interface HomeSectionTitleProps {
   /** When set, shown below `sm` with `whitespace-pre-line`; `title` is used from `sm` up (natural wrap). */
   titleMobile?: string;
   description?: string;
+  /** When set, shown below `sm` instead of `description` (use `\n` for line breaks; `whitespace-pre-line` on the paragraph). */
+  descriptionMobile?: string;
   /** Two-line description: first word bold, rest of line 1 + line 2 regular. Takes precedence over `description`. */
   descriptionTwoLine?: HomeSectionTitleDescriptionTwoLine;
   /** Extra Tailwind classes for the bold segment (`line1Bold`) only. */
@@ -25,6 +27,8 @@ interface HomeSectionTitleProps {
   /** Single-line (or pre-line) copy with two emphasized words — same weight as `descriptionTwoLine` bold span. */
   descriptionEmphasis?: HomeSectionTitleDescriptionEmphasis;
   centered?: boolean;
+  /** Below `sm`: centered; from `sm` up: left-aligned. Ignores `centered` when true. */
+  centerOnMobileOnly?: boolean;
   className?: string;
   titleClassName?: string;
 }
@@ -36,14 +40,20 @@ export function HomeSectionTitle({
   title,
   titleMobile,
   description,
+  descriptionMobile,
   descriptionTwoLine,
   descriptionTwoLineBoldClassName = '',
   descriptionEmphasis,
   centered = true,
+  centerOnMobileOnly = false,
   className = '',
   titleClassName = '',
 }: HomeSectionTitleProps) {
-  const alignmentClassName = centered ? 'text-center items-center' : 'text-left items-start';
+  const alignmentClassName = centerOnMobileOnly
+    ? 'items-center text-center sm:items-start sm:text-left'
+    : centered
+      ? 'text-center items-center'
+      : 'text-left items-start';
   const titleClass = `whitespace-pre-line text-[2.125rem] font-extrabold leading-[1.235] text-[#414141] sm:text-4xl sm:leading-tight ${titleClassName}`.trim();
 
   return (
@@ -78,9 +88,16 @@ export function HomeSectionTitle({
           <span className="font-black">{descriptionEmphasis.bold2}</span>
           {descriptionEmphasis.tail}
         </p>
-      ) : description ? (
+      ) : description || descriptionMobile ? (
         <p className="max-w-[52rem] whitespace-pre-line text-base font-medium leading-[1.375] text-[#414141] sm:leading-relaxed">
-          {description}
+          {descriptionMobile ? (
+            <>
+              <span className="sm:hidden">{descriptionMobile}</span>
+              {description ? <span className="hidden sm:inline">{description}</span> : null}
+            </>
+          ) : (
+            description
+          )}
         </p>
       ) : null}
     </div>

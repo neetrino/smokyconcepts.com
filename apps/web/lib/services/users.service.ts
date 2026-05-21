@@ -327,6 +327,44 @@ class UsersService {
       recentOrders,
     };
   }
+
+  /**
+   * Soft-delete the authenticated user's account
+   */
+  async deleteAccount(userId: string) {
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: { id: true, deletedAt: true },
+    });
+
+    if (!user) {
+      throw {
+        status: 404,
+        type: "https://api.shop.am/problems/not-found",
+        title: "User not found",
+      };
+    }
+
+    if (user.deletedAt) {
+      throw {
+        status: 409,
+        type: "https://api.shop.am/problems/conflict",
+        title: "Account already deleted",
+        detail: "This account has already been deleted",
+      };
+    }
+
+    await db.user.update({
+      where: { id: userId },
+      data: {
+        deletedAt: new Date(),
+        blocked: true,
+      },
+      select: { id: true },
+    });
+
+    return { success: true };
+  }
 }
 
 export const usersService = new UsersService();

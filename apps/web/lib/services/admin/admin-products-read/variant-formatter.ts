@@ -1,3 +1,4 @@
+import { catalogPriceForStorefront } from '@/lib/currency';
 import { extractSelectedValueIdsFromVariantAttributes } from '@/lib/category-attributes';
 
 /**
@@ -15,8 +16,9 @@ export function formatVariantForAdmin(variant: {
 }) {
   return {
     id: variant.id,
-    price: variant.price.toString(),
-    compareAtPrice: variant.compareAtPrice?.toString() ?? "",
+    price: String(catalogPriceForStorefront(variant.price)),
+    compareAtPrice:
+      variant.compareAtPrice != null ? String(catalogPriceForStorefront(variant.compareAtPrice)) : '',
     stock: variant.stock.toString(),
     sku: variant.sku ?? "",
     imageUrl: variant.imageUrl ?? "",

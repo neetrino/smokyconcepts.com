@@ -17,6 +17,7 @@ import { useProductCartActions } from './useProductCartActions';
 import { useCustomizeGoogleFontLinks } from './useCustomizeGoogleFontLinks';
 import type { ProductPageProps } from './types';
 import type { CustomOrderDraft } from './CustomizeSizeOrderFallback';
+import { PRODUCT_INFO_COLUMN_CLASS } from './productInfoTabContent.constants';
 
 const CUSTOMIZE_TEXT_MAX_LENGTH = 18;
 
@@ -159,8 +160,8 @@ export default function ProductPage({ params }: ProductPageProps) {
   return (
     <div className="overflow-visible bg-[#efefef]">
       <div className="mx-auto max-w-[1920px] overflow-visible px-4 pb-16 pt-2 sm:px-6 lg:px-[120px] lg:pb-24 lg:pt-5">
-        <div className="grid items-start gap-8 overflow-visible xl:grid-cols-[minmax(0,640px)_minmax(0,1fr)] xl:gap-11">
-          <div className="flex min-w-0 flex-col gap-5 overflow-visible sm:gap-6">
+        <div className="grid min-h-0 items-start gap-8 overflow-visible xl:grid-cols-[minmax(0,640px)_minmax(0,1fr)] xl:items-stretch xl:gap-11 xl:overflow-hidden">
+          <div className="flex min-h-0 min-w-0 flex-col gap-5 overflow-visible sm:gap-6">
             <ProductImageGallery
               images={images}
               product={product}
@@ -173,6 +174,7 @@ export default function ProductPage({ params }: ProductPageProps) {
             />
           </div>
 
+          <div className={PRODUCT_INFO_COLUMN_CLASS}>
           <ProductInfoAndActions
             product={product}
             appliedCustomize={customizeApplied}
@@ -203,6 +205,7 @@ export default function ProductPage({ params }: ProductPageProps) {
             onSelectedCustomSizeRequestChange={setSelectedCustomSizeRequest}
             onCustomizeTabActiveChange={setIsCustomizeTabActive}
           />
+          </div>
         </div>
 
         <div className="mt-16 lg:mt-[128px]">

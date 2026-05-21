@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, type MouseEvent } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore, type MouseEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -9,6 +9,16 @@ import { useAddToCart } from '../../../components/hooks/useAddToCart';
 import { useCurrency } from '../../../components/hooks/useCurrency';
 import { formatCatalogPrice } from '../../../lib/currency';
 
+import {
+  CATALOG_PRODUCTS_PAGE_CARD_DETAILS_OFFSET_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_CARD_HERO_PULL_UP_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_CARD_MOBILE_DETAILS_LAYOUT_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_CARD_TOP_PADDING_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_MOBILE_HERO_MAX_SCALE,
+  getCatalogProductsSmViewportSnapshot,
+  getServerCatalogProductsSmViewportSnapshot,
+  subscribeCatalogProductsSmViewport,
+} from './catalogProductCardMobilePresentation';
 import { PRODUCT_SECTION_BADGE_CLASS_NAMES } from './catalogProductLabels';
 
 const BAG_ICON_PATH = '/assets/home/icons/bag.svg';
@@ -71,6 +81,8 @@ interface ProductsCatalogCardProps {
   catalogStripMobilePeek?: boolean;
   /** Products catalog: slightly narrower card + shorter image stack (more grid gap from parent). */
   slimCatalogGrid?: boolean;
+  /** `/products` — slightly less vertical gap between hero image and details. */
+  productsCatalogPage?: boolean;
 }
 
 /**
@@ -95,7 +107,13 @@ export function ProductsCatalogCard({
   eagerProductImage = false,
   catalogStripMobilePeek = false,
   slimCatalogGrid = false,
+  productsCatalogPage = false,
 }: ProductsCatalogCardProps) {
+  const isSmUp = useSyncExternalStore(
+    subscribeCatalogProductsSmViewport,
+    getCatalogProductsSmViewportSnapshot,
+    getServerCatalogProductsSmViewportSnapshot
+  );
   const displayCurrency = useCurrency();
   const isAmdCurrency = displayCurrency === 'AMD';
   const router = useRouter();
@@ -152,21 +170,31 @@ export function ProductsCatalogCard({
   const compactArticleWidth =
     catalogStripMobilePeek && compactLayout
       ? // 3.75rem ≈ page px-4 (2rem) + strip gap; /1.5 ≈ half of next card visible in viewport
-        `${stripPeekMobileWidth} ${stripPeekMaxLg} ${stripPeekLgW} ${stripPeekXlW}`
+        `max-sm:w-full max-sm:max-w-full ${stripPeekMobileWidth} ${stripPeekMaxLg} ${stripPeekLgW} ${stripPeekXlW}`
       : widerCompactCard
         ? 'w-[12rem] max-sm:w-[10.75rem]'
         : 'w-[11rem] max-sm:w-[10.25rem]';
   const cardShadowClass = suppressShadow ? 'shadow-none' : CARD_SHADOW_TAILWIND;
   const articleStackClassName = 'z-0 hover:z-[8] focus-within:z-[8]';
+  const compactArticlePaddingClassName = productsCatalogPage
+    ? `px-0 pb-2.5 max-sm:pb-2 sm:pb-3 ${CATALOG_PRODUCTS_PAGE_CARD_TOP_PADDING_CLASS_NAME}`
+    : 'px-2.5 pb-2.5 pt-2 sm:px-3 sm:pb-3 sm:pt-2.5';
+  const catalogDetailsLayoutClassName =
+    compactLayout && productsCatalogPage
+      ? `flex flex-1 flex-col justify-between ${CATALOG_PRODUCTS_PAGE_CARD_MOBILE_DETAILS_LAYOUT_CLASS_NAME}`
+      : compactLayout
+        ? 'flex flex-1 flex-col justify-between'
+        : '';
+  const catalogDetailsPaddingClassName = productsCatalogPage ? 'px-2.5 sm:px-3' : '';
   const articleClassName = compactLayout
-    ? `relative ${compactArticleWidth} ${articleStackClassName} flex h-full min-h-0 shrink-0 flex-col overflow-visible rounded-[1.125rem] bg-white px-2.5 pb-2.5 pt-2 sm:px-3 sm:pb-3 sm:pt-2.5 ${cardShadowClass}`.trim()
+    ? `relative ${compactArticleWidth} ${articleStackClassName} flex h-full min-h-0 shrink-0 flex-col overflow-visible rounded-[1.125rem] bg-white ${compactArticlePaddingClassName} ${cardShadowClass}`.trim()
     : `relative w-[14.25rem] max-sm:w-[12.5rem] ${articleStackClassName} shrink-0 overflow-visible rounded-[1.375rem] bg-white px-3 pb-3 pt-2.5 sm:px-3.5 sm:pb-3.5 sm:pt-3 ${cardShadowClass}`.trim();
 
   const imageWrapperClassName = compactLayout
     ? widerCompactCard
       ? 'h-[15.25rem] sm:h-[18.5rem]'
       : slimCatalogGrid
-        ? 'h-[13.5rem] sm:h-[16rem]'
+        ? 'h-[14.75rem] sm:h-[17.75rem] md:h-[13.5rem] lg:h-[16rem]'
         : 'h-[14.75rem] sm:h-[17.75rem]'
     : isCompactSize
       ? 'h-[12.5rem] sm:h-60'
@@ -174,23 +202,30 @@ export function ProductsCatalogCard({
 
   const baseImagePullUpClassName = compactLayout
     ? slimCatalogGrid
-      ? '-mt-[4.75rem] sm:-mt-[5.75rem]'
+      ? '-mt-[5.125rem] sm:-mt-[6.25rem] md:-mt-[4.75rem] lg:-mt-[5.75rem]'
       : '-mt-[5.125rem] sm:-mt-[6.25rem]'
     : isCompactSize
       ? '-mt-12 sm:-mt-16'
       : '-mt-[4.5rem] sm:-mt-24';
-  const imagePullUpClassName = baseImagePullUpClassName;
+  const imagePullUpClassName =
+    productsCatalogPage && compactLayout && !slimCatalogGrid
+      ? CATALOG_PRODUCTS_PAGE_CARD_HERO_PULL_UP_CLASS_NAME
+      : baseImagePullUpClassName;
 
   const compactInnerImageHeight = widerCompactCard
     ? 'h-[14.25rem] sm:h-[17.25rem]'
     : slimCatalogGrid
-      ? 'h-[12.5rem] sm:h-[15rem]'
+      ? 'h-[13.75rem] sm:h-[16.5rem] md:h-[12.5rem] lg:h-[15rem]'
       : 'h-[13.75rem] sm:h-[16.5rem]';
   const imageInnerClassName = compactLayout
     ? `${compactInnerImageHeight} w-full`
     : 'h-full w-full';
   const compactBaseScale = imageNudgeDown ? 1.05 : 1.12;
-  const compactImageScale = compactBaseScale + imageScaleBoost;
+  const compactImageScaleRaw = compactBaseScale + imageScaleBoost;
+  const compactImageScale =
+    productsCatalogPage && compactLayout && !isSmUp
+      ? Math.min(compactImageScaleRaw, CATALOG_PRODUCTS_PAGE_MOBILE_HERO_MAX_SCALE)
+      : compactImageScaleRaw;
   const imageClassName = compactLayout ? 'object-contain origin-bottom' : 'object-contain';
 
   // Text sizes — upcoming mobile bumped to match Figma (18 px title, 12 px meta, 20 px price).
@@ -217,14 +252,30 @@ export function ProductsCatalogCard({
   const detailsOffsetClassName = compactLayout
     ? tightenDetailsUnderImage
       ? slimCatalogGrid
-        ? '-mt-[3.75rem] sm:-mt-[4.5rem]'
+        ? '-mt-[4.125rem] sm:-mt-[5rem] md:-mt-[3.75rem] lg:-mt-[4.5rem]'
         : '-mt-[4.125rem] sm:-mt-[5rem]'
-      : slimCatalogGrid
-        ? '-mt-[2.5rem] sm:-mt-[3rem]'
-        : '-mt-[2.75rem] sm:-mt-[3.25rem]'
+      : productsCatalogPage
+        ? slimCatalogGrid
+          ? '-mt-[3.25rem] sm:-mt-[3.75rem] md:-mt-[3rem] lg:-mt-[3.5rem]'
+          : CATALOG_PRODUCTS_PAGE_CARD_DETAILS_OFFSET_CLASS_NAME
+        : slimCatalogGrid
+          ? '-mt-[2.75rem] sm:-mt-[3.25rem] md:-mt-[2.5rem] lg:-mt-[3rem]'
+          : '-mt-[2.75rem] sm:-mt-[3.25rem]'
     : '-mt-4';
+  const imageWrapperBottomMarginClassName =
+    compactLayout && productsCatalogPage ? 'mb-1 max-sm:mb-1.5 sm:mb-1' : 'mb-2';
+  const catalogPriceRowClassName =
+    compactLayout && productsCatalogPage
+      ? 'mt-2 max-sm:mt-1 flex items-center justify-between gap-2'
+      : compactLayout
+        ? 'mt-2 flex items-center justify-between gap-2'
+        : 'mt-5 flex items-center justify-between gap-3';
   const dotsGapClassName = compactLayout ? 'gap-1' : 'gap-[0.3125rem]';
-  const dotsMarginClassName = compactLayout ? 'mb-1' : 'mb-3';
+  const dotsMarginClassName = compactLayout
+    ? productsCatalogPage
+      ? 'mb-0.5'
+      : 'mb-1'
+    : 'mb-3';
   /** Keeps strip / multi-dot rows same block height so flex row stretch aligns all catalog cards. */
   const dotsRowLayoutClassName = `flex min-h-3 items-center ${dotsGapClassName} ${dotsMarginClassName}`;
   const sizeBadgeClassName = compactLayout
@@ -259,10 +310,10 @@ export function ProductsCatalogCard({
       {...(catalogStripMobilePeek ? { 'data-catalog-strip-card': '' } : {})}
     >
       <div
-        className={`relative z-10 mb-2 flex shrink-0 items-end justify-center ${imagePullUpClassName} ${imageWrapperClassName} overflow-visible`.trim()}
+        className={`relative z-10 ${imageWrapperBottomMarginClassName} flex shrink-0 items-end justify-center ${imagePullUpClassName} ${imageWrapperClassName} overflow-visible`.trim()}
       >
         <div
-          className={`relative ${imageInnerClassName} transition-transform duration-300 ease-out md:group-hover:-translate-y-1.5 md:group-hover:scale-[1.045] ${imageFrameClassName ?? ''}`.trim()}
+          className={`relative ${imageInnerClassName} transition-transform duration-300 ease-out md:group-hover:-translate-y-1.5 md:group-hover:scale-[1.045] ${productsCatalogPage ? 'max-sm:overflow-hidden' : ''} ${imageFrameClassName ?? ''}`.trim()}
         >
           {activeImage && !imageError ? (
             <Link
@@ -292,7 +343,7 @@ export function ProductsCatalogCard({
       </div>
 
       <div
-        className={`relative z-20 min-h-0 ${compactLayout ? 'flex flex-1 flex-col justify-between' : ''} ${detailsOffsetClassName}`.trim()}
+        className={`relative z-20 min-h-0 ${catalogDetailsLayoutClassName} ${detailsOffsetClassName} ${catalogDetailsPaddingClassName}`.trim()}
       >
         <div className="min-w-0">
           {visibleDotCount > 0 ? (
@@ -355,7 +406,7 @@ export function ProductsCatalogCard({
           </div>
         </div>
 
-        <div className={compactLayout ? 'mt-2 flex items-center justify-between gap-2' : 'mt-5 flex items-center justify-between gap-3'}>
+        <div className={catalogPriceRowClassName}>
           <span className={`font-extrabold leading-tight text-black ${priceClassName}`}>
             {amountText}
             {isAmdCurrency ? <span className="ml-1 text-[0.78em]">֏</span> : null}

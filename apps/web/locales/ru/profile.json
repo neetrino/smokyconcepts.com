@@ -106,6 +106,20 @@
     "newPasswordPlaceholder": "Введите новый пароль (мин. 6 символов)",
     "confirmPasswordPlaceholder": "Подтвердите новый пароль"
   },
+  "deleteAccount": {
+    "title": "Удалить профиль",
+    "description": "Безвозвратно удалить аккаунт и персональные данные. Это действие нельзя отменить.",
+    "button": "Удалить профиль",
+    "modalTitle": "Удалить аккаунт?",
+    "modalDescription": "Все данные профиля будут удалены, и вы выйдете из системы. Введите DELETE ниже для подтверждения.",
+    "confirmLabel": "Подтверждение",
+    "confirmPlaceholder": "DELETE",
+    "confirmHint": "Введите DELETE заглавными буквами, чтобы включить удаление.",
+    "cancel": "Отмена",
+    "confirmButton": "Удалить мой аккаунт",
+    "deleting": "Удаление аккаунта...",
+    "failedToDelete": "Не удалось удалить аккаунт"
+  },
   "orders": {
     "title": "Мои заказы",
     "loading": "Загрузка заказов...",
@@ -153,6 +167,7 @@
     "pickup": "Самовывоз",
     "notSpecified": "Не указано",
     "deliveryAddress": "Адрес доставки",
+    "country": "Страна",
     "region": "Область (марз)",
     "phone": "Телефон",
     "color": "Цвет",

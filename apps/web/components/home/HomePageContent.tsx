@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { HomeActionButton } from './HomeActionButton';
+import { CoverCollectionProductCard } from './CoverCollectionProductCard';
 import { CultureVotingSection } from './CultureVotingSection';
 import { HomeHeroSection } from './HomeHeroSection';
 import { HomeSectionTitle } from './HomeSectionTitle';
@@ -36,6 +37,12 @@ const MASONRY_ROW2_RIGHT = 'min-w-0 flex-[1.3] sm:flex-[1.26]';
 /** Row 3 — Documents narrower, Wallets wider (sub-xl masonry). */
 const MASONRY_ROW3_LEFT = 'min-w-0 flex-[1.48] sm:flex-[1.44]';
 const MASONRY_ROW3_RIGHT = 'min-w-0 flex-[1.02] sm:flex-[1.06]';
+/** Figma Mob — 2×2 grid; horizontal gap between cards in the same row. */
+const COVER_COLLECTIONS_MOBILE_GRID_GAP_X_CLASS = 'max-sm:gap-x-[clamp(0.5rem,4vw,1.5rem)]';
+const COVER_COLLECTIONS_MOBILE_GRID_GAP_Y_CLASS = 'max-sm:gap-y-[clamp(2.5rem,13vw,4.5rem)]';
+/** Mobile: pull card grid closer to section title. */
+const COVER_COLLECTIONS_MOBILE_SECTION_GAP_CLASS = 'max-sm:gap-5';
+const COVER_COLLECTIONS_MOBILE_GRID_MARGIN_TOP_CLASS = 'max-sm:mt-0';
 
 function PackFitCard({
   title,
@@ -327,50 +334,18 @@ export function HomePageContent({ coverCollections, heroSlides }: HomePageConten
         </section>
 
         {coverCollections.length > 0 ? (
-          <section className="flex flex-col gap-8 overflow-visible pt-3 sm:gap-10 sm:pt-6">
+          <section
+            className={`flex flex-col gap-8 overflow-visible pt-3 sm:gap-10 sm:pt-6 ${COVER_COLLECTIONS_MOBILE_SECTION_GAP_CLASS}`}
+          >
             <HomeSectionTitle
               title={t('home.homepage.coverCollections.title')}
               className="-translate-y-10 sm:-translate-y-4 lg:-translate-y-6"
             />
-            <div className="mt-4 grid grid-cols-2 items-start gap-x-2 gap-y-20 overflow-visible sm:mt-0 sm:grid-cols-4 sm:gap-8">
+            <div
+              className={`mt-4 grid w-full min-w-0 auto-rows-fr grid-cols-[repeat(2,minmax(0,1fr))] items-stretch justify-items-stretch gap-x-2 gap-y-16 overflow-visible sm:mt-0 sm:grid-cols-4 sm:items-start sm:gap-8 ${COVER_COLLECTIONS_MOBILE_GRID_MARGIN_TOP_CLASS} ${COVER_COLLECTIONS_MOBILE_GRID_GAP_X_CLASS} ${COVER_COLLECTIONS_MOBILE_GRID_GAP_Y_CLASS}`}
+            >
               {coverCollections.map((item) => (
-                <Link
-                  key={item.slug}
-                  href={`/products?category=${item.slug}`}
-                  className="group relative z-0 mt-5 max-sm:translate-y-2 flex min-h-0 w-full min-w-0 justify-self-center flex-col overflow-visible rounded-[1rem] max-sm:bg-transparent bg-white px-2.5 pb-10 pt-0 shadow-none transition-shadow duration-200 hover:z-10 hover:shadow-none focus-visible:z-10 focus-within:z-10 sm:mt-8 sm:w-full sm:translate-y-0 sm:rounded-[2rem] sm:px-6 sm:pb-8 sm:shadow-[0_6px_24px_rgba(18,42,38,0.05)] sm:hover:shadow-[0_12px_32px_rgba(18,42,38,0.12)]"
-                >
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 -z-10 hidden max-sm:block rounded-[1rem] bg-white shadow-[0_8px_28px_rgba(18,42,38,0.12)] transition-shadow duration-200 max-sm:-translate-y-6 group-hover:shadow-[0_12px_32px_rgba(18,42,38,0.12)]"
-                  />
-                  <div className="relative -mt-16 translate-y-2 h-44 w-[94%] self-center shrink-0 overflow-visible sm:-mt-28 sm:translate-y-0 sm:h-[22rem] sm:w-full">
-                    {item.imageSrc ? (
-                      <img
-                        src={item.imageSrc}
-                        alt={item.title}
-                        className="h-full w-full origin-bottom object-contain object-top transition-transform duration-300 ease-out translate-y-10 scale-x-[1.92] scale-y-[1.72] sm:translate-y-[8.25rem] sm:scale-x-[1.45] sm:scale-y-[1.42] sm:group-hover:translate-y-[7.75rem] sm:group-hover:scale-x-[1.55] sm:group-hover:scale-y-[1.52]"
-                        loading="eager"
-                        decoding="async"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center">
-                        <img
-                          src={HOME_ASSET_PATHS.packMark}
-                          alt=""
-                          className="h-20 w-16 origin-bottom object-contain opacity-60 transition-transform duration-300 ease-out scale-x-[1.34] scale-y-[1.2] sm:h-24 sm:w-[4.5rem] sm:group-hover:-translate-y-2 sm:group-hover:scale-[1.3]"
-                          aria-hidden="true"
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <h3
-                    className={`relative z-[1] max-sm:-mt-1 text-lg font-black leading-tight text-[#414141] sm:mt-12 sm:translate-y-3 sm:text-2xl lg:text-3xl ${
-                      item.slug === 'special-edition' ? 'line-clamp-1 whitespace-nowrap' : 'line-clamp-2'
-                    }`}
-                  >
-                    {item.title}
-                  </h3>
-                </Link>
+                <CoverCollectionProductCard key={item.slug} item={item} />
               ))}
             </div>
           </section>
@@ -522,13 +497,14 @@ export function HomePageContent({ coverCollections, heroSlides }: HomePageConten
             <HomeSectionTitle
               title={t('home.homepage.upcomingLines.title')}
               description={t('home.homepage.upcomingLines.description')}
-              centered={false}
-              className="gap-4 text-center sm:gap-5 sm:text-left [&_h2]:text-[2.125rem] [&_h2]:leading-[1.18] [&_h2]:sm:text-6xl [&_p]:text-sm [&_p]:sm:text-base [&_p]:leading-relaxed"
+              descriptionMobile={t('home.homepage.upcomingLines.descriptionMobile')}
+              centerOnMobileOnly
+              className="gap-4 sm:gap-5 [&_h2]:text-[2.125rem] [&_h2]:leading-[1.18] [&_h2]:sm:text-6xl [&_p]:text-sm [&_p]:sm:text-base [&_p]:leading-relaxed"
             />
             <HomeActionButton
               href="/contact"
               label={t('home.homepage.upcomingLines.cta')}
-              className="mx-auto hidden w-fit !rounded-[0.55rem] !px-7 !text-[1.08rem] !font-semibold !tracking-[0.14em] sm:mx-0 sm:inline-flex sm:!text-[1.12rem] sm:!tracking-[0.16em]"
+              className="mx-auto hidden w-fit !rounded-[0.55rem] !px-7 !text-[1.08rem] !font-bold !tracking-[0.14em] sm:mx-0 sm:inline-flex sm:!text-[1.12rem] sm:!font-extrabold sm:!tracking-[0.16em]"
             />
           </div>
           <div className="overflow-visible pt-3 sm:pt-10">
@@ -576,15 +552,15 @@ export function HomePageContent({ coverCollections, heroSlides }: HomePageConten
               </div>
             </div>
           </div>
+          {/* Keep CTA inside section so parent `gap-[140px]` does not insert ~140px between cards and button (<sm). */}
+          <div className="flex justify-center sm:hidden">
+            <HomeActionButton
+              href="/contact"
+              label={t('home.homepage.upcomingLines.cta')}
+              className="w-fit !rounded-[0.55rem] !px-7 !text-[1.08rem] !font-bold !tracking-[0.14em] sm:!text-[1.12rem] sm:!font-extrabold sm:!tracking-[0.16em]"
+            />
+          </div>
         </section>
-
-        <div className="flex justify-center sm:hidden">
-          <HomeActionButton
-            href="/contact"
-            label={t('home.homepage.upcomingLines.cta')}
-            className="w-fit !rounded-[0.55rem] !px-7 !text-[1.08rem] !font-semibold !tracking-[0.14em] sm:!text-[1.12rem] sm:!tracking-[0.16em]"
-          />
-        </div>
 
         <section className="flex flex-col items-center gap-8">
           <HomeSectionTitle
@@ -594,7 +570,7 @@ export function HomePageContent({ coverCollections, heroSlides }: HomePageConten
           <HomeActionButton
             href="/contact"
             label={t('home.homepage.sayHi.cta')}
-            className="min-w-[13.75rem] !min-h-11 sm:!min-h-12 !rounded-[0.55rem] !px-7 !text-[1.08rem] !font-semibold !tracking-[0.14em] sm:!text-[1.12rem] sm:!tracking-[0.16em]"
+            className="min-w-[13.75rem] !min-h-11 sm:!min-h-12 !rounded-[0.55rem] !px-7 !text-[1.08rem] !font-bold !tracking-[0.14em] sm:!text-[1.12rem] sm:!font-extrabold sm:!tracking-[0.16em]"
           />
         </section>
       </div>

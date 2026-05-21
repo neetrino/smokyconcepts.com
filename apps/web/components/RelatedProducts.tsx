@@ -1,6 +1,14 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useLayoutEffect,
+  useCallback,
+  useSyncExternalStore,
+} from 'react';
 import { getStoredLanguage, type LanguageCode } from '../lib/language';
 import { t } from '../lib/i18n';
 import { useRelatedProducts } from './hooks/useRelatedProducts';
@@ -10,30 +18,59 @@ import {
   getCategoryLabel,
   getSectionLabel,
   getSizeLabel,
+  shouldNudgeCatalogProductImage,
   toCatalogProduct,
 } from '../app/products/components/catalogProductLabels';
+import {
+  CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME,
+  CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE,
+  CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_STRIP_SCROLL_CLASS_NAME,
+  CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS,
+  getCatalogProductCardImageScaleBoost,
+  getCatalogProductsSmViewportSnapshot,
+  getServerCatalogProductsSmViewportSnapshot,
+  subscribeCatalogProductsSmViewport,
+} from '../app/products/components/catalogProductCardMobilePresentation';
+import {
+  CATALOG_SCROLL_TARGET_TOLERANCE_PX,
+  CATALOG_STRIP_PEEK_MEDIA_QUERY,
+  getCatalogStripPeekStartScroll,
+  getScrollLeftForElementWithin,
+  resolveStripPageFromScrollAnchors,
+} from '../app/products/components/catalogStripScroll';
 
 interface RelatedProductsProps {
   categorySlug?: string;
   currentProductId: string;
 }
 
-/** Same strip as products catalog (non-filtered): horizontal scroll row. */
-const CATALOG_ROW_SCROLL_CLASS = 'scrollbar-hide mt-4 overflow-x-auto pt-10 pb-4';
-const CATALOG_ROW_FLEX_CLASS = 'flex min-w-max gap-7 sm:gap-9';
-
 /**
- * Related products on the PDP — same card row spacing as the products catalog page.
+ * Related products on the PDP — horizontal strip with scroll + pagination (catalog parity).
  */
 export function RelatedProducts({ categorySlug, currentProductId }: RelatedProductsProps) {
   const [language, setLanguage] = useState<LanguageCode>('en');
   const [currentPage, setCurrentPage] = useState(0);
   const sectionScrollRef = useRef<HTMLDivElement | null>(null);
+  const pageStartRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const scrollIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const programmaticScrollRef = useRef(false);
   const { products, loading } = useRelatedProducts({ categorySlug, currentProductId, language });
 
+  const isSmUp = useSyncExternalStore(
+    subscribeCatalogProductsSmViewport,
+    getCatalogProductsSmViewportSnapshot,
+    getServerCatalogProductsSmViewportSnapshot
+  );
+  const cardsPerPage = isSmUp ? CATALOG_SECTION_PAGE_SIZE : CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE;
+
   const totalPages = useMemo(
-    () => Math.max(1, Math.ceil(products.length / CATALOG_SECTION_PAGE_SIZE)),
-    [products.length]
+    () => Math.max(1, Math.ceil(products.length / cardsPerPage)),
+    [products.length, cardsPerPage]
   );
 
   useEffect(() => {
@@ -51,7 +88,41 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
 
   useEffect(() => {
     setCurrentPage(0);
-  }, [products.length, categorySlug, currentProductId]);
+    pageStartRefs.current = [];
+  }, [products.length, categorySlug, currentProductId, cardsPerPage]);
+
+  const applyStripPeekStartScroll = useCallback(() => {
+    const container = sectionScrollRef.current;
+    if (!container || products.length === 0) {
+      return;
+    }
+
+    if (!isSmUp || !window.matchMedia(CATALOG_STRIP_PEEK_MEDIA_QUERY).matches) {
+      container.scrollLeft = 0;
+      return;
+    }
+
+    container.scrollLeft = getCatalogStripPeekStartScroll(container);
+  }, [isSmUp, products.length]);
+
+  useLayoutEffect(() => {
+    applyStripPeekStartScroll();
+    const frame = requestAnimationFrame(applyStripPeekStartScroll);
+    return () => cancelAnimationFrame(frame);
+  }, [applyStripPeekStartScroll]);
+
+  useEffect(() => {
+    window.addEventListener('resize', applyStripPeekStartScroll);
+    return () => window.removeEventListener('resize', applyStripPeekStartScroll);
+  }, [applyStripPeekStartScroll]);
+
+  useEffect(() => {
+    return () => {
+      if (scrollIdleTimerRef.current) {
+        clearTimeout(scrollIdleTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleSectionPageChange = (pageIndex: number) => {
     const container = sectionScrollRef.current;
@@ -59,28 +130,79 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
       return;
     }
 
-    const maxScrollLeft = container.scrollWidth - container.clientWidth;
-    const targetScrollLeft =
-      pageIndex <= 0 || maxScrollLeft <= 0 || totalPages <= 1
-        ? 0
-        : (maxScrollLeft * pageIndex) / (totalPages - 1);
+    let targetScrollLeft = 0;
+
+    if (!isSmUp) {
+      const anchor = pageStartRefs.current[pageIndex];
+      targetScrollLeft = anchor ? getScrollLeftForElementWithin(container, anchor) : 0;
+    } else {
+      const maxScrollLeft = container.scrollWidth - container.clientWidth;
+      const startLeft = getCatalogStripPeekStartScroll(container);
+      const span = Math.max(0, maxScrollLeft - startLeft);
+      const denominator = Math.max(1, totalPages - 1);
+      targetScrollLeft =
+        maxScrollLeft <= 0 ? 0 : Math.min(maxScrollLeft, startLeft + (span * pageIndex) / denominator);
+    }
+
+    programmaticScrollRef.current = true;
+    if (scrollIdleTimerRef.current) {
+      clearTimeout(scrollIdleTimerRef.current);
+      scrollIdleTimerRef.current = null;
+    }
 
     container.scrollTo({
       left: targetScrollLeft,
       behavior: 'smooth',
     });
     setCurrentPage(pageIndex);
+
+    window.setTimeout(() => {
+      programmaticScrollRef.current = false;
+    }, 450);
   };
 
   const handleSectionScroll = () => {
     const container = sectionScrollRef.current;
-    if (!container || totalPages <= 1) {
+    if (!container || totalPages <= 1 || programmaticScrollRef.current) {
       return;
     }
+
+    const commitPage = (nextPage: number) => {
+      setCurrentPage((previous) => (previous === nextPage ? previous : nextPage));
+    };
+
+    if (!isSmUp) {
+      if (scrollIdleTimerRef.current) {
+        clearTimeout(scrollIdleTimerRef.current);
+      }
+
+      scrollIdleTimerRef.current = setTimeout(() => {
+        if (programmaticScrollRef.current) {
+          return;
+        }
+        commitPage(resolveStripPageFromScrollAnchors(container, pageStartRefs.current));
+      }, CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS);
+      return;
+    }
+
     const maxScrollLeft = container.scrollWidth - container.clientWidth;
-    const nextPage =
-      maxScrollLeft <= 0 ? 0 : Math.round((container.scrollLeft / maxScrollLeft) * (totalPages - 1));
-    setCurrentPage(nextPage);
+    const startLeft = getCatalogStripPeekStartScroll(container);
+    const span = Math.max(0, maxScrollLeft - startLeft);
+    const scrollLeft = container.scrollLeft;
+    const adjustedLeft = Math.max(0, scrollLeft - startLeft);
+
+    let nextPage: number;
+    if (span <= 0 || totalPages <= 1) {
+      nextPage = 0;
+    } else if (scrollLeft <= startLeft + CATALOG_SCROLL_TARGET_TOLERANCE_PX) {
+      nextPage = 0;
+    } else if (scrollLeft >= maxScrollLeft - CATALOG_SCROLL_TARGET_TOLERANCE_PX) {
+      nextPage = totalPages - 1;
+    } else {
+      nextPage = Math.round((adjustedLeft / span) * (totalPages - 1));
+    }
+
+    commitPage(Math.max(0, Math.min(totalPages - 1, nextPage)));
   };
 
   return (
@@ -90,23 +212,19 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
       </h2>
 
       {loading ? (
-        <div className={CATALOG_ROW_SCROLL_CLASS}>
-          <div className={CATALOG_ROW_FLEX_CLASS}>
-            {Array.from({ length: CATALOG_SECTION_PAGE_SIZE }).map((_, i) => (
-              <div
-                key={i}
-                className="h-[23rem] w-[12rem] shrink-0 animate-pulse rounded-[1.125rem] bg-white/80 shadow-[0_4px_22.5px_rgba(0,0,0,0.08)]"
-              />
-            ))}
-          </div>
-        </div>
+        <RelatedProductsStripSkeleton />
       ) : products.length === 0 ? (
         <div className="py-12 text-center">
           <p className="text-lg text-[#9d9d9d]">{t(language, 'product.noRelatedProducts')}</p>
         </div>
       ) : (
-        <div ref={sectionScrollRef} onScroll={handleSectionScroll} className={CATALOG_ROW_SCROLL_CLASS}>
-          <div className={CATALOG_ROW_FLEX_CLASS}>
+        <div className="lg:-mr-[120px]">
+        <div
+          ref={sectionScrollRef}
+          onScroll={handleSectionScroll}
+          className={CATALOG_PRODUCTS_PAGE_STRIP_SCROLL_CLASS_NAME}
+        >
+          <div className={CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME}>
             {products.map((product, index) => {
               const catalogProduct = toCatalogProduct({
                 id: product.id,
@@ -124,37 +242,82 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
                 skus: product.skus,
               });
               const section = getSectionLabel(catalogProduct);
+              const isMobileStripPageStart = index % cardsPerPage === 0;
+              const mobileStripPageIndex = Math.floor(index / cardsPerPage);
+
               return (
-                <ProductsCatalogCard
+                <div
                   key={product.id}
-                  product={catalogProduct}
-                  sectionLabel={section}
-                  sizeLabel={getSizeLabel(catalogProduct)}
-                  categoryLabel={getCategoryLabel(catalogProduct, section)}
-                  tightenDetailsUnderImage
-                  compactLayout
-                />
+                  ref={(element) => {
+                    if (!isMobileStripPageStart) {
+                      return;
+                    }
+                    pageStartRefs.current[mobileStripPageIndex] = element;
+                  }}
+                  className={`${CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME}${
+                    isMobileStripPageStart ? ' max-sm:snap-start max-sm:snap-always' : ''
+                  }`}
+                >
+                  <ProductsCatalogCard
+                    product={catalogProduct}
+                    sectionLabel={section}
+                    sizeLabel={getSizeLabel(catalogProduct)}
+                    categoryLabel={getCategoryLabel(catalogProduct, section)}
+                    imageNudgeDown={shouldNudgeCatalogProductImage(index)}
+                    imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
+                    imageFrameClassName={CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME}
+                    className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} max-sm:!w-full max-sm:!min-w-0 max-sm:!max-w-none`}
+                    catalogStripMobilePeek={isSmUp}
+                    compactLayout
+                    productsCatalogPage
+                    eagerProductImage
+                  />
+                </div>
               );
             })}
           </div>
         </div>
+        </div>
       )}
 
       {!loading && products.length > 0 && totalPages > 1 ? (
-        <div className="mt-4 flex items-center justify-center gap-4">
-          {Array.from({ length: totalPages }).map((_, pageIndex) => (
-            <button
-              key={`related-page-${pageIndex}`}
-              type="button"
-              onClick={() => handleSectionPageChange(pageIndex)}
-              className={`h-2 w-[6.25rem] rounded-full transition-colors ${
-                currentPage === pageIndex ? 'bg-[#122a26]' : 'bg-[#d9d9d9]'
-              }`}
-              aria-label={`Open related products page ${pageIndex + 1}`}
-            />
-          ))}
+        <div className={CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME}>
+          <div
+            className={`${CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME} sm:max-w-none sm:justify-center sm:gap-4`}
+            role="tablist"
+            aria-label="Related products pages"
+          >
+            {Array.from({ length: totalPages }).map((_, pageIndex) => (
+              <button
+                key={`related-page-${pageIndex}`}
+                type="button"
+                role="tab"
+                aria-selected={currentPage === pageIndex}
+                onClick={() => handleSectionPageChange(pageIndex)}
+                className={`h-2 min-w-[1.25rem] shrink rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#122a26] focus-visible:ring-offset-2 max-sm:h-1.5 max-sm:flex-1 sm:w-[6.25rem] sm:flex-none ${
+                  currentPage === pageIndex ? 'bg-[#122a26]' : 'bg-[#d9d9d9] hover:bg-[#c9c9c9]'
+                }`}
+                aria-label={`Open related products page ${pageIndex + 1}`}
+              />
+            ))}
+          </div>
         </div>
       ) : null}
     </section>
+  );
+}
+
+function RelatedProductsStripSkeleton() {
+  return (
+    <div className={CATALOG_PRODUCTS_PAGE_STRIP_SCROLL_CLASS_NAME}>
+      <div className={CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME}>
+        {Array.from({ length: CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE }).map((_, index) => (
+          <div
+            key={index}
+            className={`${CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME} h-[23rem] w-full max-w-[10rem] shrink-0 animate-pulse rounded-[1.125rem] bg-white/80 shadow-[0_4px_22.5px_rgba(0,0,0,0.08)]`}
+          />
+        ))}
+      </div>
+    </div>
   );
 }

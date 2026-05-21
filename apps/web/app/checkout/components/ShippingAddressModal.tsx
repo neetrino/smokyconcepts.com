@@ -7,6 +7,7 @@ import { ContactInformation } from './ContactInformation';
 import { CardInputFields } from './CardInputFields';
 import { OrderSummaryModal } from './OrderSummaryModal';
 import { DeliveryRegionSelect } from './DeliveryRegionSelect';
+import { ShippingCountryField } from './ShippingCountryField';
 import type { CheckoutFormData, Cart, CheckoutOrderSummaryTotals } from '../types';
 import type { DeliveryLocationOption } from '../hooks/useDeliveryLocations';
 
@@ -23,6 +24,7 @@ interface ShippingAddressModalProps {
   cart: Cart | null;
   orderSummary: CheckoutOrderSummaryTotals;
   shippingRegion?: string;
+  shippingCountry?: string;
   deliveryLocations: DeliveryLocationOption[];
   loadingDeliveryLocations: boolean;
   loadingDeliveryPrice: boolean;
@@ -43,6 +45,7 @@ export function ShippingAddressModal({
   cart,
   orderSummary,
   shippingRegion,
+  shippingCountry,
   deliveryLocations,
   loadingDeliveryLocations,
   loadingDeliveryPrice,
@@ -102,24 +105,25 @@ export function ShippingAddressModal({
           <>
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('checkout.shippingAddress')}</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Input
-                    label={t('checkout.form.address')}
-                    type="text"
-                    placeholder={t('checkout.placeholders.address')}
-                    {...register('shippingAddress')}
-                    error={errors.shippingAddress?.message}
-                    disabled={isSubmitting}
-                  />
-                </div>
-                <DeliveryRegionSelect
-                  register={register}
-                  error={errors.shippingRegion?.message}
+              <div className="space-y-4">
+                <Input
+                  label={t('checkout.form.address')}
+                  type="text"
+                  placeholder={t('checkout.placeholders.address')}
+                  {...register('shippingAddress')}
+                  error={errors.shippingAddress?.message}
                   disabled={isSubmitting}
-                  locations={deliveryLocations}
-                  loading={loadingDeliveryLocations}
                 />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <DeliveryRegionSelect
+                    register={register}
+                    error={errors.shippingRegion?.message}
+                    disabled={isSubmitting}
+                    locations={deliveryLocations}
+                    loading={loadingDeliveryLocations}
+                  />
+                  <ShippingCountryField country={shippingCountry} />
+                </div>
               </div>
             </div>
 

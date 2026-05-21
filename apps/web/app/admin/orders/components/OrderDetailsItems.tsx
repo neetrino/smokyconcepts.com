@@ -8,6 +8,7 @@ import {
   convertPrice,
   formatPriceInCurrency,
 } from '../../../../lib/currency';
+import { isInternalVariantAttributeKey } from '@/lib/default-pricing-variant';
 import { getColorValue } from '../utils/orderUtils';
 import type { OrderDetails } from '../useOrders';
 
@@ -87,7 +88,9 @@ export function OrderDetailsItems({
           </thead>
           <tbody className="divide-y divide-gray-100 bg-white">
             {orderDetails.items.map((item) => {
-              const allOptions = item.variantOptions || [];
+              const allOptions = (item.variantOptions || []).filter(
+                (opt) => !isInternalVariantAttributeKey(opt.attributeKey),
+              );
               const quantity = Number(item.quantity ?? 0);
               const unitPrice = Number(item.unitPrice ?? 0);
               const lineTotal = Number(item.total ?? 0);

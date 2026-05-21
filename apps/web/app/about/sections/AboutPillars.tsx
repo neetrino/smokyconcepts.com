@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from '@/lib/i18n-client';
 import type { LanguageCode } from '@/lib/language';
-import { renderPillarTitleLines, renderStoryRichParagraphs } from '../utils/renderStoryRichText';
+import { renderAboutRichParagraphs, renderPillarTitleLines } from '../utils/renderAboutRichText';
 
 /** Image slot (margins below image tuned per language in PillarCard). */
 const PILLAR_IMAGE_ROW_BASE_CLASS =
@@ -176,13 +176,13 @@ export function AboutPillars() {
         bg: base.bg,
         image: {
           ...base.image,
-          alt: t(`about.story.pillars.${base.localeId}.image_alt`),
+          alt: t(`about.about.pillars.${base.localeId}.image_alt`),
         },
-        title: renderPillarTitleLines(t(`about.story.pillars.${base.localeId}.title`)),
+        title: renderPillarTitleLines(t(`about.about.pillars.${base.localeId}.title`)),
         body: (
           <>
-            {renderStoryRichParagraphs(
-              t(`about.story.pillars.${base.localeId}.body`),
+            {renderAboutRichParagraphs(
+              t(`about.about.pillars.${base.localeId}.body`),
               base.localeId,
             )}
           </>

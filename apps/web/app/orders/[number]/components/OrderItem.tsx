@@ -4,6 +4,7 @@ import { OrderCustomizeBlock } from '@/components/orders/OrderCustomizeBlock';
 import { useCurrency } from '../../../../components/hooks/useCurrency';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { amountToUsd, convertPrice, formatPriceInCurrency } from '../../../../lib/currency';
+import { isInternalVariantAttributeKey } from '@/lib/default-pricing-variant';
 import { getColorValue } from '../utils/color-helpers';
 import type { OrderItem as OrderItemType } from '../types';
 
@@ -84,7 +85,7 @@ export function OrderItem({ item, orderTotalsCurrency }: OrderItemProps) {
             {orderedOptions.map((opt, optIndex) => {
               if (!opt.attributeKey || !opt.value) return null;
               const normalizedAttributeKey = opt.attributeKey.toLowerCase().trim();
-              if (normalizedAttributeKey === '__default_pricing__') return null;
+              if (isInternalVariantAttributeKey(normalizedAttributeKey)) return null;
 
               const isColor = getAttributeType(normalizedAttributeKey) === 'color';
               const displayLabel = opt.label || opt.value;

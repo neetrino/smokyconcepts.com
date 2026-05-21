@@ -8,6 +8,7 @@ import type { LanguageCode } from '../../../lib/language';
 import { useCurrency } from '../../../components/hooks/useCurrency';
 import { apiClient } from '../../../lib/api-client';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
+import { preloadSizeCatalogCategories } from '@/lib/size-catalog-image-cache';
 import { Button } from '../../../components/ui/buttons';
 import type { AttributeGroupValue, Product, ProductVariant } from './types';
 import {
@@ -23,6 +24,14 @@ import {
   getPlainTextFromHtml,
   sanitizeCustomizeHtml,
 } from './utils/sanitize-customize-html';
+import {
+  PRODUCT_INFO_HEADER_CLASS,
+  PRODUCT_INFO_PURCHASE_ROW_CLASS,
+  PRODUCT_INFO_ROOT_CLASS,
+  PRODUCT_INFO_TAB_INDICATOR_BASE_CLASS,
+  PRODUCT_INFO_TAB_PANEL_CLASS,
+  PRODUCT_INFO_TABS_SECTION_CLASS,
+} from './productInfoTabContent.constants';
 
 const CATALOG_BAG_ICON_PATH = '/assets/home/icons/bag-catalog.svg';
 
@@ -30,6 +39,16 @@ const CATALOG_BAG_ICON_PATH = '/assets/home/icons/bag-catalog.svg';
 const CUSTOMIZE_APPLIED_PREVIEW_MS = 1000;
 
 type ProductTabKey = 'description' | 'details' | 'shipping' | 'customize';
+
+const PRODUCT_TAB_HTML_PROSE_CLASS =
+  'prose max-w-none text-[15px] leading-[24px] text-[#414141] prose-p:my-0 prose-p:text-[15px] prose-p:leading-[24px] sm:text-[16px] sm:leading-[26px] sm:prose-p:text-[16px] sm:prose-p:leading-[26px]';
+
+function hasRenderableTabHtml(html: string | null | undefined): boolean {
+  if (!html?.trim()) {
+    return false;
+  }
+  return html.replace(/<[^>]*>/g, '').trim().length > 0;
+}
 
 interface ProductOptionValue extends AttributeGroupValue {
   colors?: string[] | string | null;
@@ -195,6 +214,8 @@ export function ProductInfoAndActions({
   const productTitle = getProductText(language, product.id, 'title') || product.title;
   const productDescription =
     getProductText(language, product.id, 'longDescription') || product.description || '';
+  const productTabHtml = product.productDetailsHtml ?? '';
+  const shippingTabHtml = product.shippingHtml ?? '';
   const activeColorOption = useMemo(
     () =>
       colorOptions.find(
@@ -223,7 +244,9 @@ export function ProductInfoAndActions({
       try {
         const res = await apiClient.get<{ data: SizeCatalogCategoryDto[] }>('/api/v1/size-catalog');
         if (!cancelled) {
-          setSizeCatalogCategories(res.data ?? []);
+          const data = res.data ?? [];
+          setSizeCatalogCategories(data);
+          void preloadSizeCatalogCategories(data);
         }
       } catch {
         if (!cancelled) {
@@ -395,6 +418,14 @@ export function ProductInfoAndActions({
     }
 
     if (activeTab === 'shipping') {
+      if (hasRenderableTabHtml(shippingTabHtml)) {
+        return (
+          <div
+            className={PRODUCT_TAB_HTML_PROSE_CLASS}
+            dangerouslySetInnerHTML={{ __html: shippingTabHtml }}
+          />
+        );
+      }
       return (
         <p className="text-[15px] leading-[24px] text-[#414141] sm:text-[16px] sm:leading-[26px]">
           {getShippingCopy(language)}
@@ -473,6 +504,23 @@ export function ProductInfoAndActions({
       );
     }
 
+    if (hasRenderableTabHtml(productTabHtml)) {
+      return (
+        <div
+          className={PRODUCT_TAB_HTML_PROSE_CLASS}
+          dangerouslySetInnerHTML={{ __html: productTabHtml }}
+        />
+      );
+    }
+
+    if (productDetails.length === 0) {
+      return (
+        <p className="text-[15px] leading-[24px] text-[#414141] sm:text-[16px] sm:leading-[26px]">
+          {t(language, 'product.product_tab_empty')}
+        </p>
+      );
+    }
+
     return (
       <div className="space-y-2">
         {productDetails.map((item) => (
@@ -486,6 +534,8 @@ export function ProductInfoAndActions({
     activeTab,
     language,
     productDescription,
+    productTabHtml,
+    shippingTabHtml,
     productDetails,
     selectedCatalogSize,
     selectedCustomSizeRequest,
@@ -504,7 +554,8 @@ export function ProductInfoAndActions({
 
   return (
     <>
-    <div className="max-w-[763px] min-w-0 w-full pt-[clamp(3rem,7.8vw,11.25rem)]">
+    <div className={PRODUCT_INFO_ROOT_CLASS}>
+      <div className={PRODUCT_INFO_HEADER_CLASS}>
       <h1 className="min-w-0 font-montserrat text-[26px] font-black leading-tight text-[#414141] sm:text-[30px]">
         {productTitle}
       </h1>
@@ -596,9 +647,10 @@ export function ProductInfoAndActions({
           ) : null}
         </div>
       )}
+      </div>
 
-      <div className="mt-14 min-w-0 w-full">
-        <div className="w-full min-w-0 touch-pan-x overflow-x-auto overscroll-x-contain scroll-px-1 pb-2 scrollbar-hide [-webkit-overflow-scrolling:touch] sm:touch-auto sm:pb-0">
+      <div className={PRODUCT_INFO_TABS_SECTION_CLASS}>
+        <div className="w-full min-w-0 shrink-0 touch-pan-x overflow-x-auto overscroll-x-contain scroll-px-1 pb-2 scrollbar-hide [-webkit-overflow-scrolling:touch] sm:touch-auto sm:pb-0">
           <div
             className="flex w-max max-w-none snap-x snap-mandatory flex-nowrap items-end gap-5 pr-4 sm:snap-none sm:gap-7 sm:pr-5"
             role="tablist"
@@ -613,9 +665,12 @@ export function ProductInfoAndActions({
               }`}
             >
               {t(language, 'product.description_title')}
-              {activeTab === 'description' && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-[2px] bg-[#122a26]" />
-              )}
+              <span
+                className={`${PRODUCT_INFO_TAB_INDICATOR_BASE_CLASS} ${
+                  activeTab === 'description' ? 'bg-[#122a26]' : 'bg-transparent'
+                }`}
+                aria-hidden
+              />
             </button>
             <button
               type="button"
@@ -627,9 +682,12 @@ export function ProductInfoAndActions({
               }`}
             >
               {t(language, 'product.details_title')}
-              {activeTab === 'details' && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-[2px] bg-[#122a26]" />
-              )}
+              <span
+                className={`${PRODUCT_INFO_TAB_INDICATOR_BASE_CLASS} ${
+                  activeTab === 'details' ? 'bg-[#122a26]' : 'bg-transparent'
+                }`}
+                aria-hidden
+              />
             </button>
             <button
               type="button"
@@ -641,9 +699,12 @@ export function ProductInfoAndActions({
               }`}
             >
               {t(language, 'product.shipping_title')}
-              {activeTab === 'shipping' && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-[2px] bg-[#122a26]" />
-              )}
+              <span
+                className={`${PRODUCT_INFO_TAB_INDICATOR_BASE_CLASS} ${
+                  activeTab === 'shipping' ? 'bg-[#122a26]' : 'bg-transparent'
+                }`}
+                aria-hidden
+              />
             </button>
             <button
               type="button"
@@ -655,17 +716,25 @@ export function ProductInfoAndActions({
               }`}
             >
               {t(language, 'product.customize_title')}
-              {activeTab === 'customize' && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-[2px] bg-[#122a26]" />
-              )}
+              <span
+                className={`${PRODUCT_INFO_TAB_INDICATOR_BASE_CLASS} ${
+                  activeTab === 'customize' ? 'bg-[#122a26]' : 'bg-transparent'
+                }`}
+                aria-hidden
+              />
             </button>
           </div>
         </div>
 
-        <div className="pt-7 sm:pt-8">{renderedTabContent}</div>
+        <div
+          role="tabpanel"
+          className={PRODUCT_INFO_TAB_PANEL_CLASS}
+        >
+          {renderedTabContent}
+        </div>
       </div>
 
-      <div className="mt-[48px] flex w-full min-w-0 max-w-[763px] items-end justify-between gap-3">
+      <div className={`flex w-full min-w-0 items-end justify-between gap-3 ${PRODUCT_INFO_PURCHASE_ROW_CLASS}`}>
         <div className="flex min-w-0 flex-1 flex-wrap items-end gap-2 sm:max-w-[291px] sm:gap-3">
           <p className="font-montserrat text-[30px] font-extrabold leading-none text-black sm:text-[32px]">
             {formatCatalogPrice(price, displayCurrency)}
@@ -726,11 +795,11 @@ export function ProductInfoAndActions({
         </div>
       </div>
 
-      {showMessage && (
-        <div className="mt-6 rounded-[12px] bg-[#122a26] px-4 py-3 text-sm font-medium text-white shadow-[0_10px_30px_rgba(18,42,38,0.12)]">
+      {showMessage ? (
+        <div className="mt-6 shrink-0 rounded-[12px] bg-[#122a26] px-4 py-3 text-sm font-medium text-white shadow-[0_10px_30px_rgba(18,42,38,0.12)]">
           {showMessage}
         </div>
-      )}
+      ) : null}
     </div>
     <CustomizeSizeModal
       isOpen={isCustomizeSizeModalOpen}

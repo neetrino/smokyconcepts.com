@@ -1,3 +1,5 @@
+import { catalogPriceForStorefront } from '@/lib/currency';
+
 interface ProductListCategory {
   translations?: Array<{
     title: string;
@@ -65,10 +67,11 @@ export function formatProductForList(
     published: product.published,
     featured: product.featured || false,
     upcoming: product.upcoming || false,
-    price: variant?.price || 0,
+    price: catalogPriceForStorefront(variant?.price || 0),
     stock: variant?.stock || 0,
     discountPercent: product.discountPercent || 0,
-    compareAtPrice: variant?.compareAtPrice || null,
+    compareAtPrice:
+      variant?.compareAtPrice != null ? catalogPriceForStorefront(variant.compareAtPrice) : null,
     categories,
     colorStocks: [], // Can be enhanced later
     image,

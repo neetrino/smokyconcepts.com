@@ -2,6 +2,24 @@
 
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
+import { useSizeModalExitAnimation } from '@/hooks/useSizeModalExitAnimation';
+import {
+  SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS,
+  SIZE_MODAL_BLOCK_ENTER_DELAY_HEADER_MS,
+  SIZE_MODAL_BLOCK_ENTER_DELAY_SEARCH_MS,
+  SIZE_MODAL_EXIT_DURATION_MS,
+  SIZE_MODAL_REDUCED_MOTION_EXIT_MS,
+} from '@/lib/size-modal-animation.constants';
+import {
+  sizeModalBackdropClass,
+  sizeModalBlockClass,
+  sizeModalBlockTransitionDelay,
+  sizeModalContentClass,
+  sizeModalPanelClass,
+} from '@/lib/size-modal-animation';
+import { sortSizeCatalogCategoriesByDisplayOrder } from '@/lib/constants/size-catalog-display-order.constants';
+import { preloadSizeCatalogCategories } from '@/lib/size-catalog-image-cache';
 import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
@@ -60,6 +78,15 @@ export function CustomizeSizeModal({
   onSelectSizeCatalogItem,
   onSelectCustomSizeRequest,
 }: CustomizeSizeModalProps) {
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const exitDurationMs = prefersReducedMotion
+    ? SIZE_MODAL_REDUCED_MOTION_EXIT_MS
+    : SIZE_MODAL_EXIT_DURATION_MS;
+  const { isMounted, isExiting, isEntered } = useSizeModalExitAnimation({
+    isOpen,
+    exitDurationMs,
+  });
+  const modalMotion = { isEntered, isExiting };
   const titleId = useId();
   const searchInputId = useId();
   const [sizeSearchQuery, setSizeSearchQuery] = useState('');
@@ -68,7 +95,10 @@ export function CustomizeSizeModal({
   const [customOrderSubmitError, setCustomOrderSubmitError] = useState<string | null>(null);
 
   const filteredSizeCategories = useMemo(
-    () => filterSizeCatalogByTitle(sizeCategories, sizeSearchQuery),
+    () =>
+      sortSizeCatalogCategoriesByDisplayOrder(
+        filterSizeCatalogByTitle(sizeCategories, sizeSearchQuery)
+      ),
     [sizeCategories, sizeSearchQuery]
   );
 
@@ -83,16 +113,17 @@ export function CustomizeSizeModal({
   );
 
   useEffect(() => {
-    if (!isOpen) {
-      setSizeSearchQuery('');
-      setCustomOrderDraft(EMPTY_CUSTOM_ORDER_DRAFT);
-      setIsUploadingImage(false);
-      setCustomOrderSubmitError(null);
+    if (isMounted) {
+      return;
     }
-  }, [isOpen]);
+    setSizeSearchQuery('');
+    setCustomOrderDraft(EMPTY_CUSTOM_ORDER_DRAFT);
+    setIsUploadingImage(false);
+    setCustomOrderSubmitError(null);
+  }, [isMounted]);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isMounted) {
       return;
     }
     const previousOverflow = document.body.style.overflow;
@@ -100,24 +131,38 @@ export function CustomizeSizeModal({
     return () => {
       document.body.style.overflow = previousOverflow;
     };
-  }, [isOpen]);
+  }, [isMounted]);
+
+  useEffect(() => {
+    if (!isMounted) {
+      return;
+    }
+    void preloadSizeCatalogCategories(sizeCategories);
+  }, [isMounted, sizeCategories]);
+
+  const handleDismiss = useCallback(() => {
+    if (isExiting) {
+      return;
+    }
+    onClose();
+  }, [isExiting, onClose]);
 
   const onEscape = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        handleDismiss();
       }
     },
-    [onClose]
+    [handleDismiss]
   );
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isMounted) {
       return;
     }
     window.addEventListener('keydown', onEscape);
     return () => window.removeEventListener('keydown', onEscape);
-  }, [isOpen, onEscape]);
+  }, [isMounted, onEscape]);
 
   const handleCustomOrderDraftChange = useCallback(
     (field: keyof CustomOrderDraft, value: string) => {
@@ -195,7 +240,7 @@ export function CustomizeSizeModal({
     onClose();
   }, [language, onClose, onSelectCustomSizeRequest]);
 
-  if (!isOpen) {
+  if (!isMounted) {
     return null;
   }
 
@@ -212,30 +257,40 @@ export function CustomizeSizeModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[110]" role="presentation">
+    <div
+      className={`fixed inset-0 z-[110] ${isExiting ? 'pointer-events-none' : ''}`}
+      role="presentation"
+    >
       <button
         type="button"
-        className="absolute inset-0 z-0 animate-size-modal-backdrop-in bg-[rgba(0,0,0,0.6)]"
+        className={`absolute inset-0 z-0 bg-[rgba(0,0,0,0.6)] ${sizeModalBackdropClass(modalMotion)}`}
         aria-label={t(language, 'product.customize_modal_close_aria')}
-        onClick={onClose}
+        onClick={handleDismiss}
       />
       <div
-        className="absolute inset-y-0 right-0 z-10 flex h-full max-h-dvh w-full animate-size-modal-panel-in flex-col overflow-hidden bg-[#efefef] shadow-[-8px_0_32px_rgba(0,0,0,0.12)] md:w-[min(1078px,56.15vw)]"
+        className={`absolute inset-y-0 right-0 z-10 flex h-full max-h-dvh w-full flex-col overflow-hidden bg-[#efefef] shadow-[-8px_0_32px_rgba(0,0,0,0.12)] md:w-[min(1078px,56.15vw)] ${sizeModalPanelClass(modalMotion)}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        aria-hidden={isExiting}
       >
         <div className="relative min-h-0 flex-1 overflow-y-auto px-[24px] pb-16 pt-[50px] sm:px-[50px]">
           <div
-            className="flex items-start justify-between gap-4 animate-size-modal-block-in"
-            style={{ animationDelay: '90ms' }}
+            className={`flex items-start justify-between gap-4 ${sizeModalBlockClass(modalMotion)}`}
+            style={{
+              transitionDelay: sizeModalBlockTransitionDelay(
+                SIZE_MODAL_BLOCK_ENTER_DELAY_HEADER_MS,
+                0,
+                modalMotion
+              ),
+            }}
           >
             <h2 id={titleId} className="font-montserrat text-[28px] font-extrabold leading-none text-[#414141] sm:text-[36px]">
               {t(language, 'product.choose_size')}
             </h2>
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleDismiss}
               className="mt-1 flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-sm text-[#414141] transition-opacity hover:opacity-70"
               aria-label={t(language, 'product.customize_modal_close_aria')}
             >
@@ -251,8 +306,14 @@ export function CustomizeSizeModal({
 
           {hasAnyCatalogItems ? (
             <div
-              className="mt-6 w-full max-w-[978px] animate-size-modal-block-in"
-              style={{ animationDelay: '160ms' }}
+              className={`mt-6 w-full max-w-[978px] ${sizeModalBlockClass(modalMotion)}`}
+              style={{
+                transitionDelay: sizeModalBlockTransitionDelay(
+                  SIZE_MODAL_BLOCK_ENTER_DELAY_SEARCH_MS,
+                  0,
+                  modalMotion
+                ),
+              }}
             >
               <label htmlFor={searchInputId} className="sr-only">
                 {t(language, 'product.size_catalog_search_placeholder')}
@@ -269,10 +330,18 @@ export function CustomizeSizeModal({
             </div>
           ) : null}
 
-          <div className="mt-10">
+          <div
+            className={`mt-10 ${sizeModalContentClass(modalMotion)}`}
+            style={{
+              transitionDelay: sizeModalBlockTransitionDelay(
+                SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS,
+                0,
+                modalMotion
+              ),
+            }}
+          >
             {hasAnyCatalogItems && !hasFilteredItems && sizeSearchQuery.trim().length > 0 ? (
-              <div className="animate-size-modal-block-in" style={{ animationDelay: '220ms' }}>
-                <CustomizeSizeOrderFallback
+              <CustomizeSizeOrderFallback
                   language={language}
                   draft={customOrderDraft}
                   onDraftChange={handleCustomOrderDraftChange}
@@ -282,13 +351,14 @@ export function CustomizeSizeModal({
                   isSubmitting={false}
                   submitError={customOrderSubmitError}
                   canSubmit={canSubmitCustomOrder}
-                />
-              </div>
+              />
             ) : (
               <SizeCatalogPickerContent
                 categories={filteredSizeCategories}
                 selectedItemId={selectedSizeItemId}
                 language={language}
+                modalMotion={modalMotion}
+                suppressEnterAnimation={isExiting}
                 onSelectItem={handlePickSizeItem}
               />
             )}

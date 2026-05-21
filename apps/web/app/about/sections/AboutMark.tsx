@@ -58,9 +58,9 @@ export function AboutMark() {
       SHIELD_BASE.map((base) => ({
         id: base.id,
         icon: base.icon,
-        tag: t(`about.story.mark.${base.localeId}_tag`),
-        title: t(`about.story.mark.${base.localeId}_title`),
-        body: t(`about.story.mark.${base.localeId}_body`),
+        tag: t(`about.about.mark.${base.localeId}_tag`),
+        title: t(`about.about.mark.${base.localeId}_title`),
+        body: t(`about.about.mark.${base.localeId}_body`),
       })),
     [t],
   );
@@ -68,10 +68,10 @@ export function AboutMark() {
   return (
     <section className="mx-auto mt-16 max-w-[1500px] text-center text-[#414141] lg:mt-[110px]">
       <h2 className="text-[22px] font-extrabold sm:text-[26px] lg:text-[30px]">
-        {t('about.story.mark.title')}
+        {t('about.about.mark.title')}
       </h2>
       <p className="mt-2 text-[13px] font-bold leading-[22px] sm:text-[15px] lg:text-[15px] lg:font-semibold lg:leading-[23px]">
-        {t('about.story.mark.subtitle')}
+        {t('about.about.mark.subtitle')}
       </p>
 
       <div className="mt-7 h-px w-full bg-[#cbcbcb] lg:mt-7" />

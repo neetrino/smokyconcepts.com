@@ -1,5 +1,6 @@
 import { db } from "@white-shop/db";
 
+import { sortSizeCatalogCategoriesByDisplayOrder } from "@/lib/constants/size-catalog-display-order.constants";
 import { type SizeCatalogCategoryDto, type SizeCatalogItemDto } from "@/lib/types/size-catalog";
 
 function normalizeSizeItemVersion(value: string | undefined, fallback = ""): string {
@@ -132,7 +133,9 @@ class AdminSizeCatalogService {
     }));
 
     return {
-      data: mergeStorefrontCategoriesByTitle(forStorefront).map(mapCategory),
+      data: sortSizeCatalogCategoriesByDisplayOrder(
+        mergeStorefrontCategoriesByTitle(forStorefront).map(mapCategory)
+      ),
     };
   }
 
@@ -148,7 +151,7 @@ class AdminSizeCatalogService {
     });
 
     return {
-      data: (rows as SizeCategoryRow[]).map(mapCategory),
+      data: sortSizeCatalogCategoriesByDisplayOrder((rows as SizeCategoryRow[]).map(mapCategory)),
     };
   }
 

@@ -50,6 +50,7 @@ export interface Order {
     city?: string;
     state?: string;
     postalCode?: string;
+    country?: string;
     countryCode?: string;
     phone?: string;
   };

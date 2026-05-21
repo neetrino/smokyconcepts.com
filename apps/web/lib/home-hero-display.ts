@@ -40,6 +40,20 @@ export function getHomeHeroSlideLines(
   };
 }
 
+/** Hero image URL for storefront — mobile uses `mobileImageUrl` when set. */
+export function getHomeHeroSlideImageSrc(
+  slide: HomeHeroSlide,
+  variant: 'desktop' | 'mobile',
+): string {
+  if (variant === 'mobile') {
+    const mobile = slide.mobileImageUrl?.trim();
+    if (mobile) {
+      return mobile;
+    }
+  }
+  return slide.imageUrl;
+}
+
 /** First non-empty title among UI locales — for admin collapsed row preview. */
 export function getHomeHeroSlidePreviewTitle(slide: HomeHeroSlide): string {
   for (const code of HOME_HERO_UI_LOCALES) {

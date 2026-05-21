@@ -2,6 +2,7 @@
  * Utilities for building color data map from variants (amounts as returned by API).
  */
 
+import { catalogPriceForStorefront } from '@/lib/currency';
 import { smartSplitUrls } from '@/lib/services/utils/image-utils';
 import type { ColorData } from '../types';
 
@@ -28,7 +29,7 @@ function variantPriceToFormString(price: number | string | null | undefined): nu
     return 0;
   }
   const priceNum = typeof price === 'number' ? price : parseFloat(String(price || '0'));
-  return Number.isFinite(priceNum) ? priceNum : 0;
+  return Number.isFinite(priceNum) ? catalogPriceForStorefront(priceNum) : 0;
 }
 
 /**

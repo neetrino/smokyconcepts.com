@@ -19,6 +19,7 @@ interface CheckoutModalsProps {
   shippingMethod: 'pickup' | 'delivery';
   paymentMethod: 'idram' | 'arca' | 'cash_on_delivery';
   shippingRegion: string | undefined;
+  shippingCountry?: string;
   deliveryLocations: DeliveryLocationOption[];
   loadingDeliveryLocations: boolean;
   cart: Cart | null;
@@ -43,6 +44,7 @@ export function CheckoutModals({
   shippingMethod,
   paymentMethod,
   shippingRegion,
+  shippingCountry,
   deliveryLocations,
   loadingDeliveryLocations,
   cart,
@@ -68,6 +70,7 @@ export function CheckoutModals({
         cart={cart}
         orderSummary={orderSummary}
         shippingRegion={shippingRegion}
+        shippingCountry={shippingCountry}
         deliveryLocations={deliveryLocations}
         loadingDeliveryLocations={loadingDeliveryLocations}
         loadingDeliveryPrice={loadingDeliveryPrice}

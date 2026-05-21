@@ -3,12 +3,16 @@
 import { useLayoutEffect, useMemo, type RefObject } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
+import type { SizeModalMotionState } from '@/lib/size-modal-animation';
+import {
+  sizeModalBlockClass,
+  sizeModalBlockTransitionDelay,
+} from '@/lib/size-modal-animation';
 import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
 import {
   SIZE_CARD_STAGGER_BASE_MS,
-  SIZE_CARD_STAGGER_MS,
   SIZE_CATALOG_PAGE_CARD_STAGGER_BASE_MS,
 } from './sizeCatalogPicker.constants';
 import { useCatalogPageRevealOnScroll } from './useCatalogPageRevealOnScroll';
@@ -54,7 +58,13 @@ function CatalogSizeCard({
       }`}
     >
       <div className="relative h-[54px] w-[40px] shrink-0 overflow-hidden">
-        <img src={item.imageUrl} alt="" className="h-full w-full object-contain" />
+        <img
+          src={item.imageUrl}
+          alt=""
+          loading="eager"
+          decoding="async"
+          className="h-full w-full object-contain"
+        />
       </div>
       <p className="mt-1 line-clamp-2 px-0.5 text-center font-montserrat text-[12px] font-medium leading-tight text-[#414141]">
         {item.title}
@@ -98,32 +108,36 @@ function CatalogSizePagePanel({
   chunk,
   pageIdx,
   pageWidthPx,
-  staggerStartIndex,
-  priorCount,
+  itemsPerRow,
   selectedItemId,
+  suppressEnterAnimation,
   onSelectItem,
 }: {
   chunk: SizeCatalogItemDto[];
   pageIdx: number;
   pageWidthPx: number;
-  staggerStartIndex: number;
-  priorCount: number;
+  itemsPerRow: number;
   selectedItemId: string | null;
+  suppressEnterAnimation: boolean;
   onSelectItem: (item: SizeCatalogItemDto) => void;
 }) {
   const useScrollReveal = pageIdx > 0;
   const { pageRef, revealTick } = useCatalogPageRevealOnScroll(useScrollReveal);
   const slideStyle = { width: pageWidthPx, minWidth: pageWidthPx, flexShrink: 0 } as const;
 
-  const playEnterAnimation = !useScrollReveal || revealTick > 0;
+  const playEnterAnimation = !suppressEnterAnimation && (!useScrollReveal || revealTick > 0);
 
   return (
     <div ref={pageRef} style={slideStyle} className="box-border snap-start">
-      <div className="grid grid-cols-3 grid-rows-2 justify-items-center gap-x-2 gap-y-5 sm:gap-x-4 sm:gap-y-6 md:grid-cols-4 lg:grid-cols-7">
-        {chunk.map((item, i) => {
+      <div
+        className={`grid grid-cols-3 justify-items-center gap-x-2 gap-y-5 sm:gap-x-4 sm:gap-y-6 md:grid-cols-4 lg:grid-cols-7 ${
+          itemsPerRow > 0 && chunk.length > itemsPerRow ? 'grid-rows-2' : 'grid-rows-1'
+        }`}
+      >
+        {chunk.map((item) => {
           const enterDelayMs = useScrollReveal
-            ? SIZE_CATALOG_PAGE_CARD_STAGGER_BASE_MS + i * SIZE_CARD_STAGGER_MS
-            : SIZE_CARD_STAGGER_BASE_MS + (staggerStartIndex + priorCount + i) * SIZE_CARD_STAGGER_MS;
+            ? SIZE_CATALOG_PAGE_CARD_STAGGER_BASE_MS
+            : SIZE_CARD_STAGGER_BASE_MS;
           const cardKey = useScrollReveal ? `${item.id}-${revealTick}` : item.id;
           return (
             <CatalogSizeCard
@@ -146,14 +160,14 @@ function CategorySizeCatalogPages({
   itemsPerRow,
   pageWidthPx,
   selectedItemId,
-  staggerStartIndex,
+  suppressEnterAnimation,
   onSelectItem,
 }: {
   items: SizeCatalogItemDto[];
   itemsPerRow: number;
   pageWidthPx: number;
   selectedItemId: string | null;
-  staggerStartIndex: number;
+  suppressEnterAnimation: boolean;
   onSelectItem: (item: SizeCatalogItemDto) => void;
 }) {
   const pageSize = itemsPerRow * 2;
@@ -161,21 +175,18 @@ function CategorySizeCatalogPages({
 
   return (
     <div className="flex flex-row snap-x snap-mandatory">
-      {pages.map((chunk, pageIdx) => {
-        const priorCount = pages.slice(0, pageIdx).reduce((acc, c) => acc + c.length, 0);
-        return (
-          <CatalogSizePagePanel
-            key={`page-${pageIdx}-${chunk[0]?.id ?? 'empty'}`}
-            chunk={chunk}
-            pageIdx={pageIdx}
-            pageWidthPx={pageWidthPx}
-            staggerStartIndex={staggerStartIndex}
-            priorCount={priorCount}
-            selectedItemId={selectedItemId}
-            onSelectItem={onSelectItem}
-          />
-        );
-      })}
+      {pages.map((chunk, pageIdx) => (
+        <CatalogSizePagePanel
+          key={`page-${pageIdx}-${chunk[0]?.id ?? 'empty'}`}
+          chunk={chunk}
+          pageIdx={pageIdx}
+          pageWidthPx={pageWidthPx}
+          itemsPerRow={itemsPerRow}
+          selectedItemId={selectedItemId}
+          suppressEnterAnimation={suppressEnterAnimation}
+          onSelectItem={onSelectItem}
+        />
+      ))}
     </div>
   );
 }
@@ -186,7 +197,6 @@ function CatalogCategorySizeBandView({
   language,
   onSelectItem,
   sectionHeadingDelayMs,
-  staggerStartIndex,
   itemsPerRow,
   scrollerRef,
   pageWidthPx,
@@ -194,13 +204,16 @@ function CatalogCategorySizeBandView({
   canScrollLeft,
   canScrollRight,
   scrollByDirection,
+  modalMotion,
+  suppressEnterAnimation,
 }: {
   category: SizeCatalogCategoryDto;
   selectedItemId: string | null;
   language: LanguageCode;
   onSelectItem: (item: SizeCatalogItemDto) => void;
   sectionHeadingDelayMs: number;
-  staggerStartIndex: number;
+  modalMotion: SizeModalMotionState;
+  suppressEnterAnimation: boolean;
   itemsPerRow: number;
   scrollerRef: RefObject<HTMLDivElement>;
   pageWidthPx: number;
@@ -221,10 +234,16 @@ function CatalogCategorySizeBandView({
           />
         ) : null}
         <h3
-          className={`animate-size-modal-block-in font-montserrat text-[22px] font-extrabold leading-none text-[#414141] sm:text-[24px] ${
+          className={`font-montserrat text-[22px] font-extrabold leading-none text-[#414141] sm:text-[24px] ${sizeModalBlockClass(modalMotion)} ${
             hasOverflow ? 'min-w-0 flex-1 truncate' : 'w-full'
           }`}
-          style={{ animationDelay: `${Math.max(0, sectionHeadingDelayMs)}ms` }}
+          style={{
+            transitionDelay: sizeModalBlockTransitionDelay(
+              Math.max(0, sectionHeadingDelayMs),
+              0,
+              modalMotion
+            ),
+          }}
         >
           {category.title}
         </h3>
@@ -248,7 +267,7 @@ function CatalogCategorySizeBandView({
               itemsPerRow={itemsPerRow}
               pageWidthPx={pageWidthPx}
               selectedItemId={selectedItemId}
-              staggerStartIndex={staggerStartIndex}
+              suppressEnterAnimation={suppressEnterAnimation}
               onSelectItem={onSelectItem}
             />
           ) : (
@@ -266,14 +285,16 @@ export function CatalogCategorySizeBand({
   language,
   onSelectItem,
   sectionHeadingDelayMs,
-  staggerStartIndex,
+  modalMotion,
+  suppressEnterAnimation = false,
 }: {
   category: SizeCatalogCategoryDto;
   selectedItemId: string | null;
   language: LanguageCode;
   onSelectItem: (item: SizeCatalogItemDto) => void;
   sectionHeadingDelayMs: number;
-  staggerStartIndex: number;
+  modalMotion: SizeModalMotionState;
+  suppressEnterAnimation?: boolean;
 }) {
   const itemsPerRow = useSizeCatalogItemsPerRow();
   const resyncToken = `${category.id}:${category.items.length}:${itemsPerRow}`;
@@ -295,7 +316,6 @@ export function CatalogCategorySizeBand({
       language={language}
       onSelectItem={onSelectItem}
       sectionHeadingDelayMs={sectionHeadingDelayMs}
-      staggerStartIndex={staggerStartIndex}
       itemsPerRow={itemsPerRow}
       scrollerRef={scrollerRef}
       pageWidthPx={pageWidthPx}
@@ -303,6 +323,8 @@ export function CatalogCategorySizeBand({
       canScrollLeft={canScrollLeft}
       canScrollRight={canScrollRight}
       scrollByDirection={scrollByDirection}
+      modalMotion={modalMotion}
+      suppressEnterAnimation={suppressEnterAnimation}
     />
   );
 }

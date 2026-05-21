@@ -6,6 +6,7 @@ import {
   extractSizeCatalogSelectionFromAttributes,
   isDefaultPricingVariant,
 } from "@/lib/default-pricing-variant";
+import { catalogPriceForStorefront } from "@/lib/currency";
 
 /** Option-like item from variant.attributes JSON (options relation removed from schema) */
 type VariantOptionFromAttributes = {
@@ -366,7 +367,11 @@ class ProductsFindTransformService {
       
       const availableColors = Array.from(colorMap.values());
 
-      const originalPrice = defaultVariant?.price || 0;
+      const originalPrice = catalogPriceForStorefront(defaultVariant?.price || 0);
+      const compareAtPriceAmd =
+        defaultVariant?.compareAtPrice != null
+          ? catalogPriceForStorefront(defaultVariant.compareAtPrice)
+          : null;
       let finalPrice = originalPrice;
       const productDiscount = product.discountPercent || 0;
       
@@ -430,8 +435,8 @@ class ProductsFindTransformService {
           .map((item) => item.sku?.trim() || "")
           .filter((sku, index, array) => sku.length > 0 && array.indexOf(sku) === index),
         price: finalPrice,
-        originalPrice: appliedDiscount > 0 ? originalPrice : defaultVariant?.compareAtPrice || null,
-        compareAtPrice: defaultVariant?.compareAtPrice || null,
+        originalPrice: appliedDiscount > 0 ? originalPrice : compareAtPriceAmd,
+        compareAtPrice: compareAtPriceAmd,
         discountPercent: appliedDiscount > 0 ? appliedDiscount : null,
         image: productImages[0] || null,
         images: productImages,

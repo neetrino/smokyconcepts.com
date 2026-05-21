@@ -53,6 +53,8 @@ export interface ProductData {
   slug: string;
   subtitle?: string;
   descriptionHtml?: string;
+  productDetailsHtml?: string;
+  shippingHtml?: string;
   primaryCategoryId?: string | null;
   categoryIds?: string[];
   attributeIds?: string[]; // All attribute IDs that this product has

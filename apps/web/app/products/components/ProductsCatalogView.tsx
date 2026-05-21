@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { CustomizeSizeModal } from '../[slug]/CustomizeSizeModal';
@@ -8,9 +8,25 @@ import type { CustomOrderDraft } from '../[slug]/CustomizeSizeOrderFallback';
 import { apiClient } from '../../../lib/api-client';
 import { getStoredLanguage, type LanguageCode } from '../../../lib/language';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
+import { preloadSizeCatalogCategories } from '@/lib/size-catalog-image-cache';
 import { CatalogForProductLineRow } from './CatalogForProductLineRow';
 import { ProductsCatalogMobileFilterSheet } from './ProductsCatalogMobileFilterSheet';
 import { ProductsCatalogCard } from './ProductsCatalogCard';
+import {
+  CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME,
+  CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE,
+  CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME,
+  CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS,
+  getCatalogProductCardImageScaleBoost,
+  getCatalogProductsSmViewportSnapshot,
+  getServerCatalogProductsSmViewportSnapshot,
+  subscribeCatalogProductsSmViewport,
+} from './catalogProductCardMobilePresentation';
 import {
   CATALOG_SELECT_SIZE_AUTOOPEN_QUERY,
   CATALOG_SELECT_SIZE_AUTOOPEN_VALUE,
@@ -30,9 +46,46 @@ import {
 } from './catalogProductLabels';
 
 type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc';
-const ITEMS_PER_SECTION_PAGE = CATALOG_SECTION_PAGE_SIZE;
 
 const SECTION_ORDER = ['Classic', 'Premium', 'Atelier', 'Special'] as const;
+
+/** rAF frames where scrollLeft must stay constant before treating smooth scroll as settled. */
+const CATALOG_SCROLL_SETTLE_STABLE_FRAMES = 4;
+/** Safety cap so programmatic-scroll flag is always released even if scroll never reports settling. */
+const CATALOG_SCROLL_SETTLE_MAX_WAIT_MS = 1500;
+/** Tolerance (px) when matching live scrollLeft to the target page anchor. */
+const CATALOG_SCROLL_TARGET_TOLERANCE_PX = 2;
+
+/** Scroll offset of `element` within `container` (works when `offsetParent` chain differs). */
+function getScrollLeftForElementWithin(container: HTMLElement, element: HTMLElement): number {
+  const containerRect = container.getBoundingClientRect();
+  const elementRect = element.getBoundingClientRect();
+  return container.scrollLeft + (elementRect.left - containerRect.left);
+}
+
+function resolveSectionPageFromScrollAnchors(
+  container: HTMLDivElement,
+  pageStartAnchors: Array<HTMLDivElement | null | undefined>
+): number {
+  const scrollLeft = container.scrollLeft;
+  let bestPage = 0;
+  let bestDistance = Number.POSITIVE_INFINITY;
+
+  for (let pageIndex = 0; pageIndex < pageStartAnchors.length; pageIndex += 1) {
+    const anchor = pageStartAnchors[pageIndex];
+    if (!anchor) {
+      continue;
+    }
+    const anchorScrollLeft = getScrollLeftForElementWithin(container, anchor);
+    const distance = Math.abs(scrollLeft - anchorScrollLeft);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestPage = pageIndex;
+    }
+  }
+
+  return bestPage;
+}
 
 const SORT_OPTIONS: Array<{ value: SortOption; label: string }> = [
   { value: 'default', label: 'Sort By' },
@@ -112,6 +165,17 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sectionScrollRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const sectionPageStartRefs = useRef<Record<string, Array<HTMLDivElement | null>>>({});
+  const sectionScrollIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sectionProgrammaticScrollRef = useRef<Record<string, boolean>>({});
+  const sectionScrollSettleRafRef = useRef<Record<string, number | null>>({});
+  const sectionScrollSettleTimerRef = useRef<Record<string, ReturnType<typeof setTimeout> | null>>({});
+  const isSmUp = useSyncExternalStore(
+    subscribeCatalogProductsSmViewport,
+    getCatalogProductsSmViewportSnapshot,
+    getServerCatalogProductsSmViewportSnapshot
+  );
+  const cardsPerPage = isSmUp ? CATALOG_SECTION_PAGE_SIZE : CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE;
   const [catalogSizeModalOpen, setCatalogSizeModalOpen] = useState(false);
   const [sizeCatalogCategories, setSizeCatalogCategories] = useState<SizeCatalogCategoryDto[]>([]);
   const [language, setLanguage] = useState<LanguageCode>('en');
@@ -137,7 +201,6 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
     }
     return null;
   }, [sizeCatalogCategories, selectedSizeCatalogCategoryId]);
-  const isCategoryFilteredView = selectedCollection !== 'all';
   const selectedSectionTitle = resolveSectionLabelFromCollectionValue(selectedCollection);
   const isCollectionFilterActive = selectedCollection !== 'all';
   const isColorFilterActive = selectedColor !== 'all';
@@ -179,7 +242,9 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
       try {
         const res = await apiClient.get<{ data: SizeCatalogCategoryDto[] }>('/api/v1/size-catalog');
         if (!cancelled) {
-          setSizeCatalogCategories(Array.isArray(res.data) ? res.data : []);
+          const data = Array.isArray(res.data) ? res.data : [];
+          setSizeCatalogCategories(data);
+          void preloadSizeCatalogCategories(data);
         }
       } catch {
         if (!cancelled) {
@@ -206,23 +271,9 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
     );
   }, [products]);
 
-  const productsForSizeRelevance = useMemo(() => {
-    const gateByCollection = selectedCollection !== 'all';
-    return products.filter((product) => {
-      const colorLabel = getColorLabel(product);
-      if (gateByCollection && !productMatchesCategoryFilter(product, selectedCollection)) {
-        return false;
-      }
-      if (selectedColor !== 'all' && colorLabel !== selectedColor) {
-        return false;
-      }
-      return true;
-    });
-  }, [products, selectedCollection, selectedColor]);
-
   const sizeCatalogForModal = useMemo(
-    () => filterSizeCatalogByProducts(sizeCatalogCategories, productsForSizeRelevance),
-    [sizeCatalogCategories, productsForSizeRelevance]
+    () => filterSizeCatalogByProducts(sizeCatalogCategories, products),
+    [sizeCatalogCategories, products]
   );
 
   const selectedCatalogItemId = useMemo(() => {
@@ -327,7 +378,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
           return;
         }
 
-        const totalPages = Math.max(1, Math.ceil(items.length / ITEMS_PER_SECTION_PAGE));
+        const totalPages = Math.max(1, Math.ceil(items.length / cardsPerPage));
         const normalizedPage = Math.min(currentPages[title] ?? 0, totalPages - 1);
         nextPages[title] = normalizedPage;
 
@@ -342,7 +393,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
 
       return hasChanges ? nextPages : currentPages;
     });
-  }, [sectionItemsByTitle]);
+  }, [cardsPerPage, sectionItemsByTitle]);
 
   const sections = useMemo(() => {
     const orderedSectionTitles =
@@ -356,25 +407,31 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
         return null;
       }
 
-      const totalPages = Math.max(1, Math.ceil(items.length / ITEMS_PER_SECTION_PAGE));
+      const totalPages = Math.max(1, Math.ceil(items.length / cardsPerPage));
       const currentPage = Math.min(sectionPages[title] ?? 0, totalPages - 1);
-      const startIndex = currentPage * ITEMS_PER_SECTION_PAGE;
+      const startIndex = currentPage * cardsPerPage;
 
       return {
         title,
         items,
         totalPages,
         currentPage,
-        pageItems: items.slice(startIndex, startIndex + ITEMS_PER_SECTION_PAGE),
+        pageItems: items.slice(startIndex, startIndex + cardsPerPage),
       };
     }).filter((section): section is NonNullable<typeof section> => Boolean(section));
-  }, [sectionItemsByTitle, sectionPages, selectedCollection, selectedSectionTitle]);
+  }, [cardsPerPage, sectionItemsByTitle, sectionPages, selectedCollection, selectedSectionTitle]);
+
+  useEffect(() => {
+    setSectionPages({});
+    for (const title of catalogStripSectionTitles) {
+      const element = sectionScrollRefs.current[title];
+      if (element) {
+        element.scrollLeft = 0;
+      }
+    }
+  }, [cardsPerPage, catalogStripSectionTitles]);
 
   const applyStripPeekStartScroll = useCallback(() => {
-    if (isCategoryFilteredView) {
-      return;
-    }
-
     if (typeof window === 'undefined') {
       return;
     }
@@ -389,14 +446,14 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
         continue;
       }
 
-      if (!window.matchMedia(CATALOG_STRIP_PEEK_MEDIA_QUERY).matches) {
+      if (!isSmUp || !window.matchMedia(CATALOG_STRIP_PEEK_MEDIA_QUERY).matches) {
         element.scrollLeft = 0;
         continue;
       }
 
       element.scrollLeft = getCatalogStripPeekStartScroll(element);
     }
-  }, [catalogStripSectionTitles, isCategoryFilteredView, sectionItemsByTitle]);
+  }, [catalogStripSectionTitles, isSmUp, sectionItemsByTitle]);
 
   useLayoutEffect(() => {
     applyStripPeekStartScroll();
@@ -408,13 +465,9 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
   }, [applyStripPeekStartScroll]);
 
   useEffect(() => {
-    if (isCategoryFilteredView) {
-      return;
-    }
-
     window.addEventListener('resize', applyStripPeekStartScroll);
     return () => window.removeEventListener('resize', applyStripPeekStartScroll);
-  }, [applyStripPeekStartScroll, isCategoryFilteredView]);
+  }, [applyStripPeekStartScroll]);
 
   const updateQuery = (updates: Record<string, string>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -453,26 +506,96 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
     router.replace('/products', { scroll: false });
   };
 
+  const waitForSectionScrollToSettle = (
+    title: string,
+    container: HTMLDivElement,
+    targetScrollLeft: number
+  ) => {
+    const existingRaf = sectionScrollSettleRafRef.current[title];
+    if (existingRaf !== null && existingRaf !== undefined) {
+      cancelAnimationFrame(existingRaf);
+      sectionScrollSettleRafRef.current[title] = null;
+    }
+    const existingTimer = sectionScrollSettleTimerRef.current[title];
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+      sectionScrollSettleTimerRef.current[title] = null;
+    }
+
+    let previousScrollLeft = container.scrollLeft;
+    let stableFrames = 0;
+
+    const releaseFlag = () => {
+      sectionProgrammaticScrollRef.current[title] = false;
+      const rafId = sectionScrollSettleRafRef.current[title];
+      if (rafId !== null && rafId !== undefined) {
+        cancelAnimationFrame(rafId);
+        sectionScrollSettleRafRef.current[title] = null;
+      }
+      const timerId = sectionScrollSettleTimerRef.current[title];
+      if (timerId) {
+        clearTimeout(timerId);
+        sectionScrollSettleTimerRef.current[title] = null;
+      }
+    };
+
+    const tick = () => {
+      const current = container.scrollLeft;
+      const movedTooLittle = Math.abs(current - previousScrollLeft) < 0.5;
+      const reachedTarget = Math.abs(current - targetScrollLeft) <= CATALOG_SCROLL_TARGET_TOLERANCE_PX;
+
+      if (movedTooLittle || reachedTarget) {
+        stableFrames += 1;
+      } else {
+        stableFrames = 0;
+      }
+      previousScrollLeft = current;
+
+      if (stableFrames >= CATALOG_SCROLL_SETTLE_STABLE_FRAMES) {
+        releaseFlag();
+        return;
+      }
+      sectionScrollSettleRafRef.current[title] = requestAnimationFrame(tick);
+    };
+
+    sectionScrollSettleRafRef.current[title] = requestAnimationFrame(tick);
+    sectionScrollSettleTimerRef.current[title] = setTimeout(releaseFlag, CATALOG_SCROLL_SETTLE_MAX_WAIT_MS);
+  };
+
   const handleSectionPageChange = (title: string, pageIndex: number) => {
-    if (!isCategoryFilteredView) {
-      const container = sectionScrollRefs.current[title];
-      if (container) {
+    const container = sectionScrollRefs.current[title];
+    if (container) {
+      let targetScrollLeft = 0;
+
+      if (!isSmUp) {
+        const anchor = sectionPageStartRefs.current[title]?.[pageIndex];
+        targetScrollLeft = anchor ? getScrollLeftForElementWithin(container, anchor) : 0;
+      } else {
         const maxScrollLeft = container.scrollWidth - container.clientWidth;
         const sectionMeta = sections.find((section) => section.title === title);
         const totalPages = sectionMeta?.totalPages ?? 1;
         const startLeft = getCatalogStripPeekStartScroll(container);
         const span = Math.max(0, maxScrollLeft - startLeft);
         const denominator = Math.max(1, totalPages - 1);
-        const targetScrollLeft =
+        targetScrollLeft =
           maxScrollLeft <= 0
             ? 0
             : Math.min(maxScrollLeft, startLeft + (span * pageIndex) / denominator);
-
-        container.scrollTo({
-          left: targetScrollLeft,
-          behavior: 'smooth',
-        });
       }
+
+      sectionProgrammaticScrollRef.current[title] = true;
+
+      if (sectionScrollIdleTimerRef.current) {
+        clearTimeout(sectionScrollIdleTimerRef.current);
+        sectionScrollIdleTimerRef.current = null;
+      }
+
+      container.scrollTo({
+        left: targetScrollLeft,
+        behavior: 'smooth',
+      });
+
+      waitForSectionScrollToSettle(title, container, targetScrollLeft);
     }
 
     setSectionPages((currentPages) => {
@@ -495,26 +618,80 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
       return;
     }
 
+    if (sectionProgrammaticScrollRef.current[title]) {
+      return;
+    }
+
+    const commitPage = (nextPage: number) => {
+      setSectionPages((currentPages) => {
+        if (currentPages[title] === nextPage) {
+          return currentPages;
+        }
+
+        return {
+          ...currentPages,
+          [title]: nextPage,
+        };
+      });
+    };
+
+    if (!isSmUp) {
+      if (sectionScrollIdleTimerRef.current) {
+        clearTimeout(sectionScrollIdleTimerRef.current);
+      }
+
+      sectionScrollIdleTimerRef.current = setTimeout(() => {
+        if (sectionProgrammaticScrollRef.current[title]) {
+          return;
+        }
+        const anchors = sectionPageStartRefs.current[title] ?? [];
+        const nextPage = resolveSectionPageFromScrollAnchors(container, anchors);
+        commitPage(nextPage);
+      }, CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS);
+      return;
+    }
+
     const maxScrollLeft = container.scrollWidth - container.clientWidth;
     const startLeft = getCatalogStripPeekStartScroll(container);
     const span = Math.max(0, maxScrollLeft - startLeft);
-    const adjustedLeft = Math.max(0, container.scrollLeft - startLeft);
-    const nextPage =
-      span <= 0 || section.totalPages <= 1
-        ? 0
-        : Math.round((adjustedLeft / span) * (section.totalPages - 1));
+    const scrollLeft = container.scrollLeft;
+    const adjustedLeft = Math.max(0, scrollLeft - startLeft);
 
-    setSectionPages((currentPages) => {
-      if (currentPages[title] === nextPage) {
-        return currentPages;
-      }
+    let nextPage: number;
+    if (span <= 0 || section.totalPages <= 1) {
+      nextPage = 0;
+    } else if (scrollLeft <= startLeft + CATALOG_SCROLL_TARGET_TOLERANCE_PX) {
+      nextPage = 0;
+    } else if (scrollLeft >= maxScrollLeft - CATALOG_SCROLL_TARGET_TOLERANCE_PX) {
+      nextPage = section.totalPages - 1;
+    } else {
+      nextPage = Math.round((adjustedLeft / span) * (section.totalPages - 1));
+    }
 
-      return {
-        ...currentPages,
-        [title]: nextPage,
-      };
-    });
+    commitPage(Math.max(0, Math.min(section.totalPages - 1, nextPage)));
   };
+
+  useEffect(() => {
+    return () => {
+      if (sectionScrollIdleTimerRef.current) {
+        clearTimeout(sectionScrollIdleTimerRef.current);
+      }
+      const rafMap = sectionScrollSettleRafRef.current;
+      for (const key of Object.keys(rafMap)) {
+        const rafId = rafMap[key];
+        if (rafId !== null && rafId !== undefined) {
+          cancelAnimationFrame(rafId);
+        }
+      }
+      const timerMap = sectionScrollSettleTimerRef.current;
+      for (const key of Object.keys(timerMap)) {
+        const timerId = timerMap[key];
+        if (timerId) {
+          clearTimeout(timerId);
+        }
+      }
+    };
+  }, []);
 
   return (
     <div className="min-h-full bg-[#f5f4f1]">
@@ -538,11 +715,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
         onClearAll={clearFilters}
       />
 
-      <div
-        className={`mx-auto max-w-[120rem] px-4 pb-20 pt-12 sm:px-8 lg:pt-[5.25rem] ${
-          isCategoryFilteredView ? 'lg:px-[7.5rem]' : 'lg:pl-[7.5rem] lg:pr-0'
-        }`}
-      >
+      <div className="mx-auto max-w-[120rem] px-4 pb-20 pt-12 sm:px-8 lg:pl-[7.5rem] lg:pr-0 lg:pt-[5.25rem]">
         <div className="font-montserrat">
           <div className="flex flex-col gap-8">
             <div className="flex items-start justify-between gap-4">
@@ -576,11 +749,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
               <CatalogForProductLineRow />
             </div>
 
-            <div
-              className={`hidden gap-3 lg:grid lg:grid-cols-[12.5rem_11rem_11.75rem_4.75rem_1fr_11rem] lg:items-center ${
-                isCategoryFilteredView ? '' : 'lg:pr-[7.5rem]'
-              }`}
-            >
+            <div className="hidden gap-3 lg:grid lg:grid-cols-[12.5rem_11rem_11.75rem_4.75rem_1fr_11rem] lg:items-center lg:pr-[7.5rem]">
               <label className="relative block">
                 <select
                   value={selectedCollection}
@@ -675,56 +844,75 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
                       sectionScrollRefs.current[section.title] = element;
                     }}
                     onScroll={() => {
-                      if (!isCategoryFilteredView) {
-                        handleSectionScroll(section.title);
-                      }
+                      handleSectionScroll(section.title);
                     }}
-                    className={
-                      isCategoryFilteredView
-                        ? 'mt-4 pt-[7.5rem] pb-4'
-                        : 'scrollbar-hide mt-4 overflow-x-auto overscroll-x-contain pt-[7.5rem] pb-4'
-                    }
+                    className={CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME}
                   >
-                    <div
-                      className={
-                        isCategoryFilteredView
-                          ? 'grid grid-cols-2 items-start gap-x-4 gap-y-24 md:grid-cols-3 md:gap-x-6 lg:grid-cols-6 lg:gap-x-8 lg:gap-y-28'
-                          : 'flex min-w-max gap-6 lg:gap-10 max-lg:pr-4'
-                      }
-                    >
-                      {(isCategoryFilteredView ? section.items : section.items).map((product, index) => (
-                        <ProductsCatalogCard
-                          key={`${section.title}-${product.id}-${index}`}
-                          product={product}
-                          sectionLabel={section.title}
-                          sizeLabel={getSizeLabel(product)}
-                          categoryLabel={getCategoryLabel(product, section.title)}
-                          imageNudgeDown={shouldNudgeCatalogProductImage(index)}
-                          imageScaleBoost={0.04}
-                          className={`group ${isCategoryFilteredView ? '!w-full !max-w-none !min-w-0 !shrink' : ''}`}
-                          catalogStripMobilePeek={!isCategoryFilteredView}
-                          compactLayout
-                          slimCatalogGrid
-                        />
-                      ))}
+                    <div className={CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME}>
+                      {section.items.map((product, index) => {
+                        const isMobileStripPageStart = index % cardsPerPage === 0;
+                        const mobileStripPageIndex = Math.floor(index / cardsPerPage);
+
+                        return (
+                          <div
+                            key={`${section.title}-${product.id}-${index}`}
+                            ref={(element) => {
+                              if (!isMobileStripPageStart) {
+                                return;
+                              }
+                              const pageAnchors = sectionPageStartRefs.current[section.title] ?? [];
+                              pageAnchors[mobileStripPageIndex] = element;
+                              sectionPageStartRefs.current[section.title] = pageAnchors;
+                            }}
+                            className={`${CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME}${
+                              isMobileStripPageStart ? ' max-sm:snap-start max-sm:snap-always' : ''
+                            }`}
+                          >
+                          <ProductsCatalogCard
+                            product={product}
+                            sectionLabel={section.title}
+                            sizeLabel={getSizeLabel(product)}
+                            categoryLabel={getCategoryLabel(product, section.title)}
+                            imageNudgeDown={shouldNudgeCatalogProductImage(index)}
+                            imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
+                            imageFrameClassName={CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME}
+                            className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} max-sm:!w-full max-sm:!min-w-0 max-sm:!max-w-none`}
+                            catalogStripMobilePeek={isSmUp}
+                            compactLayout
+                            productsCatalogPage
+                            eagerProductImage
+                          />
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  {!isCategoryFilteredView && (
-                    <div className="mt-4 flex items-center justify-center gap-4">
-                      {Array.from({ length: section.totalPages }).map((_, pageIndex) => (
-                        <button
-                          key={`${section.title}-page-${pageIndex}`}
-                          type="button"
-                          onClick={() => handleSectionPageChange(section.title, pageIndex)}
-                          className={`h-2 w-[6.25rem] rounded-full transition-colors ${
-                            section.currentPage === pageIndex ? 'bg-[#122a26]' : 'bg-[#d9d9d9]'
-                          }`}
-                          aria-label={`Open ${section.title} page ${pageIndex + 1}`}
-                        />
-                      ))}
+                  {section.totalPages > 1 ? (
+                    <div className={CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME}>
+                      <div
+                        className={`${CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME} sm:max-w-none sm:justify-center sm:gap-4`}
+                        role="tablist"
+                        aria-label={`${section.title} pages`}
+                      >
+                        {Array.from({ length: section.totalPages }).map((_, pageIndex) => (
+                          <button
+                            key={`${section.title}-page-${pageIndex}`}
+                            type="button"
+                            onClick={() => handleSectionPageChange(section.title, pageIndex)}
+                            role="tab"
+                            aria-selected={section.currentPage === pageIndex}
+                            className={`h-2 min-w-[1.25rem] shrink rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#122a26] focus-visible:ring-offset-2 max-sm:h-1.5 max-sm:flex-1 sm:w-[6.25rem] sm:flex-none ${
+                              section.currentPage === pageIndex
+                                ? 'bg-[#122a26]'
+                                : 'bg-[#d9d9d9] hover:bg-[#c9c9c9]'
+                            }`}
+                            aria-label={`Open ${section.title} page ${pageIndex + 1}`}
+                          />
+                        ))}
+                      </div>
                     </div>
-                  )}
+                  ) : null}
                 </section>
               ))
             ) : (

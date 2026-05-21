@@ -111,6 +111,8 @@ export async function getProductById(productId: string) {
     slug: translation?.slug || "",
     subtitle: translation?.subtitle || null,
     descriptionHtml: translation?.descriptionHtml || null,
+    productDetailsHtml: translation?.productDetailsHtml || null,
+    shippingHtml: translation?.shippingHtml || null,
     primaryCategoryId: product.primaryCategoryId || null,
     categoryIds: product.categoryIds || [],
     attributeIds,

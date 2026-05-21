@@ -11,6 +11,8 @@ export function useProductFormState() {
     title: '',
     slug: '',
     descriptionHtml: '',
+    productDetailsHtml: '',
+    shippingHtml: '',
     primaryCategoryId: '',
     categoryIds: [] as string[],
     sizeCatalogCategoryId: '',

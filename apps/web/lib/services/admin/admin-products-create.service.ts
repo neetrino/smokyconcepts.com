@@ -89,6 +89,8 @@ class AdminProductsCreateService {
     slug: string;
     subtitle?: string;
     descriptionHtml?: string;
+    productDetailsHtml?: string;
+    shippingHtml?: string;
     primaryCategoryId?: string;
     categoryIds?: string[];
     published: boolean;
@@ -233,6 +235,8 @@ class AdminProductsCreateService {
                 slug: uniqueSlug,
                 subtitle: data.subtitle || undefined,
                 descriptionHtml: data.descriptionHtml || undefined,
+                productDetailsHtml: data.productDetailsHtml || undefined,
+                shippingHtml: data.shippingHtml || undefined,
               },
             },
             variants: {

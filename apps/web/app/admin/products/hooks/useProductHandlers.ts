@@ -121,6 +121,8 @@ export function useProductHandlers({
         title: sourceProduct.title,
         slug: duplicateSlug,
         descriptionHtml: sourceProduct.descriptionHtml || undefined,
+        productDetailsHtml: sourceProduct.productDetailsHtml || undefined,
+        shippingHtml: sourceProduct.shippingHtml || undefined,
         primaryCategoryId: sourceProduct.primaryCategoryId || undefined,
         categoryIds: sourceProduct.categoryIds || [],
         published: false,

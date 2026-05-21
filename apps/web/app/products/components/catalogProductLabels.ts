@@ -1,3 +1,4 @@
+import { sortSizeCatalogCategoriesByDisplayOrder } from '@/lib/constants/size-catalog-display-order.constants';
 import type { SizeCatalogCategoryDto } from '@/lib/types/size-catalog';
 
 import type { CatalogProductCardItem } from './ProductsCatalogCard';
@@ -287,7 +288,7 @@ export function filterSizeCatalogByProducts(
       ),
     }))
     .filter((category) => category.items.length > 0);
-  return next.length > 0 ? next : categories;
+  return sortSizeCatalogCategoriesByDisplayOrder(next.length > 0 ? next : categories);
 }
 
 /**

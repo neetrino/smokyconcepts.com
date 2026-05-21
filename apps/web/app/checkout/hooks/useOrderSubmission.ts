@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminInputAmdToUsd } from '../../../lib/currency';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { clearGuestCart } from '../checkoutUtils';
 import type { CheckoutFormData, Cart, CartItem } from '../types';
+import { DEFAULT_SHIPPING_COUNTRY } from '../../../lib/shipping-address-display';
 import type { DeliveryLocationOption } from './useDeliveryLocations';
 
 interface UseOrderSubmissionProps {
@@ -24,6 +26,16 @@ function regionLabelForOrder(value: string, locations: DeliveryLocationOption[])
   return loc ? loc.city.trim() : trimmed;
 }
 
+function countryForOrder(value: string, locations: DeliveryLocationOption[]): string {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return DEFAULT_SHIPPING_COUNTRY;
+  }
+  const loc = locations.find((l) => l.id === trimmed);
+  const country = loc?.country?.trim();
+  return country && country.length > 0 ? country : DEFAULT_SHIPPING_COUNTRY;
+}
+
 export function useOrderSubmission({
   cart,
   deliveryPrice,
@@ -33,9 +45,11 @@ export function useOrderSubmission({
 }: UseOrderSubmissionProps) {
   const router = useRouter();
   const { t } = useTranslation();
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   const submitOrder = async (data: CheckoutFormData) => {
     setError(null);
+    setIsPlacingOrder(true);
 
     try {
       if (!cart) {
@@ -93,6 +107,7 @@ export function useOrderSubmission({
           ? {
               address: data.shippingAddress.trim(),
               state: regionLabelForOrder(data.shippingRegion, deliveryLocations),
+              country: countryForOrder(data.shippingRegion, deliveryLocations),
             }
           : undefined;
 
@@ -137,12 +152,13 @@ export function useOrderSubmission({
       const orderNumber = encodeURIComponent(response.order.number);
       router.push(`/checkout/thank-you?orderNumber=${orderNumber}`);
     } catch (err: unknown) {
+      setIsPlacingOrder(false);
       const error = err as { message?: string };
       setError(error.message || t('checkout.errors.failedToCreateOrder'));
     }
   };
 
-  return { submitOrder };
+  return { submitOrder, isPlacingOrder };
 }
 
 

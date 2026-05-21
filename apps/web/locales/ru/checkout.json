@@ -12,6 +12,7 @@
     "phone": "Телефон",
     "address": "Адрес",
     "region": "Область",
+    "country": "Страна",
     "city": "Город",
     "postalCode": "Почтовый индекс",
     "phoneNumber": "Номер телефона",
@@ -75,6 +76,10 @@
     "title": "Товары в вашем заказе",
     "itemCountSingle": "{count} товар",
     "itemCountPlural": "{count} товаров"
+  },
+  "placingOrder": {
+    "title": "Оформляем заказ…",
+    "subtitle": "Пожалуйста, подождите, пока мы подтверждаем ваш заказ."
   },
   "buttons": {
     "placeOrder": "Оформить заказ",

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, useSyncExternalStore } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { apiClient } from '../../lib/api-client';
 import { ProductsCatalogCard } from '../../app/products/components/ProductsCatalogCard';
@@ -24,6 +24,13 @@ const CARD_GAP_REM = 0.75;
 const CLUSTER_INNER_REM = CARD_WIDTH_REM * 3 + CARD_GAP_REM * 2;
 /** Each track slot reserves a bit more than the cluster so adjacent (faded) clusters breathe. */
 const PAGE_FRAME_REM = CLUSTER_INNER_REM + 2;
+/** Mobile trending cluster widths (rem); slot wider than inner cluster to avoid coverflow clip. */
+const MOBILE_CLUSTER_GAP_REM = 1;
+const MOBILE_SIDE_CARD_MAX_REM = 9.25;
+const MOBILE_MIDDLE_CARD_MAX_REM = 10;
+const MOBILE_CLUSTER_INNER_REM = MOBILE_SIDE_CARD_MAX_REM + MOBILE_CLUSTER_GAP_REM + MOBILE_MIDDLE_CARD_MAX_REM;
+const MOBILE_PAGE_FRAME_REM = MOBILE_CLUSTER_INNER_REM + 3.5;
+const XL_MEDIA_QUERY = '(min-width: 1280px)';
 const TRACK_TRANSITION_MS = 520;
 const TRACK_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
@@ -114,14 +121,39 @@ function buildTrendingPages(items: CatalogProduct[]): TrendingPage[] {
   return pages;
 }
 
+function subscribeXlMediaQuery(onStoreChange: () => void) {
+  if (typeof window === 'undefined') {
+    return () => {};
+  }
+  const mq = window.matchMedia(XL_MEDIA_QUERY);
+  mq.addEventListener('change', onStoreChange);
+  return () => mq.removeEventListener('change', onStoreChange);
+}
+
+function getXlMediaQuerySnapshot(): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+  return window.matchMedia(XL_MEDIA_QUERY).matches;
+}
+
+function getServerXlMediaQuerySnapshot(): boolean {
+  return false;
+}
+
+function useIsXlBreakpoint(): boolean {
+  return useSyncExternalStore(subscribeXlMediaQuery, getXlMediaQuerySnapshot, getServerXlMediaQuerySnapshot);
+}
+
 /**
  * Trending section that displays featured (favorite) products from API.
- * Desktop view is a Figma-style coverflow: previous category cluster on the left
- * (faded), focal cluster centered, next cluster on the right — all sliding together
- * when arrows are pressed.
+ * Coverflow: previous category cluster on the left (faded), focal cluster centered,
+ * next on the right — slides with arrows on all breakpoints; `xl` uses wide cards,
+ * below `xl` keeps the compact staggered mobile card layout.
  */
 export function TrendingFeaturedSection() {
   const { t } = useTranslation();
+  const isXl = useIsXlBreakpoint();
   const [items, setItems] = useState<CatalogProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -295,11 +327,9 @@ export function TrendingFeaturedSection() {
     );
   }
 
-  const mobileItems = pages[safeCurrent]?.items ?? [];
-
   return (
-    <section className="relative isolate flex min-w-0 flex-col gap-8 overflow-x-clip overflow-y-visible pb-6 xl:left-1/2 xl:w-screen xl:max-w-none xl:-translate-x-1/2 xl:gap-5">
-      <div className="flex min-h-[4rem] min-w-0 items-center justify-between gap-3 xl:relative xl:z-20 xl:-translate-y-1 xl:justify-center">
+    <section className="relative isolate flex min-w-0 flex-col gap-5 overflow-x-clip overflow-y-visible pb-6 sm:gap-8 xl:left-1/2 xl:w-screen xl:max-w-none xl:-translate-x-1/2 xl:gap-5">
+      <div className="relative z-30 flex min-h-[4rem] min-w-0 items-center justify-between gap-3 xl:relative xl:z-20 xl:-translate-y-1 xl:justify-center">
         <HomeSectionTitle
           title={t('home.homepage.trending.title')}
           centered={false}
@@ -314,44 +344,12 @@ export function TrendingFeaturedSection() {
         />
       </div>
 
-      <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start justify-items-center gap-x-4 gap-y-3 sm:gap-x-5 sm:gap-y-4 xl:hidden">
-        {mobileItems.map((product, index) => {
-          const isMiddleOfThree = mobileItems.length === 3 && index === 1;
-          const isSideCard = index !== 1;
-          const section = getSectionLabel(product);
-          const mobileCellZ =
-            index === 1 ? 'relative z-[3]' : index === 0 ? 'relative z-[2]' : 'relative z-[1]';
-          return (
-            <div
-              key={`trending-mobile-${product.id}-${index}`}
-              className={`${mobileCellZ} ${
-                index === 1 ? 'pt-[12.5rem]' : index === 2 ? '-mt-[9rem] pt-3' : 'pt-3'
-              }`}
-            >
-              <ProductsCatalogCard
-                product={product}
-                sectionLabel={section}
-                sizeLabel={getSizeLabel(product)}
-                categoryLabel={getCategoryLabel(product, section)}
-                className={isSideCard ? '!h-auto w-full max-w-[10.25rem]' : '!h-auto w-full max-w-[11rem]'}
-                tightenDetailsUnderImage
-                imageScaleBoost={0.15}
-                imageNudgeDown={isMiddleOfThree}
-                compactLayout
-                suppressShadow
-                eagerProductImage
-                imageFrameClassName="max-sm:origin-bottom max-sm:scale-[0.9] max-sm:-translate-y-2"
-              />
-            </div>
-          );
-        })}
-      </div>
-
-      <DesktopCoverflowTrack
+      <TrendingCoverflowTrack
         pages={pages}
         currentDisplayIndex={safeDisplayIndex}
         currentLogicalIndex={safeCurrent}
         suppressTransition={suppressTransition}
+        isXl={isXl}
       />
 
       <TrendingPageSlider
@@ -368,22 +366,26 @@ export function TrendingFeaturedSection() {
   );
 }
 
-interface DesktopCoverflowTrackProps {
+interface TrendingCoverflowTrackProps {
   pages: TrendingPage[];
   currentDisplayIndex: number;
   currentLogicalIndex: number;
   suppressTransition: boolean;
+  isXl: boolean;
 }
 
-/** Single horizontal track containing all category clusters; only neighbours of the focal cluster fade in. */
-function DesktopCoverflowTrack({
+/** Horizontal track: focal cluster centered; neighbours fade (same motion on mobile + desktop). */
+function TrendingCoverflowTrack({
   pages,
   currentDisplayIndex,
   currentLogicalIndex,
   suppressTransition,
-}: DesktopCoverflowTrackProps) {
+  isXl,
+}: TrendingCoverflowTrackProps) {
   const totalPages = pages.length;
   if (totalPages === 0) return null;
+
+  const pageFrameRem = isXl ? PAGE_FRAME_REM : MOBILE_PAGE_FRAME_REM;
 
   const displaySlots =
     totalPages > 1
@@ -402,15 +404,15 @@ function DesktopCoverflowTrack({
     : `opacity ${TRACK_TRANSITION_MS}ms ${TRACK_EASING}, transform ${TRACK_TRANSITION_MS}ms ${TRACK_EASING}`;
 
   return (
-    <div className="relative z-0 mt-1 hidden min-w-0 overflow-x-hidden xl:block xl:w-full">
+    <div className="relative z-0 mt-1 min-w-0 w-full overflow-x-hidden max-sm:mb-2 max-sm:pt-8 sm:max-xl:pt-12">
       <div
         className="flex items-end will-change-transform"
         style={{
-          width: `${displaySlots.length * PAGE_FRAME_REM}rem`,
+          width: `${displaySlots.length * pageFrameRem}rem`,
           // marginLeft: 50% pins track's left edge to parent's horizontal center;
           // translateX then shifts so the focal cluster's center sits at parent center.
           marginLeft: '50%',
-          transform: `translateX(-${(currentDisplayIndex + 0.5) * PAGE_FRAME_REM}rem)`,
+          transform: `translateX(-${(currentDisplayIndex + 0.5) * pageFrameRem}rem)`,
           transition: trackTransition,
         }}
       >
@@ -430,7 +432,7 @@ function DesktopCoverflowTrack({
               aria-hidden={!isFocal}
               className="shrink-0"
               style={{
-                width: `${PAGE_FRAME_REM}rem`,
+                width: `${pageFrameRem}rem`,
                 opacity,
                 transform: `scale(${scale})`,
                 transformOrigin: 'center bottom',
@@ -438,16 +440,67 @@ function DesktopCoverflowTrack({
                 pointerEvents: isFocal ? 'auto' : 'none',
               }}
             >
-              <DesktopPageCluster
-                items={page.items}
-                eager={isFocal || isAdjacent}
-                label={page.categoryLabel}
-                isFocal={isFocal}
-              />
+              {isXl ? (
+                <DesktopPageCluster
+                  items={page.items}
+                  eager={isFocal || isAdjacent}
+                  label={page.categoryLabel}
+                  isFocal={isFocal}
+                />
+              ) : (
+                <MobilePageCluster items={page.items} eager={isFocal || isAdjacent} />
+              )}
             </div>
           );
         })}
       </div>
+    </div>
+  );
+}
+
+interface MobilePageClusterProps {
+  items: CatalogProduct[];
+  eager: boolean;
+}
+
+/** Staggered 2-column cluster (legacy mobile home trending layout). */
+function MobilePageCluster({ items, eager }: MobilePageClusterProps) {
+  return (
+    <div
+      className="mx-auto grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start justify-items-center gap-x-4 gap-y-3 sm:gap-x-5 sm:gap-y-4"
+      style={{ width: `${MOBILE_CLUSTER_INNER_REM}rem` }}
+    >
+      {items.map((product, index) => {
+        const isMiddleOfThree = items.length === 3 && index === 1;
+        const section = getSectionLabel(product);
+        const mobileCellZ =
+          index === 1 ? 'relative z-[3]' : index === 0 ? 'relative z-[2]' : 'relative z-[1]';
+        const cellMaxRem = index === 1 ? MOBILE_MIDDLE_CARD_MAX_REM : MOBILE_SIDE_CARD_MAX_REM;
+        return (
+          <div
+            key={`trending-mobile-${product.id}-${index}`}
+            className={`${mobileCellZ} flex min-w-0 w-full max-w-full justify-center justify-self-center ${
+              index === 1 ? 'pt-[9.75rem]' : index === 2 ? '-mt-[6.75rem] pt-3' : 'pt-3'
+            }`}
+            style={{ maxWidth: `${cellMaxRem}rem` }}
+          >
+            <ProductsCatalogCard
+              product={product}
+              sectionLabel={section}
+              sizeLabel={getSizeLabel(product)}
+              categoryLabel={getCategoryLabel(product, section)}
+              className="!h-auto w-full max-w-none"
+              tightenDetailsUnderImage
+              imageScaleBoost={0.1}
+              imageNudgeDown={isMiddleOfThree}
+              compactLayout
+              suppressShadow
+              eagerProductImage={eager}
+              imageFrameClassName="max-sm:origin-bottom max-sm:scale-[0.88] max-sm:-translate-y-3.5"
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }

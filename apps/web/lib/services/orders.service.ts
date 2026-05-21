@@ -1,6 +1,7 @@
 import { db } from "@white-shop/db";
 import { Prisma } from "@prisma/client";
-import { adminInputAmdToUsd } from "@/lib/currency";
+import { adminInputAmdToUsd, catalogPriceToUsd } from "@/lib/currency";
+import { filterDisplayableVariantOptions } from "@/lib/default-pricing-variant";
 import type { CheckoutData } from "../types/checkout";
 import {
   mergeSizeCatalogIntoVariantOptions,
@@ -118,9 +119,9 @@ function resolveCollectionSurchargeUsd(
   if (quantity === 0) return 0;
 
   const itemUnitPrice = Number(item.price ?? Number.NaN);
-  const variantBasePrice = Number(item.variant?.price ?? Number.NaN);
-  if (Number.isFinite(itemUnitPrice) && Number.isFinite(variantBasePrice)) {
-    const perUnitSurcharge = Math.max(0, itemUnitPrice - variantBasePrice);
+  const variantBasePriceUsd = catalogPriceToUsd(Number(item.variant?.price ?? Number.NaN));
+  if (Number.isFinite(itemUnitPrice) && Number.isFinite(variantBasePriceUsd)) {
+    const perUnitSurcharge = Math.max(0, itemUnitPrice - variantBasePriceUsd);
     if (perUnitSurcharge > 0) {
       return perUnitSurcharge * quantity;
     }
@@ -133,10 +134,10 @@ function resolveCollectionSurchargeUsd(
   }
 
   const itemTotal = Number(item.total ?? Number.NaN);
-  if (!Number.isFinite(itemTotal) || !Number.isFinite(variantBasePrice)) {
+  if (!Number.isFinite(itemTotal) || !Number.isFinite(variantBasePriceUsd)) {
     return 0;
   }
-  const baseTotal = variantBasePrice * quantity;
+  const baseTotal = variantBasePriceUsd * quantity;
   return Math.max(0, itemTotal - baseTotal);
 }
 
@@ -501,7 +502,7 @@ class OrdersService {
               variantId: variant.id,
               productId: variant.product.id,
               quantity,
-              price: Number(variant.price),
+              price: catalogPriceToUsd(Number(variant.price)),
               productTitle: translation?.title || 'Unknown Product',
               variantTitle,
               sku: variant.sku || '',
@@ -1052,7 +1053,7 @@ class OrdersService {
         });
 
         const variantOptions = mergeSizeCatalogIntoVariantOptions(
-          variantOptionsBase,
+          filterDisplayableVariantOptions(variantOptionsBase),
           item.sizeCatalogTitle,
           item.sizeCatalogVersion,
           item.sizeCatalogImageUrl

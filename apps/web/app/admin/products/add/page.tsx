@@ -537,6 +537,10 @@ function AddProductPageContent() {
             onSlugChange={handleSlugChange}
             onSlugBlur={handleSlugBlur}
             onDescriptionChange={(e) => formState.setFormData((prev) => ({ ...prev, descriptionHtml: e.target.value }))}
+            onProductDetailsChange={(e) =>
+              formState.setFormData((prev) => ({ ...prev, productDetailsHtml: e.target.value }))
+            }
+            onShippingChange={(e) => formState.setFormData((prev) => ({ ...prev, shippingHtml: e.target.value }))}
             variableProductTypeAllowed={formState.variableProductTypeAllowed}
             onProductTypeChange={handleProductTypeChange}
             onUploadImages={handleUploadImages}

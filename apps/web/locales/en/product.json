@@ -65,6 +65,7 @@
   "addedToCart": "Added to cart",
   "errorAddingToCart": "Error adding to cart",
   "description_empty": "Description will be available soon.",
+  "product_tab_empty": "Product details will be available soon.",
   "pcs": "pcs",
   "outOfStockLabel": "Out of Stock",
   "noRelatedProducts": "No suggestions available"

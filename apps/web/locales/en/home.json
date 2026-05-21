@@ -88,7 +88,9 @@
     },
     "culture": {
       "title": "Your Voice Shapes Culture",
+      "titleMobile": "Your Voice\nShapes Culture",
       "description": "Culture moves when people take part. Your choice brings\nconcepts to life – be part of the creation and get early access.",
+      "descriptionMobile": "Culture moves when people take part. Your\nchoice brings concepts to life — be part of the\ncreation and get early access.",
       "loadError": "Failed to load voting items.",
       "updateError": "Failed to update vote.",
       "loginPrompt": "Please log in to vote.",
@@ -105,8 +107,9 @@
       }
     },
     "upcomingLines": {
-      "title": "Upcoming Product Lines",
-      "description": "The Covering concept expands: Smoky Covers for money, phones, laptops, documents, keys, Knifes, and more. Next up, and it’s going to be special.",
+      "title": "Upcoming\nProducts Lines",
+      "description": "The Covering concept expands: Smoky Covers for money, phones, laptops, documents, keys, Knifes, and more —\nnext up, and it’s going to be special.",
+      "descriptionMobile": "The Covering concept expands:\nSmoky Covers for money, phones, laptops,\ndocuments, keys, Knifes, and more — next up, and\nit’s going to be special.",
       "cta": "Notify Me",
       "cards": {
         "notebooks": "Notebooks",
@@ -126,7 +129,7 @@
       "contactTitle": "Contact info",
       "designedBy": "Designed by",
       "createdBy": "Create by",
-      "whatsappLabel": "whatsup :",
+      "whatsappLabel": "WhatsApp:",
       "copyright": "Copyright© 2026. All Rights Reserved.",
       "links": {
         "privacy": "Privacy Policy",

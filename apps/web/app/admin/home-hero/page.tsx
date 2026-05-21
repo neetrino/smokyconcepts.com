@@ -5,7 +5,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { AdminShell } from '../components/AdminShell';
-import { HomeHeroSlideEditor } from './components/HomeHeroSlideEditor';
+import {
+  HomeHeroSlideEditor,
+  type HomeHeroImageField,
+} from './components/HomeHeroSlideEditor';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { apiClient } from '@/lib/api-client';
 import { HOME_HERO_DEFAULT_SLIDES } from '@/lib/constants/home-hero.constants';
@@ -46,7 +49,10 @@ export default function AdminHomeHeroPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [slides, setSlides] = useState<HomeHeroSlide[]>([]);
-  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const [uploadingTarget, setUploadingTarget] = useState<{
+    index: number;
+    field: HomeHeroImageField;
+  } | null>(null);
   const [expandedSlideIndex, setExpandedSlideIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -82,26 +88,36 @@ export default function AdminHomeHeroPage() {
       const next = [...prev];
       const cur = next[index];
       if (!cur) return prev;
-      next[index] = { ...cur, ...patch };
+      const merged = { ...cur, ...patch };
+      if ('mobileImageUrl' in patch && !patch.mobileImageUrl?.trim()) {
+        const { mobileImageUrl: _omit, ...withoutMobile } = merged;
+        next[index] = withoutMobile;
+      } else {
+        next[index] = merged;
+      }
       return next;
     });
   };
 
-  const handleImageFile = async (index: number, event: ChangeEvent<HTMLInputElement>) => {
+  const handleImageFile = async (
+    index: number,
+    field: HomeHeroImageField,
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    setUploadingIndex(index);
+    setUploadingTarget({ index, field });
     setError(null);
     try {
       const base64 = await processImageFile(file, { maxSizeMB: 2, maxWidthOrHeight: 1920 });
       const urls = await uploadImagesToR2([base64]);
       if (urls[0]) {
-        updateSlide(index, { imageUrl: urls[0] });
+        updateSlide(index, { [field]: urls[0] });
       }
     } catch {
       setError(t('admin.homeHero.uploadError'));
     } finally {
-      setUploadingIndex(null);
+      setUploadingTarget(null);
       if (event.target) event.target.value = '';
     }
   };
@@ -201,11 +217,17 @@ export default function AdminHomeHeroPage() {
                     index={index}
                     isExpanded={expandedSlideIndex === index}
                     slidesCount={slides.length}
-                    isUploading={uploadingIndex === index}
+                    isUploading={
+                      uploadingTarget?.index === index && uploadingTarget.field === 'imageUrl'
+                    }
+                    isUploadingMobile={
+                      uploadingTarget?.index === index &&
+                      uploadingTarget.field === 'mobileImageUrl'
+                    }
                     onToggle={() => toggleSlideExpanded(index)}
                     onRemove={() => removeSlideAt(index)}
                     onUpdate={(patch) => updateSlide(index, patch)}
-                    onImageFile={(e) => void handleImageFile(index, e)}
+                    onImageFile={(field, e) => void handleImageFile(index, field, e)}
                   />
                 ))}
               </div>

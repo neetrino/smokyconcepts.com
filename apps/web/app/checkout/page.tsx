@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useTranslation } from '../../lib/i18n-client';
 import { CheckoutForm } from './CheckoutForm';
 import { CheckoutModals } from './CheckoutModals';
+import { CheckoutPlacingOrderOverlay } from './components/CheckoutPlacingOrderOverlay';
 import { OrderSummary } from './OrderSummary';
 import { useCheckout } from './useCheckout';
 
@@ -30,10 +31,12 @@ export default function CheckoutPage() {
     handleSubmit,
     errors,
     isSubmitting,
+    isPlacingOrder,
     setValue,
     paymentMethod,
     shippingMethod,
     shippingRegionSummary,
+    shippingCountry,
     deliveryLocations,
     loadingDeliveryLocations,
     paymentMethods,
@@ -83,8 +86,11 @@ export default function CheckoutPage() {
     );
   }
 
+  const isOrderInFlight = isPlacingOrder || isSubmitting;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <CheckoutPlacingOrderOverlay visible={isPlacingOrder} />
       <h1 className="text-3xl font-bold text-gray-900 mb-8">{t('checkout.title')}</h1>
       <form onSubmit={handlePlaceOrder}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -143,7 +149,7 @@ export default function CheckoutPage() {
               register={register}
               setValue={setValue}
               errors={errors}
-              isSubmitting={isSubmitting}
+              isSubmitting={isOrderInFlight}
               paymentMethod={paymentMethod}
               paymentMethods={paymentMethods}
               logoErrors={logoErrors}
@@ -152,6 +158,7 @@ export default function CheckoutPage() {
               setError={setError}
               deliveryLocations={deliveryLocations}
               loadingDeliveryLocations={loadingDeliveryLocations}
+              shippingCountry={shippingCountry}
             />
           </div>
 
@@ -164,7 +171,7 @@ export default function CheckoutPage() {
               loadingDeliveryPrice={loadingDeliveryPrice}
               deliveryPrice={deliveryPrice}
               error={error}
-              isSubmitting={isSubmitting}
+              isSubmitting={isOrderInFlight}
               couponDraft={couponDraft}
               onCouponDraftChange={setCouponDraft}
               onApplyCoupon={applyCoupon}
@@ -186,10 +193,11 @@ export default function CheckoutPage() {
         setValue={setValue}
         handleSubmit={handleSubmit}
         errors={errors}
-        isSubmitting={isSubmitting}
+        isSubmitting={isOrderInFlight}
         shippingMethod={shippingMethod}
         paymentMethod={paymentMethod}
         shippingRegion={shippingRegionSummary}
+        shippingCountry={shippingCountry}
         deliveryLocations={deliveryLocations}
         loadingDeliveryLocations={loadingDeliveryLocations}
         cart={cart}

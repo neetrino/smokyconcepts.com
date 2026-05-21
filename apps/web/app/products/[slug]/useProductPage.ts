@@ -10,7 +10,7 @@ import { useProductCalculations } from './hooks/useProductCalculations';
 import { useAttributeGroups } from './useAttributeGroups';
 import type { ProductVariant } from './types';
 import { getOptionValue } from './utils/variant-helpers';
-import { findVariantByAllAttributes } from './utils/variant-finders';
+import { findVariantByAllAttributes, findVariantByGalleryImage } from './utils/variant-finders';
 import { switchToVariantImage } from './utils/image-switching';
 
 export function useProductPage(params: Promise<{ slug?: string }>) {
@@ -95,7 +95,9 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
       globalDiscount: product.globalDiscount ?? null,
     };
   }, [currentVariant, product]);
-  const variantForPurchase = currentVariant ?? fallbackDefaultVariant;
+  const hasPurchasableVariants = (product?.variants?.length ?? 0) > 0;
+  const variantForPurchase =
+    currentVariant ?? (hasPurchasableVariants ? null : fallbackDefaultVariant);
   const attributeGroups = useAttributeGroups({
     product,
     selectedColor,
@@ -275,6 +277,15 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
 
   const handleImageIndexChange = (index: number) => {
     setCurrentImageIndex(index);
+    const matchedVariant = findVariantByGalleryImage(product, images, index);
+    if (!matchedVariant) {
+      return;
+    }
+
+    setSelectedVariant(matchedVariant);
+    setSelectedColor(getOptionValue(matchedVariant.options, 'color'));
+    setSelectedSize(getOptionValue(matchedVariant.options, 'size'));
+    setSelectedSizeVersion(getOptionValue(matchedVariant.options, 'size_version'));
   };
 
   return {

@@ -1,6 +1,76 @@
 import type { Product, ProductVariant, VariantOption } from '../types';
+import {
+  processImageUrl,
+  smartSplitUrls,
+} from '../../../../lib/services/utils/image-utils';
 import { variantHasColor } from './variant-helpers';
 import { getOptionValue } from './variant-helpers';
+
+function normalizeUrlForVariantMatch(url: string): string {
+  let normalized = url.trim();
+  if (normalized.startsWith('/')) {
+    normalized = normalized.substring(1);
+  }
+  if (normalized.endsWith('/')) {
+    normalized = normalized.substring(0, normalized.length - 1);
+  }
+  return normalized.toLowerCase();
+}
+
+function galleryImageMatchesVariantUrl(galleryImage: string, variantUrl: string): boolean {
+  const processedGallery = processImageUrl(galleryImage);
+  const processedVariant = processImageUrl(variantUrl);
+  if (!processedGallery || !processedVariant) {
+    return false;
+  }
+
+  const normalizedGallery = normalizeUrlForVariantMatch(processedGallery);
+  const normalizedVariant = normalizeUrlForVariantMatch(processedVariant);
+  if (normalizedGallery === normalizedVariant) {
+    return true;
+  }
+
+  const galleryFilename = processedGallery.split('/').pop()?.toLowerCase().split('?')[0];
+  const variantFilename = processedVariant.split('/').pop()?.toLowerCase().split('?')[0];
+  return Boolean(
+    galleryFilename &&
+      variantFilename &&
+      galleryFilename === variantFilename
+  );
+}
+
+/**
+ * Resolves the purchasable variant for a gallery image index (thumbnail / hero navigation).
+ */
+export function findVariantByGalleryImage(
+  product: Product | null,
+  images: string[],
+  imageIndex: number
+): ProductVariant | null {
+  if (!product?.variants?.length || imageIndex < 0 || imageIndex >= images.length) {
+    return null;
+  }
+
+  const galleryImage = images[imageIndex]?.trim();
+  if (!galleryImage) {
+    return null;
+  }
+
+  const matches = product.variants.filter((variant) => {
+    if (!variant.imageUrl) {
+      return false;
+    }
+    return smartSplitUrls(variant.imageUrl).some((url) =>
+      galleryImageMatchesVariantUrl(galleryImage, url)
+    );
+  });
+
+  if (matches.length === 0) {
+    return null;
+  }
+
+  return matches.find((variant) => variant.stock > 0) ?? matches[0];
+}
 
 /**
  * Find variant by color and size

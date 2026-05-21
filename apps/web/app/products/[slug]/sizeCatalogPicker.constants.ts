@@ -4,9 +4,7 @@
  * keeps later collection titles and grids invisible until the delay elapses.
  */
 export const SIZE_CATALOG_CATEGORY_SECTION_STEP_MS = 72;
-/** Delay between consecutive size cards in the open animation (ms). */
-export const SIZE_CARD_STAGGER_MS = 52;
-/** Extra delay before the first size card animates (after panel motion). */
+/** Extra delay before size cards animate in (after panel motion); shared by all cards on a page. */
 export const SIZE_CARD_STAGGER_BASE_MS = 220;
 /**
  * Base delay for cards when a non-first page scrolls into view (matches modal block stagger ~90ms).

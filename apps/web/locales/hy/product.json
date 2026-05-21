@@ -65,6 +65,7 @@
   "addedToCart": "Ավելացվեց զամբյուղ",
   "errorAddingToCart": "Սխալ ավելացնելիս",
   "description_empty": "Նկարագրությունը շուտով կհասանելի լինի։",
+  "product_tab_empty": "Ապրանքի մանրամասները շուտով կհասանելի լինեն։",
   "pcs": "հատ",
   "outOfStockLabel": "Արտադրված",
   "noRelatedProducts": "Առաջարկներ չկան"

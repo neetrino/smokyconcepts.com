@@ -18,12 +18,12 @@ export function renderPillarTitleLines(text: string): ReactNode {
 }
 
 /**
- * Renders pillar/story copy from locale strings:
+ * Renders pillar/about copy from locale strings:
  * - Blank line (`\\n\\n`) starts a new `<p>`
  * - Single `\\n` inside a block becomes `<br />`
  * - `**text**` becomes `<strong className="font-black">`
  */
-export function renderStoryRichParagraphs(text: string, keyBase: string): ReactNode[] {
+export function renderAboutRichParagraphs(text: string, keyBase: string): ReactNode[] {
   return text
     .trim()
     .split(/\n\n+/)
