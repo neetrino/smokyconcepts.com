@@ -16,6 +16,8 @@ interface UseProductFormHandlersProps {
     title: string;
     slug: string;
     descriptionHtml: string;
+    productDetailsHtml: string;
+    shippingHtml: string;
     primaryCategoryId: string;
     categoryIds: string[];
     sizeCatalogCategoryId: string;

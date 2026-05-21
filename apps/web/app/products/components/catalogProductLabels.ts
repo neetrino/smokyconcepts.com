@@ -341,8 +341,8 @@ export function catalogItemTitleMatchesAnySizeLabel(
 /** Same count as `ITEMS_PER_SECTION_PAGE` on the products catalog (one horizontal row page). */
 export const CATALOG_SECTION_PAGE_SIZE = 6;
 
-/** Image nudge on positions 2 and 5 within each group of six — matches catalog sections. */
+/** Keeps hero vertical alignment uniform across catalog cards. */
 export function shouldNudgeCatalogProductImage(index: number): boolean {
-  const positionInRow = (index % CATALOG_SECTION_PAGE_SIZE) + 1;
-  return positionInRow === 2 || positionInRow === 5;
+  void index;
+  return false;
 }

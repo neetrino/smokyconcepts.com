@@ -6,6 +6,106 @@ import imageCompression from 'browser-image-compression';
 import { ensureBrowserDecodableImageFile } from './heic-browser-convert';
 import { logger } from './logger';
 
+const PNG_TRIM_ALPHA_THRESHOLD = 8;
+
+async function readFileAsDataUrl(file: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result ?? ''));
+    reader.onerror = () => reject(new Error('Failed to read image for trim'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function loadImageElement(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('Failed to decode image for trim'));
+    image.src = src;
+  });
+}
+
+function resolveOpaqueBounds(
+  alphaChannel: Uint8ClampedArray,
+  width: number,
+  height: number,
+  alphaThreshold: number
+): { minX: number; minY: number; maxX: number; maxY: number } | null {
+  let minX = width;
+  let minY = height;
+  let maxX = -1;
+  let maxY = -1;
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const alpha = alphaChannel[(y * width + x) * 4 + 3];
+      if (alpha < alphaThreshold) continue;
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+      if (x > maxX) maxX = x;
+      if (y > maxY) maxY = y;
+    }
+  }
+
+  if (maxX < minX || maxY < minY) return null;
+  return { minX, minY, maxX, maxY };
+}
+
+async function trimTransparentImageFile(
+  file: File,
+  outputType: string,
+  alphaThreshold = PNG_TRIM_ALPHA_THRESHOLD
+): Promise<File> {
+  if (typeof document === 'undefined' || !outputType.includes('png')) return file;
+  const src = await readFileAsDataUrl(file);
+  const image = await loadImageElement(src);
+  const width = image.naturalWidth;
+  const height = image.naturalHeight;
+  if (width <= 0 || height <= 0) return file;
+
+  const sourceCanvas = document.createElement('canvas');
+  sourceCanvas.width = width;
+  sourceCanvas.height = height;
+  const sourceCtx = sourceCanvas.getContext('2d');
+  if (!sourceCtx) return file;
+  sourceCtx.drawImage(image, 0, 0, width, height);
+
+  const sourcePixels = sourceCtx.getImageData(0, 0, width, height);
+  const bounds = resolveOpaqueBounds(sourcePixels.data, width, height, alphaThreshold);
+  if (!bounds) return file;
+
+  const trimmedWidth = bounds.maxX - bounds.minX + 1;
+  const trimmedHeight = bounds.maxY - bounds.minY + 1;
+  if (trimmedWidth === width && trimmedHeight === height) return file;
+
+  const targetCanvas = document.createElement('canvas');
+  targetCanvas.width = trimmedWidth;
+  targetCanvas.height = trimmedHeight;
+  const targetCtx = targetCanvas.getContext('2d');
+  if (!targetCtx) return file;
+  targetCtx.drawImage(
+    sourceCanvas,
+    bounds.minX,
+    bounds.minY,
+    trimmedWidth,
+    trimmedHeight,
+    0,
+    0,
+    trimmedWidth,
+    trimmedHeight
+  );
+
+  const trimmedBlob = await new Promise<Blob | null>((resolve) =>
+    targetCanvas.toBlob(resolve, outputType)
+  );
+  if (!trimmedBlob) return file;
+
+  const extension = outputType.includes('png') ? 'png' : file.name.split('.').pop() ?? 'png';
+  const safeName = file.name.replace(/\.[^.]+$/, '') || 'product-image';
+  return new File([trimmedBlob], `${safeName}.${extension}`, { type: outputType });
+}
+
 /**
  * Type for image URL input - can be string or object with url/src/value properties
  */
@@ -330,6 +430,8 @@ export async function processImageFile(
     useWebWorker?: boolean; // Use web worker for processing (default: true)
     fileType?: string; // Output file type (default: 'image/jpeg')
     initialQuality?: number; // Initial quality 0-1 (default: 0.8)
+    trimTransparentPadding?: boolean; // Trim transparent PNG borders (default: true for png output)
+    trimAlphaThreshold?: number; // Alpha threshold for trim detection (default: 8)
   }
 ): Promise<string> {
   try {
@@ -344,7 +446,9 @@ export async function processImageFile(
       maxWidthOrHeight = 1920,
       useWebWorker = true,
       fileType = 'image/jpeg',
-      initialQuality = 0.8
+      initialQuality = 0.8,
+      trimTransparentPadding = fileType === 'image/png',
+      trimAlphaThreshold = PNG_TRIM_ALPHA_THRESHOLD,
     } = options || {};
 
     const decodableFile = await ensureBrowserDecodableImageFile(file);
@@ -366,10 +470,15 @@ export async function processImageFile(
       // EXIF orientation is automatically handled by browser-image-compression
     });
 
+    const normalizedFile = trimTransparentPadding
+      ? await trimTransparentImageFile(compressedFile, fileType, trimAlphaThreshold)
+      : compressedFile;
+
     logger.info('Image processed successfully', {
       originalSize: `${Math.round(decodableFile.size / 1024)}KB`,
-      compressedSize: `${Math.round(compressedFile.size / 1024)}KB`,
-      reduction: `${Math.round((1 - compressedFile.size / decodableFile.size) * 100)}%`
+      compressedSize: `${Math.round(normalizedFile.size / 1024)}KB`,
+      reduction: `${Math.round((1 - normalizedFile.size / decodableFile.size) * 100)}%`,
+      trimTransparentPadding,
     });
 
     // Convert to base64
@@ -384,7 +493,7 @@ export async function processImageFile(
         logger.error('Error converting to base64', { error });
         reject(new Error('Failed to convert image to base64'));
       };
-      reader.readAsDataURL(compressedFile);
+      reader.readAsDataURL(normalizedFile);
     });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to process image';
