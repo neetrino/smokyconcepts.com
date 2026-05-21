@@ -2,6 +2,7 @@ import { useProfile } from './hooks/useProfile';
 import { usePersonalInfo } from './hooks/usePersonalInfo';
 import { useAddresses } from './hooks/useAddresses';
 import { usePassword } from './hooks/usePassword';
+import { useDeleteAccount } from './hooks/useDeleteAccount';
 import { useDashboard } from './hooks/useDashboard';
 import { useOrders } from './hooks/useOrders';
 import { useProfileTabs } from './hooks/useProfileTabs';
@@ -62,6 +63,8 @@ export function useProfilePage() {
     onSuccess: setSuccess,
   });
 
+  const deleteAccount = useDeleteAccount({ onError: setError });
+
   // Dashboard hook
   const dashboard = useDashboard({
     isLoggedIn,
@@ -120,6 +123,17 @@ export function useProfilePage() {
     setPasswordForm: password.setPasswordForm,
     savingPassword: password.savingPassword,
     handleChangePassword: password.handleChangePassword,
+
+    // Delete account
+    showDeleteModal: deleteAccount.showDeleteModal,
+    deleteConfirmText: deleteAccount.confirmText,
+    setDeleteConfirmText: deleteAccount.setConfirmText,
+    deletingAccount: deleteAccount.deletingAccount,
+    deleteModalError: deleteAccount.modalError,
+    isDeleteConfirmValid: deleteAccount.isConfirmValid,
+    openDeleteModal: deleteAccount.openDeleteModal,
+    closeDeleteModal: deleteAccount.closeDeleteModal,
+    handleDeleteAccount: deleteAccount.handleDeleteAccount,
     
     // Dashboard
     dashboardData: dashboard.dashboardData,

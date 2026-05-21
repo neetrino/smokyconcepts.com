@@ -106,6 +106,20 @@
     "newPasswordPlaceholder": "Enter new password (min. 6 characters)",
     "confirmPasswordPlaceholder": "Confirm new password"
   },
+  "deleteAccount": {
+    "title": "Delete Profile",
+    "description": "Permanently delete your account and personal data. This action cannot be undone.",
+    "button": "Delete Profile",
+    "modalTitle": "Delete your account?",
+    "modalDescription": "All profile data will be removed and you will be signed out. Type DELETE below to confirm.",
+    "confirmLabel": "Confirmation",
+    "confirmPlaceholder": "DELETE",
+    "confirmHint": "Type DELETE in capital letters to enable deletion.",
+    "cancel": "Cancel",
+    "confirmButton": "Delete my account",
+    "deleting": "Deleting account...",
+    "failedToDelete": "Failed to delete account"
+  },
   "orders": {
     "title": "My Orders",
     "loading": "Loading orders...",

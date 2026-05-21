@@ -10,6 +10,7 @@ import { ProfilePersonalInfo } from './ProfilePersonalInfo';
 import { ProfileAddresses } from './ProfileAddresses';
 import { ProfileOrders } from './ProfileOrders';
 import { ProfilePassword } from './ProfilePassword';
+import { ProfileDeleteAccount } from './ProfileDeleteAccount';
 import { OrderDetailsModal } from './OrderDetailsModal';
 import type { ProfileTab, ProfileTabConfig } from './types';
 
@@ -45,6 +46,15 @@ function ProfilePageContent() {
     setPasswordForm,
     savingPassword,
     handleChangePassword,
+    showDeleteModal,
+    deleteConfirmText,
+    setDeleteConfirmText,
+    deletingAccount,
+    deleteModalError,
+    isDeleteConfirmValid,
+    openDeleteModal,
+    closeDeleteModal,
+    handleDeleteAccount,
     dashboardData,
     dashboardLoading,
     orders,
@@ -212,13 +222,27 @@ function ProfilePageContent() {
 
             {/* Password Tab */}
             {activeTab === 'password' && (
-              <ProfilePassword
-                passwordForm={passwordForm}
-                setPasswordForm={setPasswordForm}
-                savingPassword={savingPassword}
-                onSave={handleChangePassword}
-                t={t}
-              />
+              <>
+                <ProfilePassword
+                  passwordForm={passwordForm}
+                  setPasswordForm={setPasswordForm}
+                  savingPassword={savingPassword}
+                  onSave={handleChangePassword}
+                  t={t}
+                />
+                <ProfileDeleteAccount
+                  showDeleteModal={showDeleteModal}
+                  confirmText={deleteConfirmText}
+                  setConfirmText={setDeleteConfirmText}
+                  deletingAccount={deletingAccount}
+                  modalError={deleteModalError}
+                  isConfirmValid={isDeleteConfirmValid}
+                  onOpenModal={openDeleteModal}
+                  onCloseModal={closeDeleteModal}
+                  onConfirmDelete={handleDeleteAccount}
+                  t={t}
+                />
+              </>
             )}
 
             {/* Order Details Modal */}
