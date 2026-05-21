@@ -31,16 +31,19 @@ function patchLocaleCopy(
   };
 }
 
+export type HomeHeroImageField = 'imageUrl' | 'mobileImageUrl';
+
 export interface HomeHeroSlideEditorProps {
   slide: HomeHeroSlide;
   index: number;
   isExpanded: boolean;
   slidesCount: number;
   isUploading: boolean;
+  isUploadingMobile: boolean;
   onToggle: () => void;
   onRemove: () => void;
   onUpdate: (patch: Partial<HomeHeroSlide>) => void;
-  onImageFile: (event: ChangeEvent<HTMLInputElement>) => void;
+  onImageFile: (field: HomeHeroImageField, event: ChangeEvent<HTMLInputElement>) => void;
 }
 
 export function HomeHeroSlideEditor({
@@ -49,6 +52,7 @@ export function HomeHeroSlideEditor({
   isExpanded,
   slidesCount,
   isUploading,
+  isUploadingMobile,
   onToggle,
   onRemove,
   onUpdate,
@@ -125,7 +129,7 @@ export function HomeHeroSlideEditor({
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={(e) => void onImageFile(e)}
+                  onChange={(e) => void onImageFile('imageUrl', e)}
                   disabled={isUploading}
                 />
                 {isUploading ? (
@@ -137,6 +141,56 @@ export function HomeHeroSlideEditor({
                   t('admin.homeHero.uploadFile')
                 )}
               </label>
+            </div>
+          </div>
+
+          <div className="sm:col-span-2">
+            <span className="mb-1 block text-xs font-bold uppercase tracking-[0.08em] text-[#414141]/70">
+              {t('admin.homeHero.imageMobile')}
+            </span>
+            <p className="mb-2 text-xs text-[#414141]/55">{t('admin.homeHero.imageMobileHint')}</p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+              <div className="min-h-40 w-full max-w-xl overflow-hidden rounded-xl border border-[#dcc090]/25 bg-[#dcc090]/5">
+                {slide.mobileImageUrl ? (
+                  <img
+                    src={slide.mobileImageUrl}
+                    alt={t('admin.homeHero.imageMobilePreviewAlt').replace('{n}', String(index + 1))}
+                    className="max-h-56 w-full object-contain object-center"
+                  />
+                ) : (
+                  <div className="flex min-h-40 items-center justify-center px-4 text-center text-sm text-[#414141]/40">
+                    {t('admin.homeHero.imageMobilePlaceholder')}
+                  </div>
+                )}
+              </div>
+              <div className="flex shrink-0 flex-col gap-2 self-start">
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-[#dcc090]/35 bg-[#dcc090]/10 px-4 py-2 text-xs font-bold text-[#122a26] transition-all hover:border-[#dcc090] hover:bg-[#dcc090]/25">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => void onImageFile('mobileImageUrl', e)}
+                    disabled={isUploadingMobile}
+                  />
+                  {isUploadingMobile ? (
+                    <span className="flex items-center gap-2">
+                      <span className="h-3 w-3 animate-spin rounded-full border-b-2 border-[#122a26]" />
+                      {t('admin.homeHero.uploading')}
+                    </span>
+                  ) : (
+                    t('admin.homeHero.uploadFile')
+                  )}
+                </label>
+                {slide.mobileImageUrl ? (
+                  <button
+                    type="button"
+                    onClick={() => onUpdate({ mobileImageUrl: undefined })}
+                    className="rounded-lg border border-[#dcc090]/35 px-4 py-2 text-xs font-bold text-[#414141]/70 transition-all hover:border-[#dcc090] hover:bg-[#dcc090]/10"
+                  >
+                    {t('admin.homeHero.clearMobileImage')}
+                  </button>
+                ) : null}
+              </div>
             </div>
           </div>
 

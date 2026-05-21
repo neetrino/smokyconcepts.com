@@ -37,22 +37,25 @@ export async function resolveHomeHeroInlineImagesForR2(homeHero: unknown): Promi
       if (!slide || typeof slide !== 'object') {
         return slide;
       }
-      const record = slide as Record<string, unknown>;
-      const imageUrl = typeof record.imageUrl === 'string' ? record.imageUrl.trim() : '';
-      if (!imageUrl.startsWith('data:image/')) {
-        return slide;
+      let record = slide as Record<string, unknown>;
+      for (const field of ['imageUrl', 'mobileImageUrl'] as const) {
+        const url = typeof record[field] === 'string' ? record[field].trim() : '';
+        if (!url.startsWith('data:image/')) {
+          continue;
+        }
+        if (!isR2Configured()) {
+          throw new Error(
+            'R2 is not configured; cannot persist inline hero images. Use file upload or configure R2.',
+          );
+        }
+        const parsed = parseDataImageUrl(url);
+        if (!parsed) {
+          throw new Error('Invalid hero image data URL.');
+        }
+        const publicUrl = await uploadHomeHeroImageToR2(parsed.buffer, parsed.contentType);
+        record = { ...record, [field]: publicUrl };
       }
-      if (!isR2Configured()) {
-        throw new Error(
-          'R2 is not configured; cannot persist inline hero images. Use file upload or configure R2.',
-        );
-      }
-      const parsed = parseDataImageUrl(imageUrl);
-      if (!parsed) {
-        throw new Error('Invalid hero image data URL.');
-      }
-      const publicUrl = await uploadHomeHeroImageToR2(parsed.buffer, parsed.contentType);
-      return { ...record, imageUrl: publicUrl };
+      return record;
     }),
   );
 

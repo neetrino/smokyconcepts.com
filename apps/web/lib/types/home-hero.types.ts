@@ -13,6 +13,8 @@ export interface HomeHeroSlideLocaleCopy {
 
 export interface HomeHeroSlide {
   imageUrl: string;
+  /** Optional hero art for viewports below `md`; falls back to `imageUrl` when unset. */
+  mobileImageUrl?: string;
   ctaHref: string;
   /** Per-locale headline, body, and button label on the hero image. */
   copy: Record<HomeHeroUiLocale, HomeHeroSlideLocaleCopy>;

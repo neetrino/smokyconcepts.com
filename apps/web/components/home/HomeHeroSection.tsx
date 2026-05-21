@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState, type TouchEvent } from 'react';
 
 import { HomeActionButton } from './HomeActionButton';
-import { getHomeHeroSlideLines } from '@/lib/home-hero-display';
+import { getHomeHeroSlideImageSrc, getHomeHeroSlideLines } from '@/lib/home-hero-display';
 import type { HomeHeroSlide } from '@/lib/types/home-hero.types';
 import { useTranslation } from '@/lib/i18n-client';
 
@@ -104,21 +104,40 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
             className="flex h-full transition-transform duration-500 ease-in-out"
             style={{ transform: `translateX(-${activeIndex * 100}%)` }}
           >
-            {safeSlides.map((slide, index) => (
-              <div key={`${slide.imageUrl}-${index}`} className="relative h-full w-full shrink-0">
-                <Image
-                  src={slide.imageUrl}
-                  alt={getHomeHeroSlideLines(slide, lang).title || t('home.homepage.hero.imageAlt')}
-                  fill
-                  className="object-cover"
-                  priority={index === 0}
-                  sizes="1680px"
-                  unoptimized={
-                    slide.imageUrl.startsWith('http://') || slide.imageUrl.startsWith('https://')
-                  }
-                />
-              </div>
-            ))}
+            {safeSlides.map((slide, index) => {
+              const alt =
+                getHomeHeroSlideLines(slide, lang).title || t('home.homepage.hero.imageAlt');
+              const desktopSrc = getHomeHeroSlideImageSrc(slide, 'desktop');
+              const mobileSrc = getHomeHeroSlideImageSrc(slide, 'mobile');
+              const slideKey = `${desktopSrc}-${mobileSrc}-${index}`;
+
+              return (
+                <div key={slideKey} className="relative h-full w-full shrink-0">
+                  <Image
+                    src={desktopSrc}
+                    alt={alt}
+                    fill
+                    className="hidden object-cover md:block"
+                    priority={index === 0}
+                    sizes="1680px"
+                    unoptimized={
+                      desktopSrc.startsWith('http://') || desktopSrc.startsWith('https://')
+                    }
+                  />
+                  <Image
+                    src={mobileSrc}
+                    alt={alt}
+                    fill
+                    className="object-cover md:hidden"
+                    priority={index === 0}
+                    sizes="100vw"
+                    unoptimized={
+                      mobileSrc.startsWith('http://') || mobileSrc.startsWith('https://')
+                    }
+                  />
+                </div>
+              );
+            })}
           </div>
         </div>
         <div className="absolute inset-0 z-[2] bg-gradient-to-t from-black/55 via-black/20 to-transparent" />

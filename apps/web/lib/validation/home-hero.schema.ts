@@ -23,6 +23,7 @@ const heroCopySchema = z.object({
 export const homeHeroSlideSchema = z
   .object({
     imageUrl: z.string().trim().min(1).max(2048),
+    mobileImageUrl: z.string().trim().max(2048).optional(),
     ctaHref: z.string().max(512).default(''),
     copy: heroCopySchema.optional(),
     title: z.string().max(400).optional(),
@@ -31,6 +32,8 @@ export const homeHeroSlideSchema = z
   })
   .transform((data): HomeHeroSlide => {
     const imageUrl = data.imageUrl.trim();
+    const mobileTrimmed = data.mobileImageUrl?.trim() ?? '';
+    const mobileImageUrl = mobileTrimmed.length > 0 ? mobileTrimmed : undefined;
     const ctaHref = data.ctaHref.trim();
     const trimBlock = (b: { title: string; description: string; ctaLabel: string }) => ({
       title: b.title.trim(),
@@ -40,6 +43,7 @@ export const homeHeroSlideSchema = z
     if (data.copy) {
       return {
         imageUrl,
+        ...(mobileImageUrl ? { mobileImageUrl } : {}),
         ctaHref,
         copy: {
           hy: trimBlock(data.copy.hy),
@@ -55,6 +59,7 @@ export const homeHeroSlideSchema = z
     });
     return {
       imageUrl,
+      ...(mobileImageUrl ? { mobileImageUrl } : {}),
       ctaHref,
       copy: {
         hy: { ...legacy },
