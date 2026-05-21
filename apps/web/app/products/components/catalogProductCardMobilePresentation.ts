@@ -94,9 +94,23 @@ export const HOME_UPCOMING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME =
 export const CATALOG_PRODUCT_CARD_MOBILE_ITEM_WRAPPER_CLASS_NAME =
   `max-sm:flex max-sm:shrink-0 max-sm:flex-col max-sm:justify-center max-sm:translate-y-3 ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_CARD_WIDTH_CLASS_NAME}`;
 
-/** `/products` strip cell — no extra downward nudge under the section title. */
+/**
+ * `/products` landing strip cell — `px-4` card width; layout matches home Upcoming wrapper.
+ */
 export const CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME =
-  `max-sm:flex max-sm:shrink-0 max-sm:flex-col max-sm:justify-center ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_CARD_WIDTH_CLASS_NAME}`;
+  `flex min-h-0 max-sm:shrink-0 max-sm:flex-col max-sm:self-stretch max-sm:justify-center ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_CARD_WIDTH_CLASS_NAME}`;
+
+/** `/products` landing mobile — same hero/copy spacing as home Upcoming. */
+export const PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_FRAME_CLASS_NAME =
+  HOME_UPCOMING_MOBILE_IMAGE_FRAME_CLASS_NAME;
+export const PRODUCTS_CATALOG_LANDING_MOBILE_HERO_PULL_UP_CLASS_NAME =
+  HOME_UPCOMING_MOBILE_HERO_PULL_UP_CLASS_NAME;
+export const PRODUCTS_CATALOG_LANDING_MOBILE_CARD_TOP_PADDING_CLASS_NAME =
+  HOME_UPCOMING_MOBILE_CARD_TOP_PADDING_CLASS_NAME;
+export const PRODUCTS_CATALOG_LANDING_MOBILE_DETAILS_OFFSET_CLASS_NAME =
+  HOME_UPCOMING_MOBILE_DETAILS_OFFSET_CLASS_NAME;
+export const PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME =
+  HOME_UPCOMING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME;
 
 /** Passed to `ProductsCatalogCard` `className` below `sm`. */
 export const CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME = '!h-auto w-full max-w-none';
@@ -135,7 +149,7 @@ export const CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME =
 export const CATALOG_PRODUCTS_PAGE_STRIP_SCROLL_CLASS_NAME = `scrollbar-hide mt-4 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory max-sm:pb-14 pb-10 pt-[8rem] sm:pb-12 sm:pt-[8.5rem] lg:pb-14 lg:pt-[9rem] ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_TOP_PADDING_CLASS_NAME}`;
 
 /** `/products` catalog sections — less space under section h2 than PDP related strip. */
-export const CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME = `scrollbar-hide mt-1.5 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory max-sm:pb-14 pb-10 max-sm:pt-[7.25rem] pt-[5.5rem] sm:pb-12 sm:pt-[6rem] lg:pb-14 lg:pt-[6.5rem] ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME}`;
+export const CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME = `scrollbar-hide mt-1.5 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory max-sm:pb-14 pb-10 max-sm:pt-[7.5rem] pt-[5.5rem] sm:pb-12 sm:pt-[6rem] lg:pb-14 lg:pt-[6.5rem] ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME}`;
 
 /** Pagination row spacing below catalog / related strips. */
 export const CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME =
