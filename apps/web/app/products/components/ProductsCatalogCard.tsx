@@ -26,8 +26,8 @@ const CATALOG_BAG_ICON_PATH = '/assets/home/icons/bag-catalog.svg';
 const IMAGE_SIZES = '(max-width: 640px) 160px, (max-width: 768px) 200px, 240px';
 const MAX_PRODUCT_IMAGE_SCALE = 1.28;
 const COMPACT_PRODUCT_IMAGE_UNIFORM_SCALE = 1.14;
-const PRODUCTS_CATALOG_PAGE_MIN_FILL_SCALE = 1.5;
-const PRODUCTS_CATALOG_PAGE_MAX_FILL_SCALE = 1.72;
+const PRODUCTS_CATALOG_PAGE_DESIRED_IMAGE_SCALE = 0.98;
+const PRODUCTS_CATALOG_PAGE_SAFE_MAX_IMAGE_SCALE = 0.98;
 const COMPACT_PRODUCT_IMAGE_ASPECT_TARGET = 1;
 const MAX_ASPECT_COMPENSATION_SCALE = 1.2;
 const MAX_PNG_OPAQUE_COMPENSATION_SCALE = 1.35;
@@ -35,7 +35,7 @@ const PNG_OPAQUE_ALPHA_THRESHOLD = 8;
 const COMPACT_PRODUCT_IMAGE_BOX_CLASS_NAME =
   'relative h-[9.5rem] w-[9.5rem] overflow-hidden sm:h-[11rem] sm:w-[11rem]';
 const PRODUCTS_CATALOG_PAGE_IMAGE_BOX_CLASS_NAME =
-  'relative -translate-y-3 sm:-translate-y-3.5 flex h-[14.75rem] w-[8.5rem] items-center justify-center overflow-hidden rounded-[0.875rem] bg-[#f5f4f1] sm:h-[17rem] sm:w-[10rem]';
+  'relative -translate-y-[2.55rem] sm:-translate-y-[2.75rem] flex h-[12rem] w-[8.5rem] items-center justify-center overflow-hidden rounded-[0.875rem] bg-transparent sm:h-[14.25rem] sm:w-[10rem]';
 
 const MAX_IMAGE_DOT_COUNT = 8;
 
@@ -317,26 +317,24 @@ export function ProductsCatalogCard({
         )
       : 1;
   const tallImageMaxScale =
-    productsCatalogPage && compactLayout
-      ? PRODUCTS_CATALOG_PAGE_MAX_FILL_SCALE
-      : activeImageAspectRatio && activeImageAspectRatio > COMPACT_PRODUCT_IMAGE_ASPECT_TARGET
-        ? 1
-        : MAX_PRODUCT_IMAGE_SCALE;
+    activeImageAspectRatio && activeImageAspectRatio > COMPACT_PRODUCT_IMAGE_ASPECT_TARGET
+      ? 1
+      : MAX_PRODUCT_IMAGE_SCALE;
   const compactImageScaleRaw =
     COMPACT_PRODUCT_IMAGE_UNIFORM_SCALE * aspectCompensationScale * activeImageOpaqueCompensation;
-  const compactImageScaleWithProductsFloor =
-    productsCatalogPage && compactLayout
-      ? Math.max(compactImageScaleRaw, PRODUCTS_CATALOG_PAGE_MIN_FILL_SCALE)
-      : compactImageScaleRaw;
-  const compactImageScale = Math.min(
-    productsCatalogPage && compactLayout && !isSmUp
-      ? Math.min(
-          compactImageScaleWithProductsFloor,
-          Math.max(CATALOG_PRODUCTS_PAGE_MOBILE_HERO_MAX_SCALE, PRODUCTS_CATALOG_PAGE_MIN_FILL_SCALE)
-        )
-      : compactImageScaleWithProductsFloor,
-    tallImageMaxScale
+  const productsCatalogPageScale = Math.min(
+    PRODUCTS_CATALOG_PAGE_DESIRED_IMAGE_SCALE,
+    PRODUCTS_CATALOG_PAGE_SAFE_MAX_IMAGE_SCALE
   );
+  const compactImageScale =
+    productsCatalogPage && compactLayout
+      ? productsCatalogPageScale
+      : Math.min(
+          productsCatalogPage && compactLayout && !isSmUp
+            ? Math.min(compactImageScaleRaw, CATALOG_PRODUCTS_PAGE_MOBILE_HERO_MAX_SCALE)
+            : compactImageScaleRaw,
+          tallImageMaxScale
+        );
   const imageClassName = compactLayout ? 'object-contain object-bottom' : 'object-contain';
   const imageObjectClassName =
     compactLayout && productsCatalogPage ? 'object-contain object-center' : imageClassName;
@@ -383,12 +381,7 @@ export function ProductsCatalogCard({
   const imageWrapperBottomMarginClassName =
     compactLayout && productsCatalogPage ? 'mb-1 max-sm:mb-1.5 sm:mb-1' : 'mb-2';
   const shouldApplyCompactHeroScaling = compactLayout;
-  const productsCatalogImageNudgeY =
-    compactLayout && productsCatalogPage
-      ? isSmUp
-        ? -8
-        : -10
-      : 0;
+  const productsCatalogImageNudgeY = 0;
   const imageTransformStyle = shouldApplyCompactHeroScaling
     ? `translateY(${productsCatalogImageNudgeY}px) scale(${compactImageScale})`
     : productsCatalogImageNudgeY !== 0
