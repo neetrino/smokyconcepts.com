@@ -26,11 +26,6 @@ export function getServerCatalogProductsSmViewportSnapshot(): boolean {
 
 export { CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS };
 
-const CATALOG_IMAGE_SCALE_LARGE = 0.2;
-const CATALOG_IMAGE_SCALE_SMALL = 0.15;
-const CATALOG_IMAGE_SCALE_PATTERN_LENGTH = 6;
-const CATALOG_SMALL_SCALE_POSITIONS = new Set([2, 5]);
-
 /** Mobile strip gap — matches home upcoming / trending (`gap-x-4`). */
 export const CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME = 'max-sm:gap-4';
 
@@ -100,12 +95,9 @@ export const CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME =
 /** `/products` horizontal strip — card flex row. */
 export const CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME = `flex min-w-max max-lg:pr-4 ${CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME}`;
 
-/**
- * Alternating hero scale boost used on home upcoming and catalog mobile cards.
- */
+/** Keeps hero scale consistent across cards (PNG-friendly normalization). */
 export function getCatalogProductCardImageScaleBoost(cardIndex: number): number {
-  const oneBasedPosition = (cardIndex % CATALOG_IMAGE_SCALE_PATTERN_LENGTH) + 1;
-  return CATALOG_SMALL_SCALE_POSITIONS.has(oneBasedPosition)
-    ? CATALOG_IMAGE_SCALE_SMALL
-    : CATALOG_IMAGE_SCALE_LARGE;
+  void cardIndex;
+  // Keep every product image at the same visual scale (especially for transparent PNG assets).
+  return 0;
 }

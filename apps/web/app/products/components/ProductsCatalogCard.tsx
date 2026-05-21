@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useSyncExternalStore, type MouseEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type MouseEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -24,8 +24,83 @@ import { PRODUCT_SECTION_BADGE_CLASS_NAMES } from './catalogProductLabels';
 const BAG_ICON_PATH = '/assets/home/icons/bag.svg';
 const CATALOG_BAG_ICON_PATH = '/assets/home/icons/bag-catalog.svg';
 const IMAGE_SIZES = '(max-width: 640px) 160px, (max-width: 768px) 200px, 240px';
+const MAX_PRODUCT_IMAGE_SCALE = 1.28;
+const COMPACT_PRODUCT_IMAGE_UNIFORM_SCALE = 1.14;
+const PRODUCTS_CATALOG_PAGE_MIN_FILL_SCALE = 1.5;
+const PRODUCTS_CATALOG_PAGE_MAX_FILL_SCALE = 1.72;
+const COMPACT_PRODUCT_IMAGE_ASPECT_TARGET = 1;
+const MAX_ASPECT_COMPENSATION_SCALE = 1.2;
+const MAX_PNG_OPAQUE_COMPENSATION_SCALE = 1.35;
+const PNG_OPAQUE_ALPHA_THRESHOLD = 8;
+const COMPACT_PRODUCT_IMAGE_BOX_CLASS_NAME =
+  'relative h-[9.5rem] w-[9.5rem] overflow-hidden sm:h-[11rem] sm:w-[11rem]';
+const PRODUCTS_CATALOG_PAGE_IMAGE_BOX_CLASS_NAME =
+  'relative -translate-y-3 sm:-translate-y-3.5 flex h-[14.75rem] w-[8.5rem] items-center justify-center overflow-hidden rounded-[0.875rem] bg-[#f5f4f1] sm:h-[17rem] sm:w-[10rem]';
 
 const MAX_IMAGE_DOT_COUNT = 8;
+
+function isLikelyPngImageSource(src: string | null): boolean {
+  if (!src) return false;
+  const normalized = src.trim().toLowerCase();
+  return normalized.startsWith('data:image/png') || normalized.includes('.png');
+}
+
+function resolveOpaqueCompensationScale(
+  imageElement: HTMLImageElement,
+  source: string | null
+): number {
+  if (typeof document === 'undefined' || !isLikelyPngImageSource(source)) {
+    return 1;
+  }
+
+  const naturalWidth = imageElement.naturalWidth;
+  const naturalHeight = imageElement.naturalHeight;
+  if (naturalWidth <= 0 || naturalHeight <= 0) {
+    return 1;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = naturalWidth;
+  canvas.height = naturalHeight;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  if (!ctx) {
+    return 1;
+  }
+
+  try {
+    ctx.drawImage(imageElement, 0, 0, naturalWidth, naturalHeight);
+    const pixelData = ctx.getImageData(0, 0, naturalWidth, naturalHeight).data;
+    let minX = naturalWidth;
+    let minY = naturalHeight;
+    let maxX = -1;
+    let maxY = -1;
+
+    for (let y = 0; y < naturalHeight; y += 1) {
+      for (let x = 0; x < naturalWidth; x += 1) {
+        const alpha = pixelData[(y * naturalWidth + x) * 4 + 3];
+        if (alpha < PNG_OPAQUE_ALPHA_THRESHOLD) continue;
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+      }
+    }
+
+    if (maxX < minX || maxY < minY) {
+      return 1;
+    }
+
+    const opaqueHeightRatio = (maxY - minY + 1) / naturalHeight;
+    if (opaqueHeightRatio >= 0.99) {
+      return 1;
+    }
+
+    return Math.min(1 / opaqueHeightRatio, MAX_PNG_OPAQUE_COMPENSATION_SCALE);
+  } catch {
+    // Cross-origin image security restrictions can block canvas reads; keep baseline scale.
+    return 1;
+  }
+}
 
 /** Default card elevation (catalog, home, upcoming — same token for consistent look). */
 const CARD_SHADOW_TAILWIND = 'shadow-[0_4px_22.5px_rgba(0,0,0,0.08)]';
@@ -139,6 +214,8 @@ export function ProductsCatalogCard({
   }, [product.image, product.images]);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [imageError, setImageError] = useState(false);
+  const [activeImageAspectRatio, setActiveImageAspectRatio] = useState<number | null>(null);
+  const [activeImageOpaqueCompensation, setActiveImageOpaqueCompensation] = useState(1);
   const visibleDotCount = Math.min(productImages.length, MAX_IMAGE_DOT_COUNT);
 
   useEffect(() => {
@@ -156,7 +233,17 @@ export function ProductsCatalogCard({
     setImageError(false);
   }, [activeImageIndex, product.id]);
 
+  useEffect(() => {
+    setActiveImageAspectRatio(null);
+    setActiveImageOpaqueCompensation(1);
+  }, [activeImageIndex, product.id, product.image, productImages.length]);
+
   const activeImage = productImages[activeImageIndex] ?? product.image;
+  const activeImageMeasureKey = `${product.id}-${activeImageIndex}-${activeImage ?? ''}`;
+  const activeImageMeasureKeyRef = useRef(activeImageMeasureKey);
+  useEffect(() => {
+    activeImageMeasureKeyRef.current = activeImageMeasureKey;
+  }, [activeImageMeasureKey]);
   const badgeClassName =
     PRODUCT_SECTION_BADGE_CLASS_NAMES[sectionLabel] ?? PRODUCT_SECTION_BADGE_CLASS_NAMES.Classic;
   const isCompactSize = sizeLabel === 'Compact';
@@ -220,13 +307,44 @@ export function ProductsCatalogCard({
   const imageInnerClassName = compactLayout
     ? `${compactInnerImageHeight} w-full`
     : 'h-full w-full';
-  const compactBaseScale = imageNudgeDown ? 1.05 : 1.12;
-  const compactImageScaleRaw = compactBaseScale + imageScaleBoost;
-  const compactImageScale =
-    productsCatalogPage && compactLayout && !isSmUp
-      ? Math.min(compactImageScaleRaw, CATALOG_PRODUCTS_PAGE_MOBILE_HERO_MAX_SCALE)
+  void imageScaleBoost;
+  void imageNudgeDown;
+  const aspectCompensationScale =
+    activeImageAspectRatio && activeImageAspectRatio > 0 && activeImageAspectRatio < COMPACT_PRODUCT_IMAGE_ASPECT_TARGET
+      ? Math.min(
+          COMPACT_PRODUCT_IMAGE_ASPECT_TARGET / activeImageAspectRatio,
+          MAX_ASPECT_COMPENSATION_SCALE
+        )
+      : 1;
+  const tallImageMaxScale =
+    productsCatalogPage && compactLayout
+      ? PRODUCTS_CATALOG_PAGE_MAX_FILL_SCALE
+      : activeImageAspectRatio && activeImageAspectRatio > COMPACT_PRODUCT_IMAGE_ASPECT_TARGET
+        ? 1
+        : MAX_PRODUCT_IMAGE_SCALE;
+  const compactImageScaleRaw =
+    COMPACT_PRODUCT_IMAGE_UNIFORM_SCALE * aspectCompensationScale * activeImageOpaqueCompensation;
+  const compactImageScaleWithProductsFloor =
+    productsCatalogPage && compactLayout
+      ? Math.max(compactImageScaleRaw, PRODUCTS_CATALOG_PAGE_MIN_FILL_SCALE)
       : compactImageScaleRaw;
-  const imageClassName = compactLayout ? 'object-contain origin-bottom' : 'object-contain';
+  const compactImageScale = Math.min(
+    productsCatalogPage && compactLayout && !isSmUp
+      ? Math.min(
+          compactImageScaleWithProductsFloor,
+          Math.max(CATALOG_PRODUCTS_PAGE_MOBILE_HERO_MAX_SCALE, PRODUCTS_CATALOG_PAGE_MIN_FILL_SCALE)
+        )
+      : compactImageScaleWithProductsFloor,
+    tallImageMaxScale
+  );
+  const imageClassName = compactLayout ? 'object-contain object-bottom' : 'object-contain';
+  const imageObjectClassName =
+    compactLayout && productsCatalogPage ? 'object-contain object-center' : imageClassName;
+  const imageContentFrameClassName = compactLayout
+    ? productsCatalogPage
+      ? PRODUCTS_CATALOG_PAGE_IMAGE_BOX_CLASS_NAME
+      : COMPACT_PRODUCT_IMAGE_BOX_CLASS_NAME
+    : 'relative h-full w-full';
 
   // Text sizes — upcoming mobile bumped to match Figma (18 px title, 12 px meta, 20 px price).
   const titleClassName = compactLayout
@@ -264,6 +382,18 @@ export function ProductsCatalogCard({
     : '-mt-4';
   const imageWrapperBottomMarginClassName =
     compactLayout && productsCatalogPage ? 'mb-1 max-sm:mb-1.5 sm:mb-1' : 'mb-2';
+  const shouldApplyCompactHeroScaling = compactLayout;
+  const productsCatalogImageNudgeY =
+    compactLayout && productsCatalogPage
+      ? isSmUp
+        ? -8
+        : -10
+      : 0;
+  const imageTransformStyle = shouldApplyCompactHeroScaling
+    ? `translateY(${productsCatalogImageNudgeY}px) scale(${compactImageScale})`
+    : productsCatalogImageNudgeY !== 0
+      ? `translateY(${productsCatalogImageNudgeY}px)`
+      : null;
   const catalogPriceRowClassName =
     compactLayout && productsCatalogPage
       ? 'mt-2 max-sm:mt-1 flex items-center justify-between gap-2'
@@ -318,21 +448,35 @@ export function ProductsCatalogCard({
           {activeImage && !imageError ? (
             <Link
               href={`/products/${product.slug}`}
-              className="block h-full w-full"
+              className={`flex h-full w-full justify-center ${compactLayout && productsCatalogPage ? 'items-center' : 'items-end'}`}
               onClick={handleProductLinkClick}
             >
-              <Image
-                key={`${product.id}-${activeImageIndex}-${activeImage}`}
-                src={activeImage}
-                alt={product.title}
-                fill
-                className={imageClassName}
-                style={compactLayout ? { transform: `scale(${compactImageScale})` } : undefined}
-                sizes={IMAGE_SIZES}
-                unoptimized
-                loading={eagerProductImage ? 'eager' : undefined}
-                onError={() => setImageError(true)}
-              />
+              <span className={imageContentFrameClassName}>
+                <Image
+                  key={`${product.id}-${activeImageIndex}-${activeImage}`}
+                  src={activeImage}
+                  alt={product.title}
+                  fill
+                  className={imageObjectClassName}
+                  style={imageTransformStyle ? { transform: imageTransformStyle } : undefined}
+                  sizes={IMAGE_SIZES}
+                  unoptimized
+                  loading={eagerProductImage ? 'eager' : undefined}
+                  onLoadingComplete={(imageElement) => {
+                    const naturalWidth = imageElement.naturalWidth;
+                    const naturalHeight = imageElement.naturalHeight;
+                    if (naturalWidth > 0 && naturalHeight > 0) {
+                      setActiveImageAspectRatio(naturalHeight / naturalWidth);
+                    }
+                    const measureKey = activeImageMeasureKey;
+                    const opaqueScale = resolveOpaqueCompensationScale(imageElement, activeImage);
+                    if (activeImageMeasureKeyRef.current === measureKey) {
+                      setActiveImageOpaqueCompensation(opaqueScale);
+                    }
+                  }}
+                  onError={() => setImageError(true)}
+                />
+              </span>
             </Link>
           ) : (
             <div className="flex h-full w-full items-center justify-center rounded-[1rem] bg-[#f1f1ef] text-sm font-medium text-[#9d9d9d]">
