@@ -15,8 +15,12 @@ import { ProductsCatalogCard } from './ProductsCatalogCard';
 import {
   CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME,
   CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
+  PRODUCTS_CATALOG_LANDING_MOBILE_CARD_TOP_PADDING_CLASS_NAME,
+  PRODUCTS_CATALOG_LANDING_MOBILE_DETAILS_OFFSET_CLASS_NAME,
+  PRODUCTS_CATALOG_LANDING_MOBILE_HERO_PULL_UP_CLASS_NAME,
+  PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
+  PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_FRAME_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE,
   CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME,
@@ -24,6 +28,7 @@ import {
   CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS,
   getCatalogProductCardImageScaleBoost,
   getCatalogProductsSmViewportSnapshot,
+  getProductsCatalogPageSmallerImageScaleMultiplier,
   getServerCatalogProductsSmViewportSnapshot,
   subscribeCatalogProductsSmViewport,
 } from './catalogProductCardMobilePresentation';
@@ -852,7 +857,6 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
                       {section.items.map((product, index) => {
                         const isMobileStripPageStart = index % cardsPerPage === 0;
                         const mobileStripPageIndex = Math.floor(index / cardsPerPage);
-
                         return (
                           <div
                             key={`${section.title}-${product.id}-${index}`}
@@ -873,9 +877,18 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
                             sectionLabel={section.title}
                             sizeLabel={getSizeLabel(product)}
                             categoryLabel={getCategoryLabel(product, section.title)}
+                            productsCatalogPageScaleMultiplier={getProductsCatalogPageSmallerImageScaleMultiplier(
+                              index
+                            )}
                             imageNudgeDown={shouldNudgeCatalogProductImage(index)}
                             imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
-                            imageFrameClassName={CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME}
+                            imageFrameClassName={PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_FRAME_CLASS_NAME}
+                            catalogHeroPullUpClassName={PRODUCTS_CATALOG_LANDING_MOBILE_HERO_PULL_UP_CLASS_NAME}
+                            catalogCardTopPaddingClassName={PRODUCTS_CATALOG_LANDING_MOBILE_CARD_TOP_PADDING_CLASS_NAME}
+                            catalogDetailsOffsetClassName={PRODUCTS_CATALOG_LANDING_MOBILE_DETAILS_OFFSET_CLASS_NAME}
+                            catalogImageBottomMarginClassName={
+                              PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME
+                            }
                             className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} max-sm:!w-full max-sm:!min-w-0 max-sm:!max-w-none`}
                             catalogStripMobilePeek={isSmUp}
                             compactLayout

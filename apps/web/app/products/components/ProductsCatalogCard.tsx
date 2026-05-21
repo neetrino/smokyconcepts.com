@@ -26,8 +26,8 @@ const CATALOG_BAG_ICON_PATH = '/assets/home/icons/bag-catalog.svg';
 const IMAGE_SIZES = '(max-width: 640px) 160px, (max-width: 768px) 200px, 240px';
 const MAX_PRODUCT_IMAGE_SCALE = 1.28;
 const COMPACT_PRODUCT_IMAGE_UNIFORM_SCALE = 1.14;
-const PRODUCTS_CATALOG_PAGE_MIN_FILL_SCALE = 1.5;
-const PRODUCTS_CATALOG_PAGE_MAX_FILL_SCALE = 1.72;
+const PRODUCTS_CATALOG_PAGE_DESIRED_IMAGE_SCALE = 0.98;
+const PRODUCTS_CATALOG_PAGE_SAFE_MAX_IMAGE_SCALE = 0.98;
 const COMPACT_PRODUCT_IMAGE_ASPECT_TARGET = 1;
 const MAX_ASPECT_COMPENSATION_SCALE = 1.2;
 const MAX_PNG_OPAQUE_COMPENSATION_SCALE = 1.35;
@@ -35,7 +35,7 @@ const PNG_OPAQUE_ALPHA_THRESHOLD = 8;
 const COMPACT_PRODUCT_IMAGE_BOX_CLASS_NAME =
   'relative h-[9.5rem] w-[9.5rem] overflow-hidden sm:h-[11rem] sm:w-[11rem]';
 const PRODUCTS_CATALOG_PAGE_IMAGE_BOX_CLASS_NAME =
-  'relative -translate-y-3 sm:-translate-y-3.5 flex h-[14.75rem] w-[8.5rem] items-center justify-center overflow-hidden rounded-[0.875rem] bg-[#f5f4f1] sm:h-[17rem] sm:w-[10rem]';
+  'relative -translate-y-[2.55rem] sm:-translate-y-[2.75rem] flex h-[12rem] w-[8.5rem] items-center justify-center overflow-hidden rounded-[0.875rem] bg-transparent sm:h-[14.25rem] sm:w-[10rem]';
 
 const MAX_IMAGE_DOT_COUNT = 8;
 
@@ -158,6 +158,16 @@ interface ProductsCatalogCardProps {
   slimCatalogGrid?: boolean;
   /** `/products` — slightly less vertical gap between hero image and details. */
   productsCatalogPage?: boolean;
+  /** `/products` only: per-card hero scale multiplier (for visual balancing by index). */
+  productsCatalogPageScaleMultiplier?: number;
+  /** Overrides default catalog hero pull-up below `sm` (e.g. home trending). */
+  catalogHeroPullUpClassName?: string;
+  /** Overrides default catalog card top padding below `sm`. */
+  catalogCardTopPaddingClassName?: string;
+  /** Overrides default catalog details negative margin below `sm`. */
+  catalogDetailsOffsetClassName?: string;
+  /** Overrides default gap under the hero image wrapper on catalog cards. */
+  catalogImageBottomMarginClassName?: string;
 }
 
 /**
@@ -183,6 +193,11 @@ export function ProductsCatalogCard({
   catalogStripMobilePeek = false,
   slimCatalogGrid = false,
   productsCatalogPage = false,
+  productsCatalogPageScaleMultiplier = 1,
+  catalogHeroPullUpClassName,
+  catalogCardTopPaddingClassName,
+  catalogDetailsOffsetClassName,
+  catalogImageBottomMarginClassName,
 }: ProductsCatalogCardProps) {
   const isSmUp = useSyncExternalStore(
     subscribeCatalogProductsSmViewport,
@@ -264,7 +279,7 @@ export function ProductsCatalogCard({
   const cardShadowClass = suppressShadow ? 'shadow-none' : CARD_SHADOW_TAILWIND;
   const articleStackClassName = 'z-0 hover:z-[8] focus-within:z-[8]';
   const compactArticlePaddingClassName = productsCatalogPage
-    ? `px-0 pb-2.5 max-sm:pb-2 sm:pb-3 ${CATALOG_PRODUCTS_PAGE_CARD_TOP_PADDING_CLASS_NAME}`
+    ? `px-0 pb-2.5 max-sm:pb-2 sm:pb-3 ${catalogCardTopPaddingClassName ?? CATALOG_PRODUCTS_PAGE_CARD_TOP_PADDING_CLASS_NAME}`
     : 'px-2.5 pb-2.5 pt-2 sm:px-3 sm:pb-3 sm:pt-2.5';
   const catalogDetailsLayoutClassName =
     compactLayout && productsCatalogPage
@@ -296,7 +311,7 @@ export function ProductsCatalogCard({
       : '-mt-[4.5rem] sm:-mt-24';
   const imagePullUpClassName =
     productsCatalogPage && compactLayout && !slimCatalogGrid
-      ? CATALOG_PRODUCTS_PAGE_CARD_HERO_PULL_UP_CLASS_NAME
+      ? catalogHeroPullUpClassName ?? CATALOG_PRODUCTS_PAGE_CARD_HERO_PULL_UP_CLASS_NAME
       : baseImagePullUpClassName;
 
   const compactInnerImageHeight = widerCompactCard
@@ -317,26 +332,24 @@ export function ProductsCatalogCard({
         )
       : 1;
   const tallImageMaxScale =
-    productsCatalogPage && compactLayout
-      ? PRODUCTS_CATALOG_PAGE_MAX_FILL_SCALE
-      : activeImageAspectRatio && activeImageAspectRatio > COMPACT_PRODUCT_IMAGE_ASPECT_TARGET
-        ? 1
-        : MAX_PRODUCT_IMAGE_SCALE;
+    activeImageAspectRatio && activeImageAspectRatio > COMPACT_PRODUCT_IMAGE_ASPECT_TARGET
+      ? 1
+      : MAX_PRODUCT_IMAGE_SCALE;
   const compactImageScaleRaw =
     COMPACT_PRODUCT_IMAGE_UNIFORM_SCALE * aspectCompensationScale * activeImageOpaqueCompensation;
-  const compactImageScaleWithProductsFloor =
-    productsCatalogPage && compactLayout
-      ? Math.max(compactImageScaleRaw, PRODUCTS_CATALOG_PAGE_MIN_FILL_SCALE)
-      : compactImageScaleRaw;
-  const compactImageScale = Math.min(
-    productsCatalogPage && compactLayout && !isSmUp
-      ? Math.min(
-          compactImageScaleWithProductsFloor,
-          Math.max(CATALOG_PRODUCTS_PAGE_MOBILE_HERO_MAX_SCALE, PRODUCTS_CATALOG_PAGE_MIN_FILL_SCALE)
-        )
-      : compactImageScaleWithProductsFloor,
-    tallImageMaxScale
+  const productsCatalogPageScale = Math.min(
+    PRODUCTS_CATALOG_PAGE_DESIRED_IMAGE_SCALE * productsCatalogPageScaleMultiplier,
+    PRODUCTS_CATALOG_PAGE_SAFE_MAX_IMAGE_SCALE
   );
+  const compactImageScale =
+    productsCatalogPage && compactLayout
+      ? productsCatalogPageScale
+      : Math.min(
+          productsCatalogPage && compactLayout && !isSmUp
+            ? Math.min(compactImageScaleRaw, CATALOG_PRODUCTS_PAGE_MOBILE_HERO_MAX_SCALE)
+            : compactImageScaleRaw,
+          tallImageMaxScale
+        );
   const imageClassName = compactLayout ? 'object-contain object-bottom' : 'object-contain';
   const imageObjectClassName =
     compactLayout && productsCatalogPage ? 'object-contain object-center' : imageClassName;
@@ -375,20 +388,17 @@ export function ProductsCatalogCard({
       : productsCatalogPage
         ? slimCatalogGrid
           ? '-mt-[3.25rem] sm:-mt-[3.75rem] md:-mt-[3rem] lg:-mt-[3.5rem]'
-          : CATALOG_PRODUCTS_PAGE_CARD_DETAILS_OFFSET_CLASS_NAME
+          : catalogDetailsOffsetClassName ?? CATALOG_PRODUCTS_PAGE_CARD_DETAILS_OFFSET_CLASS_NAME
         : slimCatalogGrid
           ? '-mt-[2.75rem] sm:-mt-[3.25rem] md:-mt-[2.5rem] lg:-mt-[3rem]'
           : '-mt-[2.75rem] sm:-mt-[3.25rem]'
     : '-mt-4';
   const imageWrapperBottomMarginClassName =
-    compactLayout && productsCatalogPage ? 'mb-1 max-sm:mb-1.5 sm:mb-1' : 'mb-2';
-  const shouldApplyCompactHeroScaling = compactLayout;
-  const productsCatalogImageNudgeY =
     compactLayout && productsCatalogPage
-      ? isSmUp
-        ? -8
-        : -10
-      : 0;
+      ? catalogImageBottomMarginClassName ?? 'mb-1 max-sm:mb-1.5 sm:mb-1'
+      : 'mb-2';
+  const shouldApplyCompactHeroScaling = compactLayout;
+  const productsCatalogImageNudgeY = 0;
   const imageTransformStyle = shouldApplyCompactHeroScaling
     ? `translateY(${productsCatalogImageNudgeY}px) scale(${compactImageScale})`
     : productsCatalogImageNudgeY !== 0
@@ -443,7 +453,7 @@ export function ProductsCatalogCard({
         className={`relative z-10 ${imageWrapperBottomMarginClassName} flex shrink-0 items-end justify-center ${imagePullUpClassName} ${imageWrapperClassName} overflow-visible`.trim()}
       >
         <div
-          className={`relative ${imageInnerClassName} transition-transform duration-300 ease-out md:group-hover:-translate-y-1.5 md:group-hover:scale-[1.045] ${productsCatalogPage ? 'max-sm:overflow-hidden' : ''} ${imageFrameClassName ?? ''}`.trim()}
+          className={`relative ${imageInnerClassName} transition-transform duration-300 ease-out md:group-hover:-translate-y-1.5 md:group-hover:scale-[1.045] ${productsCatalogPage ? 'max-sm:overflow-visible' : ''} ${imageFrameClassName ?? ''}`.trim()}
         >
           {activeImage && !imageError ? (
             <Link

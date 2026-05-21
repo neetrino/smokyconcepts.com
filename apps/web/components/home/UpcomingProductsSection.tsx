@@ -14,12 +14,17 @@ import {
 } from '../../app/products/components/catalogProductLabels';
 import {
   CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
-  CATALOG_PRODUCT_CARD_MOBILE_IMAGE_FRAME_CLASS_NAME,
-  CATALOG_PRODUCT_CARD_MOBILE_ITEM_WRAPPER_CLASS_NAME,
   CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME,
-  CATALOG_PRODUCT_CARD_MOBILE_STRIP_TOP_PADDING_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME,
   CATALOG_PRODUCT_CARD_SM_VIEWPORT_QUERY,
+  HOME_UPCOMING_MOBILE_CARD_TOP_PADDING_CLASS_NAME,
+  HOME_UPCOMING_MOBILE_DETAILS_OFFSET_CLASS_NAME,
+  HOME_UPCOMING_MOBILE_HERO_PULL_UP_CLASS_NAME,
+  HOME_UPCOMING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
+  HOME_UPCOMING_MOBILE_IMAGE_FRAME_CLASS_NAME,
+  HOME_UPCOMING_MOBILE_ITEM_WRAPPER_CLASS_NAME,
   getCatalogProductCardImageScaleBoost,
+  getProductsCatalogPageSmallerImageScaleMultiplier,
 } from '../../app/products/components/catalogProductCardMobilePresentation';
 import { useTranslation } from '@/lib/i18n-client';
 
@@ -445,7 +450,8 @@ export function UpcomingProductsSection() {
     }, UPCOMING_SCROLL_IDLE_UPDATE_DELAY_MS);
   };
 
-  const scrollContainerClassName = `scrollbar-hide mt-3 max-sm:snap-x max-sm:snap-mandatory overflow-x-auto pb-4 sm:mt-6 sm:pt-[7.5rem] pt-[7.5rem] ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_TOP_PADDING_CLASS_NAME}`;
+  const scrollContainerClassName =
+    'scrollbar-hide mt-3 max-sm:snap-x max-sm:snap-mandatory overflow-x-auto overflow-y-visible overscroll-x-contain pb-4 pt-[7.5rem] sm:mt-6 sm:pt-[7.5rem]';
 
   return (
     <section className="relative isolate flex flex-col gap-4 sm:gap-5 xl:mr-[calc(50%_-_50vw)] xl:overflow-x-clip">
@@ -455,7 +461,9 @@ export function UpcomingProductsSection() {
         onScroll={handleScroll}
         className={scrollContainerClassName}
       >
-        <div className={`flex min-w-max items-stretch gap-6 ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME}`}>
+        <div
+          className={`flex min-w-max max-lg:pr-4 items-stretch ${CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME}`}
+        >
           {items.map((item, index) => {
             const pageIndex = Math.floor(index / cardsPerPage);
             const indexInPage = index % cardsPerPage;
@@ -502,7 +510,7 @@ export function UpcomingProductsSection() {
                 }}
                 className={`flex min-h-0 shrink-0 flex-col self-stretch transition-transform transition-shadow duration-300 ease-out will-change-transform ${pageMotionClass} ${pageDelayClass} ${
                   isPageStart ? 'max-sm:snap-start max-sm:snap-always' : ''
-                } ${CATALOG_PRODUCT_CARD_MOBILE_ITEM_WRAPPER_CLASS_NAME}`}
+                } ${HOME_UPCOMING_MOBILE_ITEM_WRAPPER_CLASS_NAME}`}
               >
                 <ProductsCatalogCard
                   product={catalogProduct}
@@ -510,15 +518,20 @@ export function UpcomingProductsSection() {
                   sizeLabel={getSizeLabel(catalogProduct)}
                   categoryLabel={getCategoryLabel(catalogProduct, section)}
                   buyButtonLabel={t('home.homepage.upcoming.orderCta')}
+                  productsCatalogPageScaleMultiplier={getProductsCatalogPageSmallerImageScaleMultiplier(
+                    index
+                  )}
                   imageNudgeDown={shouldNudgeCatalogProductImage(index)}
                   imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
-                  imageFrameClassName={CATALOG_PRODUCT_CARD_MOBILE_IMAGE_FRAME_CLASS_NAME}
-                  className={
-                    isSmUp
-                      ? 'group h-full min-h-0 lg:w-[12.75rem] xl:w-[13rem]'
-                      : `group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME}`
-                  }
+                  imageFrameClassName={HOME_UPCOMING_MOBILE_IMAGE_FRAME_CLASS_NAME}
+                  catalogHeroPullUpClassName={HOME_UPCOMING_MOBILE_HERO_PULL_UP_CLASS_NAME}
+                  catalogCardTopPaddingClassName={HOME_UPCOMING_MOBILE_CARD_TOP_PADDING_CLASS_NAME}
+                  catalogDetailsOffsetClassName={HOME_UPCOMING_MOBILE_DETAILS_OFFSET_CLASS_NAME}
+                  catalogImageBottomMarginClassName={HOME_UPCOMING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME}
+                  className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} max-sm:!w-full max-sm:!min-w-0 max-sm:!max-w-none`}
+                  catalogStripMobilePeek={isSmUp}
                   compactLayout
+                  productsCatalogPage
                   eagerProductImage
                 />
               </div>
@@ -535,7 +548,7 @@ export function UpcomingProductsSection() {
         </div>
       ) : (
         <div
-          className="mt-1 flex w-full max-w-[calc(100vw-2rem)] flex-nowrap items-center justify-center gap-1.5 sm:mt-2 sm:max-w-none sm:flex-wrap sm:gap-4"
+          className="mt-1 flex w-full max-w-[calc(100vw-2.5rem)] flex-nowrap items-center justify-center gap-1.5 sm:mt-2 sm:max-w-none sm:flex-wrap sm:gap-4"
           role="tablist"
           aria-label={t('home.homepage.upcoming.paginationAria')}
         >
