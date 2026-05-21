@@ -95,6 +95,19 @@ export const CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME =
 /** `/products` horizontal strip — card flex row. */
 export const CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME = `flex min-w-max max-lg:pr-4 ${CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME}`;
 
+/** `/products` strip — slightly smaller hero on positions 2 and 5 in each group of six (0-based: 1, 4). */
+export const PRODUCTS_CATALOG_PAGE_SMALLER_IMAGE_SCALE_MULTIPLIER = 0.9;
+
+export function isProductsCatalogPageSmallerImageCard(cardIndex: number): boolean {
+  return cardIndex % 6 === 1 || cardIndex % 6 === 4;
+}
+
+export function getProductsCatalogPageSmallerImageScaleMultiplier(cardIndex: number): number {
+  return isProductsCatalogPageSmallerImageCard(cardIndex)
+    ? PRODUCTS_CATALOG_PAGE_SMALLER_IMAGE_SCALE_MULTIPLIER
+    : 1;
+}
+
 /** Keeps hero scale consistent across cards (PNG-friendly normalization). */
 export function getCatalogProductCardImageScaleBoost(cardIndex: number): number {
   void cardIndex;

@@ -14,12 +14,13 @@ import {
 } from '../../app/products/components/catalogProductLabels';
 import {
   CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
-  CATALOG_PRODUCT_CARD_MOBILE_ITEM_WRAPPER_CLASS_NAME,
   CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME,
-  CATALOG_PRODUCT_CARD_MOBILE_STRIP_TOP_PADDING_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME,
   CATALOG_PRODUCT_CARD_SM_VIEWPORT_QUERY,
   getCatalogProductCardImageScaleBoost,
+  getProductsCatalogPageSmallerImageScaleMultiplier,
 } from '../../app/products/components/catalogProductCardMobilePresentation';
 import { useTranslation } from '@/lib/i18n-client';
 
@@ -445,7 +446,8 @@ export function UpcomingProductsSection() {
     }, UPCOMING_SCROLL_IDLE_UPDATE_DELAY_MS);
   };
 
-  const scrollContainerClassName = `scrollbar-hide mt-3 max-sm:snap-x max-sm:snap-mandatory overflow-x-auto pb-4 sm:mt-6 sm:pt-[7.5rem] pt-[7.5rem] ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_TOP_PADDING_CLASS_NAME}`;
+  const scrollContainerClassName =
+    'scrollbar-hide mt-3 max-sm:snap-x max-sm:snap-mandatory overflow-x-auto overflow-y-visible overscroll-x-contain pb-4 pt-[7.5rem] sm:mt-6 sm:pt-[7.5rem]';
 
   return (
     <section className="relative isolate flex flex-col gap-4 sm:gap-5 xl:mr-[calc(50%_-_50vw)] xl:overflow-x-clip">
@@ -455,12 +457,13 @@ export function UpcomingProductsSection() {
         onScroll={handleScroll}
         className={scrollContainerClassName}
       >
-        <div className={`flex min-w-max items-stretch gap-6 ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME}`}>
+        <div
+          className={`flex min-w-max max-lg:pr-4 items-stretch ${CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME}`}
+        >
           {items.map((item, index) => {
             const pageIndex = Math.floor(index / cardsPerPage);
             const indexInPage = index % cardsPerPage;
             const isPageStart = index % cardsPerPage === 0;
-            const isSmallerImageCard = index % 6 === 1 || index % 6 === 4;
             const isActivePageCard = pageIndex === safePage - 1;
             const shouldAnimateCard = isSmUp && isPageTransitioning && isActivePageCard;
             const activePageMotionClass =
@@ -503,7 +506,7 @@ export function UpcomingProductsSection() {
                 }}
                 className={`flex min-h-0 shrink-0 flex-col self-stretch transition-transform transition-shadow duration-300 ease-out will-change-transform ${pageMotionClass} ${pageDelayClass} ${
                   isPageStart ? 'max-sm:snap-start max-sm:snap-always' : ''
-                } ${CATALOG_PRODUCT_CARD_MOBILE_ITEM_WRAPPER_CLASS_NAME}`}
+                } ${CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME}`}
               >
                 <ProductsCatalogCard
                   product={catalogProduct}
@@ -511,7 +514,9 @@ export function UpcomingProductsSection() {
                   sizeLabel={getSizeLabel(catalogProduct)}
                   categoryLabel={getCategoryLabel(catalogProduct, section)}
                   buyButtonLabel={t('home.homepage.upcoming.orderCta')}
-                  productsCatalogPageScaleMultiplier={isSmallerImageCard ? 0.86 : 1}
+                  productsCatalogPageScaleMultiplier={getProductsCatalogPageSmallerImageScaleMultiplier(
+                    index
+                  )}
                   imageNudgeDown={shouldNudgeCatalogProductImage(index)}
                   imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
                   imageFrameClassName={CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME}

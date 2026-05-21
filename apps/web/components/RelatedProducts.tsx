@@ -33,6 +33,7 @@ import {
   CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS,
   getCatalogProductCardImageScaleBoost,
   getCatalogProductsSmViewportSnapshot,
+  getProductsCatalogPageSmallerImageScaleMultiplier,
   getServerCatalogProductsSmViewportSnapshot,
   subscribeCatalogProductsSmViewport,
 } from '../app/products/components/catalogProductCardMobilePresentation';
@@ -263,6 +264,9 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
                     sectionLabel={section}
                     sizeLabel={getSizeLabel(catalogProduct)}
                     categoryLabel={getCategoryLabel(catalogProduct, section)}
+                    productsCatalogPageScaleMultiplier={getProductsCatalogPageSmallerImageScaleMultiplier(
+                      index
+                    )}
                     imageNudgeDown={shouldNudgeCatalogProductImage(index)}
                     imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
                     imageFrameClassName={CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME}

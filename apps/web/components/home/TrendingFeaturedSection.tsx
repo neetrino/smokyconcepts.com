@@ -8,9 +8,16 @@ import {
   getCategoryLabel,
   getSectionLabel,
   getSizeLabel,
+  shouldNudgeCatalogProductImage,
   toCatalogProduct,
   type CatalogProduct,
 } from '../../app/products/components/catalogProductLabels';
+import {
+  CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME,
+  getCatalogProductCardImageScaleBoost,
+  getProductsCatalogPageSmallerImageScaleMultiplier,
+} from '../../app/products/components/catalogProductCardMobilePresentation';
 import { HomeSectionTitle } from './HomeSectionTitle';
 import { HomeActionButton } from './HomeActionButton';
 import { HOME_ASSET_PATHS } from './homePage.data';
@@ -443,12 +450,17 @@ function TrendingCoverflowTrack({
               {isXl ? (
                 <DesktopPageCluster
                   items={page.items}
+                  catalogStartIndex={logicalIndex * ITEMS_PER_PAGE}
                   eager={isFocal || isAdjacent}
                   label={page.categoryLabel}
                   isFocal={isFocal}
                 />
               ) : (
-                <MobilePageCluster items={page.items} eager={isFocal || isAdjacent} />
+                <MobilePageCluster
+                  items={page.items}
+                  catalogStartIndex={logicalIndex * ITEMS_PER_PAGE}
+                  eager={isFocal || isAdjacent}
+                />
               )}
             </div>
           );
@@ -460,18 +472,19 @@ function TrendingCoverflowTrack({
 
 interface MobilePageClusterProps {
   items: CatalogProduct[];
+  catalogStartIndex: number;
   eager: boolean;
 }
 
 /** Staggered 2-column cluster (legacy mobile home trending layout). */
-function MobilePageCluster({ items, eager }: MobilePageClusterProps) {
+function MobilePageCluster({ items, catalogStartIndex, eager }: MobilePageClusterProps) {
   return (
     <div
       className="mx-auto grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start justify-items-center gap-x-4 gap-y-3 sm:gap-x-5 sm:gap-y-4"
       style={{ width: `${MOBILE_CLUSTER_INNER_REM}rem` }}
     >
       {items.map((product, index) => {
-        const isMiddleOfThree = items.length === 3 && index === 1;
+        const catalogIndex = catalogStartIndex + index;
         const section = getSectionLabel(product);
         const mobileCellZ =
           index === 1 ? 'relative z-[3]' : index === 0 ? 'relative z-[2]' : 'relative z-[1]';
@@ -489,14 +502,16 @@ function MobilePageCluster({ items, eager }: MobilePageClusterProps) {
               sectionLabel={section}
               sizeLabel={getSizeLabel(product)}
               categoryLabel={getCategoryLabel(product, section)}
-              className="!h-auto w-full max-w-none"
-              tightenDetailsUnderImage
-              imageScaleBoost={0.1}
-              imageNudgeDown={isMiddleOfThree}
+              productsCatalogPageScaleMultiplier={getProductsCatalogPageSmallerImageScaleMultiplier(
+                catalogIndex
+              )}
+              imageNudgeDown={shouldNudgeCatalogProductImage(catalogIndex)}
+              imageScaleBoost={getCatalogProductCardImageScaleBoost(catalogIndex)}
+              imageFrameClassName={CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME}
+              className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} !h-auto w-full max-w-none max-sm:!min-w-0`}
               compactLayout
-              suppressShadow
+              productsCatalogPage
               eagerProductImage={eager}
-              imageFrameClassName="max-sm:origin-bottom max-sm:scale-[0.88] max-sm:-translate-y-3.5"
             />
           </div>
         );
@@ -507,12 +522,13 @@ function MobilePageCluster({ items, eager }: MobilePageClusterProps) {
 
 interface DesktopPageClusterProps {
   items: CatalogProduct[];
+  catalogStartIndex: number;
   eager: boolean;
   label: string;
   isFocal: boolean;
 }
 
-function DesktopPageCluster({ items, eager, label, isFocal }: DesktopPageClusterProps) {
+function DesktopPageCluster({ items, catalogStartIndex, eager, label, isFocal }: DesktopPageClusterProps) {
   const displayLabel = label && label !== 'Featured' ? label : '—';
   return (
     <div
@@ -523,6 +539,7 @@ function DesktopPageCluster({ items, eager, label, isFocal }: DesktopPageCluster
     >
       <div className="flex w-full items-end justify-center gap-3">
         {items.map((product, index) => {
+          const catalogIndex = catalogStartIndex + index;
           const isMiddle = index === 1;
           const section = getSectionLabel(product);
           return (
@@ -535,10 +552,15 @@ function DesktopPageCluster({ items, eager, label, isFocal }: DesktopPageCluster
                 sectionLabel={section}
                 sizeLabel={getSizeLabel(product)}
                 categoryLabel={getCategoryLabel(product, section)}
-                className="w-[13rem]"
-                imageNudgeDown={isMiddle}
+                productsCatalogPageScaleMultiplier={getProductsCatalogPageSmallerImageScaleMultiplier(
+                  catalogIndex
+                )}
+                imageNudgeDown={shouldNudgeCatalogProductImage(catalogIndex)}
+                imageScaleBoost={getCatalogProductCardImageScaleBoost(catalogIndex)}
+                imageFrameClassName={CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME}
+                className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} w-[13rem] max-w-none`}
                 compactLayout
-                suppressShadow
+                productsCatalogPage
                 eagerProductImage={eager}
               />
             </div>
