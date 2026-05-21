@@ -14,10 +14,10 @@ import {
 } from '../../app/products/components/catalogProductLabels';
 import {
   CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
-  CATALOG_PRODUCT_CARD_MOBILE_IMAGE_FRAME_CLASS_NAME,
   CATALOG_PRODUCT_CARD_MOBILE_ITEM_WRAPPER_CLASS_NAME,
   CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME,
   CATALOG_PRODUCT_CARD_MOBILE_STRIP_TOP_PADDING_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME,
   CATALOG_PRODUCT_CARD_SM_VIEWPORT_QUERY,
   getCatalogProductCardImageScaleBoost,
 } from '../../app/products/components/catalogProductCardMobilePresentation';
@@ -460,6 +460,7 @@ export function UpcomingProductsSection() {
             const pageIndex = Math.floor(index / cardsPerPage);
             const indexInPage = index % cardsPerPage;
             const isPageStart = index % cardsPerPage === 0;
+            const isSmallerImageCard = index % 6 === 1 || index % 6 === 4;
             const isActivePageCard = pageIndex === safePage - 1;
             const shouldAnimateCard = isSmUp && isPageTransitioning && isActivePageCard;
             const activePageMotionClass =
@@ -510,15 +511,14 @@ export function UpcomingProductsSection() {
                   sizeLabel={getSizeLabel(catalogProduct)}
                   categoryLabel={getCategoryLabel(catalogProduct, section)}
                   buyButtonLabel={t('home.homepage.upcoming.orderCta')}
+                  productsCatalogPageScaleMultiplier={isSmallerImageCard ? 0.86 : 1}
                   imageNudgeDown={shouldNudgeCatalogProductImage(index)}
                   imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
-                  imageFrameClassName={CATALOG_PRODUCT_CARD_MOBILE_IMAGE_FRAME_CLASS_NAME}
-                  className={
-                    isSmUp
-                      ? 'group h-full min-h-0 lg:w-[12.75rem] xl:w-[13rem]'
-                      : `group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME}`
-                  }
+                  imageFrameClassName={CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME}
+                  className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} max-sm:!w-full max-sm:!min-w-0 max-sm:!max-w-none`}
+                  catalogStripMobilePeek={isSmUp}
                   compactLayout
+                  productsCatalogPage
                   eagerProductImage
                 />
               </div>

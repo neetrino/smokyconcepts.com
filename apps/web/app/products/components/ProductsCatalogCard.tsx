@@ -158,6 +158,8 @@ interface ProductsCatalogCardProps {
   slimCatalogGrid?: boolean;
   /** `/products` — slightly less vertical gap between hero image and details. */
   productsCatalogPage?: boolean;
+  /** `/products` only: per-card hero scale multiplier (for visual balancing by index). */
+  productsCatalogPageScaleMultiplier?: number;
 }
 
 /**
@@ -183,6 +185,7 @@ export function ProductsCatalogCard({
   catalogStripMobilePeek = false,
   slimCatalogGrid = false,
   productsCatalogPage = false,
+  productsCatalogPageScaleMultiplier = 1,
 }: ProductsCatalogCardProps) {
   const isSmUp = useSyncExternalStore(
     subscribeCatalogProductsSmViewport,
@@ -323,7 +326,7 @@ export function ProductsCatalogCard({
   const compactImageScaleRaw =
     COMPACT_PRODUCT_IMAGE_UNIFORM_SCALE * aspectCompensationScale * activeImageOpaqueCompensation;
   const productsCatalogPageScale = Math.min(
-    PRODUCTS_CATALOG_PAGE_DESIRED_IMAGE_SCALE,
+    PRODUCTS_CATALOG_PAGE_DESIRED_IMAGE_SCALE * productsCatalogPageScaleMultiplier,
     PRODUCTS_CATALOG_PAGE_SAFE_MAX_IMAGE_SCALE
   );
   const compactImageScale =

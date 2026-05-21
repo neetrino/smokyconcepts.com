@@ -852,6 +852,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
                       {section.items.map((product, index) => {
                         const isMobileStripPageStart = index % cardsPerPage === 0;
                         const mobileStripPageIndex = Math.floor(index / cardsPerPage);
+                        const isSmallerImageCard = index % 6 === 1 || index % 6 === 4;
 
                         return (
                           <div
@@ -873,6 +874,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
                             sectionLabel={section.title}
                             sizeLabel={getSizeLabel(product)}
                             categoryLabel={getCategoryLabel(product, section.title)}
+                            productsCatalogPageScaleMultiplier={isSmallerImageCard ? 0.9 : 1}
                             imageNudgeDown={shouldNudgeCatalogProductImage(index)}
                             imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
                             imageFrameClassName={CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME}
