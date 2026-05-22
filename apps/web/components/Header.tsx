@@ -7,18 +7,27 @@ import { useEffect, useState } from 'react';
 import { dispatchCartDrawerOpen } from '../app/cart/constants';
 import { initializeCurrencyRates } from '../lib/currency';
 import { getCartCount } from '../lib/storageCounts';
-import { CurrencySwitcherHeader } from './CurrencySwitcherHeader';
+import { HeaderLocaleCurrencySwitcher } from './header/HeaderLocaleCurrencySwitcher';
+import {
+  HEADER_ACTION_HIT_CLASS,
+  HEADER_ASSET_PATHS,
+  HEADER_BAG_ICON_CLASS,
+  HEADER_UTILITIES_GAP_PX,
+  HEADER_UTILITIES_ROW_CLASS,
+} from './header/header.constants';
 import { HeaderDesktopAccount } from './HeaderAccountMenu';
-import { LanguageSwitcherHeader } from './LanguageSwitcherHeader';
-import { HOME_ASSET_PATHS } from './home/homePage.data';
 
 const NAVIGATION_ITEMS = [
   { label: 'Home', href: '/' },
   { label: 'Products', href: '/products' },
-  { label: 'About', href: '/about' },
+  { label: 'Story', href: '/about' },
 ] as const;
 
 const MOBILE_MENU_ID = 'header-mobile-menu';
+
+const NAV_LINK_BASE = 'text-[15px] uppercase tracking-[0.1em] transition-opacity';
+const NAV_LINK_ACTIVE = 'font-extrabold text-[#dcc090]';
+const NAV_LINK_INACTIVE = 'font-normal text-[#dcc090]/80 hover:text-[#dcc090]';
 
 function MobileMenuButton({
   open,
@@ -70,8 +79,26 @@ function MobileMenuButton({
   );
 }
 
+function HeaderCartButton({ cartCount, cartReady }: { cartCount: number; cartReady: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={() => dispatchCartDrawerOpen()}
+      className={`relative ${HEADER_ACTION_HIT_CLASS}`}
+      aria-label="Open cart"
+    >
+      <img src={HEADER_ASSET_PATHS.bag} alt="" className={HEADER_BAG_ICON_CLASS} aria-hidden />
+      {cartReady && cartCount > 0 ? (
+        <span className="absolute right-0 top-0 inline-flex h-3.5 min-w-3.5 -translate-y-1/4 translate-x-1/4 items-center justify-center rounded-full bg-[#dcc090] px-0.5 text-[8px] font-medium leading-none text-[#122a26]">
+          {cartCount > 99 ? '99+' : cartCount}
+        </span>
+      ) : null}
+    </button>
+  );
+}
+
 /**
- * Main site header aligned with the Figma homepage design.
+ * Main site header aligned with Figma (node 6513:232).
  */
 export function Header() {
   const pathname = usePathname();
@@ -119,12 +146,11 @@ export function Header() {
     <nav className={className}>
       {items.map((item) => {
         const isActive = pathname === item.href;
-
         return (
           <Link
             key={item.href}
             href={item.href}
-            className={`font-extrabold uppercase tracking-[0.16em] transition-opacity ${isActive ? 'text-[#dcc090]' : 'text-[#dcc090]/80 hover:text-[#dcc090]'}`}
+            className={`${NAV_LINK_BASE} ${isActive ? NAV_LINK_ACTIVE : NAV_LINK_INACTIVE}`}
           >
             {item.label}
           </Link>
@@ -136,49 +162,27 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-[#122a26]">
       <div className="mx-auto flex max-w-[120rem] flex-col px-4 sm:px-8 lg:px-[7.5rem]">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-16 items-center justify-between py-3">
           <Link href="/" className="relative h-10 w-40 shrink-0">
-            <img src={HOME_ASSET_PATHS.logo} alt="Smoky Concepts" className="h-full w-full object-contain object-left" />
+            <img
+              src={HEADER_ASSET_PATHS.logo}
+              alt="Smoky Concepts"
+              className="h-full w-full object-contain object-left"
+            />
           </Link>
-          {renderNavLinks('hidden items-center gap-10 text-sm md:flex', NAVIGATION_ITEMS)}
-          <div className="flex items-center gap-5 md:gap-6">
-            <div className="flex items-center gap-3 md:hidden">
-              <button
-                type="button"
-                onClick={() => dispatchCartDrawerOpen()}
-                className="relative inline-flex h-6 w-6 items-center justify-center"
-                aria-label="Open cart"
-              >
-                <img src={HOME_ASSET_PATHS.bagIcon} alt="" className="h-6 w-5 object-contain" aria-hidden />
-                {cartReady && cartCount > 0 ? (
-                  <span className="absolute -right-2 -top-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#dcc090] px-1 text-[0.55rem] font-bold text-[#122a26]">
-                    {cartCount > 99 ? '99+' : cartCount}
-                  </span>
-                ) : null}
-              </button>
-              <div className="mt-1.5">
-                <HeaderDesktopAccount />
-              </div>
+          {renderNavLinks('hidden items-center gap-10 md:flex', NAVIGATION_ITEMS)}
+          <div className="flex items-center gap-3 md:gap-[1.8125rem]">
+            <div className={`${HEADER_UTILITIES_ROW_CLASS} gap-3 md:hidden`}>
+              <HeaderCartButton cartCount={cartCount} cartReady={cartReady} />
+              <HeaderDesktopAccount />
             </div>
-            <div className="hidden items-center gap-2 md:flex">
-              <CurrencySwitcherHeader />
-              <LanguageSwitcherHeader />
-              <button
-                type="button"
-                onClick={() => dispatchCartDrawerOpen()}
-                className="relative inline-flex h-6 w-6 items-center justify-center"
-                aria-label="Open cart"
-              >
-                <img src={HOME_ASSET_PATHS.bagIcon} alt="" className="h-6 w-5 object-contain" aria-hidden />
-                {cartReady && cartCount > 0 ? (
-                  <span className="absolute -right-2 -top-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#dcc090] px-1 text-[0.55rem] font-bold text-[#122a26]">
-                    {cartCount > 99 ? '99+' : cartCount}
-                  </span>
-                ) : null}
-              </button>
-              <div className="ml-3 mt-1.5">
-                <HeaderDesktopAccount />
-              </div>
+            <div
+              className={`${HEADER_UTILITIES_ROW_CLASS} hidden md:flex`}
+              style={{ gap: HEADER_UTILITIES_GAP_PX }}
+            >
+              <HeaderLocaleCurrencySwitcher />
+              <HeaderCartButton cartCount={cartCount} cartReady={cartReady} />
+              <HeaderDesktopAccount />
             </div>
             <MobileMenuButton open={mobileMenuOpen} onToggle={() => setMobileMenuOpen((v) => !v)} />
           </div>
@@ -193,8 +197,8 @@ export function Header() {
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`border-b border-white/10 py-3.5 text-xs font-extrabold uppercase tracking-[0.16em] transition-opacity ${
-                      isActive ? 'text-[#dcc090]' : 'text-[#dcc090]/80 hover:text-[#dcc090]'
+                    className={`border-b border-white/10 py-3.5 ${NAV_LINK_BASE} ${
+                      isActive ? NAV_LINK_ACTIVE : NAV_LINK_INACTIVE
                     }`}
                   >
                     {item.label}
@@ -202,8 +206,7 @@ export function Header() {
                 );
               })}
             </nav>
-            <CurrencySwitcherHeader variant="drawer" />
-            <LanguageSwitcherHeader variant="drawer" />
+            <HeaderLocaleCurrencySwitcher variant="drawer" />
           </div>
         ) : null}
       </div>

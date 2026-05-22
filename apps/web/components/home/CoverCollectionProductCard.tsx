@@ -33,13 +33,13 @@ const COVER_COLLECTION_MOBILE_CARD_MIN_HEIGHT_CLASS =
 const COVER_COLLECTION_PRODUCT_IMAGE_TRANSFORM_CLASS =
   'origin-bottom max-sm:translate-y-0 max-sm:scale-[1.35] translate-y-4 scale-[1.48] sm:translate-y-[8.25rem] sm:scale-[1.44] sm:group-hover:translate-y-[7.75rem] sm:group-hover:scale-[1.54] max-[360px]:scale-[1.2] min-[390px]:max-sm:scale-[1.43]';
 
-const TITLE_MIN_HEIGHT_MOBILE = 'min-h-[3rem]';
-const COVER_COLLECTION_COMPACT_MOBILE_TITLE_MIN_HEIGHT_CLASS = 'max-[360px]:min-h-[2.5rem]';
+const TITLE_MIN_HEIGHT_MOBILE = 'min-h-[2.75rem]';
+const COVER_COLLECTION_COMPACT_MOBILE_TITLE_MIN_HEIGHT_CLASS = 'max-[360px]:min-h-[2.375rem]';
 const COVER_COLLECTION_MOBILE_TITLE_SIZE_CLASS =
-  'max-sm:text-[clamp(1.125rem,5.5vw,1.375rem)] max-[360px]:text-[1.0625rem]';
+  'max-sm:text-[clamp(1rem,5vw,1.25rem)] max-[360px]:text-[0.9375rem]';
 /** Long label; smaller type so it fits the narrow tile. */
 const COVER_COLLECTION_MOBILE_SPECIAL_EDITION_TITLE_SIZE_CLASS =
-  'max-sm:text-[clamp(0.875rem,4.4vw,1.125rem)] max-[360px]:text-[0.8125rem] max-[360px]:tracking-tight';
+  'max-sm:text-[clamp(0.8125rem,4vw,1rem)] max-[360px]:text-[0.75rem] max-[360px]:tracking-tight';
 
 /** Mobile image band width in 2-col grid. */
 const COVER_COLLECTION_IMAGE_SLOT_MAX_WIDTH_CLASS =
@@ -71,7 +71,7 @@ interface CoverCollectionProductCardProps {
  * Home “Cover collections” tile.
  *
  * **Mobile:** white panel, `24px` radius, enlarged hero slot overlapping the panel,
- * `22px` Montserrat ExtraBold title aligned with hero image left edge
+ * fluid Montserrat ExtraBold title aligned with hero image left edge
  * (`#414141`). **Desktop:** single white card with hero image overlap.
  */
 export function CoverCollectionProductCard({ item }: CoverCollectionProductCardProps) {
@@ -112,7 +112,7 @@ export function CoverCollectionProductCard({ item }: CoverCollectionProductCardP
         </div>
         <div className="relative z-0 flex flex-1 flex-col justify-end rounded-[1rem] shadow-[0_8px_28px_rgba(18,42,38,0.12)] transition-shadow duration-200 max-sm:min-h-0 max-sm:rounded-none max-sm:bg-transparent max-sm:px-0 max-sm:pb-0 max-sm:shadow-none max-sm:group-hover:shadow-none sm:min-h-0 sm:flex-none sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
           <h3
-            className={`relative z-[1] w-full min-w-0 font-montserrat font-extrabold leading-normal text-[#414141] sm:mt-12 sm:px-0 sm:text-left sm:text-2xl sm:leading-tight lg:text-3xl ${TITLE_MIN_HEIGHT_MOBILE} ${COVER_COLLECTION_COMPACT_MOBILE_TITLE_MIN_HEIGHT_CLASS} ${titleSizeClass} ${COVER_COLLECTION_MOBILE_TITLE_ALIGN_CLASS} ${COVER_COLLECTION_MOBILE_TITLE_IMAGE_ALIGN_CLASS} ${COVER_COLLECTION_MOBILE_TITLE_OFFSET_CLASS} sm:min-h-0 ${COVER_COLLECTION_DESKTOP_TITLE_OFFSET_CLASS} ${titleClampClass}`}
+            className={`relative z-[1] w-full min-w-0 font-montserrat font-extrabold leading-normal text-[#414141] sm:mt-12 sm:px-0 sm:text-left sm:text-xl sm:leading-tight lg:text-2xl ${TITLE_MIN_HEIGHT_MOBILE} ${COVER_COLLECTION_COMPACT_MOBILE_TITLE_MIN_HEIGHT_CLASS} ${titleSizeClass} ${COVER_COLLECTION_MOBILE_TITLE_ALIGN_CLASS} ${COVER_COLLECTION_MOBILE_TITLE_IMAGE_ALIGN_CLASS} ${COVER_COLLECTION_MOBILE_TITLE_OFFSET_CLASS} sm:min-h-0 ${COVER_COLLECTION_DESKTOP_TITLE_OFFSET_CLASS} ${titleClampClass}`}
           >
             {item.title}
           </h3>

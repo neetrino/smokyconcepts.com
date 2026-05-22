@@ -20,22 +20,27 @@ interface ProductImageGalleryProps {
 }
 
 /**
- * Pulls the hero block above the white card top edge (same idea as HomePageContent cover cards).
- * Must pair with outer wrapper top padding so parents do not clip the overlap.
+ * Space below the site header before the white card (pairs with {@link HERO_PULL_ABOVE_CARD}).
  */
-const HERO_PULL_ABOVE_CARD = '-mt-20 sm:-mt-24 lg:-mt-32';
+const GALLERY_TOP_OFFSET_CLASSES = 'pt-12 sm:pt-14 lg:pt-16';
 
-/** Max rendered height for the hero product image (Tailwind arbitrary values). */
-const MAIN_IMAGE_MAX_HEIGHT_CLASSES = 'max-h-[420px] sm:max-h-[480px] lg:max-h-[650px]';
+/**
+ * Pulls the hero slightly above the card top while {@link GALLERY_TOP_OFFSET_CLASSES} keeps header clearance.
+ */
+const HERO_PULL_ABOVE_CARD = '-mt-10 sm:-mt-12 lg:-mt-14';
 
-/** Fixed hero frame height so thumbnail row doesn't jump when image aspect changes. */
-const HERO_IMAGE_FRAME_HEIGHT_CLASSES = 'h-[420px] sm:h-[480px] lg:h-[650px]';
+/** Fixed hero frame — small sources scale up, large sources scale down (no crop). */
+const HERO_IMAGE_BOX_SIZE_CLASSES =
+  'h-[340px] w-full max-w-full shrink-0 sm:h-[380px] lg:h-[420px]';
 
-/** Nudge only the hero `<img>` upward (thumbnails / card layout unchanged). */
-const HERO_IMAGE_SHIFT_UP = '-translate-y-2 sm:-translate-y-3 lg:-translate-y-4';
+/** Fixed thumbnail frame — same fill behavior as hero. */
+const THUMBNAIL_IMAGE_BOX_SIZE_CLASSES = 'h-[68px] w-full shrink-0 sm:h-[82px]';
 
-/** Pull thumbnail row + arrows closer to the main image (reduces vertical gap). */
-const THUMBNAIL_ROW_OFFSET_UP = '-mt-16 sm:-mt-18 lg:-mt-24';
+/** Fills the frame: upscales small assets, downscales large ones, keeps aspect ratio. */
+const GALLERY_IMAGE_FIT_CLASSES = 'size-full object-contain object-center';
+
+/** Vertical rhythm between hero and thumbnail strip inside the card. */
+const GALLERY_SECTION_GAP_CLASSES = 'gap-3 sm:gap-4';
 
 export function ProductImageGallery({
   images,
@@ -88,11 +93,11 @@ export function ProductImageGallery({
   };
 
   return (
-    <div className="overflow-visible pt-20 sm:pt-24 lg:pt-28">
-      <div className="relative z-0 mx-auto w-full max-w-[520px] overflow-visible rounded-[20px] bg-white px-3 pb-2 pt-0 shadow-[0_1px_0_rgba(18,42,38,0.04)] transition-shadow duration-200 has-[.product-hero:hover]:z-10 has-[.product-hero:hover]:shadow-[0_12px_32px_rgba(18,42,38,0.12)] sm:max-w-[540px] sm:rounded-[24px] sm:px-5 sm:pb-3 lg:max-w-[580px]">
-        <div className="flex flex-col items-center overflow-visible">
+    <div className={`overflow-visible ${GALLERY_TOP_OFFSET_CLASSES}`}>
+      <div className="relative z-0 mx-auto w-full max-w-[520px] overflow-visible rounded-[20px] bg-white px-3 pb-3 pt-3 shadow-[0_1px_0_rgba(18,42,38,0.04)] transition-shadow duration-200 has-[.product-hero:hover]:z-10 has-[.product-hero:hover]:shadow-[0_12px_32px_rgba(18,42,38,0.12)] sm:max-w-[540px] sm:rounded-[24px] sm:px-5 sm:pb-4 sm:pt-4 lg:max-w-[580px]">
+        <div className={`flex flex-col items-center overflow-visible ${GALLERY_SECTION_GAP_CLASSES}`}>
           <div
-            className={`flex w-full justify-center overflow-visible ${
+            className={`flex w-full justify-center ${
               images.length > 0
                 ? `product-hero group relative z-10 ${HERO_PULL_ABOVE_CARD}`
                 : 'min-h-[200px] items-center sm:min-h-[220px]'
@@ -100,14 +105,14 @@ export function ProductImageGallery({
           >
             {images.length > 0 ? (
               <div
-                className={`relative flex w-full max-w-full items-start justify-center origin-bottom transition-transform duration-300 ease-out ${HERO_IMAGE_FRAME_HEIGHT_CLASSES} ${HERO_IMAGE_SHIFT_UP} group-hover:scale-110 group-hover:drop-shadow-[0_12px_24px_rgba(18,42,38,0.18)]`}
+                className={`relative mx-auto flex w-full max-w-full items-center justify-center ${HERO_IMAGE_BOX_SIZE_CLASSES}`}
               >
                 <img
                   src={images[currentImageIndex]}
                   alt={product.title}
                   decoding="async"
                   draggable={false}
-                  className={`relative block h-auto w-auto max-h-full max-w-full object-contain object-top ${MAIN_IMAGE_MAX_HEIGHT_CLASSES}`}
+                  className={`block transition-transform duration-300 ease-out group-hover:scale-[1.03] ${GALLERY_IMAGE_FIT_CLASSES}`}
                 />
                 {customizeOverlayHtml ? <CustomizeProductOverlay html={customizeOverlayHtml} /> : null}
               </div>
@@ -119,9 +124,7 @@ export function ProductImageGallery({
           </div>
 
           {images.length > 0 && (
-            <div
-              className={`relative z-20 mt-0 flex w-full items-center gap-2 sm:gap-3 ${THUMBNAIL_ROW_OFFSET_UP}`}
-            >
+            <div className="relative z-20 flex w-full shrink-0 items-center gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={() => navigateImageByArrow('previous')}
@@ -134,8 +137,8 @@ export function ProductImageGallery({
                 </svg>
               </button>
 
-              <div className="min-h-0 min-w-0 flex-1 overflow-hidden overscroll-x-contain">
-                <div className="flex min-h-0 w-full flex-nowrap items-stretch gap-2 sm:gap-2.5">
+              <div className="min-h-0 min-w-0 flex-1 overflow-x-auto overflow-y-visible overscroll-x-contain">
+                <div className="flex min-h-0 w-full flex-nowrap items-center gap-2 sm:gap-2.5">
                   {visibleThumbnails.map((image, index) => {
                     const actualIndex = thumbnailStartIndex + index;
                     const isActive = actualIndex === currentImageIndex;
@@ -145,19 +148,23 @@ export function ProductImageGallery({
                         key={`${image}-${actualIndex}`}
                         type="button"
                         onClick={() => selectThumbnailByIndex(actualIndex)}
-                        className={`group relative flex min-h-[76px] min-w-0 flex-1 cursor-pointer flex-col items-center justify-center rounded-[6px] bg-white py-0.5 transition-opacity sm:min-h-[90px] ${
+                        className={`group relative flex min-h-[76px] min-w-0 flex-1 cursor-pointer flex-col items-center justify-center gap-1 overflow-visible rounded-[6px] bg-white py-0.5 transition-opacity sm:min-h-[90px] ${
                           isActive ? 'opacity-100' : 'opacity-75 hover:opacity-100'
                         }`}
                       >
-                        <img
-                          src={image}
-                          alt=""
-                          draggable={false}
-                          className="block max-h-[68px] w-full max-w-full object-contain sm:max-h-[82px]"
-                        />
+                        <div
+                          className={`flex w-full items-center justify-center overflow-visible ${THUMBNAIL_IMAGE_BOX_SIZE_CLASSES}`}
+                        >
+                          <img
+                            src={image}
+                            alt=""
+                            draggable={false}
+                            className={`block ${GALLERY_IMAGE_FIT_CLASSES}`}
+                          />
+                        </div>
                         <span
                           aria-hidden
-                          className={`absolute bottom-0 left-1/2 h-0.5 max-w-[80%] -translate-x-1/2 rounded-[2px] sm:h-1 ${
+                          className={`block h-0.5 max-w-[80%] rounded-[2px] sm:h-1 ${
                             isActive ? 'w-[70%] bg-[#122a26]' : 'w-1/2 bg-[#d9d9d9]'
                           }`}
                         />

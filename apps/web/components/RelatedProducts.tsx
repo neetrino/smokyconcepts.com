@@ -24,13 +24,17 @@ import {
 import {
   CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME,
   CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE,
-  CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_STRIP_SCROLL_CLASS_NAME,
+  RELATED_PRODUCTS_SECTION_STRIP_SCROLL_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME,
   CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS,
+  PRODUCTS_CATALOG_LANDING_MOBILE_CARD_TOP_PADDING_CLASS_NAME,
+  PRODUCTS_CATALOG_LANDING_MOBILE_DETAILS_OFFSET_CLASS_NAME,
+  PRODUCTS_CATALOG_LANDING_MOBILE_HERO_PULL_UP_CLASS_NAME,
+  PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
+  PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_FRAME_CLASS_NAME,
   getCatalogProductCardImageScaleBoost,
   getCatalogProductsSmViewportSnapshot,
   getProductsCatalogPageSmallerImageScaleMultiplier,
@@ -207,8 +211,8 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
   };
 
   return (
-    <section className="mt-20 w-full border-t border-[#e8e8e8] py-12 sm:py-16">
-      <h2 className="font-montserrat text-[2.25rem] font-extrabold leading-none text-[#414141] sm:text-[2.5rem]">
+    <section className="mt-20 w-full border-t border-[#e8e8e8] py-12 max-sm:overflow-hidden max-sm:py-8 sm:py-16">
+      <h2 className="relative z-10 font-montserrat text-[1.75rem] font-extrabold leading-tight text-[#414141] max-sm:mb-0 max-sm:px-0 sm:text-[2.5rem] sm:leading-none">
         {t(language, 'product.related_products_title')}
       </h2>
 
@@ -219,11 +223,11 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
           <p className="text-lg text-[#9d9d9d]">{t(language, 'product.noRelatedProducts')}</p>
         </div>
       ) : (
-        <div className="lg:-mr-[120px]">
+        <div className="max-lg:mr-0 lg:-mr-[120px]">
         <div
           ref={sectionScrollRef}
           onScroll={handleSectionScroll}
-          className={CATALOG_PRODUCTS_PAGE_STRIP_SCROLL_CLASS_NAME}
+          className={RELATED_PRODUCTS_SECTION_STRIP_SCROLL_CLASS_NAME}
         >
           <div className={CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME}>
             {products.map((product, index) => {
@@ -269,7 +273,13 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
                     )}
                     imageNudgeDown={shouldNudgeCatalogProductImage(index)}
                     imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
-                    imageFrameClassName={CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME}
+                    imageFrameClassName={PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_FRAME_CLASS_NAME}
+                    catalogHeroPullUpClassName={PRODUCTS_CATALOG_LANDING_MOBILE_HERO_PULL_UP_CLASS_NAME}
+                    catalogCardTopPaddingClassName={PRODUCTS_CATALOG_LANDING_MOBILE_CARD_TOP_PADDING_CLASS_NAME}
+                    catalogDetailsOffsetClassName={PRODUCTS_CATALOG_LANDING_MOBILE_DETAILS_OFFSET_CLASS_NAME}
+                    catalogImageBottomMarginClassName={
+                      PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME
+                    }
                     className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} max-sm:!w-full max-sm:!min-w-0 max-sm:!max-w-none`}
                     catalogStripMobilePeek={isSmUp}
                     compactLayout
@@ -313,12 +323,12 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
 
 function RelatedProductsStripSkeleton() {
   return (
-    <div className={CATALOG_PRODUCTS_PAGE_STRIP_SCROLL_CLASS_NAME}>
+    <div className={RELATED_PRODUCTS_SECTION_STRIP_SCROLL_CLASS_NAME}>
       <div className={CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME}>
         {Array.from({ length: CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE }).map((_, index) => (
           <div
             key={index}
-            className={`${CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME} h-[23rem] w-full max-w-[10rem] shrink-0 animate-pulse rounded-[1.125rem] bg-white/80 shadow-[0_4px_22.5px_rgba(0,0,0,0.08)]`}
+            className={`${CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME} h-[20rem] max-sm:h-[22rem] w-full shrink-0 animate-pulse rounded-[1.125rem] bg-white/80 shadow-[0_4px_22.5px_rgba(0,0,0,0.08)]`}
           />
         ))}
       </div>
