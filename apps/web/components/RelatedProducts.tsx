@@ -42,11 +42,10 @@ import {
   subscribeCatalogProductsSmViewport,
 } from '../app/products/components/catalogProductCardMobilePresentation';
 import {
-  CATALOG_SCROLL_TARGET_TOLERANCE_PX,
   CATALOG_STRIP_PEEK_MEDIA_QUERY,
   getCatalogStripPeekStartScroll,
-  getScrollLeftForElementWithin,
   resolveStripPageFromScrollAnchors,
+  scrollMobileStripToPageAnchor,
 } from '../app/products/components/catalogStripScroll';
 
 interface RelatedProductsProps {
@@ -139,7 +138,7 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
 
     if (!isSmUp) {
       const anchor = pageStartRefs.current[pageIndex];
-      targetScrollLeft = anchor ? getScrollLeftForElementWithin(container, anchor) : 0;
+      targetScrollLeft = scrollMobileStripToPageAnchor(container, anchor);
     } else {
       const maxScrollLeft = container.scrollWidth - container.clientWidth;
       const startLeft = getCatalogStripPeekStartScroll(container);
@@ -155,15 +154,18 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
       scrollIdleTimerRef.current = null;
     }
 
-    container.scrollTo({
-      left: targetScrollLeft,
-      behavior: 'smooth',
-    });
+    if (isSmUp) {
+      container.scrollTo({
+        left: targetScrollLeft,
+        behavior: 'smooth',
+      });
+    }
+
     setCurrentPage(pageIndex);
 
     window.setTimeout(() => {
       programmaticScrollRef.current = false;
-    }, 450);
+    }, isSmUp ? 450 : 120);
   };
 
   const handleSectionScroll = () => {
@@ -308,8 +310,10 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
                 role="tab"
                 aria-selected={currentPage === pageIndex}
                 onClick={() => handleSectionPageChange(pageIndex)}
-                className={`h-2 min-w-[1.25rem] shrink rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#122a26] focus-visible:ring-offset-2 max-sm:h-1.5 max-sm:flex-1 sm:w-[6.25rem] sm:flex-none ${
-                  currentPage === pageIndex ? 'bg-[#122a26]' : 'bg-[#d9d9d9] hover:bg-[#c9c9c9]'
+                className={`h-2 min-w-[1.25rem] shrink rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#122a26] focus-visible:ring-offset-2 max-sm:h-1.5 max-sm:flex-1 max-sm:active:bg-[#c9c9c9] sm:w-[6.25rem] sm:flex-none ${
+                  currentPage === pageIndex
+                    ? 'bg-[#122a26]'
+                    : 'bg-[#d9d9d9] [@media(hover:hover)]:hover:bg-[#c9c9c9]'
                 }`}
                 aria-label={`Open related products page ${pageIndex + 1}`}
               />

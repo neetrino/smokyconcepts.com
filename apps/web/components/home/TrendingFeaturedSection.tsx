@@ -336,8 +336,8 @@ export function TrendingFeaturedSection() {
   }
 
   return (
-    <section className="relative isolate flex min-w-0 flex-col gap-5 overflow-x-clip overflow-y-visible pb-6 max-sm:overflow-x-visible sm:gap-8 xl:left-1/2 xl:w-screen xl:max-w-none xl:-translate-x-1/2 xl:gap-5">
-      <div className="relative z-30 flex min-h-[4rem] min-w-0 items-center justify-between gap-3 xl:relative xl:z-20 xl:-translate-y-1 xl:justify-center">
+    <section className="relative isolate flex min-w-0 flex-col gap-3 overflow-x-clip overflow-y-visible pb-6 max-sm:overflow-x-visible sm:gap-8 xl:left-1/2 xl:w-screen xl:max-w-none xl:-translate-x-1/2 xl:gap-5">
+      <div className="relative z-30 flex min-w-0 items-center justify-between gap-3 max-sm:min-h-0 sm:min-h-[4rem] xl:relative xl:z-20 xl:-translate-y-1 xl:justify-center">
         <HomeSectionTitle
           title={t('home.homepage.trending.title')}
           centered={false}
@@ -419,7 +419,7 @@ function TrendingCoverflowTrack({
       };
 
   return (
-    <div className="relative z-0 mt-1 min-w-0 w-full overflow-x-hidden max-sm:overflow-x-visible max-sm:mb-2 max-sm:pt-[7.25rem] sm:max-xl:pt-12">
+    <div className="relative z-0 min-w-0 w-full overflow-x-hidden max-sm:mb-2 max-sm:pt-[5.5rem] sm:mt-1 sm:max-xl:pt-12">
       <div
         className="flex items-end will-change-transform"
         style={{

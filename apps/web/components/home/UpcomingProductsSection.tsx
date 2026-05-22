@@ -26,6 +26,7 @@ import {
   getCatalogProductCardImageScaleBoost,
   getProductsCatalogPageSmallerImageScaleMultiplier,
 } from '../../app/products/components/catalogProductCardMobilePresentation';
+import { scrollMobileStripToPageAnchor } from '../../app/products/components/catalogStripScroll';
 import { useTranslation } from '@/lib/i18n-client';
 
 interface ApiProduct {
@@ -412,7 +413,10 @@ export function UpcomingProductsSection() {
       return;
     }
 
-    const targetScrollLeft = getScrollLeftForPage(clampedPage, container);
+    const pageIndex = Math.max(0, Math.min(totalPages - 1, clampedPage - 1));
+    const targetScrollLeft = isSmUp
+      ? getScrollLeftForPage(clampedPage, container)
+      : scrollMobileStripToPageAnchor(container, pageStartRefs.current[pageIndex]);
 
     isProgrammaticScrollRef.current = true;
     setCurrentPage(clampedPage);
@@ -422,10 +426,12 @@ export function UpcomingProductsSection() {
       scrollIdleTimerRef.current = null;
     }
 
-    container.scrollTo({
-      left: targetScrollLeft,
-      behavior: 'smooth',
-    });
+    if (isSmUp) {
+      container.scrollTo({
+        left: targetScrollLeft,
+        behavior: 'smooth',
+      });
+    }
 
     waitForScrollToSettle(container, targetScrollLeft);
   };
@@ -562,8 +568,8 @@ export function UpcomingProductsSection() {
                 aria-selected={isActive}
                 aria-label={`${t('home.homepage.upcoming.pageAriaPrefix')} ${page}`}
                 onClick={() => handlePageChange(page)}
-                className={`h-1.5 min-w-[1.25rem] flex-1 rounded-[12px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#122a26] focus-visible:ring-offset-2 sm:h-2 sm:w-[100px] sm:flex-none ${
-                  isActive ? 'bg-[#122a26]' : 'bg-[#d9d9d9] hover:bg-[#c9c9c9]'
+                className={`h-1.5 min-w-[1.25rem] flex-1 rounded-[12px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#122a26] focus-visible:ring-offset-2 max-sm:active:bg-[#c9c9c9] sm:h-2 sm:w-[100px] sm:flex-none ${
+                  isActive ? 'bg-[#122a26]' : 'bg-[#d9d9d9] [@media(hover:hover)]:hover:bg-[#c9c9c9]'
                 }`}
               />
             );

@@ -32,6 +32,7 @@ import {
   getServerCatalogProductsSmViewportSnapshot,
   subscribeCatalogProductsSmViewport,
 } from './catalogProductCardMobilePresentation';
+import { scrollMobileStripToPageAnchor } from './catalogStripScroll';
 import {
   CATALOG_SELECT_SIZE_AUTOOPEN_QUERY,
   CATALOG_SELECT_SIZE_AUTOOPEN_VALUE,
@@ -171,7 +172,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
   const searchParams = useSearchParams();
   const sectionScrollRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const sectionPageStartRefs = useRef<Record<string, Array<HTMLDivElement | null>>>({});
-  const sectionScrollIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sectionScrollIdleTimerRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const sectionProgrammaticScrollRef = useRef<Record<string, boolean>>({});
   const sectionScrollSettleRafRef = useRef<Record<string, number | null>>({});
   const sectionScrollSettleTimerRef = useRef<Record<string, ReturnType<typeof setTimeout> | null>>({});
@@ -574,7 +575,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
 
       if (!isSmUp) {
         const anchor = sectionPageStartRefs.current[title]?.[pageIndex];
-        targetScrollLeft = anchor ? getScrollLeftForElementWithin(container, anchor) : 0;
+        targetScrollLeft = scrollMobileStripToPageAnchor(container, anchor);
       } else {
         const maxScrollLeft = container.scrollWidth - container.clientWidth;
         const sectionMeta = sections.find((section) => section.title === title);
@@ -590,15 +591,18 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
 
       sectionProgrammaticScrollRef.current[title] = true;
 
-      if (sectionScrollIdleTimerRef.current) {
-        clearTimeout(sectionScrollIdleTimerRef.current);
-        sectionScrollIdleTimerRef.current = null;
+      const idleTimer = sectionScrollIdleTimerRef.current[title];
+      if (idleTimer) {
+        clearTimeout(idleTimer);
+        delete sectionScrollIdleTimerRef.current[title];
       }
 
-      container.scrollTo({
-        left: targetScrollLeft,
-        behavior: 'smooth',
-      });
+      if (isSmUp) {
+        container.scrollTo({
+          left: targetScrollLeft,
+          behavior: 'smooth',
+        });
+      }
 
       waitForSectionScrollToSettle(title, container, targetScrollLeft);
     }
@@ -641,11 +645,13 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
     };
 
     if (!isSmUp) {
-      if (sectionScrollIdleTimerRef.current) {
-        clearTimeout(sectionScrollIdleTimerRef.current);
+      const idleTimer = sectionScrollIdleTimerRef.current[title];
+      if (idleTimer) {
+        clearTimeout(idleTimer);
       }
 
-      sectionScrollIdleTimerRef.current = setTimeout(() => {
+      sectionScrollIdleTimerRef.current[title] = setTimeout(() => {
+        delete sectionScrollIdleTimerRef.current[title];
         if (sectionProgrammaticScrollRef.current[title]) {
           return;
         }
@@ -678,8 +684,8 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
 
   useEffect(() => {
     return () => {
-      if (sectionScrollIdleTimerRef.current) {
-        clearTimeout(sectionScrollIdleTimerRef.current);
+      for (const timer of Object.values(sectionScrollIdleTimerRef.current)) {
+        clearTimeout(timer);
       }
       const rafMap = sectionScrollSettleRafRef.current;
       for (const key of Object.keys(rafMap)) {
@@ -915,10 +921,10 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
                             onClick={() => handleSectionPageChange(section.title, pageIndex)}
                             role="tab"
                             aria-selected={section.currentPage === pageIndex}
-                            className={`h-2 min-w-[1.25rem] shrink rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#122a26] focus-visible:ring-offset-2 max-sm:h-1.5 max-sm:flex-1 sm:w-[6.25rem] sm:flex-none ${
+                            className={`h-2 min-w-[1.25rem] shrink rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#122a26] focus-visible:ring-offset-2 max-sm:h-1.5 max-sm:flex-1 max-sm:active:bg-[#c9c9c9] sm:w-[6.25rem] sm:flex-none ${
                               section.currentPage === pageIndex
                                 ? 'bg-[#122a26]'
-                                : 'bg-[#d9d9d9] hover:bg-[#c9c9c9]'
+                                : 'bg-[#d9d9d9] [@media(hover:hover)]:hover:bg-[#c9c9c9]'
                             }`}
                             aria-label={`Open ${section.title} page ${pageIndex + 1}`}
                           />

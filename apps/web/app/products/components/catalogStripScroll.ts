@@ -38,6 +38,38 @@ export function resolveStripPageFromScrollAnchors(
 /**
  * Horizontal scroll offset so ~half of the first strip card sits left of the viewport (peek hint).
  */
+/** Clamped scrollLeft that aligns a page-start anchor with the strip viewport start. */
+export function getClampedMobileStripScrollTarget(
+  container: HTMLElement,
+  anchor: HTMLElement
+): number {
+  const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth);
+  return Math.min(Math.max(0, getScrollLeftForElementWithin(container, anchor)), maxScrollLeft);
+}
+
+/**
+ * Scroll a snap-enabled horizontal strip to a mobile page anchor.
+ * Instant scroll avoids `scroll-snap` fighting `behavior: 'smooth'` on pagination taps.
+ */
+export function scrollMobileStripToPageAnchor(
+  container: HTMLElement,
+  anchor: HTMLElement | null | undefined
+): number {
+  if (!anchor) {
+    container.scrollTo({ left: 0, behavior: 'auto' });
+    return 0;
+  }
+
+  const targetScrollLeft = getClampedMobileStripScrollTarget(container, anchor);
+  anchor.scrollIntoView({ behavior: 'auto', inline: 'start', block: 'nearest' });
+
+  if (Math.abs(container.scrollLeft - targetScrollLeft) > CATALOG_SCROLL_TARGET_TOLERANCE_PX) {
+    container.scrollTo({ left: targetScrollLeft, behavior: 'auto' });
+  }
+
+  return targetScrollLeft;
+}
+
 export function getCatalogStripPeekStartScroll(container: HTMLElement): number {
   if (typeof window === 'undefined') {
     return 0;
