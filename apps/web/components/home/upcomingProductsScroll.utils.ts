@@ -1,0 +1,106 @@
+import { UPCOMING_SCROLL_TARGET_TOLERANCE_PX } from './upcomingProducts.constants';
+
+/**
+ * Mobile/sm+ pagination tabs — always one tab per page; dot widths flex to fit one row on narrow viewports.
+ */
+export function getUpcomingVisiblePageNumbers(totalPages: number): number[] {
+  return Array.from({ length: totalPages }, (_, i) => i + 1);
+}
+
+/** Scroll offset of `element` within `container` (works when `offsetLeft` chain differs). */
+export function getScrollLeftForElementWithin(container: HTMLDivElement, element: HTMLElement): number {
+  const containerRect = container.getBoundingClientRect();
+  const elementRect = element.getBoundingClientRect();
+  return container.scrollLeft + (elementRect.left - containerRect.left);
+}
+
+export function resolveUpcomingPageFromMobileAnchors(
+  container: HTMLDivElement,
+  pageStartAnchors: Array<HTMLDivElement | null | undefined>,
+  totalPages: number,
+): number {
+  if (totalPages <= 1) {
+    return 1;
+  }
+
+  const scrollLeft = container.scrollLeft;
+  let bestPage = 1;
+  let bestDistance = Number.POSITIVE_INFINITY;
+
+  for (let pageIndex = 0; pageIndex < totalPages; pageIndex += 1) {
+    const anchor = pageStartAnchors[pageIndex];
+    if (!anchor) {
+      continue;
+    }
+    const anchorScrollLeft = getScrollLeftForElementWithin(container, anchor);
+    const distance = Math.abs(scrollLeft - anchorScrollLeft);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestPage = pageIndex + 1;
+    }
+  }
+
+  return bestPage;
+}
+
+export function resolveUpcomingPageFromProportionalScroll(
+  container: HTMLDivElement,
+  totalPages: number,
+): number {
+  if (totalPages <= 1) {
+    return 1;
+  }
+
+  const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth);
+  if (maxScrollLeft <= 0) {
+    return 1;
+  }
+
+  const scrollLeft = container.scrollLeft;
+
+  if (scrollLeft <= UPCOMING_SCROLL_TARGET_TOLERANCE_PX) {
+    return 1;
+  }
+  if (scrollLeft >= maxScrollLeft - UPCOMING_SCROLL_TARGET_TOLERANCE_PX) {
+    return totalPages;
+  }
+
+  const pageIndex = Math.round((scrollLeft / maxScrollLeft) * (totalPages - 1));
+  return Math.min(totalPages, Math.max(1, pageIndex + 1));
+}
+
+export function getUpcomingProportionalScrollLeft(
+  container: HTMLDivElement,
+  page: number,
+  totalPages: number,
+): number {
+  const pageIndex = Math.max(0, Math.min(totalPages - 1, page - 1));
+  const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth);
+  if (maxScrollLeft <= 0 || totalPages <= 1) {
+    return 0;
+  }
+
+  const denominator = Math.max(1, totalPages - 1);
+  return Math.min(maxScrollLeft, (maxScrollLeft * pageIndex) / denominator);
+}
+
+export function getUpcomingScrollLeftForPage(
+  container: HTMLDivElement,
+  page: number,
+  totalPages: number,
+  isSmUp: boolean,
+  pageStartAnchors: Array<HTMLDivElement | null | undefined>,
+): number {
+  if (isSmUp) {
+    return getUpcomingProportionalScrollLeft(container, page, totalPages);
+  }
+
+  const pageIndex = Math.max(0, Math.min(totalPages - 1, page - 1));
+  const anchor = pageStartAnchors[pageIndex];
+  if (!anchor) {
+    return 0;
+  }
+
+  const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth);
+  return Math.min(getScrollLeftForElementWithin(container, anchor), maxScrollLeft);
+}
