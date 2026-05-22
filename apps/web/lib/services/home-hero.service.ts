@@ -87,7 +87,7 @@ export async function getHomeHeroSlidesForStorefront(): Promise<HomeHeroSlide[]>
     }
     return slides;
   } catch (error) {
-    logger.error('Failed to load home hero slides from database', { error });
+    logger.warn('Failed to load home hero slides from database; using defaults', { error });
     return [...HOME_HERO_DEFAULT_SLIDES];
   }
 }

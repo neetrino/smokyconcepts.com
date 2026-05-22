@@ -1,7 +1,7 @@
 import { sortSizeCatalogCategoriesByDisplayOrder } from '@/lib/constants/size-catalog-display-order.constants';
 import type { SizeCatalogCategoryDto } from '@/lib/types/size-catalog';
 
-import type { CatalogProductCardItem } from './ProductsCatalogCard';
+import type { CatalogProductCardItem } from './productsCatalogCard.types';
 
 /** Section pill colors — same tokens as {@link ProductsCatalogCard} PDP/catalog. */
 export const PRODUCT_SECTION_BADGE_CLASS_NAMES: Record<string, string> = {
