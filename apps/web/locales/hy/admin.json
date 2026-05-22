@@ -180,6 +180,8 @@
     "createCategory": "Ստեղծել",
     "categoryTitle": "Կատեգորիայի անվանում",
     "categoryPriceAmd": "Կոլեկցիայի գին (ԴՐԱՄ)",
+    "customize": "Անհատականացում",
+    "collectionOptionWithPrice": "{title} — {price}",
     "categoryTitlePlaceholder": "օր․ Ultra slims, Compact",
     "renameCategory": "Վերանվանել",
     "deleteCategory": "Ջնջել կատեգորիան",

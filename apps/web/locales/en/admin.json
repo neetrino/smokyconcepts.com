@@ -180,6 +180,8 @@
     "createCategory": "Create",
     "categoryTitle": "Collection title",
     "categoryPriceAmd": "Collection price (AMD)",
+    "customize": "Customize",
+    "collectionOptionWithPrice": "{title} — {price}",
     "categoryTitlePlaceholder": "e.g. Ultra slims, Compact",
     "renameCategory": "Rename",
     "deleteCategory": "Delete collection",

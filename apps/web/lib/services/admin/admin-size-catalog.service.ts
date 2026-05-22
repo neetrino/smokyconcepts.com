@@ -26,7 +26,7 @@ function mapItem(row: {
     id: row.id,
     categoryId: row.categoryId,
     categoryTitle: row.categoryTitle,
-    categoryPriceAmd: 0,
+    categoryPriceAmd: row.categoryPriceAmd,
     title: row.title,
     imageUrl: row.imageUrl,
     version: normalizeSizeItemVersion(row.version ?? undefined),
@@ -104,9 +104,15 @@ function mapCategory(row: SizeCategoryRow): SizeCatalogCategoryDto {
   };
 }
 
-/** Size catalog collection surcharge is disabled; persisted as 0. */
-function normalizeCategoryPriceAmd(_value?: number, _fallback = 0): number {
-  return 0;
+function normalizeCategoryPriceAmd(value: number | undefined, fallback = 0): number {
+  if (value === undefined) {
+    return fallback;
+  }
+  if (!Number.isFinite(value)) {
+    return fallback;
+  }
+  const rounded = Math.round(value);
+  return rounded >= 0 ? rounded : 0;
 }
 
 class AdminSizeCatalogService {

@@ -78,9 +78,21 @@ export function buildCatalogCardPresentation({
     PRODUCT_SECTION_BADGE_CLASS_NAMES[sectionLabel] ?? PRODUCT_SECTION_BADGE_CLASS_NAMES.Classic;
   const isCompactSize = sizeLabel === 'Compact';
 
-  const stripPeekMaxLg = slimCatalogGrid ? 'max-lg:max-w-[16.5rem]' : 'max-lg:max-w-[19rem]';
-  const stripPeekLgW = slimCatalogGrid ? 'lg:w-[11.25rem]' : 'lg:w-[12.75rem]';
-  const stripPeekXlW = slimCatalogGrid ? 'xl:w-[11.625rem]' : 'xl:w-[13rem]';
+  const stripPeekMaxLg = slimCatalogGrid
+    ? 'max-lg:max-w-[16.5rem]'
+    : productsCatalogPage
+      ? 'max-lg:max-w-[16.5rem]'
+      : 'max-lg:max-w-[19rem]';
+  const stripPeekLgW = slimCatalogGrid
+    ? 'lg:w-[11.25rem]'
+    : productsCatalogPage
+      ? 'lg:w-[11rem]'
+      : 'lg:w-[12.75rem]';
+  const stripPeekXlW = slimCatalogGrid
+    ? 'xl:w-[11.625rem]'
+    : productsCatalogPage
+      ? 'xl:w-[11.5rem]'
+      : 'xl:w-[13rem]';
   const stripPeekMobileWidth = slimCatalogGrid
     ? 'max-lg:w-[calc((100vw-3.75rem)/1.65)]'
     : 'max-lg:w-[calc((100vw-3.75rem)/1.5)]';
@@ -109,9 +121,11 @@ export function buildCatalogCardPresentation({
   const imageWrapperClassName = compactLayout
     ? widerCompactCard
       ? 'h-[15.25rem] sm:h-[18.5rem]'
-      : slimCatalogGrid
-        ? 'h-[14.75rem] sm:h-[17.75rem] md:h-[13.5rem] lg:h-[16rem]'
-        : 'h-[14.75rem] sm:h-[17.75rem]'
+      : productsCatalogPage
+        ? 'h-[14.75rem] sm:h-[17.75rem] lg:h-[14.5rem]'
+        : slimCatalogGrid
+          ? 'h-[14.75rem] sm:h-[17.75rem] md:h-[13.5rem] lg:h-[16rem]'
+          : 'h-[14.75rem] sm:h-[17.75rem]'
     : isCompactSize
       ? 'h-[12.5rem] sm:h-60'
       : 'h-[15rem] sm:h-72';
@@ -130,9 +144,11 @@ export function buildCatalogCardPresentation({
 
   const compactInnerImageHeight = widerCompactCard
     ? 'h-[14.25rem] sm:h-[17.25rem]'
-    : slimCatalogGrid
-      ? 'h-[13.75rem] sm:h-[16.5rem] md:h-[12.5rem] lg:h-[15rem]'
-      : 'h-[13.75rem] sm:h-[16.5rem]';
+    : productsCatalogPage
+      ? 'h-[13.75rem] sm:h-[16.5rem] lg:h-[13.75rem]'
+      : slimCatalogGrid
+        ? 'h-[13.75rem] sm:h-[16.5rem] md:h-[12.5rem] lg:h-[15rem]'
+        : 'h-[13.75rem] sm:h-[16.5rem]';
   const imageInnerClassName = compactLayout ? `${compactInnerImageHeight} w-full` : 'h-full w-full';
 
   const aspectCompensationScale =

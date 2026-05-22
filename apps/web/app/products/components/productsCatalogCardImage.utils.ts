@@ -13,7 +13,7 @@ const PNG_OPAQUE_ALPHA_THRESHOLD = 8;
 export const COMPACT_PRODUCT_IMAGE_BOX_CLASS_NAME =
   'relative h-[9.5rem] w-[9.5rem] overflow-hidden sm:h-[11rem] sm:w-[11rem]';
 export const PRODUCTS_CATALOG_PAGE_IMAGE_BOX_CLASS_NAME =
-  'relative -translate-y-[2.55rem] sm:-translate-y-[2.75rem] flex h-[12rem] w-[8.5rem] items-center justify-center overflow-hidden rounded-[0.875rem] bg-transparent sm:h-[14.25rem] sm:w-[10rem]';
+  'relative -translate-y-[2.55rem] sm:-translate-y-[2.75rem] lg:-translate-y-[2.35rem] flex h-[12rem] w-[8.5rem] items-center justify-center overflow-hidden rounded-[0.875rem] bg-transparent sm:h-[14.25rem] sm:w-[10rem] lg:h-[12rem] lg:w-[8.75rem]';
 
 export const MAX_IMAGE_DOT_COUNT = 8;
 

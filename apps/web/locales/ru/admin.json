@@ -180,6 +180,8 @@
     "createCategory": "Создать",
     "categoryTitle": "Название категории",
     "categoryPriceAmd": "Цена коллекции (AMD)",
+    "customize": "Персонализация",
+    "collectionOptionWithPrice": "{title} — {price}",
     "categoryTitlePlaceholder": "напр. Ultra slims, Compact",
     "renameCategory": "Переименовать",
     "deleteCategory": "Удалить категорию",

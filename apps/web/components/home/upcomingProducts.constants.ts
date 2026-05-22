@@ -23,5 +23,6 @@ export const UPCOMING_PAGE_STAGGER_DELAY_CLASSES = [
   'delay-[516ms]',
 ] as const;
 
+/** Matches `/products` catalog section strip (hero overlap + scroll padding). */
 export const UPCOMING_SCROLL_CONTAINER_CLASS_NAME =
-  'scrollbar-hide mt-3 max-sm:snap-x max-sm:snap-mandatory overflow-x-auto overflow-y-visible overscroll-x-contain pb-4 pt-[7.5rem] sm:mt-6 sm:pt-[7.5rem]';
+  'scrollbar-hide mt-3 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory max-sm:pb-14 pb-10 max-sm:pt-[7.5rem] pt-[5.5rem] sm:mt-6 sm:pb-12 sm:pt-[6rem] lg:pb-14 lg:pt-[5.75rem]';
