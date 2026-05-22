@@ -9,7 +9,7 @@ import {
   CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME,
   getCatalogProductCardImageScaleBoost,
-  getProductsCatalogPageSmallerImageScaleMultiplier,
+  getTrendingSectionSmallerImageScaleMultiplier,
 } from '../../app/products/components/catalogProductCardMobilePresentation';
 import { CLUSTER_INNER_REM } from './trendingFeatured.constants';
 import type { TrendingDesktopPageClusterProps } from './trendingFeatured.types';
@@ -42,13 +42,14 @@ export function TrendingDesktopPageCluster({
                 sectionLabel={section}
                 sizeLabel={getSizeLabel(product)}
                 categoryLabel={getCategoryLabel(product, section)}
-                productsCatalogPageScaleMultiplier={getProductsCatalogPageSmallerImageScaleMultiplier(catalogIndex)}
+                productsCatalogPageScaleMultiplier={getTrendingSectionSmallerImageScaleMultiplier(catalogIndex)}
                 imageNudgeDown={shouldNudgeCatalogProductImage(catalogIndex)}
                 imageScaleBoost={getCatalogProductCardImageScaleBoost(catalogIndex)}
                 imageFrameClassName={CATALOG_PRODUCTS_PAGE_IMAGE_FRAME_CLASS_NAME}
                 className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} w-[13rem] max-w-none`}
                 compactLayout
                 productsCatalogPage
+                trendingSectionCard
                 eagerProductImage={eager}
               />
             </div>

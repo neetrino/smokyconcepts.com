@@ -24,17 +24,17 @@ import {
 import {
   CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME,
   CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE,
   CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME,
-  RELATED_PRODUCTS_SECTION_STRIP_SCROLL_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME,
   CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS,
-  PRODUCTS_CATALOG_LANDING_MOBILE_CARD_TOP_PADDING_CLASS_NAME,
-  PRODUCTS_CATALOG_LANDING_MOBILE_DETAILS_OFFSET_CLASS_NAME,
-  PRODUCTS_CATALOG_LANDING_MOBILE_HERO_PULL_UP_CLASS_NAME,
   PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
-  PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_FRAME_CLASS_NAME,
   getCatalogProductCardImageScaleBoost,
   getCatalogProductsSmViewportSnapshot,
   getProductsCatalogPageSmallerImageScaleMultiplier,
@@ -230,7 +230,7 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
         <div
           ref={sectionScrollRef}
           onScroll={handleSectionScroll}
-          className={RELATED_PRODUCTS_SECTION_STRIP_SCROLL_CLASS_NAME}
+          className={CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME}
         >
           <div className={CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME}>
             {products.map((product, index) => {
@@ -276,10 +276,10 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
                     )}
                     imageNudgeDown={shouldNudgeCatalogProductImage(index)}
                     imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
-                    imageFrameClassName={PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_FRAME_CLASS_NAME}
-                    catalogHeroPullUpClassName={PRODUCTS_CATALOG_LANDING_MOBILE_HERO_PULL_UP_CLASS_NAME}
-                    catalogCardTopPaddingClassName={PRODUCTS_CATALOG_LANDING_MOBILE_CARD_TOP_PADDING_CLASS_NAME}
-                    catalogDetailsOffsetClassName={PRODUCTS_CATALOG_LANDING_MOBILE_DETAILS_OFFSET_CLASS_NAME}
+                    imageFrameClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME}
+                    catalogHeroPullUpClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME}
+                    catalogCardTopPaddingClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME}
+                    catalogDetailsOffsetClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME}
                     catalogImageBottomMarginClassName={
                       PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME
                     }
@@ -328,7 +328,7 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
 
 function RelatedProductsStripSkeleton() {
   return (
-    <div className={RELATED_PRODUCTS_SECTION_STRIP_SCROLL_CLASS_NAME}>
+    <div className={CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME}>
       <div className={CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME}>
         {Array.from({ length: CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE }).map((_, index) => (
           <div

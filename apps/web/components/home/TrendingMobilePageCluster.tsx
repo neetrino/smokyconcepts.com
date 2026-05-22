@@ -14,7 +14,7 @@ import {
   HOME_TRENDING_MOBILE_HERO_PULL_UP_CLASS_NAME,
   HOME_TRENDING_MOBILE_IMAGE_FRAME_CLASS_NAME,
   getCatalogProductCardImageScaleBoost,
-  getProductsCatalogPageSmallerImageScaleMultiplier,
+  getTrendingSectionSmallerImageScaleMultiplier,
 } from '../../app/products/components/catalogProductCardMobilePresentation';
 import type { TrendingMobilePageClusterProps } from './trendingFeatured.types';
 
@@ -39,7 +39,7 @@ export function TrendingMobilePageCluster({ items, catalogStartIndex, eager }: T
               sectionLabel={section}
               sizeLabel={getSizeLabel(product)}
               categoryLabel={getCategoryLabel(product, section)}
-              productsCatalogPageScaleMultiplier={getProductsCatalogPageSmallerImageScaleMultiplier(catalogIndex)}
+              productsCatalogPageScaleMultiplier={getTrendingSectionSmallerImageScaleMultiplier(catalogIndex)}
               imageNudgeDown={shouldNudgeCatalogProductImage(catalogIndex)}
               imageScaleBoost={getCatalogProductCardImageScaleBoost(catalogIndex)}
               imageFrameClassName={HOME_TRENDING_MOBILE_IMAGE_FRAME_CLASS_NAME}
@@ -50,6 +50,7 @@ export function TrendingMobilePageCluster({ items, catalogStartIndex, eager }: T
               className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} max-sm:!w-full max-sm:!min-w-0 max-sm:!max-w-none`}
               compactLayout
               productsCatalogPage
+              trendingSectionCard
               eagerProductImage={eager}
             />
           </div>

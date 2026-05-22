@@ -12,7 +12,7 @@ import {
   getUpcomingScrollLeftForPage,
   getUpcomingVisiblePageNumbers,
   resolveUpcomingPageFromMobileAnchors,
-  resolveUpcomingPageFromProportionalScroll,
+  resolveUpcomingPageFromStripScroll,
 } from './upcomingProductsScroll.utils';
 
 interface UseUpcomingScrollPaginationOptions {
@@ -116,10 +116,7 @@ export function useUpcomingScrollPagination({
 
   const resolvePageFromScrollLeft = useCallback(
     (container: HTMLDivElement) => {
-      if (isSmUp) {
-        return resolveUpcomingPageFromProportionalScroll(container, totalPages);
-      }
-      return resolveUpcomingPageFromMobileAnchors(container, pageStartRefs.current, totalPages);
+      return resolveUpcomingPageFromStripScroll(container, pageStartRefs.current, totalPages);
     },
     [isSmUp, totalPages],
   );

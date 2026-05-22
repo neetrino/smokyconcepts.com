@@ -70,6 +70,26 @@ export function scrollMobileStripToPageAnchor(
   return targetScrollLeft;
 }
 
+/**
+ * Scroll target for a catalog/upcoming strip page (page 0 respects max-lg peek).
+ */
+export function getCatalogStripScrollLeftForPage(
+  container: HTMLElement,
+  pageIndex: number,
+  pageStartAnchors: Array<HTMLElement | null | undefined>
+): number {
+  if (pageIndex <= 0) {
+    return getCatalogStripPeekStartScroll(container);
+  }
+
+  const anchor = pageStartAnchors[pageIndex];
+  if (!anchor) {
+    return 0;
+  }
+
+  return getClampedMobileStripScrollTarget(container, anchor);
+}
+
 export function getCatalogStripPeekStartScroll(container: HTMLElement): number {
   if (typeof window === 'undefined') {
     return 0;

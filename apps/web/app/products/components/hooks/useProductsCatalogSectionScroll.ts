@@ -2,7 +2,11 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { CATALOG_SECTION_PAGE_SIZE, type CatalogProduct } from '../catalogProductLabels';
-import { scrollMobileStripToPageAnchor } from '../catalogStripScroll';
+import {
+  getCatalogStripPeekStartScroll,
+  getCatalogStripScrollLeftForPage,
+  scrollMobileStripToPageAnchor,
+} from '../catalogStripScroll';
 import {
   CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE,
   CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS,
@@ -12,11 +16,8 @@ import {
   clearSectionScrollSettleTimers,
   waitForSectionScrollToSettle,
 } from '../productsCatalogScrollSettle';
-import {
-  getCatalogStripPeekStartScroll,
-  resolveSectionPageFromDesktopScroll,
-  resolveSectionPageFromScrollAnchors,
-} from '../productsCatalogScroll.utils';
+import { resolveSectionPageFromScrollAnchors } from '../productsCatalogScroll.utils';
+import { CATALOG_SCROLL_TARGET_TOLERANCE_PX } from '../productsCatalogView.constants';
 import type { CatalogSectionViewModel } from '../productsCatalogView.types';
 
 interface UseProductsCatalogSectionScrollParams {
@@ -158,20 +159,12 @@ export function useProductsCatalogSectionScroll({
     if (container) {
       let targetScrollLeft = 0;
 
+      const pageAnchors = sectionPageStartRefs.current[title] ?? [];
+
       if (!isSmUp) {
-        const anchor = sectionPageStartRefs.current[title]?.[pageIndex];
-        targetScrollLeft = scrollMobileStripToPageAnchor(container, anchor);
+        targetScrollLeft = scrollMobileStripToPageAnchor(container, pageAnchors[pageIndex]);
       } else {
-        const maxScrollLeft = container.scrollWidth - container.clientWidth;
-        const sectionMeta = sections.find((section) => section.title === title);
-        const totalPages = sectionMeta?.totalPages ?? 1;
-        const startLeft = getCatalogStripPeekStartScroll(container);
-        const span = Math.max(0, maxScrollLeft - startLeft);
-        const denominator = Math.max(1, totalPages - 1);
-        targetScrollLeft =
-          maxScrollLeft <= 0
-            ? 0
-            : Math.min(maxScrollLeft, startLeft + (span * pageIndex) / denominator);
+        targetScrollLeft = getCatalogStripScrollLeftForPage(container, pageIndex, pageAnchors);
       }
 
       sectionProgrammaticScrollRef.current[title] = true;
@@ -245,7 +238,14 @@ export function useProductsCatalogSectionScroll({
       return;
     }
 
-    const nextPage = resolveSectionPageFromDesktopScroll(container, section.totalPages);
+    const peekStart = getCatalogStripPeekStartScroll(container);
+    if (container.scrollLeft <= peekStart + CATALOG_SCROLL_TARGET_TOLERANCE_PX) {
+      commitPage(0);
+      return;
+    }
+
+    const anchors = sectionPageStartRefs.current[title] ?? [];
+    const nextPage = resolveSectionPageFromScrollAnchors(container, anchors);
     commitPage(Math.max(0, Math.min(section.totalPages - 1, nextPage)));
   };
 

@@ -1,11 +1,5 @@
+import { getScrollLeftForElementWithin } from './catalogStripScroll';
 import { CATALOG_SCROLL_TARGET_TOLERANCE_PX, CATALOG_STRIP_PEEK_MEDIA_QUERY } from './productsCatalogView.constants';
-
-/** Scroll offset of `element` within `container` (works when `offsetParent` chain differs). */
-export function getScrollLeftForElementWithin(container: HTMLElement, element: HTMLElement): number {
-  const containerRect = container.getBoundingClientRect();
-  const elementRect = element.getBoundingClientRect();
-  return container.scrollLeft + (elementRect.left - containerRect.left);
-}
 
 export function resolveSectionPageFromScrollAnchors(
   container: HTMLDivElement,
