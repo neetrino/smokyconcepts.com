@@ -29,12 +29,15 @@ const GALLERY_TOP_OFFSET_CLASSES = 'pt-12 sm:pt-14 lg:pt-16';
  */
 const HERO_PULL_ABOVE_CARD = '-mt-10 sm:-mt-12 lg:-mt-14';
 
-/** Fixed hero frame — image scales to fit fully inside (no crop). */
+/** Fixed hero frame — small sources scale up, large sources scale down (no crop). */
 const HERO_IMAGE_BOX_SIZE_CLASSES =
-  'h-[320px] w-full max-w-full sm:h-[360px] lg:h-[400px]';
+  'h-[340px] w-full max-w-full shrink-0 sm:h-[380px] lg:h-[420px]';
 
-/** Fixed thumbnail frame — same contain fit as hero (no crop). */
-const THUMBNAIL_IMAGE_BOX_SIZE_CLASSES = 'h-[68px] w-full sm:h-[82px]';
+/** Fixed thumbnail frame — same fill behavior as hero. */
+const THUMBNAIL_IMAGE_BOX_SIZE_CLASSES = 'h-[68px] w-full shrink-0 sm:h-[82px]';
+
+/** Fills the frame: upscales small assets, downscales large ones, keeps aspect ratio. */
+const GALLERY_IMAGE_FIT_CLASSES = 'size-full object-contain object-center';
 
 /** Vertical rhythm between hero and thumbnail strip inside the card. */
 const GALLERY_SECTION_GAP_CLASSES = 'gap-3 sm:gap-4';
@@ -109,7 +112,7 @@ export function ProductImageGallery({
                   alt={product.title}
                   decoding="async"
                   draggable={false}
-                  className="block max-h-full max-w-full object-contain object-center transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+                  className={`block transition-transform duration-300 ease-out group-hover:scale-[1.03] ${GALLERY_IMAGE_FIT_CLASSES}`}
                 />
                 {customizeOverlayHtml ? <CustomizeProductOverlay html={customizeOverlayHtml} /> : null}
               </div>
@@ -156,7 +159,7 @@ export function ProductImageGallery({
                             src={image}
                             alt=""
                             draggable={false}
-                            className="block h-full w-full object-contain object-center"
+                            className={`block ${GALLERY_IMAGE_FIT_CLASSES}`}
                           />
                         </div>
                         <span
