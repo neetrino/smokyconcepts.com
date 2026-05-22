@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { formatCatalogPrice, formatPriceInCurrency } from '../../../lib/currency';
+import { formatCatalogPrice } from '../../../lib/currency';
 import { t } from '../../../lib/i18n';
 import { useCurrency } from '../../../components/hooks/useCurrency';
 import { Button } from '../../../components/ui/buttons';
@@ -62,8 +62,6 @@ export function ProductInfoAndActionsView({
     productDetails,
     showSizeSection,
     sizeButtonLabel,
-    selectedCollectionTitle,
-    selectedCollectionPriceAmd,
     openSizeCatalogModal,
     isCustomizeSizeModalOpen,
     closeSizeCatalogModal,
@@ -166,14 +164,6 @@ export function ProductInfoAndActionsView({
               >
                 <span className="truncate">{sizeButtonLabel}</span>
               </button>
-              {selectedCollectionTitle ? (
-                <div className="mt-2.5">
-                  <p className="font-montserrat text-[13px] font-medium leading-tight text-[#414141]">
-                    {t(language, 'product.collection_label')}: {selectedCollectionTitle}{' '}
-                    {formatPriceInCurrency(Math.max(0, selectedCollectionPriceAmd), 'AMD')}
-                  </p>
-                </div>
-              ) : null}
             </div>
           )}
         </div>

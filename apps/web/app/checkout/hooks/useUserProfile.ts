@@ -90,6 +90,7 @@ export function useUserProfile(
                     (l) => l.city.toLowerCase() === stateTrim.toLowerCase(),
                   );
                 if (byCity) {
+                  setValue('shippingCountry', byCity.country);
                   setValue('shippingRegion', byCity.id);
                 }
               }

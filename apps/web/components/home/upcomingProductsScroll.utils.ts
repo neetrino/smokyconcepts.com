@@ -1,3 +1,7 @@
+import {
+  getCatalogStripPeekStartScroll,
+  getCatalogStripScrollLeftForPage,
+} from '../../app/products/components/catalogStripScroll';
 import { UPCOMING_SCROLL_TARGET_TOLERANCE_PX } from './upcomingProducts.constants';
 
 /**
@@ -91,11 +95,16 @@ export function getUpcomingScrollLeftForPage(
   isSmUp: boolean,
   pageStartAnchors: Array<HTMLDivElement | null | undefined>,
 ): number {
+  const pageIndex = Math.max(0, Math.min(totalPages - 1, page - 1));
+
   if (isSmUp) {
+    const anchorTarget = getCatalogStripScrollLeftForPage(container, pageIndex, pageStartAnchors);
+    if (pageStartAnchors[pageIndex]) {
+      return anchorTarget;
+    }
     return getUpcomingProportionalScrollLeft(container, page, totalPages);
   }
 
-  const pageIndex = Math.max(0, Math.min(totalPages - 1, page - 1));
   const anchor = pageStartAnchors[pageIndex];
   if (!anchor) {
     return 0;
@@ -103,4 +112,22 @@ export function getUpcomingScrollLeftForPage(
 
   const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth);
   return Math.min(getScrollLeftForElementWithin(container, anchor), maxScrollLeft);
+}
+
+/** Resolves active page from strip scroll (peek-aware page 1, anchors for later pages). */
+export function resolveUpcomingPageFromStripScroll(
+  container: HTMLDivElement,
+  pageStartAnchors: Array<HTMLDivElement | null | undefined>,
+  totalPages: number,
+): number {
+  if (totalPages <= 1) {
+    return 1;
+  }
+
+  const peekStart = getCatalogStripPeekStartScroll(container);
+  if (container.scrollLeft <= peekStart + UPCOMING_SCROLL_TARGET_TOLERANCE_PX) {
+    return 1;
+  }
+
+  return resolveUpcomingPageFromMobileAnchors(container, pageStartAnchors, totalPages);
 }

@@ -4,7 +4,7 @@ import { Card, Input } from '@shop/ui';
 import { UseFormRegister, UseFormSetValue, FieldErrors } from 'react-hook-form';
 import { useTranslation } from '../../lib/i18n-client';
 import { DeliveryRegionSelect } from './components/DeliveryRegionSelect';
-import { ShippingCountryField } from './components/ShippingCountryField';
+import { ShippingCountrySelect } from './components/ShippingCountrySelect';
 import { CheckoutFormData } from './types';
 import type { DeliveryLocationOption } from './hooks/useDeliveryLocations';
 
@@ -24,9 +24,10 @@ interface CheckoutFormProps {
   setLogoErrors: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
   error: string | null;
   setError: React.Dispatch<React.SetStateAction<string | null>>;
-  deliveryLocations: DeliveryLocationOption[];
+  deliveryCountries: string[];
+  filteredDeliveryLocations: DeliveryLocationOption[];
   loadingDeliveryLocations: boolean;
-  shippingCountry?: string;
+  selectedShippingCountry?: string;
 }
 
 export function CheckoutForm({
@@ -40,9 +41,10 @@ export function CheckoutForm({
   setLogoErrors,
   error,
   setError,
-  deliveryLocations,
+  deliveryCountries,
+  filteredDeliveryLocations,
   loadingDeliveryLocations,
-  shippingCountry,
+  selectedShippingCountry,
 }: CheckoutFormProps) {
   const { t } = useTranslation();
 
@@ -94,17 +96,48 @@ export function CheckoutForm({
           <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('checkout.shippingAddress')}</h2>
           {(error && error.includes('shipping address')) ||
           errors.shippingAddress ||
+          errors.shippingCountry ||
           errors.shippingRegion ? (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-sm text-red-600">
                 {error && error.includes('shipping address')
                   ? error
                   : errors.shippingAddress?.message ||
+                    errors.shippingCountry?.message ||
                     errors.shippingRegion?.message}
               </p>
             </div>
           ) : null}
           <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <ShippingCountrySelect
+                register={register}
+                value={selectedShippingCountry ?? ''}
+                countries={deliveryCountries}
+                error={errors.shippingCountry?.message}
+                disabled={isSubmitting}
+                loading={loadingDeliveryLocations}
+                onAfterChange={() => {
+                  setValue('shippingRegion', '');
+                  if (error && error.includes('shipping address')) {
+                    setError(null);
+                  }
+                }}
+              />
+              <DeliveryRegionSelect
+                register={register}
+                error={errors.shippingRegion?.message}
+                disabled={isSubmitting}
+                locations={filteredDeliveryLocations}
+                loading={loadingDeliveryLocations}
+                countrySelected={Boolean(selectedShippingCountry?.trim())}
+                onAfterChange={() => {
+                  if (error && error.includes('shipping address')) {
+                    setError(null);
+                  }
+                }}
+              />
+            </div>
             <Input
               label={t('checkout.form.address')}
               type="text"
@@ -119,21 +152,6 @@ export function CheckoutForm({
               error={errors.shippingAddress?.message}
               disabled={isSubmitting}
             />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <DeliveryRegionSelect
-                register={register}
-                error={errors.shippingRegion?.message}
-                disabled={isSubmitting}
-                locations={deliveryLocations}
-                loading={loadingDeliveryLocations}
-                onAfterChange={() => {
-                  if (error && error.includes('shipping address')) {
-                    setError(null);
-                  }
-                }}
-              />
-              <ShippingCountryField country={shippingCountry} />
-            </div>
           </div>
         </Card>
 

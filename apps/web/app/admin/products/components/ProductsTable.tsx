@@ -4,6 +4,12 @@ import { useRouter } from 'next/navigation';
 import { Card, Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { formatAdminCatalogPrice } from '../../../../lib/currency';
+import {
+  PRODUCTS_TABLE_HEADER_TEXT_CLASS,
+  PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS,
+  PRODUCTS_TABLE_HEADER_TH_STICKY_FIRST_CLASS,
+  PRODUCTS_TABLE_HEADER_TH_STICKY_LAST_CLASS,
+} from '../constants/productsTable.constants';
 import type { Product, ProductsResponse } from '../types';
 
 interface ProductsTableProps {
@@ -60,7 +66,7 @@ export function ProductsTable({
   const router = useRouter();
 
   return (
-    <Card className="overflow-hidden border-[#dcc090]/30 bg-white/90 shadow-[0_8px_30px_rgba(18,42,38,0.06)]">
+    <Card className="border-[#dcc090]/30 bg-white/90 shadow-[0_8px_30px_rgba(18,42,38,0.06)]">
       {loading ? (
         <div className="p-8 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#122a26] mx-auto mb-4"></div>
@@ -72,11 +78,10 @@ export function ProductsTable({
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-[#dcc090]/25">
+          <table className="min-w-full border-separate border-spacing-0 divide-y divide-[#dcc090]/25">
               <thead className="bg-[#122a26]">
                 <tr>
-                  <th className="px-4 py-3">
+                  <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_FIRST_CLASS} px-4 py-3`}>
                     <input
                       type="checkbox"
                       aria-label={t('admin.products.selectAll')}
@@ -84,13 +89,21 @@ export function ProductsTable({
                       onChange={toggleSelectAll}
                     />
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-[#dcc090] uppercase tracking-wider">
+                  <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS} px-3 py-3 text-left ${PRODUCTS_TABLE_HEADER_TEXT_CLASS}`}>
                     <button
                       type="button"
                       onClick={() => handleHeaderSort('title')}
                       className="inline-flex items-center gap-1 text-[#dcc090] hover:text-white"
                     >
                       <span>{t('admin.products.product')}</span>
+                      {meta !== null && (
+                        <span className="font-normal normal-case tabular-nums text-[#dcc090]/75">
+                          {t('admin.products.productTotalCount').replace(
+                            '{total}',
+                            meta.total.toLocaleString(),
+                          )}
+                        </span>
+                      )}
                       <span className="flex flex-col gap-0.5">
                         <svg
                           className={`w-2.5 h-2.5 ${
@@ -119,7 +132,7 @@ export function ProductsTable({
                       </span>
                     </button> 
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-[#dcc090] uppercase tracking-wider">
+                  <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS} px-3 py-3 text-left ${PRODUCTS_TABLE_HEADER_TEXT_CLASS}`}>
                     <button
                       type="button"
                       onClick={() => handleHeaderSort('stock')}
@@ -154,7 +167,7 @@ export function ProductsTable({
                       </span>
                     </button>
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-[#dcc090] uppercase tracking-wider">
+                  <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS} px-3 py-3 text-left ${PRODUCTS_TABLE_HEADER_TEXT_CLASS}`}>
                     <div className="flex items-start justify-between gap-3">
                       <button
                         type="button"
@@ -192,17 +205,17 @@ export function ProductsTable({
                       <span className="text-right">{t('admin.products.category')}</span>
                     </div>
                   </th>
-                  <th className="px-3 py-3 text-center text-xs font-semibold text-[#dcc090] uppercase tracking-wider">
+                  <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS} px-3 py-3 text-center ${PRODUCTS_TABLE_HEADER_TEXT_CLASS}`}>
                     <span className="inline-flex items-center justify-center gap-2">
                       {t('admin.products.featured')}
                       <span className="text-gray-400 font-normal normal-case">/</span>
                       {t('admin.products.upcoming')}
                     </span>
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-[#dcc090] uppercase tracking-wider pl-6">
+                  <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS} px-3 py-3 text-left pl-6 ${PRODUCTS_TABLE_HEADER_TEXT_CLASS}`}>
                     {t('admin.products.actions')}
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-[#dcc090] uppercase tracking-wider">
+                  <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_LAST_CLASS} px-3 py-3 text-left ${PRODUCTS_TABLE_HEADER_TEXT_CLASS}`}>
                     <button
                       type="button"
                       onClick={() => handleHeaderSort('createdAt')}
@@ -425,8 +438,7 @@ export function ProductsTable({
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+          </table>
 
           {/* Pagination */}
           {meta && meta.totalPages > 1 && (

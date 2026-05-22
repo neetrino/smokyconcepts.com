@@ -51,6 +51,8 @@ export interface ProductsCatalogCardProps {
   slimCatalogGrid?: boolean;
   /** `/products` — slightly less vertical gap between hero image and details. */
   productsCatalogPage?: boolean;
+  /** Home trending carousel — keeps legacy card geometry separate from `/products` strip tuning. */
+  trendingSectionCard?: boolean;
   /** `/products` only: per-card hero scale multiplier (for visual balancing by index). */
   productsCatalogPageScaleMultiplier?: number;
   /** Overrides default catalog hero pull-up below `sm` (e.g. home trending). */

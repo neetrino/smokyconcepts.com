@@ -1,7 +1,7 @@
 /** Figma header (node 6513:232) — layout and asset paths */
 export const HEADER_HEIGHT_PX = 64;
 export const HEADER_SWITCHER_GAP_PX = 8;
-export const HEADER_UTILITIES_GAP_PX = 29;
+export const HEADER_UTILITIES_GAP_PX = 16;
 
 export const HEADER_ASSET_PATHS = {
   currencyBanknote: '/assets/header/currency-banknote.svg',

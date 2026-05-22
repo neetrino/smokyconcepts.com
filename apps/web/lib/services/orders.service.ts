@@ -391,12 +391,7 @@ class OrdersService {
               sizeCatalogTitle !== undefined
                 ? sanitizeCheckoutImageUrl(item.sizeCatalogImageUrl)
                 : undefined;
-            const sizeCatalogCategoryPriceAmd =
-              sizeCatalogTitle !== undefined &&
-              typeof item.sizeCatalogCategoryPriceAmd === "number" &&
-              Number.isFinite(item.sizeCatalogCategoryPriceAmd)
-                ? Math.max(0, Math.round(item.sizeCatalogCategoryPriceAmd))
-                : 0;
+            const sizeCatalogCategoryPriceAmd = 0;
 
             if (rawCustomRequest) {
               const name = typeof rawCustomRequest.name === 'string' ? rawCustomRequest.name.trim() : '';

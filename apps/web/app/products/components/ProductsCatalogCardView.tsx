@@ -46,6 +46,8 @@ export function ProductsCatalogCardView({
     imageObjectClassName,
     imageContentFrameClassName,
     imageTransformStyle,
+    imageTransformOrigin,
+    heroLinkUsesItemsEnd,
     titleClassName,
     badgeClassNames,
     priceClassName,
@@ -76,7 +78,7 @@ export function ProductsCatalogCardView({
           {activeImage && !imageError ? (
             <Link
               href={`/products/${product.slug}`}
-              className={`flex h-full w-full justify-center ${compactLayout && productsCatalogPage ? 'items-center' : 'items-end'}`}
+              className={`flex h-full w-full justify-center ${heroLinkUsesItemsEnd ? 'items-end' : 'items-center'}`}
               onClick={handleProductLinkClick}
             >
               <span className={imageContentFrameClassName}>
@@ -86,7 +88,14 @@ export function ProductsCatalogCardView({
                   alt={product.title}
                   fill
                   className={imageObjectClassName}
-                  style={imageTransformStyle ? { transform: imageTransformStyle } : undefined}
+                  style={
+                    imageTransformStyle || imageTransformOrigin
+                      ? {
+                          ...(imageTransformStyle ? { transform: imageTransformStyle } : {}),
+                          ...(imageTransformOrigin ? { transformOrigin: imageTransformOrigin } : {}),
+                        }
+                      : undefined
+                  }
                   sizes={IMAGE_SIZES}
                   unoptimized
                   loading={eagerProductImage ? 'eager' : undefined}

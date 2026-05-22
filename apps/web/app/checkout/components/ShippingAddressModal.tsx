@@ -7,7 +7,7 @@ import { ContactInformation } from './ContactInformation';
 import { CardInputFields } from './CardInputFields';
 import { OrderSummaryModal } from './OrderSummaryModal';
 import { DeliveryRegionSelect } from './DeliveryRegionSelect';
-import { ShippingCountryField } from './ShippingCountryField';
+import { ShippingCountrySelect } from './ShippingCountrySelect';
 import type { CheckoutFormData, Cart, CheckoutOrderSummaryTotals } from '../types';
 import type { DeliveryLocationOption } from '../hooks/useDeliveryLocations';
 
@@ -23,9 +23,9 @@ interface ShippingAddressModalProps {
   paymentMethod: 'idram' | 'arca' | 'cash_on_delivery';
   cart: Cart | null;
   orderSummary: CheckoutOrderSummaryTotals;
-  shippingRegion?: string;
-  shippingCountry?: string;
-  deliveryLocations: DeliveryLocationOption[];
+  deliveryCountries: string[];
+  filteredDeliveryLocations: DeliveryLocationOption[];
+  selectedShippingCountry?: string;
   loadingDeliveryLocations: boolean;
   loadingDeliveryPrice: boolean;
   deliveryPrice: number | null;
@@ -44,9 +44,9 @@ export function ShippingAddressModal({
   paymentMethod,
   cart,
   orderSummary,
-  shippingRegion,
-  shippingCountry,
-  deliveryLocations,
+  deliveryCountries,
+  filteredDeliveryLocations,
+  selectedShippingCountry,
   loadingDeliveryLocations,
   loadingDeliveryPrice,
   deliveryPrice,
@@ -106,6 +106,25 @@ export function ShippingAddressModal({
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('checkout.shippingAddress')}</h3>
               <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <ShippingCountrySelect
+                    register={register}
+                    value={selectedShippingCountry ?? ''}
+                    countries={deliveryCountries}
+                    error={errors.shippingCountry?.message}
+                    disabled={isSubmitting}
+                    loading={loadingDeliveryLocations}
+                    onAfterChange={() => setValue('shippingRegion', '')}
+                  />
+                  <DeliveryRegionSelect
+                    register={register}
+                    error={errors.shippingRegion?.message}
+                    disabled={isSubmitting}
+                    locations={filteredDeliveryLocations}
+                    loading={loadingDeliveryLocations}
+                    countrySelected={Boolean(selectedShippingCountry?.trim())}
+                  />
+                </div>
                 <Input
                   label={t('checkout.form.address')}
                   type="text"
@@ -114,23 +133,14 @@ export function ShippingAddressModal({
                   error={errors.shippingAddress?.message}
                   disabled={isSubmitting}
                 />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <DeliveryRegionSelect
-                    register={register}
-                    error={errors.shippingRegion?.message}
-                    disabled={isSubmitting}
-                    locations={deliveryLocations}
-                    loading={loadingDeliveryLocations}
-                  />
-                  <ShippingCountryField country={shippingCountry} />
-                </div>
               </div>
             </div>
 
-            {(errors.shippingAddress || errors.shippingRegion) && (
+            {(errors.shippingAddress || errors.shippingCountry || errors.shippingRegion) && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                 <p className="text-sm text-red-600">
                   {errors.shippingAddress?.message ||
+                    errors.shippingCountry?.message ||
                     errors.shippingRegion?.message}
                 </p>
               </div>
@@ -163,7 +173,6 @@ export function ShippingAddressModal({
               cart={cart}
               orderSummary={orderSummary}
               shippingMethod={shippingMethod}
-              shippingRegion={shippingRegion}
               loadingDeliveryPrice={loadingDeliveryPrice}
               deliveryPrice={deliveryPrice}
             />
@@ -203,7 +212,6 @@ export function ShippingAddressModal({
               cart={cart}
               orderSummary={orderSummary}
               shippingMethod={shippingMethod}
-              shippingRegion={shippingRegion}
               loadingDeliveryPrice={loadingDeliveryPrice}
               deliveryPrice={deliveryPrice}
             />

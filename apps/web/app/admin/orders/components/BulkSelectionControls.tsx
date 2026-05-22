@@ -22,6 +22,10 @@ export function BulkSelectionControls({
 }: BulkSelectionControlsProps) {
   const { t } = useTranslation();
 
+  if (selectedCount === 0) {
+    return null;
+  }
+
   const selected = selectedLabel ?? t('admin.orders.selectedOrders').replace('{count}', selectedCount.toString());
   const deleteText = deleteLabel ?? t('admin.orders.deleteSelected');
   const deletingText = deletingLabel ?? t('admin.orders.deleting');
@@ -35,7 +39,7 @@ export function BulkSelectionControls({
         <Button
           variant="outline"
           onClick={onBulkDelete}
-          disabled={bulkDeleting || selectedCount === 0}
+          disabled={bulkDeleting}
         >
           {bulkDeleting ? deletingText : deleteText}
         </Button>

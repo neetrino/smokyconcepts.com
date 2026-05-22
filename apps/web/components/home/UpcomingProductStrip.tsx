@@ -12,14 +12,13 @@ import {
 } from '../../app/products/components/catalogProductLabels';
 import {
   CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
-  CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME,
-  HOME_UPCOMING_MOBILE_CARD_TOP_PADDING_CLASS_NAME,
-  HOME_UPCOMING_MOBILE_DETAILS_OFFSET_CLASS_NAME,
-  HOME_UPCOMING_MOBILE_HERO_PULL_UP_CLASS_NAME,
-  HOME_UPCOMING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
-  HOME_UPCOMING_MOBILE_IMAGE_FRAME_CLASS_NAME,
-  HOME_UPCOMING_MOBILE_ITEM_WRAPPER_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME,
+  PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
   getCatalogProductCardImageScaleBoost,
   getProductsCatalogPageSmallerImageScaleMultiplier,
 } from '../../app/products/components/catalogProductCardMobilePresentation';
@@ -49,9 +48,7 @@ export function UpcomingProductStrip({
   const { t } = useTranslation();
 
   return (
-    <div
-      className={`flex min-w-max max-lg:pr-4 items-stretch ${CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME}`}
-    >
+    <div className={`${CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME} items-stretch`}>
       {items.map((item, index) => {
         const pageIndex = Math.floor(index / cardsPerPage);
         const indexInPage = index % cardsPerPage;
@@ -97,7 +94,7 @@ export function UpcomingProductStrip({
             }}
             className={`flex min-h-0 shrink-0 flex-col self-stretch transition-transform transition-shadow duration-300 ease-out will-change-transform ${pageMotionClass} ${pageDelayClass} ${
               isPageStart ? 'max-sm:snap-start max-sm:snap-always' : ''
-            } ${HOME_UPCOMING_MOBILE_ITEM_WRAPPER_CLASS_NAME}`}
+            } ${CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME}`}
           >
             <ProductsCatalogCard
               product={catalogProduct}
@@ -108,11 +105,11 @@ export function UpcomingProductStrip({
               productsCatalogPageScaleMultiplier={getProductsCatalogPageSmallerImageScaleMultiplier(index)}
               imageNudgeDown={shouldNudgeCatalogProductImage(index)}
               imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
-              imageFrameClassName={HOME_UPCOMING_MOBILE_IMAGE_FRAME_CLASS_NAME}
-              catalogHeroPullUpClassName={HOME_UPCOMING_MOBILE_HERO_PULL_UP_CLASS_NAME}
-              catalogCardTopPaddingClassName={HOME_UPCOMING_MOBILE_CARD_TOP_PADDING_CLASS_NAME}
-              catalogDetailsOffsetClassName={HOME_UPCOMING_MOBILE_DETAILS_OFFSET_CLASS_NAME}
-              catalogImageBottomMarginClassName={HOME_UPCOMING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME}
+              imageFrameClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME}
+              catalogHeroPullUpClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME}
+              catalogCardTopPaddingClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME}
+              catalogDetailsOffsetClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME}
+              catalogImageBottomMarginClassName={PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME}
               className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} max-sm:!w-full max-sm:!min-w-0 max-sm:!max-w-none`}
               catalogStripMobilePeek={isSmUp}
               compactLayout

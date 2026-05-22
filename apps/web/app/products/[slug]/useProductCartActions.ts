@@ -70,7 +70,7 @@ export function useProductCartActions({
                 version: selectedCatalogSize.version,
                 imageUrl: selectedCatalogSize.imageUrl,
                 categoryTitle: selectedCatalogSize.categoryTitle,
-                categoryPriceAmd: selectedCatalogSize.categoryPriceAmd,
+                categoryPriceAmd: 0,
               }
             : null;
         const customSizeRequest =

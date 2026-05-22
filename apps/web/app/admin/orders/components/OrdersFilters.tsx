@@ -18,6 +18,7 @@ interface OrdersFiltersProps {
   setPage: (value: number | ((prev: number) => number)) => void;
   router: ReturnType<typeof useOrders>['router'];
   searchParams: ReturnType<typeof useOrders>['searchParams'];
+  totalOrders: number | null;
 }
 
 export function OrdersFilters({
@@ -33,6 +34,7 @@ export function OrdersFilters({
   setPage,
   router,
   searchParams,
+  totalOrders,
 }: OrdersFiltersProps) {
   const { t } = useTranslation();
 
@@ -91,7 +93,7 @@ export function OrdersFilters({
 
   return (
     <Card className="mb-6 border-[#dcc090]/30 bg-white/90 p-4 shadow-[0_8px_30px_rgba(18,42,38,0.06)]">
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div className="inline-flex rounded-full bg-[#dcc090]/20 p-1 text-xs">
           <button
             type="button"
@@ -139,6 +141,11 @@ export function OrdersFilters({
             {t('admin.orders.earlyAccessOrders')}
           </button>
         </div>
+        {totalOrders !== null && (
+          <p className="text-sm font-medium tabular-nums text-[#414141]/75">
+            {t('admin.orders.ordersTotalCount').replace('{total}', totalOrders.toLocaleString())}
+          </p>
+        )}
       </div>
 
       <div className="flex gap-4 items-center flex-wrap">

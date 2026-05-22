@@ -17,6 +17,7 @@ export function useCheckoutSchema() {
       message: t('checkout.errors.selectPaymentMethod'),
     }),
     shippingAddress: z.string().optional(),
+    shippingCountry: z.string().optional(),
     shippingRegion: z.string().optional(),
     cardNumber: z.string().optional(),
     cardExpiry: z.string().optional(),
@@ -30,6 +31,14 @@ export function useCheckoutSchema() {
   }, {
     message: t('checkout.errors.addressRequired'),
     path: ['shippingAddress'],
+  }).refine((data) => {
+    if (data.shippingMethod === 'delivery') {
+      return data.shippingCountry && data.shippingCountry.trim().length > 0;
+    }
+    return true;
+  }, {
+    message: t('checkout.errors.countryRequired'),
+    path: ['shippingCountry'],
   }).refine((data) => {
     if (data.shippingMethod === 'delivery') {
       return data.shippingRegion && data.shippingRegion.trim().length > 0;

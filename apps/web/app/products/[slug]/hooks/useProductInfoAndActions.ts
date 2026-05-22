@@ -137,9 +137,6 @@ export function useProductInfoAndActions({
     activeSizeOption?.label ||
     t(language, 'product.choose_size');
 
-  const selectedCollectionTitle = selectedCatalogSize?.categoryTitle?.trim() ?? '';
-  const selectedCollectionPriceAmd = selectedCatalogSize?.categoryPriceAmd ?? 0;
-
   const handleSelectCatalogSizeItem = (item: SizeCatalogItemDto) => {
     setSelectedCatalogSize(item);
     setSelectedCustomSizeRequest(null);
@@ -272,8 +269,6 @@ export function useProductInfoAndActions({
     productDetails,
     showSizeSection,
     sizeButtonLabel,
-    selectedCollectionTitle,
-    selectedCollectionPriceAmd,
     openSizeCatalogModal,
     isCustomizeSizeModalOpen,
     closeSizeCatalogModal,

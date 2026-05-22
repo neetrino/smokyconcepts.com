@@ -20,7 +20,7 @@ export const PRODUCT_INFO_TABS_SECTION_CLASS = [
 ].join(' ');
 
 export const PRODUCT_INFO_TAB_PANEL_CLASS =
-  'min-h-0 flex-1 overflow-y-auto overscroll-y-contain pt-7 [-webkit-overflow-scrolling:touch] sm:pt-8';
+  'scrollbar-visible min-h-0 flex-1 overflow-y-auto overscroll-y-contain pt-7 [-webkit-overflow-scrolling:touch] sm:pt-8';
 
 export const PRODUCT_INFO_TAB_INDICATOR_BASE_CLASS =
   'absolute bottom-0 left-0 right-0 h-0.5 rounded-[2px]';

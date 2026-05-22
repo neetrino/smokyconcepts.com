@@ -3,6 +3,7 @@ import {
   CATALOG_PRODUCTS_PAGE_CARD_HERO_PULL_UP_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_CARD_MOBILE_DETAILS_LAYOUT_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_CARD_TOP_PADDING_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_BOTTOM_PADDING_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_MOBILE_HERO_MAX_SCALE,
 } from './catalogProductCardMobilePresentation';
 import { PRODUCT_SECTION_BADGE_CLASS_NAMES } from './catalogProductLabels';
@@ -16,6 +17,7 @@ import {
   PRODUCTS_CATALOG_PAGE_DESIRED_IMAGE_SCALE,
   PRODUCTS_CATALOG_PAGE_IMAGE_BOX_CLASS_NAME,
   PRODUCTS_CATALOG_PAGE_SAFE_MAX_IMAGE_SCALE,
+  TRENDING_SECTION_IMAGE_BOX_CLASS_NAME,
 } from './productsCatalogCardImage.utils';
 import type { ProductsCatalogCardProps } from './productsCatalogCard.types';
 
@@ -34,6 +36,8 @@ export interface CatalogCardPresentation {
   imageObjectClassName: string;
   imageContentFrameClassName: string;
   imageTransformStyle: string | null;
+  imageTransformOrigin: string | null;
+  heroLinkUsesItemsEnd: boolean;
   titleClassName: string;
   badgeClassNames: string;
   priceClassName: string;
@@ -62,6 +66,7 @@ export function buildCatalogCardPresentation({
   catalogStripMobilePeek = false,
   slimCatalogGrid = false,
   productsCatalogPage = false,
+  trendingSectionCard = false,
   productsCatalogPageScaleMultiplier = 1,
   catalogHeroPullUpClassName,
   catalogCardTopPaddingClassName,
@@ -77,10 +82,23 @@ export function buildCatalogCardPresentation({
   const badgeClassName =
     PRODUCT_SECTION_BADGE_CLASS_NAMES[sectionLabel] ?? PRODUCT_SECTION_BADGE_CLASS_NAMES.Classic;
   const isCompactSize = sizeLabel === 'Compact';
+  const useCatalogStripGeometry = productsCatalogPage && !trendingSectionCard;
 
-  const stripPeekMaxLg = slimCatalogGrid ? 'max-lg:max-w-[16.5rem]' : 'max-lg:max-w-[19rem]';
-  const stripPeekLgW = slimCatalogGrid ? 'lg:w-[11.25rem]' : 'lg:w-[12.75rem]';
-  const stripPeekXlW = slimCatalogGrid ? 'xl:w-[11.625rem]' : 'xl:w-[13rem]';
+  const stripPeekMaxLg = slimCatalogGrid
+    ? 'max-lg:max-w-[16.5rem]'
+    : useCatalogStripGeometry
+      ? 'max-lg:max-w-[16.5rem]'
+      : 'max-lg:max-w-[19rem]';
+  const stripPeekLgW = slimCatalogGrid
+    ? 'lg:w-[11.25rem]'
+    : useCatalogStripGeometry
+      ? 'lg:w-[11rem]'
+      : 'lg:w-[12.75rem]';
+  const stripPeekXlW = slimCatalogGrid
+    ? 'xl:w-[11.625rem]'
+    : useCatalogStripGeometry
+      ? 'xl:w-[11.5rem]'
+      : 'xl:w-[13rem]';
   const stripPeekMobileWidth = slimCatalogGrid
     ? 'max-lg:w-[calc((100vw-3.75rem)/1.65)]'
     : 'max-lg:w-[calc((100vw-3.75rem)/1.5)]';
@@ -93,7 +111,9 @@ export function buildCatalogCardPresentation({
   const cardShadowClass = suppressShadow ? 'shadow-none' : CARD_SHADOW_TAILWIND;
   const articleStackClassName = 'z-0 hover:z-[8] focus-within:z-[8]';
   const compactArticlePaddingClassName = productsCatalogPage
-    ? `px-0 pb-2.5 max-sm:pb-2 sm:pb-3 ${catalogCardTopPaddingClassName ?? CATALOG_PRODUCTS_PAGE_CARD_TOP_PADDING_CLASS_NAME}`
+    ? useCatalogStripGeometry
+      ? `px-0 ${CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_BOTTOM_PADDING_CLASS_NAME} ${catalogCardTopPaddingClassName ?? CATALOG_PRODUCTS_PAGE_CARD_TOP_PADDING_CLASS_NAME}`
+      : `px-0 pb-2.5 max-sm:pb-2 sm:pb-3 ${catalogCardTopPaddingClassName ?? CATALOG_PRODUCTS_PAGE_CARD_TOP_PADDING_CLASS_NAME}`
     : 'px-2.5 pb-2.5 pt-2 sm:px-3 sm:pb-3 sm:pt-2.5';
   const catalogDetailsLayoutClassName =
     compactLayout && productsCatalogPage
@@ -109,9 +129,11 @@ export function buildCatalogCardPresentation({
   const imageWrapperClassName = compactLayout
     ? widerCompactCard
       ? 'h-[15.25rem] sm:h-[18.5rem]'
-      : slimCatalogGrid
-        ? 'h-[14.75rem] sm:h-[17.75rem] md:h-[13.5rem] lg:h-[16rem]'
-        : 'h-[14.75rem] sm:h-[17.75rem]'
+      : useCatalogStripGeometry
+        ? 'h-[14.75rem] sm:h-[17.75rem] lg:h-[14.5rem]'
+        : slimCatalogGrid
+          ? 'h-[14.75rem] sm:h-[17.75rem] md:h-[13.5rem] lg:h-[16rem]'
+          : 'h-[14.75rem] sm:h-[17.75rem]'
     : isCompactSize
       ? 'h-[12.5rem] sm:h-60'
       : 'h-[15rem] sm:h-72';
@@ -130,9 +152,11 @@ export function buildCatalogCardPresentation({
 
   const compactInnerImageHeight = widerCompactCard
     ? 'h-[14.25rem] sm:h-[17.25rem]'
-    : slimCatalogGrid
-      ? 'h-[13.75rem] sm:h-[16.5rem] md:h-[12.5rem] lg:h-[15rem]'
-      : 'h-[13.75rem] sm:h-[16.5rem]';
+    : useCatalogStripGeometry
+      ? 'h-[13.75rem] sm:h-[16.5rem] lg:h-[13.75rem]'
+      : slimCatalogGrid
+        ? 'h-[13.75rem] sm:h-[16.5rem] md:h-[12.5rem] lg:h-[15rem]'
+        : 'h-[13.75rem] sm:h-[16.5rem]';
   const imageInnerClassName = compactLayout ? `${compactInnerImageHeight} w-full` : 'h-full w-full';
 
   const aspectCompensationScale =
@@ -160,10 +184,16 @@ export function buildCatalogCardPresentation({
         );
   const imageClassName = compactLayout ? 'object-contain object-bottom' : 'object-contain';
   const imageObjectClassName =
-    compactLayout && productsCatalogPage ? 'object-contain object-center' : imageClassName;
+    compactLayout && useCatalogStripGeometry
+      ? 'object-contain object-bottom'
+      : compactLayout && productsCatalogPage
+        ? 'object-contain object-center'
+        : imageClassName;
   const imageContentFrameClassName = compactLayout
     ? productsCatalogPage
-      ? PRODUCTS_CATALOG_PAGE_IMAGE_BOX_CLASS_NAME
+      ? trendingSectionCard
+        ? TRENDING_SECTION_IMAGE_BOX_CLASS_NAME
+        : PRODUCTS_CATALOG_PAGE_IMAGE_BOX_CLASS_NAME
       : COMPACT_PRODUCT_IMAGE_BOX_CLASS_NAME
     : 'relative h-full w-full';
 
@@ -209,6 +239,8 @@ export function buildCatalogCardPresentation({
     : productsCatalogImageNudgeY !== 0
       ? `translateY(${productsCatalogImageNudgeY}px)`
       : null;
+  const imageTransformOrigin = compactLayout && useCatalogStripGeometry ? 'bottom center' : null;
+  const heroLinkUsesItemsEnd = !(compactLayout && productsCatalogPage && !useCatalogStripGeometry);
   const catalogPriceRowClassName =
     compactLayout && productsCatalogPage
       ? 'mt-2 max-sm:mt-1 flex items-center justify-between gap-2'
@@ -231,6 +263,8 @@ export function buildCatalogCardPresentation({
     imageObjectClassName,
     imageContentFrameClassName,
     imageTransformStyle,
+    imageTransformOrigin,
+    heroLinkUsesItemsEnd,
     titleClassName,
     badgeClassNames,
     priceClassName,
