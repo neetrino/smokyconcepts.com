@@ -476,6 +476,7 @@
     "selectAll": "Select all products",
     "selectProduct": "Select product {title}",
     "product": "PRODUCT",
+    "productTotalCount": "({total})",
     "stock": "STOCK",
     "price": "PRICE",
     "category": "COLLECTION",

@@ -476,6 +476,7 @@
     "selectAll": "Ընտրել բոլոր ապրանքները",
     "selectProduct": "Ընտրել ապրանք {title}",
     "product": "ԱՊՐԱՆՔ",
+    "productTotalCount": "({total})",
     "stock": "ՊԱՇԱՐ",
     "price": "ԳԻՆ",
     "category": "ԿԱՏԵԳՈՐԻԱ",

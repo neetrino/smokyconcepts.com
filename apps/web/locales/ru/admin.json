@@ -476,6 +476,7 @@
     "selectAll": "Выбрать все товары",
     "selectProduct": "Выбрать товар {title}",
     "product": "ТОВАР",
+    "productTotalCount": "({total})",
     "stock": "НАЛИЧИЕ",
     "price": "ЦЕНА",
     "category": "КАТЕГОРИЯ",
