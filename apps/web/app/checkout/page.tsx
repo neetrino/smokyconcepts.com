@@ -36,8 +36,9 @@ export default function CheckoutPage() {
     paymentMethod,
     shippingMethod,
     shippingRegionSummary,
-    shippingCountry,
-    deliveryLocations,
+    selectedShippingCountry,
+    deliveryCountries,
+    filteredDeliveryLocations,
     loadingDeliveryLocations,
     paymentMethods,
     orderSummary,
@@ -156,9 +157,10 @@ export default function CheckoutPage() {
               setLogoErrors={setLogoErrors}
               error={error}
               setError={setError}
-              deliveryLocations={deliveryLocations}
+              deliveryCountries={deliveryCountries}
+              filteredDeliveryLocations={filteredDeliveryLocations}
               loadingDeliveryLocations={loadingDeliveryLocations}
-              shippingCountry={shippingCountry}
+              selectedShippingCountry={selectedShippingCountry}
             />
           </div>
 
@@ -197,8 +199,9 @@ export default function CheckoutPage() {
         shippingMethod={shippingMethod}
         paymentMethod={paymentMethod}
         shippingRegion={shippingRegionSummary}
-        shippingCountry={shippingCountry}
-        deliveryLocations={deliveryLocations}
+        deliveryCountries={deliveryCountries}
+        filteredDeliveryLocations={filteredDeliveryLocations}
+        selectedShippingCountry={selectedShippingCountry}
         loadingDeliveryLocations={loadingDeliveryLocations}
         cart={cart}
         orderSummary={orderSummary}

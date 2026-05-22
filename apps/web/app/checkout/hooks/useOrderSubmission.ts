@@ -107,7 +107,9 @@ export function useOrderSubmission({
           ? {
               address: data.shippingAddress.trim(),
               state: regionLabelForOrder(data.shippingRegion, deliveryLocations),
-              country: countryForOrder(data.shippingRegion, deliveryLocations),
+              country:
+                data.shippingCountry?.trim() ||
+                countryForOrder(data.shippingRegion, deliveryLocations),
             }
           : undefined;
 

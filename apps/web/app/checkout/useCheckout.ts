@@ -11,6 +11,13 @@ import { usePaymentMethods } from './utils/payment-methods';
 import { useCheckoutSchema } from './utils/validation-schema';
 import { useDeliveryPrice } from './hooks/useDeliveryPrice';
 import { useDeliveryLocations } from './hooks/useDeliveryLocations';
+import { DEFAULT_SHIPPING_COUNTRY } from '../../lib/shipping-address-display';
+import {
+  countriesMatch,
+  filterLocationsByCountry,
+  getCheckoutCountries,
+  resolveDefaultDeliveryCountry,
+} from './utils/delivery-location-utils';
 import { useCart } from './hooks/useCart';
 import { useUserProfile } from './hooks/useUserProfile';
 import { useOrderSubmission } from './hooks/useOrderSubmission';
@@ -51,6 +58,7 @@ export function useCheckout() {
       shippingMethod: 'delivery',
       paymentMethod: 'cash_on_delivery',
       shippingAddress: '',
+      shippingCountry: DEFAULT_SHIPPING_COUNTRY,
       shippingRegion: '',
       cardNumber: '',
       cardExpiry: '',
@@ -61,9 +69,20 @@ export function useCheckout() {
 
   const paymentMethod = watch('paymentMethod');
   const shippingMethod = watch('shippingMethod');
+  const shippingCountry = watch('shippingCountry');
   const shippingRegion = watch('shippingRegion');
 
   const { deliveryLocations, loadingDeliveryLocations } = useDeliveryLocations();
+
+  const deliveryCountries = useMemo(
+    () => getCheckoutCountries(deliveryLocations),
+    [deliveryLocations],
+  );
+
+  const filteredDeliveryLocations = useMemo(
+    () => filterLocationsByCountry(deliveryLocations, shippingCountry),
+    [deliveryLocations, shippingCountry],
+  );
 
   const activeDeliveryLocation = useMemo(
     () => deliveryLocations.find((l) => l.id === shippingRegion),
@@ -71,7 +90,34 @@ export function useCheckout() {
   );
 
   const shippingRegionSummary = activeDeliveryLocation?.city ?? shippingRegion ?? '';
-  const shippingCountry = activeDeliveryLocation?.country;
+  const shippingCountrySummary = shippingCountry?.trim() || activeDeliveryLocation?.country;
+
+  useEffect(() => {
+    if (deliveryCountries.length === 0) {
+      return;
+    }
+    const current = shippingCountry?.trim() ?? '';
+    const matchingOption = current
+      ? deliveryCountries.find((c) => countriesMatch(current, c))
+      : undefined;
+    if (matchingOption) {
+      if (matchingOption !== current) {
+        setValue('shippingCountry', matchingOption);
+      }
+      return;
+    }
+    setValue('shippingCountry', resolveDefaultDeliveryCountry(deliveryCountries));
+  }, [deliveryCountries, shippingCountry, setValue]);
+
+  useEffect(() => {
+    if (!shippingRegion?.trim()) {
+      return;
+    }
+    const stillValid = filteredDeliveryLocations.some((l) => l.id === shippingRegion);
+    if (!stillValid) {
+      setValue('shippingRegion', '');
+    }
+  }, [shippingCountry, filteredDeliveryLocations, shippingRegion, setValue]);
 
   const { cart, loading, fetchCart } = useCart();
 
@@ -188,7 +234,11 @@ export function useCheckout() {
     setError(null);
 
     const handleValidationError = (validationErrors: FieldErrors<CheckoutFormData>) => {
-      if (validationErrors.shippingAddress || validationErrors.shippingRegion) {
+      if (
+        validationErrors.shippingAddress ||
+        validationErrors.shippingCountry ||
+        validationErrors.shippingRegion
+      ) {
         setError(t('checkout.errors.fillShippingAddress'));
       }
 
@@ -239,6 +289,8 @@ export function useCheckout() {
     deliveryPrice,
     loadingDeliveryPrice,
     deliveryLocations,
+    deliveryCountries,
+    filteredDeliveryLocations,
     loadingDeliveryLocations,
     // Form
     register,
@@ -253,7 +305,8 @@ export function useCheckout() {
     shippingMethod,
     shippingRegion,
     shippingRegionSummary,
-    shippingCountry,
+    selectedShippingCountry: shippingCountry,
+    shippingCountry: shippingCountrySummary,
     paymentMethods,
     orderSummary,
     couponDraft,

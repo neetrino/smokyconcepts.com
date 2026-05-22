@@ -20,7 +20,7 @@ import { HeaderDesktopAccount } from './HeaderAccountMenu';
 const NAVIGATION_ITEMS = [
   { label: 'Home', href: '/' },
   { label: 'Products', href: '/products' },
-  { label: 'Story', href: '/about' },
+  { label: 'About', href: '/about' },
 ] as const;
 
 const MOBILE_MENU_ID = 'header-mobile-menu';
