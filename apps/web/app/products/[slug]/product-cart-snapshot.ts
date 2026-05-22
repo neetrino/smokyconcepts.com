@@ -141,10 +141,6 @@ export function buildGuestCartLineSnapshot(
   const trimmedVersion = sizeCatalog?.version?.trim() ?? '';
   const trimmedImg = sizeCatalog?.imageUrl?.trim() ?? '';
   const trimmedCategoryTitle = sizeCatalog?.categoryTitle?.trim() ?? '';
-  const normalizedCategoryPriceAmd =
-    sizeCatalog != null && Number.isFinite(sizeCatalog.categoryPriceAmd)
-      ? Math.max(0, Math.round(sizeCatalog.categoryPriceAmd))
-      : 0;
   const plain = customize?.plain?.trim() ?? '';
   const html = customize?.html?.trim() ?? '';
   const customRequest =
@@ -175,7 +171,7 @@ export function buildGuestCartLineSnapshot(
     sizeCatalogVersion: trimmedTitle !== '' && trimmedVersion !== '' ? trimmedVersion : null,
     sizeCatalogImageUrl: trimmedTitle !== '' && trimmedImg !== '' ? trimmedImg : null,
     sizeCatalogCategoryTitle: trimmedTitle !== '' && trimmedCategoryTitle !== '' ? trimmedCategoryTitle : null,
-    sizeCatalogCategoryPriceAmd: trimmedTitle !== '' ? normalizedCategoryPriceAmd : null,
+    sizeCatalogCategoryPriceAmd: null,
     customizePlain: plain !== '' ? plain : null,
     customizeHtml: html !== '' ? html : null,
     customSizeRequest: customRequest,

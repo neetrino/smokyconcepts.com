@@ -1,4 +1,4 @@
-import { adminInputAmdToUsd, catalogPriceToUsd } from '../../lib/currency';
+import { catalogPriceToUsd } from '../../lib/currency';
 import { logger } from '../../lib/services/utils/logger';
 import type { Cart, CartItem, GuestCartItem } from './types';
 import { CART_KEY } from './constants';
@@ -21,11 +21,7 @@ function cartItemFromGuestSnapshot(item: GuestCartItem, index: number): CartItem
     item.originalPrice != null && !Number.isNaN(item.originalPrice)
       ? catalogPriceToUsd(item.originalPrice)
       : null;
-  const sizeCatalogAddonAmd =
-    item.sizeCatalogCategoryPriceAmd != null && Number.isFinite(item.sizeCatalogCategoryPriceAmd)
-      ? Math.max(0, Math.round(item.sizeCatalogCategoryPriceAmd))
-      : 0;
-  const unitPriceUsd = priceUsd + adminInputAmdToUsd(sizeCatalogAddonAmd);
+  const unitPriceUsd = priceUsd;
   return {
     id: `${item.productId}-${variantId}-${index}`,
     variant: {
@@ -36,7 +32,7 @@ function cartItemFromGuestSnapshot(item: GuestCartItem, index: number): CartItem
       sizeCatalogVersion: item.sizeCatalogVersion ?? null,
       sizeCatalogImageUrl: item.sizeCatalogImageUrl ?? null,
       sizeCatalogCategoryTitle: item.sizeCatalogCategoryTitle ?? null,
-      sizeCatalogCategoryPriceAmd: sizeCatalogAddonAmd,
+      sizeCatalogCategoryPriceAmd: 0,
       customizePlain: item.customizePlain ?? null,
       customizeHtml: item.customizeHtml ?? null,
       customSizeRequest: item.customSizeRequest ?? null,
