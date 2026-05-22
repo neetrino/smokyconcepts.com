@@ -63,22 +63,8 @@ export function Footer() {
             </div>
           </div>
           <div className="order-3 flex flex-col items-center gap-4 lg:order-3 lg:items-end lg:text-right">
-            <p className="text-sm font-extrabold">{t('home.homepage.footer.designedBy')}</p>
             <div className="flex w-full flex-col items-center gap-8 lg:items-end">
-              <a
-                href={GAZZAR_STUDIO_HREF}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="relative h-12 w-24 transition-opacity hover:opacity-80"
-                aria-label="Gazzar Studio"
-              >
-                <img
-                  src={HOME_ASSET_PATHS.studioLogo}
-                  alt="Gazar Studio"
-                  className="h-full w-full object-contain object-center lg:object-right"
-                />
-              </a>
-              <div className="mt-2 flex max-w-[10rem] translate-x-1 flex-col items-center self-end sm:translate-x-2 lg:items-end">
+              <div className="flex max-w-[10rem] translate-x-1 flex-col items-center self-end sm:translate-x-2 lg:items-end">
                 <p className="mb-2 text-sm font-extrabold lg:-translate-x-6">{t('home.homepage.footer.createdBy')}</p>
                 <a
                   href={NEETRINO_PARTNER_HREF}
@@ -92,6 +78,22 @@ export function Footer() {
                     alt=""
                     className="h-6 w-full max-h-8 object-contain object-center lg:object-right"
                     aria-hidden="true"
+                  />
+                </a>
+              </div>
+              <div className="flex flex-col items-center lg:items-end">
+                <p className="mb-2 text-sm font-extrabold">{t('home.homepage.footer.designedBy')}</p>
+                <a
+                  href={GAZZAR_STUDIO_HREF}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative h-12 w-24 transition-opacity hover:opacity-80"
+                  aria-label="Gazzar Studio"
+                >
+                  <img
+                    src={HOME_ASSET_PATHS.studioLogo}
+                    alt="Gazar Studio"
+                    className="h-full w-full object-contain object-center lg:object-right"
                   />
                 </a>
               </div>
