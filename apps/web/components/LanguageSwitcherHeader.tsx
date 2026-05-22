@@ -11,23 +11,11 @@ const ChevronDownIcon = () => (
 
 type SwitcherVariant = 'header' | 'drawer';
 
-const getLanguageColor = (code: LanguageCode, isActive: boolean, variant: SwitcherVariant): string => {
-  if (variant === 'drawer') {
-    if (isActive) {
-      return 'bg-[#dcc090]/15 border-[#dcc090]/50';
-    }
-    return 'border-transparent bg-transparent';
-  }
+const getDrawerLanguageColor = (isActive: boolean): string => {
   if (isActive) {
-    const colors: Record<LanguageCode, string> = {
-      en: 'bg-blue-50 border-blue-200',
-      hy: 'bg-orange-50 border-orange-200',
-      ru: 'bg-red-50 border-red-200',
-      ka: 'bg-gray-100 border-gray-200',
-    };
-    return colors[code] || 'bg-gray-100 border-gray-200';
+    return 'bg-[#dcc090]/15 border-[#dcc090]/50';
   }
-  return 'bg-white border-transparent';
+  return 'border-transparent bg-transparent';
 };
 
 interface LanguageSwitcherHeaderProps {
@@ -112,7 +100,7 @@ export function LanguageSwitcherHeader({ variant = 'header' }: LanguageSwitcherH
           className={
             isDrawer
               ? 'mt-1 overflow-hidden rounded-lg border border-white/10 bg-[#0d1e1b] py-1'
-              : 'absolute right-0 top-full z-[60] mt-2 w-52 overflow-hidden rounded-lg border border-[#122a26]/10 bg-white shadow-2xl duration-200 animate-in fade-in slide-in-from-top-2'
+              : 'absolute right-0 top-full z-[60] mt-2 w-52 overflow-hidden rounded-lg border border-[#dcc090]/35 bg-[#122a26] py-1 shadow-2xl'
           }
           role="listbox"
         >
@@ -120,7 +108,7 @@ export function LanguageSwitcherHeader({ variant = 'header' }: LanguageSwitcherH
             .filter((lang) => lang.code !== 'ka')
             .map((lang) => {
               const isActive = currentLang === lang.code;
-              const colorClass = getLanguageColor(lang.code, isActive, variant);
+              const drawerColorClass = getDrawerLanguageColor(isActive);
 
               return (
                 <button
@@ -128,27 +116,25 @@ export function LanguageSwitcherHeader({ variant = 'header' }: LanguageSwitcherH
                   type="button"
                   onClick={() => changeLanguage(lang.code)}
                   disabled={isActive}
-                  className={`w-full border-l-4 px-4 py-3 text-left text-sm transition-all duration-150 ${
-                    isActive
-                      ? isDrawer
-                        ? `${colorClass} cursor-default font-semibold text-[#dcc090]`
-                        : `${colorClass} cursor-default font-semibold text-gray-900`
-                      : isDrawer
-                        ? 'cursor-pointer border-transparent text-[#dcc090]/85 hover:bg-white/5'
-                        : 'cursor-pointer border-transparent text-gray-700 hover:border-gray-200 hover:bg-gray-50'
+                  className={`w-full border-l-4 px-4 text-left transition-all ${
+                    isDrawer
+                      ? `py-3 text-sm duration-150 ${
+                          isActive
+                            ? `${drawerColorClass} cursor-default font-semibold text-[#dcc090]`
+                            : 'cursor-pointer border-transparent text-[#dcc090]/85 hover:bg-white/5'
+                        }`
+                      : `py-2.5 text-sm ${
+                          isActive
+                            ? 'cursor-default border-[#dcc090]/60 bg-[#dcc090]/15 font-extrabold text-[#dcc090]'
+                            : 'cursor-pointer border-transparent font-bold text-[#dcc090]/85 hover:bg-white/5 hover:text-[#dcc090]'
+                        }`
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className={isActive ? 'font-semibold' : 'font-medium'}>{lang.nativeName}</span>
                     <span
-                      className={`shrink-0 text-xs ${
-                        isActive
-                          ? isDrawer
-                            ? 'font-semibold text-[#dcc090]'
-                            : 'font-semibold text-gray-700'
-                          : isDrawer
-                            ? 'text-[#dcc090]/60'
-                            : 'text-gray-500'
+                      className={`shrink-0 text-xs uppercase tracking-[0.12em] ${
+                        isActive ? 'font-extrabold text-[#dcc090]' : 'text-[#dcc090]/60'
                       }`}
                     >
                       {lang.code.toUpperCase()}
