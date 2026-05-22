@@ -9,7 +9,6 @@ import type { CheckoutOrderSummaryTotals } from './types';
 interface OrderSummaryProps {
   orderSummary: CheckoutOrderSummaryTotals;
   shippingMethod: 'pickup' | 'delivery';
-  shippingRegion: string | undefined;
   loadingDeliveryPrice: boolean;
   deliveryPrice: number | null;
   error: string | null;
@@ -26,7 +25,6 @@ interface OrderSummaryProps {
 export function OrderSummary({
   orderSummary,
   shippingMethod,
-  shippingRegion,
   loadingDeliveryPrice,
   deliveryPrice,
   error,
@@ -111,10 +109,7 @@ export function OrderSummary({
                 : loadingDeliveryPrice
                   ? t('checkout.shipping.loading')
                   : deliveryPrice !== null
-                    ? formatCheckoutUsd(orderSummary.shippingDisplay) +
-                      (shippingRegion
-                        ? ` (${shippingRegion})`
-                        : ` (${t('checkout.shipping.delivery')})`)
+                    ? formatCheckoutUsd(orderSummary.shippingDisplay)
                     : t('checkout.shipping.enterRegion')}
             </span>
           </div>

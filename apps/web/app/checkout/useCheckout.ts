@@ -89,7 +89,6 @@ export function useCheckout() {
     [deliveryLocations, shippingRegion],
   );
 
-  const shippingRegionSummary = activeDeliveryLocation?.city ?? shippingRegion ?? '';
   const shippingCountrySummary = shippingCountry?.trim() || activeDeliveryLocation?.country;
 
   useEffect(() => {
@@ -303,8 +302,6 @@ export function useCheckout() {
     // Computed
     paymentMethod,
     shippingMethod,
-    shippingRegion,
-    shippingRegionSummary,
     selectedShippingCountry: shippingCountry,
     shippingCountry: shippingCountrySummary,
     paymentMethods,

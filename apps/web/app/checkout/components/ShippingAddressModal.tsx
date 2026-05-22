@@ -23,7 +23,6 @@ interface ShippingAddressModalProps {
   paymentMethod: 'idram' | 'arca' | 'cash_on_delivery';
   cart: Cart | null;
   orderSummary: CheckoutOrderSummaryTotals;
-  shippingRegion?: string;
   deliveryCountries: string[];
   filteredDeliveryLocations: DeliveryLocationOption[];
   selectedShippingCountry?: string;
@@ -45,7 +44,6 @@ export function ShippingAddressModal({
   paymentMethod,
   cart,
   orderSummary,
-  shippingRegion,
   deliveryCountries,
   filteredDeliveryLocations,
   selectedShippingCountry,
@@ -175,7 +173,6 @@ export function ShippingAddressModal({
               cart={cart}
               orderSummary={orderSummary}
               shippingMethod={shippingMethod}
-              shippingRegion={shippingRegion}
               loadingDeliveryPrice={loadingDeliveryPrice}
               deliveryPrice={deliveryPrice}
             />
@@ -215,7 +212,6 @@ export function ShippingAddressModal({
               cart={cart}
               orderSummary={orderSummary}
               shippingMethod={shippingMethod}
-              shippingRegion={shippingRegion}
               loadingDeliveryPrice={loadingDeliveryPrice}
               deliveryPrice={deliveryPrice}
             />

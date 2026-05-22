@@ -9,7 +9,6 @@ interface OrderSummaryModalProps {
   cart: Cart | null;
   orderSummary: CheckoutOrderSummaryTotals;
   shippingMethod: 'pickup' | 'delivery';
-  shippingRegion?: string;
   loadingDeliveryPrice: boolean;
   deliveryPrice: number | null;
 }
@@ -18,7 +17,6 @@ export function OrderSummaryModal({
   cart,
   orderSummary,
   shippingMethod,
-  shippingRegion,
   loadingDeliveryPrice,
   deliveryPrice,
 }: OrderSummaryModalProps) {
@@ -36,8 +34,7 @@ export function OrderSummaryModal({
     : loadingDeliveryPrice
       ? t('checkout.shipping.loading')
       : deliveryPrice !== null
-        ? formatCheckoutUsd(orderSummary.shippingDisplay) + 
-          (shippingRegion ? ` (${shippingRegion})` : ` (${t('checkout.shipping.delivery')})`)
+        ? formatCheckoutUsd(orderSummary.shippingDisplay)
         : t('checkout.shipping.enterRegion');
 
   return (

@@ -35,7 +35,6 @@ export default function CheckoutPage() {
     setValue,
     paymentMethod,
     shippingMethod,
-    shippingRegionSummary,
     selectedShippingCountry,
     deliveryCountries,
     filteredDeliveryLocations,
@@ -169,7 +168,6 @@ export default function CheckoutPage() {
             <OrderSummary
               orderSummary={orderSummary}
               shippingMethod={shippingMethod}
-              shippingRegion={shippingRegionSummary}
               loadingDeliveryPrice={loadingDeliveryPrice}
               deliveryPrice={deliveryPrice}
               error={error}
@@ -198,7 +196,6 @@ export default function CheckoutPage() {
         isSubmitting={isOrderInFlight}
         shippingMethod={shippingMethod}
         paymentMethod={paymentMethod}
-        shippingRegion={shippingRegionSummary}
         deliveryCountries={deliveryCountries}
         filteredDeliveryLocations={filteredDeliveryLocations}
         selectedShippingCountry={selectedShippingCountry}

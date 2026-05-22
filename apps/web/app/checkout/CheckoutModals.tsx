@@ -18,7 +18,6 @@ interface CheckoutModalsProps {
   isSubmitting: boolean;
   shippingMethod: 'pickup' | 'delivery';
   paymentMethod: 'idram' | 'arca' | 'cash_on_delivery';
-  shippingRegion: string | undefined;
   deliveryCountries: string[];
   filteredDeliveryLocations: DeliveryLocationOption[];
   selectedShippingCountry?: string;
@@ -44,7 +43,6 @@ export function CheckoutModals({
   isSubmitting,
   shippingMethod,
   paymentMethod,
-  shippingRegion,
   deliveryCountries,
   filteredDeliveryLocations,
   selectedShippingCountry,
@@ -71,7 +69,6 @@ export function CheckoutModals({
         paymentMethod={paymentMethod}
         cart={cart}
         orderSummary={orderSummary}
-        shippingRegion={shippingRegion}
         deliveryCountries={deliveryCountries}
         filteredDeliveryLocations={filteredDeliveryLocations}
         selectedShippingCountry={selectedShippingCountry}
@@ -91,7 +88,6 @@ export function CheckoutModals({
         isSubmitting={isSubmitting}
         paymentMethod={paymentMethod}
         shippingMethod={shippingMethod}
-        shippingRegion={shippingRegion}
         cart={cart}
         orderSummary={orderSummary}
         loadingDeliveryPrice={loadingDeliveryPrice}
