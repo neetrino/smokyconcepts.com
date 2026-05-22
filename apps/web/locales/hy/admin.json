@@ -804,6 +804,7 @@
     "ordersOnly": "Պատվերներ",
     "newOrders": "New",
     "earlyAccessOrders": "Early",
+    "ordersTotalCount": "{total} պատվեր",
     "allStatuses": "Բոլոր կարգավիճակները",
     "allPaymentStatuses": "Բոլոր վճարման կարգավիճակները",
     "pending": "Սպասվող",

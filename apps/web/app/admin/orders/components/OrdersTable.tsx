@@ -2,6 +2,11 @@
 
 import { useTranslation } from '../../../../lib/i18n-client';
 import { Card } from '@shop/ui';
+import {
+  PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS,
+  PRODUCTS_TABLE_HEADER_TH_STICKY_FIRST_CLASS,
+  PRODUCTS_TABLE_HEADER_TH_STICKY_LAST_CLASS,
+} from '../../products/constants/productsTable.constants';
 import { OrderRow } from './OrderRow';
 import { OrdersPagination } from './OrdersPagination';
 import type { Order } from '../useOrders';
@@ -46,6 +51,8 @@ export function OrdersTable({
   onPageChange,
 }: OrdersTableProps) {
   const { t } = useTranslation();
+  const headerTextClass =
+    'px-3 py-4 text-left text-[11px] font-black uppercase tracking-[0.1em] text-[#dcc090]';
 
   if (loading) {
     return (
@@ -69,7 +76,7 @@ export function OrdersTable({
   }
 
   return (
-    <Card className="overflow-hidden border-[#dcc090]/30 bg-white/85 p-2 shadow-[0_18px_50px_rgba(18,42,38,0.08)] sm:p-3">
+    <Card className="border-[#dcc090]/30 bg-white/85 p-2 shadow-[0_18px_50px_rgba(18,42,38,0.08)] sm:p-3">
       <div className="rounded-[1.15rem]">
         <table className="w-full table-fixed border-separate border-spacing-y-2">
           <colgroup>
@@ -82,9 +89,9 @@ export function OrdersTable({
             <col className="w-[14%]" />
             <col className="w-[10.5%]" />
           </colgroup>
-          <thead>
+          <thead className="bg-[#122a26]">
             <tr>
-              <th className="rounded-l-xl bg-[#122a26] px-3 py-4 shadow-[0_10px_24px_rgba(18,42,38,0.12)]">
+              <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_FIRST_CLASS} px-3 py-4`}>
                 <input
                   type="checkbox"
                   aria-label={t('admin.orders.selectAllOrders')}
@@ -93,14 +100,14 @@ export function OrdersTable({
                   className="h-4 w-4 rounded border-[#dcc090]/60 bg-white text-[#122a26] focus:ring-[#dcc090]"
                 />
               </th>
-              <th className="bg-[#122a26] px-3 py-4 text-left text-[11px] font-black uppercase tracking-[0.1em] text-[#dcc090] shadow-[0_10px_24px_rgba(18,42,38,0.12)]">
+              <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS} ${headerTextClass}`}>
                 {t('admin.orders.orderNumber')}
               </th>
-              <th className="bg-[#122a26] px-3 py-4 text-left text-[11px] font-black uppercase tracking-[0.1em] text-[#dcc090] shadow-[0_10px_24px_rgba(18,42,38,0.12)]">
+              <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS} ${headerTextClass}`}>
                 {t('admin.orders.customer')}
               </th>
               <th
-                className="cursor-pointer select-none bg-[#122a26] px-3 py-4 text-left text-[11px] font-black uppercase tracking-[0.1em] text-[#dcc090] shadow-[0_10px_24px_rgba(18,42,38,0.12)] transition-colors hover:bg-[#18352f]"
+                className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS} cursor-pointer select-none ${headerTextClass} transition-colors hover:bg-[#18352f]`}
                 onClick={() => onSort('total')}
               >
                 <div className="flex items-center gap-1">
@@ -123,17 +130,17 @@ export function OrdersTable({
                   </div>
                 </div>
               </th>
-              <th className="bg-[#122a26] px-3 py-4 text-left text-[11px] font-black uppercase tracking-[0.1em] text-[#dcc090] shadow-[0_10px_24px_rgba(18,42,38,0.12)]">
+              <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS} ${headerTextClass}`}>
                 {t('admin.orders.orderDetails.colorSize')}
               </th>
-              <th className="bg-[#122a26] px-3 py-4 text-left text-[11px] font-black uppercase tracking-[0.1em] text-[#dcc090] shadow-[0_10px_24px_rgba(18,42,38,0.12)]">
+              <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS} ${headerTextClass}`}>
                 {t('admin.orders.status')}
               </th>
-              <th className="bg-[#122a26] px-3 py-4 text-left text-[11px] font-black uppercase tracking-[0.1em] text-[#dcc090] shadow-[0_10px_24px_rgba(18,42,38,0.12)]">
+              <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS} ${headerTextClass}`}>
                 {t('admin.orders.payment')}
               </th>
               <th
-                className="cursor-pointer select-none rounded-r-xl bg-[#122a26] px-3 py-4 text-left text-[11px] font-black uppercase tracking-[0.1em] text-[#dcc090] shadow-[0_10px_24px_rgba(18,42,38,0.12)] transition-colors hover:bg-[#18352f]"
+                className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_LAST_CLASS} cursor-pointer select-none ${headerTextClass} transition-colors hover:bg-[#18352f]`}
                 onClick={() => onSort('createdAt')}
               >
                 <div className="flex items-center gap-1">

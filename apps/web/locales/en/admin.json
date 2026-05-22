@@ -804,6 +804,7 @@
     "ordersOnly": "Orders",
     "newOrders": "New",
     "earlyAccessOrders": "Early",
+    "ordersTotalCount": "{total} orders",
     "allStatuses": "All Statuses",
     "allPaymentStatuses": "All Payment Statuses",
     "pending": "Pending",

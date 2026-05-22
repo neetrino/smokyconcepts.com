@@ -62,6 +62,7 @@ export function OrdersPageContent() {
             setPage={setPage}
             router={router}
             searchParams={searchParams}
+            totalOrders={meta?.total ?? null}
           />
 
           <BulkSelectionControls

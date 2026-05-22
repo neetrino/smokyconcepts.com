@@ -800,6 +800,7 @@
     "ordersOnly": "Заказы",
     "newOrders": "New",
     "earlyAccessOrders": "Early",
+    "ordersTotalCount": "{total} заказов",
     "allStatuses": "Все статусы",
     "allPaymentStatuses": "Все статусы оплаты",
     "pending": "Ожидает",
