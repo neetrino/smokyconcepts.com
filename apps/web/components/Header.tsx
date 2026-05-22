@@ -162,7 +162,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-[#122a26]">
       <div className="mx-auto flex max-w-[120rem] flex-col px-4 sm:px-8 lg:px-[7.5rem]">
-        <div className="flex h-16 items-center justify-between py-3">
+        <div className="flex h-16 items-center py-3">
           <Link href="/" className="relative h-10 w-40 shrink-0">
             <img
               src={HEADER_ASSET_PATHS.logo}
@@ -170,8 +170,11 @@ export function Header() {
               className="h-full w-full object-contain object-left"
             />
           </Link>
-          {renderNavLinks('hidden items-center gap-10 md:flex', NAVIGATION_ITEMS)}
-          <div className="flex items-center gap-3 md:gap-[1.8125rem]">
+          {renderNavLinks(
+            'hidden flex-1 items-center justify-center gap-10 pl-10 md:flex lg:pl-20 xl:pl-28',
+            NAVIGATION_ITEMS,
+          )}
+          <div className="ml-auto flex shrink-0 items-center gap-3">
             <div className={`${HEADER_UTILITIES_ROW_CLASS} gap-3 md:hidden`}>
               <HeaderCartButton cartCount={cartCount} cartReady={cartReady} />
               <HeaderDesktopAccount />
