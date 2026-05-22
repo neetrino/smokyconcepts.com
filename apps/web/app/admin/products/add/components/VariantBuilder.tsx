@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, type ChangeEvent, type RefObject } from 'react';
-import { Button } from '@shop/ui';
 import { useTranslation } from '../../../../../lib/i18n-client';
 import type { GeneratedVariant } from '../types';
 import type { CategoryAttribute } from '@/lib/category-attributes';
@@ -55,7 +54,6 @@ export function VariantBuilder({
   generateSlug,
 }: VariantBuilderProps) {
   const { t } = useTranslation();
-  const [isAttributeSelectionSectionOpen, setIsAttributeSelectionSectionOpen] = useState(false);
   const [attributeCombinationError, setAttributeCombinationError] = useState<string | null>(null);
   const hasAttributeDrivenVariants = categoryAttributes.length > 0;
   const sizeAttribute = categoryAttributes.find((attribute) => attribute.key === SIZE_ATTRIBUTE_KEY);
@@ -158,72 +156,45 @@ export function VariantBuilder({
       <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('admin.products.add.variantBuilder')}</h2>
       <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-6">
         {hasAttributeDrivenVariants ? (
-          <div className="overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-            <button
-              type="button"
-              onClick={() => setIsAttributeSelectionSectionOpen((open) => !open)}
-              aria-expanded={isAttributeSelectionSectionOpen}
-              className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-gray-100/80"
-            >
-              <span className="text-base font-semibold text-gray-900">
-                {t('admin.products.add.selectAttributesSectionTitle')}
-              </span>
-              <svg
-                className={`h-5 w-5 shrink-0 text-gray-500 transition-transform duration-200 ${isAttributeSelectionSectionOpen ? 'rotate-180' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <p className="text-sm font-semibold text-gray-900">
+              {t('admin.products.add.selectAttributesSectionTitle')}
+            </p>
+            <p className="mt-1 text-xs text-gray-500">{t('admin.products.add.selectAttributesDescription')}</p>
 
-            {isAttributeSelectionSectionOpen ? (
-              <div className="space-y-4 border-t border-gray-200 p-4">
-                <div>
-                  <p className="text-sm text-gray-500">{t('admin.products.add.selectAttributesDescription')}</p>
-                </div>
-
-                <div className="space-y-3">
-                  {attributeToggles.map((attribute) => {
-                    const enabled = enabledAttributeIds[attribute.id] === true;
-                    return (
-                      <div key={attribute.id} className="rounded-lg border border-gray-200 bg-white p-3">
-                        <label className="flex cursor-pointer items-start gap-3">
-                          <input
-                            type="checkbox"
-                            checked={enabled}
-                            onChange={(e) => handleToggleAttributeEnabled(attribute.id, e.target.checked)}
-                            className="mt-1 h-4 w-4 rounded border-[#dcc090]/40 text-[#122a26] focus:ring-[#dcc090]"
-                          />
-                          <div className="min-w-0 flex-1">
-                            <p className="font-medium text-gray-900">{attribute.title}</p>
-                            <p className="text-xs uppercase tracking-wide text-gray-400">{attribute.key}</p>
-                            {enabled ? (
-                              <p className="mt-1 text-xs text-gray-500">
-                                {t('admin.products.add.attributeValuesPickInTableHint')}
-                              </p>
-                            ) : null}
-                          </div>
-                        </label>
+            <div className="mt-3 flex flex-wrap gap-2.5 sm:gap-3">
+              {attributeToggles.map((attribute) => {
+                const enabled = enabledAttributeIds[attribute.id] === true;
+                return (
+                  <div
+                    key={attribute.id}
+                    className="min-w-[8.5rem] max-w-[11rem] flex-1 rounded-md border border-gray-200 bg-white px-2.5 py-2 sm:min-w-[9.5rem]"
+                  >
+                    <label className="flex cursor-pointer items-start gap-2">
+                      <input
+                        type="checkbox"
+                        checked={enabled}
+                        onChange={(e) => handleToggleAttributeEnabled(attribute.id, e.target.checked)}
+                        className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded border-[#dcc090]/40 text-[#122a26] focus:ring-[#dcc090]"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium leading-tight text-gray-900">{attribute.title}</p>
+                        <p className="text-[10px] uppercase tracking-wide text-gray-400">{attribute.key}</p>
+                        {enabled ? (
+                          <p className="mt-1 text-[10px] leading-snug text-gray-500">
+                            {t('admin.products.add.attributeValuesPickInTableHint')}
+                          </p>
+                        ) : null}
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
+                    </label>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         ) : null}
 
-        {generatedVariants.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-600 mb-4">{t('admin.products.add.noVariants') || 'No variants yet. Add one to start.'}</p>
-            <Button type="button" variant="outline" onClick={onVariantAdd}>
-              {t('admin.products.add.addVariant') || 'Add variant'}
-            </Button>
-          </div>
-        ) : (
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
           <VariantBuilderVariantsTable
             generatedVariants={generatedVariants}
             hasAttributeDrivenVariants={hasAttributeDrivenVariants}
@@ -241,7 +212,7 @@ export function VariantBuilder({
             getVariantOptionLabel={getVariantOptionLabel}
             generateSlug={generateSlug}
           />
-        )}
+        </div>
       </div>
     </div>
   );

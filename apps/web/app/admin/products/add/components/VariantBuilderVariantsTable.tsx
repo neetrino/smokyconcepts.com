@@ -133,6 +133,16 @@ export function VariantBuilderVariantsTable({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
+            {generatedVariants.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={SHOW_COMPARE_AT_PRICE_FIELD ? 7 : 6}
+                  className="px-4 py-8 text-center text-sm text-gray-500"
+                >
+                  {t('admin.products.add.noVariants')}
+                </td>
+              </tr>
+            ) : null}
             {generatedVariants.map((variant) => (
               <tr key={variant.id} className="hover:bg-gray-50">
                 <td className="px-2 py-2 align-top">
