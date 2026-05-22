@@ -39,6 +39,10 @@ export function resolveStripPageFromScrollAnchors(
  * Horizontal scroll offset so ~half of the first strip card sits left of the viewport (peek hint).
  */
 /** Clamped scrollLeft that aligns a page-start anchor with the strip viewport start. */
+export function getCatalogStripMaxScrollLeft(container: HTMLElement): number {
+  return Math.max(0, container.scrollWidth - container.clientWidth);
+}
+
 export function getClampedMobileStripScrollTarget(
   container: HTMLElement,
   anchor: HTMLElement
@@ -72,19 +76,27 @@ export function scrollMobileStripToPageAnchor(
 
 /**
  * Scroll target for a catalog/upcoming strip page (page 0 respects max-lg peek).
+ * Last page scrolls to the strip end so the final cards align flush on the right.
  */
 export function getCatalogStripScrollLeftForPage(
   container: HTMLElement,
   pageIndex: number,
-  pageStartAnchors: Array<HTMLElement | null | undefined>
+  pageStartAnchors: Array<HTMLElement | null | undefined>,
+  totalPages?: number
 ): number {
+  const maxScrollLeft = getCatalogStripMaxScrollLeft(container);
+
+  if (totalPages !== undefined && totalPages > 1 && pageIndex >= totalPages - 1) {
+    return maxScrollLeft;
+  }
+
   if (pageIndex <= 0) {
     return getCatalogStripPeekStartScroll(container);
   }
 
   const anchor = pageStartAnchors[pageIndex];
   if (!anchor) {
-    return 0;
+    return maxScrollLeft;
   }
 
   return getClampedMobileStripScrollTarget(container, anchor);

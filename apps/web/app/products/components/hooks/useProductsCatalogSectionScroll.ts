@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { CATALOG_SECTION_PAGE_SIZE, type CatalogProduct } from '../catalogProductLabels';
 import {
+  getCatalogStripMaxScrollLeft,
   getCatalogStripPeekStartScroll,
   getCatalogStripScrollLeftForPage,
   scrollMobileStripToPageAnchor,
@@ -160,11 +161,24 @@ export function useProductsCatalogSectionScroll({
       let targetScrollLeft = 0;
 
       const pageAnchors = sectionPageStartRefs.current[title] ?? [];
+      const itemCount = sectionItemsByTitle[title]?.length ?? 0;
+      const totalPages = Math.max(1, Math.ceil(itemCount / cardsPerPage));
+      const isLastPage = totalPages > 1 && pageIndex >= totalPages - 1;
 
       if (!isSmUp) {
-        targetScrollLeft = scrollMobileStripToPageAnchor(container, pageAnchors[pageIndex]);
+        targetScrollLeft = isLastPage
+          ? getCatalogStripMaxScrollLeft(container)
+          : scrollMobileStripToPageAnchor(container, pageAnchors[pageIndex]);
+        if (isLastPage) {
+          container.scrollTo({ left: targetScrollLeft, behavior: 'auto' });
+        }
       } else {
-        targetScrollLeft = getCatalogStripScrollLeftForPage(container, pageIndex, pageAnchors);
+        targetScrollLeft = getCatalogStripScrollLeftForPage(
+          container,
+          pageIndex,
+          pageAnchors,
+          totalPages
+        );
       }
 
       sectionProgrammaticScrollRef.current[title] = true;
@@ -221,6 +235,12 @@ export function useProductsCatalogSectionScroll({
     };
 
     if (!isSmUp) {
+      const maxScrollLeft = getCatalogStripMaxScrollLeft(container);
+      if (container.scrollLeft >= maxScrollLeft - CATALOG_SCROLL_TARGET_TOLERANCE_PX) {
+        commitPage(section.totalPages - 1);
+        return;
+      }
+
       const idleTimer = sectionScrollIdleTimerRef.current[title];
       if (idleTimer) {
         clearTimeout(idleTimer);
@@ -235,6 +255,12 @@ export function useProductsCatalogSectionScroll({
         const nextPage = resolveSectionPageFromScrollAnchors(container, anchors);
         commitPage(nextPage);
       }, CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS);
+      return;
+    }
+
+    const maxScrollLeft = getCatalogStripMaxScrollLeft(container);
+    if (container.scrollLeft >= maxScrollLeft - CATALOG_SCROLL_TARGET_TOLERANCE_PX) {
+      commitPage(section.totalPages - 1);
       return;
     }
 
