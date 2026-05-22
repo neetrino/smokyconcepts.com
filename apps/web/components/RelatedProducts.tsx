@@ -42,6 +42,7 @@ import {
   subscribeCatalogProductsSmViewport,
 } from '../app/products/components/catalogProductCardMobilePresentation';
 import {
+  CATALOG_SCROLL_TARGET_TOLERANCE_PX,
   CATALOG_STRIP_PEEK_MEDIA_QUERY,
   getCatalogStripPeekStartScroll,
   resolveStripPageFromScrollAnchors,
