@@ -1,4 +1,5 @@
 import { logger } from '../../lib/services/utils/logger';
+import { getCartDisplaySubtotalUsd, getCartLineTotalUsd } from './cart-line-pricing';
 import type { Cart, CartItem } from './types';
 import { CART_KEY } from './constants';
 
@@ -30,7 +31,7 @@ function parseItemId(itemId: string): { productId: string; variantId: string } |
  * Calculate cart totals
  */
 function calculateCartTotals(items: CartItem[], existingTotals: Cart['totals']): Cart['totals'] {
-  const newSubtotal = items.reduce((sum, item) => sum + item.total, 0);
+  const newSubtotal = getCartDisplaySubtotalUsd(items);
   return {
     ...existingTotals,
     subtotal: newSubtotal,
@@ -152,9 +153,9 @@ export async function handleUpdateQuantity(
 
   // Optimistic update: update UI immediately
   if (cart) {
-    const updatedItems = cart.items.map(item => 
-      item.id === itemId 
-        ? { ...item, quantity, total: item.price * quantity }
+    const updatedItems = cart.items.map((item) =>
+      item.id === itemId
+        ? { ...item, quantity, total: getCartLineTotalUsd({ ...item, quantity }) }
         : item
     );
     const newItemsCount = updatedItems.reduce((sum, item) => sum + item.quantity, 0);

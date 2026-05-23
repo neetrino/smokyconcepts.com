@@ -202,6 +202,7 @@ export function HeaderLocaleCurrencySwitcher({ variant = 'header' }: HeaderLocal
         >
           <HeaderIcon src={HEADER_ASSET_PATHS.currencyBanknote} alt="" className="h-[0.9375rem] w-6 object-contain" />
           <span className={`${HEADER_LABEL_CLASS} font-extrabold`}>{currentCurrency}</span>
+          <LanguageChevronDown open={openPanel === 'currency'} />
         </button>
         {openPanel === 'currency' ? (
           <div className="mt-1 overflow-hidden rounded-lg border border-white/10 bg-[#0d1e1b] py-1">{currencyMenu}</div>

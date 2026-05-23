@@ -142,14 +142,15 @@ export function buildGuestCartLineSnapshot(
   const trimmedImg = sizeCatalog?.imageUrl?.trim() ?? '';
   const trimmedCategoryTitle = sizeCatalog?.categoryTitle?.trim() ?? '';
   const categoryPriceRaw = sizeCatalog?.categoryPriceAmd;
-  const hasCollectionContext = trimmedCategoryTitle !== '' || trimmedTitle !== '';
-  const sizeCatalogCategoryPriceAmd =
-    hasCollectionContext &&
+  const hasCollectionPrice =
     typeof categoryPriceRaw === 'number' &&
     Number.isFinite(categoryPriceRaw) &&
-    categoryPriceRaw > 0
-      ? Math.round(categoryPriceRaw)
-      : null;
+    categoryPriceRaw > 0;
+  const hasCollectionContext =
+    trimmedCategoryTitle !== '' || trimmedTitle !== '' || hasCollectionPrice;
+  const sizeCatalogCategoryPriceAmd = hasCollectionContext && hasCollectionPrice
+    ? Math.round(categoryPriceRaw)
+    : null;
   const plain = customize?.plain?.trim() ?? '';
   const html = customize?.html?.trim() ?? '';
   const customRequest =
