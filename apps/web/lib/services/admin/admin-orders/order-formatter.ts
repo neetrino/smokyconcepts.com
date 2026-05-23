@@ -86,7 +86,6 @@ export function formatOrderForList(order: {
     total?: number | null;
     quantity?: number | null;
     sizeCatalogTitle?: string | null;
-    variant?: { price?: number | null } | null;
     sizeCatalogVersion?: string | null;
     sizeCatalogImageUrl?: string | null;
     variant?: {
@@ -432,6 +431,7 @@ export function formatOrderForDetail(order: {
     variant?: {
       id: string;
       sku: string | null;
+      price?: number | null;
       attributes?: unknown;
       product?: {
         id: string;

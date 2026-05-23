@@ -462,10 +462,10 @@ export function formatOrderListTotalDisplay(
 
   const summary = computeOrderSummaryDisplay(
     {
-      subtotal: order.subtotal,
-      discount: order.discountAmount,
-      shipping: order.shippingAmount,
-      tax: order.taxAmount,
+      subtotal: order.subtotal ?? 0,
+      discount: order.discountAmount ?? 0,
+      shipping: order.shippingAmount ?? 0,
+      tax: order.taxAmount ?? 0,
       total: order.total,
       currency: order.currency,
       collectionPriceAmount: order.collectionPriceAmount,

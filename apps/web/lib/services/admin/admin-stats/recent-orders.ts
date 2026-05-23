@@ -31,7 +31,7 @@ export async function getRecentOrders(limit: number = 5) {
     },
   });
 
-  return orders.map((order) => {
+  return orders.map((order: Parameters<typeof formatOrderForList>[0]) => {
     const formatted = formatOrderForList(order);
     return {
       id: formatted.id,
