@@ -24,7 +24,7 @@
     "subtotal": "Ենթագումար",
     "discount": "Զեղչ",
     "shipping": "Առաքում",
-    "collectionPrice": "Collection գին",
+    "collectionPrice": "Անհատականացում",
     "tax": "Հարկ",
     "total": "Ընդամենը",
     "loadingTotals": "Բեռնվում են գումարները..."
@@ -42,12 +42,14 @@
     "customization": "Անհատականացում",
     "customize_text": "Տեքստ",
     "version": "Տարբերակ",
-    "collection_price": "Collection գին",
+    "collection_price": "Անհատականացում",
     "customize_font": "Տառատեսակ",
     "customize_style": "Ձևաչափ",
     "customize_preview": "Նախադիտում",
     "sku": "SKU: {sku}",
-    "quantity": "Քանակ: {price}"
+    "quantity": "Քանակ: {quantity}",
+    "unitPrice": "Միավորի գին: {price}",
+    "lineTotal": "Ընդամենը տող: {price}"
   }
 }
 

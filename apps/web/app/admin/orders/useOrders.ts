@@ -20,6 +20,13 @@ export interface Order {
   taxAmount?: number;
   collectionPriceAmount?: number;
   currency: string;
+  shippingPriceAmd?: number | null;
+  summaryLines?: Array<{
+    price: number;
+    quantity: number;
+    sizeCatalogCategoryPriceAmd?: number | null;
+    variantBasePriceAmd?: number | null;
+  }>;
   customerEmail: string;
   customerPhone: string;
   customerFirstName?: string;
@@ -77,6 +84,7 @@ export interface OrderDetails {
   billingAddress?: any | null;
   shippingAddress?: any | null;
   shippingMethod?: string | null;
+  shippingPriceAmd?: number | null;
   notes?: string | null;
   adminNotes?: string | null;
   payment?: {

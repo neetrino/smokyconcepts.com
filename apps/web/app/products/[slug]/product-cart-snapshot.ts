@@ -141,6 +141,15 @@ export function buildGuestCartLineSnapshot(
   const trimmedVersion = sizeCatalog?.version?.trim() ?? '';
   const trimmedImg = sizeCatalog?.imageUrl?.trim() ?? '';
   const trimmedCategoryTitle = sizeCatalog?.categoryTitle?.trim() ?? '';
+  const categoryPriceRaw = sizeCatalog?.categoryPriceAmd;
+  const hasCollectionContext = trimmedCategoryTitle !== '' || trimmedTitle !== '';
+  const sizeCatalogCategoryPriceAmd =
+    hasCollectionContext &&
+    typeof categoryPriceRaw === 'number' &&
+    Number.isFinite(categoryPriceRaw) &&
+    categoryPriceRaw > 0
+      ? Math.round(categoryPriceRaw)
+      : null;
   const plain = customize?.plain?.trim() ?? '';
   const html = customize?.html?.trim() ?? '';
   const customRequest =
@@ -170,8 +179,8 @@ export function buildGuestCartLineSnapshot(
     sizeCatalogTitle: trimmedTitle !== '' ? trimmedTitle : null,
     sizeCatalogVersion: trimmedTitle !== '' && trimmedVersion !== '' ? trimmedVersion : null,
     sizeCatalogImageUrl: trimmedTitle !== '' && trimmedImg !== '' ? trimmedImg : null,
-    sizeCatalogCategoryTitle: trimmedTitle !== '' && trimmedCategoryTitle !== '' ? trimmedCategoryTitle : null,
-    sizeCatalogCategoryPriceAmd: null,
+    sizeCatalogCategoryTitle: trimmedCategoryTitle !== '' ? trimmedCategoryTitle : null,
+    sizeCatalogCategoryPriceAmd,
     customizePlain: plain !== '' ? plain : null,
     customizeHtml: html !== '' ? html : null,
     customSizeRequest: customRequest,

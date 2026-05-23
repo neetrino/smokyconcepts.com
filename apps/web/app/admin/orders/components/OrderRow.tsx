@@ -1,21 +1,18 @@
 'use client';
 
 import { useTranslation } from '../../../../lib/i18n-client';
+import { useCurrencyRatesReady } from '../../../../components/hooks/useCurrency';
+import { ADMIN_PRICE_CURRENCY, type CurrencyCode } from '../../../../lib/currency';
 import {
-  ADMIN_PRICE_CURRENCY,
-  amountToUsd,
-  convertPrice,
-  formatPriceInCurrency,
-  formatStoredMoney,
-} from '../../../../lib/currency';
+  formatOrderListShippingDisplay,
+  formatOrderListTotalDisplay,
+} from '@/lib/orders/order-summary-display';
 import {
   getAdminOrderPaymentRowSelectClassNames,
   getAdminOrderStatusRowSelectClassNames,
   getColorValue,
 } from '../utils/orderUtils';
 import type { Order } from '../useOrders';
-
-const LEGACY_COLLECTION_AMD_PER_USD = 400;
 
 interface OrderRowProps {
   order: Order;
@@ -41,39 +38,11 @@ export function OrderRow({
   onPaymentStatusChange,
 }: OrderRowProps) {
   const { t } = useTranslation();
-  const shippingUsd = amountToUsd(order.shippingAmount || 0, order.currency);
-  const shippingDisplay =
-    shippingUsd > 0 ? formatStoredMoney(shippingUsd, 'USD', ADMIN_PRICE_CURRENCY) : null;
+  useCurrencyRatesReady();
 
-  const calculateOrderTotal = () => {
-    const collectionUsd = amountToUsd(order.collectionPriceAmount || 0, 'USD');
-    const collectionDisplay = collectionUsd * LEGACY_COLLECTION_AMD_PER_USD;
+  const shippingDisplay = formatOrderListShippingDisplay(order, ADMIN_PRICE_CURRENCY as CurrencyCode);
 
-    if (
-      order.subtotal !== undefined &&
-      order.discountAmount !== undefined &&
-      order.shippingAmount !== undefined &&
-      order.taxAmount !== undefined
-    ) {
-      const subtotalUsd = amountToUsd(order.subtotal, order.currency);
-      const discountUsd = amountToUsd(order.discountAmount, order.currency);
-      const shippingUsd = amountToUsd(order.shippingAmount, order.currency);
-      const taxUsd = amountToUsd(order.taxAmount, order.currency);
-      const totalWithoutCollectionUsd =
-        subtotalUsd - discountUsd + shippingUsd + taxUsd - collectionUsd;
-      const totalDisplay =
-        convertPrice(totalWithoutCollectionUsd, 'USD', ADMIN_PRICE_CURRENCY) +
-        collectionDisplay;
-      return formatPriceInCurrency(totalDisplay, ADMIN_PRICE_CURRENCY);
-    }
-
-    const totalWithoutCollectionUsd =
-      amountToUsd(order.total, order.currency) - collectionUsd;
-    const totalDisplay =
-      convertPrice(totalWithoutCollectionUsd, 'USD', ADMIN_PRICE_CURRENCY) +
-      collectionDisplay;
-    return formatPriceInCurrency(totalDisplay, ADMIN_PRICE_CURRENCY);
-  };
+  const orderTotalDisplay = formatOrderListTotalDisplay(order, ADMIN_PRICE_CURRENCY as CurrencyCode);
 
   const previews = order.colorSizePreviews || [];
 
@@ -114,7 +83,7 @@ export function OrderRow({
       </td>
       <td className="whitespace-nowrap border-y border-[#dcc090]/25 bg-white/95 px-3 py-3 transition-all duration-200 group-hover:border-[#dcc090] group-hover:bg-[#fffaf0]">
         <div className="flex flex-col">
-          <span className="text-sm font-black text-[#122a26]">{calculateOrderTotal()}</span>
+          <span className="text-sm font-black text-[#122a26]">{orderTotalDisplay}</span>
           {shippingDisplay ? (
             <span className="text-xs text-[#414141]/60">
               {t('orders.orderSummary.shipping')}: {shippingDisplay}

@@ -11,6 +11,8 @@ export interface CheckoutData {
     sizeCatalogTitle?: string;
     sizeCatalogVersion?: string;
     sizeCatalogImageUrl?: string;
+    /** Collection title (e.g. Ultra Slims) — used to resolve customize price server-side */
+    sizeCatalogCategoryTitle?: string;
     sizeCatalogCategoryPriceAmd?: number;
     /** PDP text customize (optional; sanitized server-side) */
     customizePlain?: string;

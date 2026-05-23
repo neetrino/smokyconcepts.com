@@ -1,6 +1,13 @@
 import { db } from "@white-shop/db";
 import { Prisma } from "@prisma/client";
-import { adminInputAmdToUsd, catalogPriceToUsd } from "@/lib/currency";
+import {
+  adminInputAmdToUsd,
+  catalogPriceForStorefront,
+  catalogPriceToUsd,
+  persistedOrderMoneyToUsd,
+} from "@/lib/currency";
+import { resolveCollectionSurchargeUsd } from "@/lib/orders/resolve-collection-surcharge-usd";
+import { resolveOrderShippingPriceAmd, buildOrderSummaryLinesFromPersistedItems } from "@/lib/orders/order-summary-display";
 import { filterDisplayableVariantOptions } from "@/lib/default-pricing-variant";
 import type { CheckoutData } from "../types/checkout";
 import {
@@ -19,6 +26,10 @@ import {
 import { logger } from "./utils/logger";
 import { adminDeliveryService } from "./admin/admin-delivery.service";
 import { tryApplyCoupon } from "./coupon.service";
+import {
+  buildSizeCatalogPriceAmdByTitle,
+  resolveSizeCatalogCategoryPriceAmd,
+} from "@/lib/size-catalog/resolve-size-catalog-category-price-amd";
 
 type ProductVariantWithProduct = Prisma.ProductVariantGetPayload<{
   include: {
@@ -103,42 +114,6 @@ async function resolveEarlyAccessForCheckoutLine(productId: string, requested: b
 
 function getVariantOptions(attributes: unknown): VariantOptionFromAttributes[] {
   return Array.isArray(attributes) ? (attributes as VariantOptionFromAttributes[]) : [];
-}
-
-function resolveCollectionSurchargeUsd(
-  item: {
-    quantity: number | null;
-    price?: number | null;
-    total?: number | null;
-    sizeCatalogTitle?: string | null;
-    variant?: { price?: number | null } | null;
-  },
-  sizeCatalogPriceByTitle: Map<string, number>
-): number {
-  const quantity = Math.max(0, Number(item.quantity ?? 0));
-  if (quantity === 0) return 0;
-
-  const itemUnitPrice = Number(item.price ?? Number.NaN);
-  const variantBasePriceUsd = catalogPriceToUsd(Number(item.variant?.price ?? Number.NaN));
-  if (Number.isFinite(itemUnitPrice) && Number.isFinite(variantBasePriceUsd)) {
-    const perUnitSurcharge = Math.max(0, itemUnitPrice - variantBasePriceUsd);
-    if (perUnitSurcharge > 0) {
-      return perUnitSurcharge * quantity;
-    }
-  }
-
-  const normalizedTitle = normalizeSizeCatalogTitleLookup(item.sizeCatalogTitle);
-  const mappedSurchargeAmd = normalizedTitle !== '' ? (sizeCatalogPriceByTitle.get(normalizedTitle) ?? 0) : 0;
-  if (mappedSurchargeAmd > 0) {
-    return adminInputAmdToUsd(mappedSurchargeAmd) * quantity;
-  }
-
-  const itemTotal = Number(item.total ?? Number.NaN);
-  if (!Number.isFinite(itemTotal) || !Number.isFinite(variantBasePriceUsd)) {
-    return 0;
-  }
-  const baseTotal = variantBasePriceUsd * quantity;
-  return Math.max(0, itemTotal - baseTotal);
 }
 
 // Media type helper
@@ -271,6 +246,15 @@ class OrdersService {
         earlyAccess: boolean;
       }> = [];
 
+      const sizeCatalogPriceAmdByTitle =
+        guestItems && guestItems.length > 0
+          ? buildSizeCatalogPriceAmdByTitle(
+              await db.sizeCatalogCategory.findMany({
+                select: { title: true, priceAmd: true },
+              })
+            )
+          : new Map<string, number>();
+
       if (guestItems && Array.isArray(guestItems) && guestItems.length > 0) {
         // Get items from checkout request (localStorage cart)
         cartItems = await Promise.all(
@@ -283,6 +267,7 @@ class OrdersService {
               sizeCatalogTitle?: string;
               sizeCatalogVersion?: string;
               sizeCatalogImageUrl?: string;
+              sizeCatalogCategoryTitle?: string;
               sizeCatalogCategoryPriceAmd?: number;
               customizePlain?: string;
               customizeHtml?: string;
@@ -391,7 +376,14 @@ class OrdersService {
               sizeCatalogTitle !== undefined
                 ? sanitizeCheckoutImageUrl(item.sizeCatalogImageUrl)
                 : undefined;
-            const sizeCatalogCategoryPriceAmd = 0;
+            const sizeCatalogCategoryPriceAmd = resolveSizeCatalogCategoryPriceAmd({
+              categoryTitle:
+                typeof item.sizeCatalogCategoryTitle === 'string'
+                  ? item.sizeCatalogCategoryTitle
+                  : undefined,
+              clientPriceAmd: item.sizeCatalogCategoryPriceAmd,
+              priceAmdByCategoryTitle: sizeCatalogPriceAmdByTitle,
+            });
 
             if (rawCustomRequest) {
               const name = typeof rawCustomRequest.name === 'string' ? rawCustomRequest.name.trim() : '';
@@ -557,11 +549,13 @@ class OrdersService {
         orderCouponCode = applied.code;
       }
       let shippingAmount = 0;
+      let deliveryPriceAmd: number | null = null;
       if (shippingMethod === "delivery" && shippingAddress) {
         const shipCity = checkoutShippingCity(shippingAddress);
         const shipCountry = checkoutShippingCountry(shippingAddress);
         if (shipCity) {
           const priceAmd = await adminDeliveryService.getDeliveryPrice(shipCity, shipCountry, subtotal);
+          deliveryPriceAmd = priceAmd;
           shippingAmount = adminInputAmdToUsd(priceAmd);
         }
       }
@@ -572,6 +566,9 @@ class OrdersService {
           ? {
               ...shippingAddress,
               phone: shippingAddress.phone || phone,
+              ...(deliveryPriceAmd != null && deliveryPriceAmd > 0
+                ? { deliveryPriceAmd }
+                : {}),
             }
           : shippingAddress;
       const firstCustomSizeRequest =
@@ -894,19 +891,29 @@ class OrdersService {
         shippingAmount: number;
         taxAmount: number;
         currency: string;
+        shippingAddress?: unknown;
         createdAt: Date;
         items: Array<{
           id: string;
+          price: number | null;
           quantity: number | null;
           total: number | null;
           sizeCatalogTitle: string | null;
           variant?: { price?: number | null } | null;
         }>;
-      }) => ({
+      }) => {
+        const summaryLines = buildOrderSummaryLinesFromPersistedItems(
+          order.items,
+          order.currency,
+          sizeCatalogPriceByTitle
+        );
+        const shippingPriceAmd = resolveOrderShippingPriceAmd(order.shippingAddress);
+
+        return {
         collectionPriceAmount: Number(
           order.items
             .reduce((sum, item) => {
-              return sum + resolveCollectionSurchargeUsd(item, sizeCatalogPriceByTitle);
+              return sum + resolveCollectionSurchargeUsd(item, sizeCatalogPriceByTitle, order.currency);
             }, 0)
             .toFixed(2)
         ),
@@ -915,15 +922,18 @@ class OrdersService {
         status: order.status,
         paymentStatus: order.paymentStatus,
         fulfillmentStatus: order.fulfillmentStatus,
-        total: order.total,
-        subtotal: order.subtotal,
-        discountAmount: order.discountAmount,
-        shippingAmount: order.shippingAmount,
-        taxAmount: order.taxAmount,
-        currency: order.currency,
+        total: persistedOrderMoneyToUsd(Number(order.total), order.currency),
+        subtotal: persistedOrderMoneyToUsd(Number(order.subtotal), order.currency),
+        discountAmount: persistedOrderMoneyToUsd(Number(order.discountAmount), order.currency),
+        shippingAmount: persistedOrderMoneyToUsd(Number(order.shippingAmount), order.currency),
+        taxAmount: persistedOrderMoneyToUsd(Number(order.taxAmount), order.currency),
+        currency: 'USD',
+        shippingPriceAmd,
+        summaryLines,
         createdAt: order.createdAt,
         itemsCount: order.items.length,
-      })),
+      };
+      }),
     };
   }
 
@@ -1063,8 +1073,24 @@ class OrdersService {
         });
 
         const normalizedTitle = normalizeSizeCatalogTitleLookup(item.sizeCatalogTitle);
-        const sizeCatalogCategoryPriceAmd =
+        const mappedCollectionPriceAmd =
           normalizedTitle !== '' ? (sizeCatalogPriceByTitle.get(normalizedTitle) ?? null) : null;
+        const unitPriceUsd = persistedOrderMoneyToUsd(Number(item.price), order.currency);
+        const variantBaseUsd = catalogPriceToUsd(Number(item.variant?.price ?? Number.NaN));
+        const usdPerAmd = adminInputAmdToUsd(1);
+        const inferredCollectionPriceAmd =
+          Number.isFinite(variantBaseUsd) &&
+          Number.isFinite(unitPriceUsd) &&
+          Number.isFinite(usdPerAmd) &&
+          usdPerAmd > 0
+            ? Math.max(0, Math.round((unitPriceUsd - variantBaseUsd) / usdPerAmd))
+            : null;
+        const sizeCatalogCategoryPriceAmd =
+          inferredCollectionPriceAmd ?? mappedCollectionPriceAmd ?? null;
+        const variantBasePriceAmd =
+          item.variant?.price != null
+            ? catalogPriceForStorefront(Number(item.variant.price))
+            : null;
 
         return {
           variantId: item.variantId || '',
@@ -1072,35 +1098,36 @@ class OrdersService {
           variantTitle: item.variantTitle || '',
           sku: item.sku,
           quantity: item.quantity,
-          price: Number(item.price),
-          total: Number(item.total),
+          price: persistedOrderMoneyToUsd(Number(item.price), order.currency),
+          total: persistedOrderMoneyToUsd(Number(item.total), order.currency),
           imageUrl: item.imageUrl || undefined,
           variantOptions,
           sizeCatalogVersion: item.sizeCatalogVersion?.trim() || undefined,
           sizeCatalogCategoryPriceAmd,
+          variantBasePriceAmd,
           customizePlain: item.customizePlain?.trim() || undefined,
           customizeHtml: item.customizeHtml?.trim() || undefined,
         };
       }),
       totals: {
-        subtotal: Number(order.subtotal),
-        discount: Number(order.discountAmount),
-        shipping: Number(order.shippingAmount),
-        tax: Number(order.taxAmount),
-        total: Number(order.total),
+        subtotal: persistedOrderMoneyToUsd(Number(order.subtotal), order.currency),
+        discount: persistedOrderMoneyToUsd(Number(order.discountAmount), order.currency),
+        shipping: persistedOrderMoneyToUsd(Number(order.shippingAmount), order.currency),
+        tax: persistedOrderMoneyToUsd(Number(order.taxAmount), order.currency),
+        total: persistedOrderMoneyToUsd(Number(order.total), order.currency),
         collectionPriceAmount: Number(
           order.items
             .reduce((sum: number, item: OrderItemWithVariant) => {
-              return sum + resolveCollectionSurchargeUsd(item, sizeCatalogPriceByTitle);
+              return sum + resolveCollectionSurchargeUsd(item, sizeCatalogPriceByTitle, order.currency);
             }, 0)
             .toFixed(2)
         ),
-        currency: order.currency,
+        currency: 'USD',
       },
       collectionPriceAmount: Number(
         order.items
           .reduce((sum: number, item: OrderItemWithVariant) => {
-            return sum + resolveCollectionSurchargeUsd(item, sizeCatalogPriceByTitle);
+            return sum + resolveCollectionSurchargeUsd(item, sizeCatalogPriceByTitle, order.currency);
           }, 0)
           .toFixed(2)
       ),
@@ -1110,6 +1137,7 @@ class OrdersService {
       },
       shippingAddress: shippingAddress,
       shippingMethod: order.shippingMethod || 'pickup',
+      shippingPriceAmd: resolveOrderShippingPriceAmd(shippingAddress),
       trackingNumber: order.trackingNumber || undefined,
       createdAt: order.createdAt.toISOString(),
       updatedAt: order.updatedAt.toISOString(),

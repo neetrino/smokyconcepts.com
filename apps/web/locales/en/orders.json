@@ -24,7 +24,7 @@
     "subtotal": "Subtotal",
     "discount": "Discount",
     "shipping": "Shipping",
-    "collectionPrice": "Collection Price",
+    "collectionPrice": "Customize",
     "tax": "Tax",
     "total": "Total",
     "loadingTotals": "Loading totals..."
@@ -42,12 +42,14 @@
     "customization": "Customization",
     "customize_text": "Text",
     "version": "Version",
-    "collection_price": "Collection Price",
+    "collection_price": "Customize",
     "customize_font": "Font",
     "customize_style": "Style",
     "customize_preview": "Preview",
     "sku": "SKU: {sku}",
-    "quantity": "Quantity: {price}"
+    "quantity": "Quantity: {quantity}",
+    "unitPrice": "Unit price: {price}",
+    "lineTotal": "Line total: {price}"
   }
 }
 

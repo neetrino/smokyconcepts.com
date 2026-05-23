@@ -1,7 +1,14 @@
 import type { Prisma } from "@prisma/client";
 import { filterDisplayableVariantOptions } from "@/lib/default-pricing-variant";
 import { mergeSizeCatalogIntoVariantOptions } from "@/lib/orders/merge-size-catalog-into-variant-options";
-import { adminInputAmdToUsd, catalogPriceToUsd } from "@/lib/currency";
+import {
+  adminInputAmdToUsd,
+  catalogPriceForStorefront,
+  catalogPriceToUsd,
+  persistedOrderMoneyToUsd,
+} from "@/lib/currency";
+import { resolveCollectionSurchargeUsd } from "@/lib/orders/resolve-collection-surcharge-usd";
+import { resolveOrderShippingPriceAmd, buildOrderSummaryLinesFromPersistedItems } from "@/lib/orders/order-summary-display";
 
 type VariantOptionFromAttributes = {
   attributeKey?: string | null;
@@ -72,12 +79,14 @@ export function formatOrderForList(order: {
   currency: string | null;
   customerEmail: string | null;
   customerPhone: string | null;
+  shippingAddress?: unknown;
   createdAt: Date;
   items: Array<{
     price?: number | null;
     total?: number | null;
     quantity?: number | null;
     sizeCatalogTitle?: string | null;
+    variant?: { price?: number | null } | null;
     sizeCatalogVersion?: string | null;
     sizeCatalogImageUrl?: string | null;
     variant?: {
@@ -214,21 +223,18 @@ export function formatOrderForList(order: {
   const lastName = customer?.lastName || '';
   const colorSizeSummary = buildOrderColorSizeSummary(order.items);
   const { previews: colorSizePreviews, hasMore: colorSizePreviewsHasMore } = buildOrderVariantPreviews(order.items);
+  const orderCurrency = order.currency || "USD";
   const collectionPriceAmount = Number(
     order.items
-      .reduce((sum, item) => {
-        const quantity = Number(item.quantity ?? 0);
-        const itemTotal = Number(item.total ?? 0);
-        const variantBasePriceUsd = catalogPriceToUsd(Number(item.variant?.price ?? 0));
-        if (!Number.isFinite(quantity) || !Number.isFinite(itemTotal) || !Number.isFinite(variantBasePriceUsd)) {
-          return sum;
-        }
-        const baseTotal = variantBasePriceUsd * quantity;
-        const collectionSurcharge = Math.max(0, itemTotal - baseTotal);
-        return sum + collectionSurcharge;
-      }, 0)
+      .reduce(
+        (sum, item) =>
+          sum + resolveCollectionSurchargeUsd(item, new Map(), orderCurrency),
+        0
+      )
       .toFixed(2)
   );
+  const summaryLines = buildOrderSummaryLinesFromPersistedItems(order.items, orderCurrency);
+  const shippingPriceAmd = resolveOrderShippingPriceAmd(order.shippingAddress);
 
   return {
     id: order.id,
@@ -236,13 +242,15 @@ export function formatOrderForList(order: {
     status: order.status,
     paymentStatus: order.paymentStatus,
     fulfillmentStatus: order.fulfillmentStatus,
-    total: order.total,
-    subtotal: order.subtotal,
-    discountAmount: order.discountAmount,
-    shippingAmount: order.shippingAmount,
-    taxAmount: order.taxAmount,
+    total: persistedOrderMoneyToUsd(Number(order.total), orderCurrency),
+    subtotal: persistedOrderMoneyToUsd(Number(order.subtotal), orderCurrency),
+    discountAmount: persistedOrderMoneyToUsd(Number(order.discountAmount), orderCurrency),
+    shippingAmount: persistedOrderMoneyToUsd(Number(order.shippingAmount), orderCurrency),
+    taxAmount: persistedOrderMoneyToUsd(Number(order.taxAmount), orderCurrency),
     collectionPriceAmount,
-    currency: order.currency || 'USD',
+    currency: "USD",
+    shippingPriceAmd,
+    summaryLines,
     customerEmail: customer?.email || order.customerEmail || '',
     customerPhone: customer?.phone || order.customerPhone || '',
     customerFirstName: firstName,
@@ -284,11 +292,13 @@ function formatVariantOption(opt: VariantOptionFromAttributes) {
 /**
  * Format order item for detail response
  */
-export function formatOrderItem(item: {
+export function formatOrderItem(
+  item: {
   id: string;
   variantId: string | null;
   productTitle: string | null;
   sku: string | null;
+  price?: number | null;
   quantity: number | null;
   total: number | null;
   sizeCatalogTitle?: string | null;
@@ -308,15 +318,25 @@ export function formatOrderItem(item: {
       }>;
     } | null;
   } | null;
-}, sizeCatalogPriceByTitle?: Map<string, number>) {
+},
+  orderCurrency: string,
+  sizeCatalogPriceByTitle?: Map<string, number>
+) {
   const variant = item.variant;
   const product = variant?.product;
   const translations = product && Array.isArray(product.translations) ? product.translations : [];
   const translation = translations[0] || null;
 
   const quantity = item.quantity ?? 0;
-  const total = item.total ?? 0;
-  const unitPrice = quantity > 0 ? Number((total / quantity).toFixed(2)) : total;
+  const totalUsd = persistedOrderMoneyToUsd(Number(item.total ?? 0), orderCurrency);
+  const unitPriceUsd = persistedOrderMoneyToUsd(Number(item.price ?? 0), orderCurrency);
+  const unitPrice =
+    quantity > 0 && unitPriceUsd > 0
+      ? unitPriceUsd
+      : quantity > 0
+        ? Number((totalUsd / quantity).toFixed(4))
+        : totalUsd;
+  const total = totalUsd;
 
   const variantOptionsBase = filterDisplayableVariantOptions(
     getVariantOptions(variant?.attributes).map(formatVariantOption)
@@ -334,12 +354,14 @@ export function formatOrderItem(item: {
   const usdPerAmd = adminInputAmdToUsd(1);
   const inferredCollectionPriceAmd =
     Number.isFinite(variantCatalogBaseUsd) &&
-    quantity > 0 &&
+    Number.isFinite(unitPrice) &&
     Number.isFinite(usdPerAmd) &&
     usdPerAmd > 0
       ? Math.max(0, Math.round((unitPrice - variantCatalogBaseUsd) / usdPerAmd))
       : null;
   const sizeCatalogCategoryPriceAmd = mappedCollectionPriceAmd ?? inferredCollectionPriceAmd;
+  const variantBasePriceAmd =
+    variant?.price != null ? catalogPriceForStorefront(Number(variant.price)) : null;
 
   return {
     id: item.id,
@@ -355,6 +377,7 @@ export function formatOrderItem(item: {
     sizeCatalogVersion: item.sizeCatalogVersion?.trim() || null,
     sizeCatalogImageUrl: item.sizeCatalogImageUrl?.trim() || null,
     sizeCatalogCategoryPriceAmd,
+    variantBasePriceAmd,
     customizePlain: item.customizePlain?.trim() || null,
     customizeHtml: item.customizeHtml?.trim() || null,
   };
@@ -398,6 +421,7 @@ export function formatOrderForDetail(order: {
     variantId: string | null;
     productTitle: string | null;
     sku: string | null;
+    price?: number | null;
     quantity: number | null;
     total: number | null;
     sizeCatalogTitle?: string | null;
@@ -431,16 +455,17 @@ export function formatOrderForDetail(order: {
   const user = order.user;
   const payments = Array.isArray(order.payments) ? order.payments : [];
   const primaryPayment = payments[0] || null;
+  const orderCurrency = order.currency || "USD";
   const formattedItems = order.items.map((item) =>
-    formatOrderItem(item, sizeCatalogPriceByTitle)
+    formatOrderItem(item, orderCurrency, sizeCatalogPriceByTitle)
   );
   const collectionPriceAmount = Number(
-    formattedItems
-      .reduce((sum, item) => {
-        const surchargeAmd = item.sizeCatalogCategoryPriceAmd ?? 0;
-        const quantity = item.quantity ?? 0;
-        return sum + adminInputAmdToUsd(surchargeAmd) * quantity;
-      }, 0)
+    order.items
+      .reduce(
+        (sum, item) =>
+          sum + resolveCollectionSurchargeUsd(item, sizeCatalogPriceByTitle ?? new Map(), orderCurrency),
+        0
+      )
       .toFixed(2)
   );
 
@@ -450,16 +475,16 @@ export function formatOrderForDetail(order: {
     status: order.status,
     paymentStatus: order.paymentStatus,
     fulfillmentStatus: order.fulfillmentStatus,
-    total: order.total,
-    currency: order.currency || "USD",
+    total: persistedOrderMoneyToUsd(Number(order.total), orderCurrency),
+    currency: "USD",
     totals: {
-      subtotal: Number(order.subtotal || 0),
-      discount: Number(order.discountAmount || 0),
-      shipping: Number(order.shippingAmount || 0),
-      tax: Number(order.taxAmount || 0),
-      total: Number(order.total || 0),
+      subtotal: persistedOrderMoneyToUsd(Number(order.subtotal || 0), orderCurrency),
+      discount: persistedOrderMoneyToUsd(Number(order.discountAmount || 0), orderCurrency),
+      shipping: persistedOrderMoneyToUsd(Number(order.shippingAmount || 0), orderCurrency),
+      tax: persistedOrderMoneyToUsd(Number(order.taxAmount || 0), orderCurrency),
+      total: persistedOrderMoneyToUsd(Number(order.total || 0), orderCurrency),
       collectionPriceAmount,
-      currency: order.currency || "USD",
+      currency: "USD",
     },
     collectionPriceAmount,
     customerEmail: order.customerEmail || user?.email || undefined,
@@ -467,6 +492,7 @@ export function formatOrderForDetail(order: {
     billingAddress: order.billingAddress || null,
     shippingAddress: order.shippingAddress || null,
     shippingMethod: order.shippingMethod || null,
+    shippingPriceAmd: resolveOrderShippingPriceAmd(order.shippingAddress),
     notes: order.notes || null,
     adminNotes: order.adminNotes || null,
     ipAddress: order.ipAddress || null,

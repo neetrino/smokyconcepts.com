@@ -1,5 +1,15 @@
 import { db } from "@white-shop/db";
+import { persistedOrderMoneyToUsd } from "@/lib/currency";
+import { resolveCollectionSurchargeUsd } from "@/lib/orders/resolve-collection-surcharge-usd";
+import {
+  buildOrderSummaryLinesFromPersistedItems,
+  resolveOrderShippingPriceAmd,
+} from "@/lib/orders/order-summary-display";
 import * as bcrypt from "bcryptjs";
+
+function normalizeSizeCatalogTitleLookup(value: string | null | undefined): string {
+  return value?.trim().toLocaleLowerCase() ?? "";
+}
 
 class UsersService {
   /**
@@ -274,10 +284,44 @@ class UsersService {
     const orders = await db.order.findMany({
       where: { userId },
       include: {
-        items: true,
+        items: {
+          include: {
+            variant: {
+              select: {
+                price: true,
+              },
+            },
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     });
+
+    const sizeCatalogTitles = Array.from(
+      new Set(
+        orders.flatMap((order: { items: Array<{ sizeCatalogTitle: string | null }> }) =>
+          order.items
+            .map((item: { sizeCatalogTitle: string | null }) =>
+              normalizeSizeCatalogTitleLookup(item.sizeCatalogTitle)
+            )
+            .filter((title: string) => title !== "")
+        )
+      )
+    );
+    const sizeCatalogPriceByTitle = new Map<string, number>();
+    if (sizeCatalogTitles.length > 0) {
+      const categories = await db.sizeCatalogCategory.findMany({
+        select: { title: true, priceAmd: true },
+      });
+      for (const category of categories) {
+        const title = normalizeSizeCatalogTitleLookup(category.title);
+        if (!title || !sizeCatalogTitles.includes(title)) continue;
+        const existing = sizeCatalogPriceByTitle.get(title);
+        if (existing === undefined || category.priceAmd > existing) {
+          sizeCatalogPriceByTitle.set(title, category.priceAmd);
+        }
+      }
+    }
 
     // Calculate statistics
     const totalOrders = orders.length;
@@ -285,7 +329,11 @@ class UsersService {
     const completedOrders = orders.filter((o: { status: string }) => o.status === "completed").length;
     const totalSpent = orders
       .filter((o: { status: string; paymentStatus: string }) => o.status === "completed" || o.paymentStatus === "paid")
-      .reduce((sum: number, o: { total: number }) => sum + o.total, 0);
+      .reduce(
+        (sum: number, o: { total: number; currency: string | null }) =>
+          sum + persistedOrderMoneyToUsd(Number(o.total), o.currency ?? "USD"),
+        0
+      );
 
     // Count addresses
     const addressesCount = await db.address.count({
@@ -299,21 +347,63 @@ class UsersService {
     });
 
     // Get recent orders (last 5)
-    const recentOrders = orders.slice(0, 5).map((order: { id: string; number: string; status: string; paymentStatus: string; fulfillmentStatus: string; total: number; subtotal: number; discountAmount: number; shippingAmount: number; taxAmount: number; currency: string | null; createdAt: Date; items: Array<unknown> }) => ({
-      id: order.id,
-      number: order.number,
-      status: order.status,
-      paymentStatus: order.paymentStatus,
-      fulfillmentStatus: order.fulfillmentStatus,
-      total: order.total,
-      subtotal: order.subtotal,
-      discountAmount: order.discountAmount,
-      shippingAmount: order.shippingAmount,
-      taxAmount: order.taxAmount,
-      currency: order.currency,
-      itemsCount: order.items.length,
-      createdAt: order.createdAt.toISOString(),
-    }));
+    const recentOrders = orders.slice(0, 5).map((order: {
+      id: string;
+      number: string;
+      status: string;
+      paymentStatus: string;
+      fulfillmentStatus: string;
+      total: number;
+      subtotal: number;
+      discountAmount: number;
+      shippingAmount: number;
+      taxAmount: number;
+      currency: string | null;
+      shippingAddress?: unknown;
+      createdAt: Date;
+      items: Array<{
+        price: number | null;
+        quantity: number | null;
+        sizeCatalogTitle: string | null;
+        variant?: { price?: number | null } | null;
+      }>;
+    }) => {
+      const storedCurrency = order.currency ?? "USD";
+      const summaryLines = buildOrderSummaryLinesFromPersistedItems(
+        order.items,
+        storedCurrency,
+        sizeCatalogPriceByTitle
+      );
+      const shippingPriceAmd = resolveOrderShippingPriceAmd(order.shippingAddress);
+      const collectionPriceAmount = Number(
+        order.items
+          .reduce(
+            (sum, item) =>
+              sum + resolveCollectionSurchargeUsd(item, sizeCatalogPriceByTitle, storedCurrency),
+            0
+          )
+          .toFixed(2)
+      );
+
+      return {
+        id: order.id,
+        number: order.number,
+        status: order.status,
+        paymentStatus: order.paymentStatus,
+        fulfillmentStatus: order.fulfillmentStatus,
+        total: persistedOrderMoneyToUsd(Number(order.total), storedCurrency),
+        subtotal: persistedOrderMoneyToUsd(Number(order.subtotal), storedCurrency),
+        discountAmount: persistedOrderMoneyToUsd(Number(order.discountAmount), storedCurrency),
+        shippingAmount: persistedOrderMoneyToUsd(Number(order.shippingAmount), storedCurrency),
+        taxAmount: persistedOrderMoneyToUsd(Number(order.taxAmount), storedCurrency),
+        collectionPriceAmount,
+        currency: "USD",
+        shippingPriceAmd,
+        summaryLines,
+        itemsCount: order.items.length,
+        createdAt: order.createdAt.toISOString(),
+      };
+    });
 
     return {
       stats: {

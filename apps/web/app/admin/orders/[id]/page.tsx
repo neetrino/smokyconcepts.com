@@ -8,6 +8,7 @@ import { apiClient } from '../../../../lib/api-client';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { ADMIN_PRICE_CURRENCY, formatAdminOrderAmount } from '../../../../lib/currency';
 import { OrderDetailsSummary } from '../components/OrderDetailsSummary';
+import { OrderDetailsTotals } from '../components/OrderDetailsTotals';
 import { OrderDetailsAddresses } from '../components/OrderDetailsAddresses';
 import { OrderDetailsItems } from '../components/OrderDetailsItems';
 import { AdminShell } from '../../components/AdminShell';
@@ -133,6 +134,11 @@ export default function AdminOrderDetailsPage() {
               updatingPaymentStatus={updatingPaymentStatus}
               onStatusChange={handleStatusChange}
               onPaymentStatusChange={handlePaymentStatusChange}
+            />
+            <OrderDetailsTotals
+              orderDetails={orderDetails}
+              currency={ADMIN_PRICE_CURRENCY}
+              formatCurrency={formatCurrency}
             />
             <OrderDetailsAddresses
               orderDetails={orderDetails}

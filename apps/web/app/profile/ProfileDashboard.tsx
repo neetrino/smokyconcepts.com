@@ -1,7 +1,11 @@
 import Link from 'next/link';
 import { Button, Card } from '@shop/ui';
 import { useCurrency } from '../../components/hooks/useCurrency';
-import { amountToUsd, convertPrice, formatPriceInCurrency } from '../../lib/currency';
+import { convertPrice, formatPriceInCurrency, type CurrencyCode } from '../../lib/currency';
+import {
+  formatOrderListShippingDisplay,
+  formatOrderListTotalDisplay,
+} from '@/lib/orders/order-summary-display';
 import { getStatusColor, getPaymentStatusColor } from './utils';
 import type { DashboardData, ProfileTab } from './types';
 
@@ -20,7 +24,7 @@ export function ProfileDashboard({
   onOrderClick,
   t,
 }: ProfileDashboardProps) {
-  const displayCurrency = useCurrency();
+  const displayCurrency = useCurrency() as CurrencyCode;
   const formatOrderMoneyUsd = (amountUsd: number) =>
     formatPriceInCurrency(convertPrice(amountUsd, 'USD', displayCurrency), displayCurrency);
   const dashboardCardClassName =
@@ -143,7 +147,9 @@ export function ProfileDashboard({
           </div>
         ) : (
           <div className="space-y-4">
-            {dashboardData.recentOrders.map((order) => (
+            {dashboardData.recentOrders.map((order) => {
+              const shippingDisplay = formatOrderListShippingDisplay(order, displayCurrency);
+              return (
               <Link
                 key={order.id}
                 href={`/orders/${order.number}`}
@@ -173,27 +179,19 @@ export function ProfileDashboard({
                   </div>
                   <div className="text-right ml-4">
                     <p className="text-lg font-black text-[#122a26]">
-                      {(() => {
-                        if (
-                          order.subtotal !== undefined &&
-                          order.discountAmount !== undefined &&
-                          order.taxAmount !== undefined
-                        ) {
-                          const subtotalUsd = amountToUsd(order.subtotal, order.currency);
-                          const discountUsd = amountToUsd(order.discountAmount, order.currency);
-                          const taxUsd = amountToUsd(order.taxAmount, order.currency);
-                          return formatOrderMoneyUsd(subtotalUsd - discountUsd + taxUsd);
-                        }
-                        const totalUsd = amountToUsd(order.total, order.currency);
-                        const shippingUsd = amountToUsd(order.shippingAmount || 0, order.currency);
-                        return formatOrderMoneyUsd(totalUsd - shippingUsd);
-                      })()}
+                      {formatOrderListTotalDisplay(order, displayCurrency)}
                     </p>
+                    {shippingDisplay ? (
+                      <p className="text-xs text-[#414141]/55 mt-1">
+                        {t('orders.orderSummary.shipping')}: {shippingDisplay}
+                      </p>
+                    ) : null}
                     <p className="mt-1 text-xs text-[#414141]/55">{t('profile.dashboard.viewDetails')}</p>
                   </div>
                 </div>
               </Link>
-            ))}
+              );
+            })}
           </div>
         )}
       </Card>

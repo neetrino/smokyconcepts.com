@@ -1,0 +1,85 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+import { apiClient } from '@/lib/api-client';
+import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
+import type { Product, ProductVariant } from '../types';
+import {
+  resolveCollectionPriceAmdFromCategories,
+  resolveCustomizeCollectionSelection,
+} from '../utils/product-size-catalog-collection-price';
+
+interface UseProductSizeCatalogCollectionPriceParams {
+  product: Product | null;
+  currentVariant: ProductVariant | null;
+  selectedSizeLabel: string | null;
+  selectedCatalogSize: SizeCatalogItemDto | null;
+  /** Applied customize text (Save on Customize tab) — triggers collection surcharge display. */
+  hasAppliedCustomize: boolean;
+}
+
+export function useProductSizeCatalogCollectionPrice({
+  product,
+  currentVariant,
+  selectedSizeLabel,
+  selectedCatalogSize,
+  hasAppliedCustomize,
+}: UseProductSizeCatalogCollectionPriceParams) {
+  const [sizeCatalogCategories, setSizeCatalogCategories] = useState<SizeCatalogCategoryDto[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await apiClient.get<{ data: SizeCatalogCategoryDto[] }>('/api/v1/size-catalog');
+        if (!cancelled) {
+          setSizeCatalogCategories(res.data ?? []);
+        }
+      } catch {
+        if (!cancelled) {
+          setSizeCatalogCategories([]);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const resolved = useMemo(() => {
+    if (!product || !hasAppliedCustomize) {
+      return { priceAmd: 0, categoryTitle: null as string | null };
+    }
+
+    const selection = resolveCustomizeCollectionSelection({
+      product,
+      currentVariant,
+      categories: sizeCatalogCategories,
+      selectedCatalogSize:
+        selectedCatalogSize != null
+          ? {
+              categoryId: selectedCatalogSize.categoryId,
+              categoryTitle: selectedCatalogSize.categoryTitle,
+            }
+          : null,
+      selectedSizeLabel,
+    });
+
+    return resolveCollectionPriceAmdFromCategories(sizeCatalogCategories, selection);
+  }, [
+    product,
+    currentVariant,
+    hasAppliedCustomize,
+    sizeCatalogCategories,
+    selectedCatalogSize,
+    selectedSizeLabel,
+  ]);
+
+  const collectionPriceAmd = resolved.priceAmd > 0 ? resolved.priceAmd : 0;
+
+  return {
+    collectionPriceAmd,
+    collectionCategoryTitle: resolved.categoryTitle,
+    shouldApplyCollectionPrice: collectionPriceAmd > 0,
+  };
+}

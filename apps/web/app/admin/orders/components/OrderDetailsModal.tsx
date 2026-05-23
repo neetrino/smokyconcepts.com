@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 
 import { useTranslation } from '../../../../lib/i18n-client';
 import { OrderDetailsSummary } from './OrderDetailsSummary';
+import { OrderDetailsTotals } from './OrderDetailsTotals';
 import { OrderDetailsAddresses } from './OrderDetailsAddresses';
 import { OrderDetailsItems } from './OrderDetailsItems';
 import type { OrderDetails } from '../useOrders';
@@ -112,6 +113,11 @@ export function OrderDetailsModal({
                 updatingPaymentStatus={updatingPaymentStatus}
                 onStatusChange={onStatusChange}
                 onPaymentStatusChange={onPaymentStatusChange}
+              />
+              <OrderDetailsTotals
+                orderDetails={orderDetails}
+                currency={currency}
+                formatCurrency={formatCurrency}
               />
               <OrderDetailsAddresses orderDetails={orderDetails} />
               <OrderDetailsItems orderDetails={orderDetails} formatCurrency={formatCurrency} />

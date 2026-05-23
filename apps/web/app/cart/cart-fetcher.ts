@@ -22,6 +22,11 @@ function cartItemFromGuestSnapshot(item: GuestCartItem, index: number): CartItem
       ? catalogPriceToUsd(item.originalPrice)
       : null;
   const unitPriceUsd = priceUsd;
+  const categoryPriceRaw = item.sizeCatalogCategoryPriceAmd;
+  const sizeCatalogCategoryPriceAmd =
+    typeof categoryPriceRaw === 'number' && Number.isFinite(categoryPriceRaw) && categoryPriceRaw >= 0
+      ? Math.round(categoryPriceRaw)
+      : null;
   return {
     id: `${item.productId}-${variantId}-${index}`,
     variant: {
@@ -32,7 +37,7 @@ function cartItemFromGuestSnapshot(item: GuestCartItem, index: number): CartItem
       sizeCatalogVersion: item.sizeCatalogVersion ?? null,
       sizeCatalogImageUrl: item.sizeCatalogImageUrl ?? null,
       sizeCatalogCategoryTitle: item.sizeCatalogCategoryTitle ?? null,
-      sizeCatalogCategoryPriceAmd: 0,
+      sizeCatalogCategoryPriceAmd,
       customizePlain: item.customizePlain ?? null,
       customizeHtml: item.customizeHtml ?? null,
       customSizeRequest: item.customSizeRequest ?? null,

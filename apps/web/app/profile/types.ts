@@ -73,6 +73,7 @@ export interface OrderDetails {
   };
   shippingAddress?: any;
   shippingMethod: string;
+  shippingPriceAmd?: number | null;
   trackingNumber?: string;
   timeline?: Array<{
     status: string;
@@ -103,7 +104,15 @@ export interface DashboardData {
     discountAmount?: number;
     shippingAmount?: number;
     taxAmount?: number;
+    collectionPriceAmount?: number;
     currency: string;
+    shippingPriceAmd?: number | null;
+    summaryLines?: Array<{
+      price: number;
+      quantity: number;
+      sizeCatalogCategoryPriceAmd?: number | null;
+      variantBasePriceAmd?: number | null;
+    }>;
     itemsCount: number;
     createdAt: string;
   }>;
@@ -122,6 +131,13 @@ export interface OrderListItem {
   taxAmount?: number;
   collectionPriceAmount?: number;
   currency: string;
+  shippingPriceAmd?: number | null;
+  summaryLines?: Array<{
+    price: number;
+    quantity: number;
+    sizeCatalogCategoryPriceAmd?: number | null;
+    variantBasePriceAmd?: number | null;
+  }>;
   itemsCount: number;
   createdAt: string;
 }

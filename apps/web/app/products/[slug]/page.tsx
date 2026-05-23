@@ -14,6 +14,7 @@ import {
 import { sanitizeCustomizeHtml } from './utils/sanitize-customize-html';
 import { useProductPage } from './useProductPage';
 import { useProductCartActions } from './useProductCartActions';
+import { useProductSizeCatalogCollectionPrice } from './hooks/useProductSizeCatalogCollectionPrice';
 import { useCustomizeGoogleFontLinks } from './useCustomizeGoogleFontLinks';
 import type { ProductPageProps } from './types';
 import type { CustomOrderDraft } from './CustomizeSizeOrderFallback';
@@ -133,6 +134,21 @@ export default function ProductPage({ params }: ProductPageProps) {
     ? getProductText(language, product.id, 'title') || product.title
     : '';
 
+  const hasAppliedCustomize = Boolean(
+    customizeApplied?.plain?.trim() || customizeApplied?.html?.trim()
+  );
+
+  const { collectionPriceAmd, collectionCategoryTitle } = useProductSizeCatalogCollectionPrice({
+    product,
+    currentVariant,
+    selectedSizeLabel: selectedSize,
+    selectedCatalogSize,
+    hasAppliedCustomize,
+  });
+
+  const displayPrice =
+    collectionPriceAmd > 0 ? price + collectionPriceAmd : price;
+
   const { handleAddToCart, handleBuyNow } = useProductCartActions({
     product,
     currentVariant,
@@ -145,6 +161,8 @@ export default function ProductPage({ params }: ProductPageProps) {
     selectedCatalogSize,
     selectedCustomSizeRequest,
     customizeApplied,
+    collectionPriceAmd,
+    collectionCategoryTitle,
     setIsAddingToCart,
     setShowMessage,
   });
@@ -185,7 +203,7 @@ export default function ProductPage({ params }: ProductPageProps) {
             customizeTextMaxLength={CUSTOMIZE_TEXT_MAX_LENGTH}
             customizeFormat={customizeFormat}
             onCustomizeFormatChange={setCustomizeFormat}
-            price={price}
+            price={displayPrice}
             language={language}
             isOutOfStock={isOutOfStock}
             canAddToCart={canAddToCart}
