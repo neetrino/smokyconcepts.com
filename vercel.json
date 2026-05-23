@@ -1,12 +1,9 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
   "framework": "nextjs",
   "installCommand": "npm install",
-  "devCommand": "npm run dev",
-  "env": {
-    "NODE_ENV": "production"
-  },
+  "buildCommand": "npm run build --workspace=@shop/web",
+  "devCommand": "npm run dev --workspace=@shop/web",
+  "outputDirectory": "apps/web/.next",
   "functions": {
     "apps/web/app/api/v1/admin/products/route.ts": {
       "maxDuration": 30
@@ -22,4 +19,3 @@
     }
   ]
 }
-
