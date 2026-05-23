@@ -1,11 +1,13 @@
 import Link from 'next/link';
 import { Button, Card } from '@shop/ui';
 import { useCurrency } from '../../components/hooks/useCurrency';
-import { amountToUsd, convertPrice, formatPriceInCurrency } from '../../lib/currency';
+import { type CurrencyCode } from '../../lib/currency';
+import {
+  formatOrderListShippingDisplay,
+  formatOrderListTotalDisplay,
+} from '@/lib/orders/order-summary-display';
 import { getStatusColor, getPaymentStatusColor } from './utils';
 import type { OrderListItem } from './types';
-
-const LEGACY_COLLECTION_AMD_PER_USD = 400;
 
 interface ProfileOrdersProps {
   orders: OrderListItem[];
@@ -31,7 +33,23 @@ export function ProfileOrders({
   onOrderClick,
   t,
 }: ProfileOrdersProps) {
-  const displayCurrency = useCurrency();
+  const displayCurrency = useCurrency() as CurrencyCode;
+
+  const renderOrderAmounts = (order: OrderListItem) => {
+    const shippingDisplay = formatOrderListShippingDisplay(order, displayCurrency);
+    return (
+      <>
+        <p className="text-lg font-bold text-gray-900">
+          {formatOrderListTotalDisplay(order, displayCurrency)}
+        </p>
+        {shippingDisplay ? (
+          <p className="text-xs text-gray-500 mt-1">
+            {t('orders.orderSummary.shipping')}: {shippingDisplay}
+          </p>
+        ) : null}
+      </>
+    );
+  };
 
   if (ordersLoading) {
     return (
@@ -95,39 +113,7 @@ export function ProfileOrders({
                 </p>
               </div>
               <div className="text-right ml-4">
-                <p className="text-lg font-bold text-gray-900">
-                  {(() => {
-                    const collectionUsd = amountToUsd(order.collectionPriceAmount || 0, 'USD');
-                    const collectionDisplay =
-                      displayCurrency === 'AMD'
-                        ? collectionUsd * LEGACY_COLLECTION_AMD_PER_USD
-                        : convertPrice(collectionUsd, 'USD', displayCurrency);
-
-                    if (
-                      order.subtotal !== undefined &&
-                      order.discountAmount !== undefined &&
-                      order.shippingAmount !== undefined &&
-                      order.taxAmount !== undefined
-                    ) {
-                      const subtotalUsd = amountToUsd(order.subtotal, order.currency);
-                      const discountUsd = amountToUsd(order.discountAmount, order.currency);
-                      const shippingUsd = amountToUsd(order.shippingAmount, order.currency);
-                      const taxUsd = amountToUsd(order.taxAmount, order.currency);
-                      const totalWithoutCollectionUsd =
-                        subtotalUsd - discountUsd + shippingUsd + taxUsd - collectionUsd;
-                      const totalDisplay =
-                        convertPrice(totalWithoutCollectionUsd, 'USD', displayCurrency) +
-                        collectionDisplay;
-                      return formatPriceInCurrency(totalDisplay, displayCurrency);
-                    }
-                    const totalWithoutCollectionUsd =
-                      amountToUsd(order.total, order.currency) - collectionUsd;
-                    const totalDisplay =
-                      convertPrice(totalWithoutCollectionUsd, 'USD', displayCurrency) +
-                      collectionDisplay;
-                    return formatPriceInCurrency(totalDisplay, displayCurrency);
-                  })()}
-                </p>
+                {renderOrderAmounts(order)}
                 <p className="text-xs text-gray-500 mt-1">{t('profile.dashboard.viewDetails')}</p>
               </div>
             </div>

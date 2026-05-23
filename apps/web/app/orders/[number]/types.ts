@@ -9,6 +9,8 @@ export interface OrderItem {
   imageUrl?: string;
   sizeCatalogVersion?: string | null;
   sizeCatalogCategoryPriceAmd?: number | null;
+  /** Catalog variant base price in AMD (checkout snapshot). */
+  variantBasePriceAmd?: number | null;
   customizePlain?: string;
   customizeHtml?: string;
   variantOptions?: Array<{
@@ -55,6 +57,8 @@ export interface Order {
     phone?: string;
   };
   shippingMethod: string;
+  /** Admin delivery zone price in AMD (checkout snapshot). */
+  shippingPriceAmd?: number | null;
   trackingNumber?: string;
   timeline?: Array<{
     status: string;

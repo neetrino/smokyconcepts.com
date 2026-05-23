@@ -119,7 +119,7 @@ export function OrderCustomizeBlock({
         ) : null}
         {collectionPriceAmd > 0 ? (
           <div className={rowCls}>
-            <dt className={fieldLabelCls}>{t('orders.itemDetails.collection_price')}</dt>
+            <dt className={fieldLabelCls}>{t('orders.orderSummary.collectionPrice')}</dt>
             <dd className={`${valueCls} min-w-0 flex-1`}>
               {formatPriceInCurrency(collectionPriceAmd, 'AMD')}
             </dd>

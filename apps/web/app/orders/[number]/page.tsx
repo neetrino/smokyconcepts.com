@@ -18,8 +18,6 @@ export default function OrderPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [calculatedShipping, setCalculatedShipping] = useState<number | null>(null);
-  const [loadingShipping, setLoadingShipping] = useState(false);
 
   useEffect(() => {
     void fetchOrder();
@@ -30,43 +28,11 @@ export default function OrderPage() {
       setLoading(true);
       const response = await apiClient.get<Order>(`/api/v1/orders/${params.number}`);
       setOrder(response);
-      
-      const deliveryLocation =
-        response.shippingMethod === 'delivery'
-          ? response.shippingAddress?.city || response.shippingAddress?.state
-          : null;
-      if (deliveryLocation) {
-        fetchShippingPrice(deliveryLocation);
-      } else {
-        setCalculatedShipping(null);
-      }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : t('orders.notFound.description');
       setError(errorMessage);
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function fetchShippingPrice(city: string) {
-    if (!city || city.trim().length === 0) {
-      setCalculatedShipping(0);
-      return;
-    }
-
-    setLoadingShipping(true);
-    try {
-      const response = await apiClient.get<{ price: number }>('/api/v1/delivery/price', {
-        params: {
-          city: city.trim(),
-          country: 'Armenia',
-        },
-      });
-      setCalculatedShipping(response.price);
-    } catch {
-      setCalculatedShipping(0);
-    } finally {
-      setLoadingShipping(false);
     }
   }
 
@@ -101,11 +67,7 @@ export default function OrderPage() {
           )}
         </div>
 
-        <OrderSummary
-          order={order}
-          calculatedShipping={calculatedShipping}
-          loadingShipping={loadingShipping}
-        />
+        <OrderSummary order={order} />
       </div>
     </div>
   );

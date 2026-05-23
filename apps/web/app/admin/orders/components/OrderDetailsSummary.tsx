@@ -2,19 +2,16 @@
 
 import { useTranslation } from '../../../../lib/i18n-client';
 import { Card } from '@shop/ui';
+import { ADMIN_PRICE_CURRENCY, type CurrencyCode } from '../../../../lib/currency';
 import {
-  ADMIN_PRICE_CURRENCY,
-  amountToUsd,
-  convertPrice,
-  formatPriceInCurrency,
-} from '../../../../lib/currency';
+  computeOrderSummaryDisplay,
+  formatOrderTotalDisplay,
+} from '@/lib/orders/order-summary-display';
 import type { OrderDetails } from '../useOrders';
 import {
   getAdminOrderPaymentSummarySelectClassNames,
   getAdminOrderStatusSummarySelectClassNames,
 } from '../utils/orderUtils';
-
-const LEGACY_COLLECTION_AMD_PER_USD = 400;
 
 interface OrderDetailsSummaryProps {
   orderDetails: OrderDetails;
@@ -61,34 +58,41 @@ export function OrderDetailsSummary({
   const summaryControlHeaderClass =
     'mb-1 flex min-h-[2.75rem] flex-col justify-end';
 
-  const summaryValue = orderDetails.totals
-    ? (() => {
-        const totalsCurrency = orderDetails.totals.currency || orderDetails.currency;
-        const subtotalUsd = amountToUsd(orderDetails.totals.subtotal, totalsCurrency);
-        const discountUsd = amountToUsd(orderDetails.totals.discount, totalsCurrency);
-        const shippingUsd = amountToUsd(orderDetails.totals.shipping, totalsCurrency);
-        const taxUsd = amountToUsd(orderDetails.totals.tax, totalsCurrency);
-        const collectionUsd = amountToUsd(
-          orderDetails.totals.collectionPriceAmount ?? orderDetails.collectionPriceAmount ?? 0,
-          'USD',
-        );
-        const baseTotalDisplay = convertPrice(
-          subtotalUsd - collectionUsd - discountUsd + shippingUsd + taxUsd,
-          'USD',
-          ADMIN_PRICE_CURRENCY,
-        );
-        const totalDisplay = baseTotalDisplay + collectionUsd * LEGACY_COLLECTION_AMD_PER_USD;
-        return formatPriceInCurrency(totalDisplay, ADMIN_PRICE_CURRENCY);
-      })()
-    : (() => {
-        const collectionUsd = amountToUsd(orderDetails.collectionPriceAmount ?? 0, 'USD');
-        const totalWithoutCollectionUsd =
-          amountToUsd(orderDetails.total, orderDetails.currency || 'USD') - collectionUsd;
-        const totalDisplay =
-          convertPrice(totalWithoutCollectionUsd, 'USD', ADMIN_PRICE_CURRENCY) +
-          collectionUsd * LEGACY_COLLECTION_AMD_PER_USD;
-        return formatPriceInCurrency(totalDisplay, ADMIN_PRICE_CURRENCY);
-      })();
+  const adminCurrency = ADMIN_PRICE_CURRENCY as CurrencyCode;
+  const summaryLines = (orderDetails.items ?? []).map((item) => ({
+    price: item.unitPrice ?? (item.quantity > 0 ? item.total / item.quantity : item.total),
+    quantity: item.quantity,
+    sizeCatalogCategoryPriceAmd: item.sizeCatalogCategoryPriceAmd,
+    variantBasePriceAmd: item.variantBasePriceAmd,
+  }));
+  const summaryOptions = {
+    amountsAlreadyUsd: true,
+    shippingPriceAmd: orderDetails.shippingPriceAmd,
+  } as const;
+  const summary = orderDetails.totals
+    ? computeOrderSummaryDisplay(
+        orderDetails.totals,
+        orderDetails.collectionPriceAmount,
+        adminCurrency,
+        summaryLines,
+        summaryOptions
+      )
+    : computeOrderSummaryDisplay(
+        {
+          subtotal: orderDetails.subtotal ?? orderDetails.total,
+          discount: orderDetails.discountAmount ?? 0,
+          shipping: orderDetails.shippingAmount ?? 0,
+          tax: orderDetails.taxAmount ?? 0,
+          total: orderDetails.total,
+          currency: orderDetails.currency,
+          collectionPriceAmount: orderDetails.collectionPriceAmount,
+        },
+        orderDetails.collectionPriceAmount,
+        adminCurrency,
+        summaryLines,
+        summaryOptions
+      );
+  const summaryValue = formatOrderTotalDisplay(summary, adminCurrency);
 
   return (
     <Card className="p-4 md:p-5">

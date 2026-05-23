@@ -5,104 +5,93 @@ import { Card, Button } from '@shop/ui';
 import { useCurrency } from '../../../../components/hooks/useCurrency';
 import { dispatchCartDrawerOpen } from '../../../cart/constants';
 import { useTranslation } from '../../../../lib/i18n-client';
-import { adminInputAmdToUsd, amountToUsd, convertPrice, formatPriceInCurrency } from '../../../../lib/currency';
+import { type CurrencyCode } from '../../../../lib/currency';
+import {
+  computeOrderSummaryDisplay,
+  formatOrderCollectionDisplay,
+  formatOrderMerchandiseDisplay,
+  formatOrderShippingDisplay,
+  formatOrderSummaryUsd,
+  formatOrderTotalDisplay,
+} from '@/lib/orders/order-summary-display';
 import type { Order } from '../types';
-
-const LEGACY_COLLECTION_AMD_PER_USD = 400;
 
 interface OrderSummaryProps {
   order: Order;
-  calculatedShipping: number | null;
-  loadingShipping: boolean;
+  /** Hide storefront CTAs when embedded (e.g. profile order modal). */
+  showActions?: boolean;
 }
 
-export function OrderSummary({
-  order,
-  calculatedShipping,
-  loadingShipping,
-}: OrderSummaryProps) {
+export function OrderSummary({ order, showActions = true }: OrderSummaryProps) {
   const { t } = useTranslation();
-  const displayCurrency = useCurrency();
-  const formatOrderMoneyDisplay = (amount: number) =>
-    formatPriceInCurrency(amount, displayCurrency);
+  const displayCurrency = useCurrency() as CurrencyCode;
 
-  const storedCurrency = order.totals.currency;
+  const totals = order.totals;
+  const summaryLines = order.items.map((item) => ({
+    price: item.price,
+    quantity: item.quantity,
+    sizeCatalogCategoryPriceAmd: item.sizeCatalogCategoryPriceAmd,
+    variantBasePriceAmd: item.variantBasePriceAmd,
+  }));
 
-  const subtotalUsd = amountToUsd(order.totals.subtotal, storedCurrency);
-  const collectionPriceUsd = amountToUsd(
-    order.totals.collectionPriceAmount ?? order.collectionPriceAmount ?? 0,
-    'USD',
-  );
-  const subtotalWithoutCollectionUsd = Math.max(0, subtotalUsd - collectionPriceUsd);
-
-  const discountUsd =
-    order.totals.discount > 0 ? amountToUsd(order.totals.discount, storedCurrency) : 0;
-
-  const shippingUsd =
-    order.shippingMethod === 'pickup'
-      ? 0
-      : calculatedShipping !== null
-        ? adminInputAmdToUsd(calculatedShipping)
-        : amountToUsd(order.totals.shipping, storedCurrency);
-
-  const taxUsd = amountToUsd(order.totals.tax, storedCurrency);
-
-  const subtotalDisplayAmount = convertPrice(subtotalWithoutCollectionUsd, 'USD', displayCurrency);
-  const discountDisplayAmount = convertPrice(discountUsd, 'USD', displayCurrency);
-  const shippingDisplayAmount = convertPrice(shippingUsd, 'USD', displayCurrency);
-  const taxDisplayAmount = convertPrice(taxUsd, 'USD', displayCurrency);
-  const collectionPriceDisplayAmount =
-    displayCurrency === 'AMD'
-      ? collectionPriceUsd * LEGACY_COLLECTION_AMD_PER_USD
-      : convertPrice(collectionPriceUsd, 'USD', displayCurrency);
-
-  const totalDisplayAmount =
-    subtotalDisplayAmount -
-    discountDisplayAmount +
-    shippingDisplayAmount +
-    taxDisplayAmount +
-    collectionPriceDisplayAmount;
+  const summary =
+    totals != null
+      ? computeOrderSummaryDisplay(
+          totals,
+          order.collectionPriceAmount,
+          displayCurrency,
+          summaryLines,
+          {
+            amountsAlreadyUsd: true,
+            shippingPriceAmd: order.shippingPriceAmd,
+          }
+        )
+      : null;
 
   const shippingDisplay =
     order.shippingMethod === 'pickup'
       ? t('checkout.shipping.freePickup')
-      : loadingShipping
-        ? t('checkout.shipping.loading')
-        : formatOrderMoneyDisplay(shippingDisplayAmount) +
+      : summary != null
+        ? formatOrderShippingDisplay(
+            summary.shippingUsd,
+            order.shippingPriceAmd,
+            displayCurrency
+          ) +
           (order.shippingAddress?.city || order.shippingAddress?.state
             ? ` (${order.shippingAddress.city || order.shippingAddress.state})`
-            : '');
+            : '')
+        : '';
 
   return (
     <Card className="p-6 sticky top-4">
       <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('orders.orderSummary.title')}</h2>
       <div className="space-y-4 mb-6">
-        {order.totals ? (
+        {summary != null && totals != null ? (
           <>
             <div className="flex justify-between text-gray-600">
               <span>{t('orders.orderSummary.subtotal')}</span>
-              <span>{formatOrderMoneyDisplay(subtotalDisplayAmount)}</span>
+              <span>{formatOrderMerchandiseDisplay(summary, displayCurrency)}</span>
             </div>
-            {order.totals.discount > 0 && (
-              <div className="flex justify-between text-gray-600">
-                <span>{t('orders.orderSummary.discount')}</span>
-                <span>-{formatOrderMoneyDisplay(discountDisplayAmount)}</span>
-              </div>
-            )}
             <div className="flex justify-between text-gray-600">
               <span>{t('orders.orderSummary.shipping')}</span>
               <span>{shippingDisplay}</span>
             </div>
-            {collectionPriceUsd > 0 && (
+            {summary.hasCollection && (
               <div className="flex justify-between text-gray-600">
                 <span>{t('orders.orderSummary.collectionPrice')}</span>
-                <span>{formatOrderMoneyDisplay(collectionPriceDisplayAmount)}</span>
+                <span>{formatOrderCollectionDisplay(summary, displayCurrency)}</span>
+              </div>
+            )}
+            {totals.discount > 0 && (
+              <div className="flex justify-between text-gray-600">
+                <span>{t('orders.orderSummary.discount')}</span>
+                <span>-{formatOrderSummaryUsd(summary.discountUsd, displayCurrency)}</span>
               </div>
             )}
             <div className="border-t border-gray-200 pt-4">
               <div className="flex justify-between text-lg font-bold text-gray-900">
                 <span>{t('orders.orderSummary.total')}</span>
-                <span>{formatOrderMoneyDisplay(totalDisplayAmount)}</span>
+                <span>{formatOrderTotalDisplay(summary, displayCurrency)}</span>
               </div>
             </div>
           </>
@@ -111,21 +100,23 @@ export function OrderSummary({
         )}
       </div>
 
-      <div className="space-y-3">
-        <Link href="/products">
-          <Button variant="gold" className="w-full">
-            {t('orders.buttons.continueShopping')}
+      {showActions ? (
+        <div className="space-y-3">
+          <Link href="/products">
+            <Button variant="gold" className="w-full">
+              {t('orders.buttons.continueShopping')}
+            </Button>
+          </Link>
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full"
+            onClick={() => dispatchCartDrawerOpen()}
+          >
+            {t('orders.buttons.viewCart')}
           </Button>
-        </Link>
-        <Button
-          type="button"
-          variant="ghost"
-          className="w-full"
-          onClick={() => dispatchCartDrawerOpen()}
-        >
-          {t('orders.buttons.viewCart')}
-        </Button>
-      </div>
+        </div>
+      ) : null}
     </Card>
   );
 }

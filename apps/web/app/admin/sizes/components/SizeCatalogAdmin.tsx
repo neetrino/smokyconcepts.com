@@ -97,22 +97,42 @@ export function SizeCatalogAdmin() {
     const title = newCategoryTitle.trim();
     if (!title) { showToast(t('admin.sizes.titleRequired'), 'warning'); return; }
     const priceAmd = parsePriceAmd(newCategoryPriceAmd);
+    const titleKey = title.toLocaleLowerCase();
+    const existingWithTitle = categories.filter(
+      (cat) => cat.title.trim().toLocaleLowerCase() === titleKey,
+    );
     setSavingCategory(true);
     try {
-      const created = await apiClient.post<{ data: SizeCatalogCategoryDto }>(ADMIN_LIST_ENDPOINT, {
-        title,
-        priceAmd,
-      });
-      setNewCategoryTitle('');
-      setNewCategoryTitleSelection('');
-      setNewCategoryPriceAmd('0');
-      showToast(t('admin.sizes.categoryCreated'), 'success');
-      if (created.data) {
-        setCategories((prev) => [
-          ...prev,
-          { ...created.data, items: Array.isArray(created.data.items) ? created.data.items : [] },
-        ]);
-        setExpandedCategoryId(created.data.id);
+      if (existingWithTitle.length > 0) {
+        await Promise.all(
+          existingWithTitle.map((cat) =>
+            apiClient.patch(`/api/v1/admin/size-catalog/categories/${cat.id}`, {
+              title: cat.title,
+              priceAmd,
+            }),
+          ),
+        );
+        setNewCategoryTitle('');
+        setNewCategoryTitleSelection('');
+        setNewCategoryPriceAmd('0');
+        showToast(t('admin.sizes.categoryUpdated'), 'success');
+        setExpandedCategoryId(existingWithTitle[0]?.id ?? null);
+      } else {
+        const created = await apiClient.post<{ data: SizeCatalogCategoryDto }>(ADMIN_LIST_ENDPOINT, {
+          title,
+          priceAmd,
+        });
+        setNewCategoryTitle('');
+        setNewCategoryTitleSelection('');
+        setNewCategoryPriceAmd('0');
+        showToast(t('admin.sizes.categoryCreated'), 'success');
+        if (created.data) {
+          setCategories((prev) => [
+            ...prev,
+            { ...created.data, items: Array.isArray(created.data.items) ? created.data.items : [] },
+          ]);
+          setExpandedCategoryId(created.data.id);
+        }
       }
       await fetchCatalog({ showLoading: false });
     } catch {
@@ -134,11 +154,23 @@ export function SizeCatalogAdmin() {
     const title = editingCategoryTitle.trim();
     if (!title) { showToast(t('admin.sizes.titleRequired'), 'warning'); return; }
     const priceAmd = parsePriceAmd(editingCategoryPriceAmd);
+    const editingCat = categories.find((cat) => cat.id === editingCategoryId);
+    const previousTitleKey = editingCat?.title.trim().toLocaleLowerCase() ?? '';
+    const targets =
+      previousTitleKey !== ''
+        ? categories.filter(
+            (cat) => cat.title.trim().toLocaleLowerCase() === previousTitleKey,
+          )
+        : categories.filter((cat) => cat.id === editingCategoryId);
     try {
-      await apiClient.patch(`/api/v1/admin/size-catalog/categories/${editingCategoryId}`, {
-        title,
-        priceAmd,
-      });
+      await Promise.all(
+        targets.map((cat) =>
+          apiClient.patch(`/api/v1/admin/size-catalog/categories/${cat.id}`, {
+            title: cat.id === editingCategoryId ? title : cat.title,
+            priceAmd,
+          }),
+        ),
+      );
       setEditingCategoryId(null);
       showToast(t('admin.sizes.categoryUpdated'), 'success');
       await fetchCatalog({ showLoading: false });

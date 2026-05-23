@@ -96,6 +96,17 @@ export interface Product {
   defaultVariantId?: string | null;
   defaultVariantStock?: number;
   defaultVariantSku?: string | null;
+  /** Size-catalog template ids from all variants (incl. default-pricing variant). */
+  sizeCatalogCategoryIds?: string[];
+  /** Size-catalog template titles from all variants (incl. default-pricing variant). */
+  sizeCatalogCategoryTitles?: string[];
+  /** Default-pricing variant size-catalog template — drives customize collection surcharge. */
+  defaultSizeCatalogSelection?: ProductSizeCatalogSelectionDto;
+}
+
+export interface ProductSizeCatalogSelectionDto {
+  categoryId: string | null;
+  categoryTitle: string | null;
 }
 
 // Reserved routes that should not be treated as product slugs

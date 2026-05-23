@@ -3,7 +3,13 @@
 import { OrderCustomizeBlock } from '@/components/orders/OrderCustomizeBlock';
 import { useCurrency } from '../../../../components/hooks/useCurrency';
 import { useTranslation } from '../../../../lib/i18n-client';
-import { amountToUsd, convertPrice, formatPriceInCurrency } from '../../../../lib/currency';
+import {
+  adminInputAmdToUsd,
+  convertPrice,
+  formatCatalogPrice,
+  formatPriceInCurrency,
+} from '../../../../lib/currency';
+import { persistedOrderMoneyToUsd } from '@/lib/currency';
 import { isInternalVariantAttributeKey } from '@/lib/default-pricing-variant';
 import { getColorValue } from '../utils/color-helpers';
 import type { OrderItem as OrderItemType } from '../types';
@@ -18,6 +24,7 @@ export function OrderItem({ item, orderTotalsCurrency }: OrderItemProps) {
   const displayCurrency = useCurrency();
   const formatOrderMoneyUsd = (amountUsd: number) =>
     formatPriceInCurrency(convertPrice(amountUsd, 'USD', displayCurrency), displayCurrency);
+  const formatOrderMoneyAmd = (amountAmd: number) => formatCatalogPrice(amountAmd, 'AMD');
 
   const allOptions = item.variantOptions || [];
   const getAttributeType = (key: string): 'category' | 'size' | 'color' | 'other' => {
@@ -63,8 +70,32 @@ export function OrderItem({ item, orderTotalsCurrency }: OrderItemProps) {
     return [];
   };
 
-  const priceUsd = amountToUsd(item.price, orderTotalsCurrency);
-  const itemPriceDisplay = formatOrderMoneyUsd(priceUsd);
+  const priceUsd =
+    orderTotalsCurrency.trim().toUpperCase() === 'USD'
+      ? item.price
+      : persistedOrderMoneyToUsd(item.price, orderTotalsCurrency);
+  const collectionAmd =
+    typeof item.sizeCatalogCategoryPriceAmd === 'number' &&
+    Number.isFinite(item.sizeCatalogCategoryPriceAmd) &&
+    item.sizeCatalogCategoryPriceAmd > 0
+      ? Math.round(item.sizeCatalogCategoryPriceAmd)
+      : 0;
+  const variantBaseAmd =
+    typeof item.variantBasePriceAmd === 'number' &&
+    Number.isFinite(item.variantBasePriceAmd) &&
+    item.variantBasePriceAmd > 0
+      ? Math.round(item.variantBasePriceAmd)
+      : null;
+  const collectionUnitUsd = collectionAmd > 0 ? adminInputAmdToUsd(collectionAmd) : 0;
+  const baseUnitUsd = Math.max(0, priceUsd - collectionUnitUsd);
+  const lineTotalUsd = priceUsd * Math.max(1, item.quantity);
+  const useAmdSnapshots = displayCurrency === 'AMD' && variantBaseAmd != null;
+  const baseUnitDisplay = useAmdSnapshots
+    ? formatOrderMoneyAmd(variantBaseAmd)
+    : formatOrderMoneyUsd(baseUnitUsd);
+  const lineTotalDisplay = useAmdSnapshots
+    ? formatOrderMoneyAmd((variantBaseAmd + collectionAmd) * Math.max(1, item.quantity))
+    : formatOrderMoneyUsd(lineTotalUsd);
 
   return (
     <div className="flex gap-4 pb-4 border-b border-gray-200 last:border-0">
@@ -137,8 +168,14 @@ export function OrderItem({ item, orderTotalsCurrency }: OrderItemProps) {
         )}
 
         <p className="text-sm text-gray-600">{t('orders.itemDetails.sku').replace('{sku}', item.sku)}</p>
-        <p className="text-sm text-gray-600 mt-2">
-          {t('orders.itemDetails.quantity').replace('{price}', itemPriceDisplay)}
+        <p className="text-sm text-gray-600 mt-1">
+          {t('orders.itemDetails.quantity').replace('{quantity}', String(item.quantity))}
+        </p>
+        <p className="text-sm text-gray-600">
+          {t('orders.itemDetails.unitPrice').replace('{price}', baseUnitDisplay)}
+        </p>
+        <p className="text-sm font-medium text-gray-900">
+          {t('orders.itemDetails.lineTotal').replace('{price}', lineTotalDisplay)}
         </p>
       </div>
     </div>

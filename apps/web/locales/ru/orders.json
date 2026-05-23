@@ -24,7 +24,7 @@
     "subtotal": "Промежуточный итог",
     "discount": "Скидка",
     "shipping": "Доставка",
-    "collectionPrice": "Цена коллекции",
+    "collectionPrice": "Персонализация",
     "tax": "Налог",
     "total": "Итого",
     "loadingTotals": "Загрузка итогов..."
@@ -42,12 +42,14 @@
     "customization": "Персонализация",
     "customize_text": "Текст",
     "version": "Версия",
-    "collection_price": "Цена коллекции",
+    "collection_price": "Персонализация",
     "customize_font": "Шрифт",
     "customize_style": "Стиль",
     "customize_preview": "Предпросмотр",
     "sku": "Артикул: {sku}",
-    "quantity": "Количество: {price}"
+    "quantity": "Количество: {quantity}",
+    "unitPrice": "Цена за единицу: {price}",
+    "lineTotal": "Сумма по позиции: {price}"
   }
 }
 

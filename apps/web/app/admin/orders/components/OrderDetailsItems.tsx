@@ -2,12 +2,8 @@
 
 import { useTranslation } from '../../../../lib/i18n-client';
 import { Card } from '@shop/ui';
-import {
-  ADMIN_PRICE_CURRENCY,
-  amountToUsd,
-  convertPrice,
-  formatPriceInCurrency,
-} from '../../../../lib/currency';
+import { ADMIN_PRICE_CURRENCY, persistedOrderMoneyToUsd, type CurrencyCode } from '../../../../lib/currency';
+import { formatOrderSummaryUsd } from '@/lib/orders/order-summary-display';
 import { isInternalVariantAttributeKey } from '@/lib/default-pricing-variant';
 import { getColorValue } from '../utils/orderUtils';
 import type { OrderDetails } from '../useOrders';
@@ -19,34 +15,28 @@ interface OrderDetailsItemsProps {
 
 export function OrderDetailsItems({
   orderDetails,
-  formatCurrency,
+  formatCurrency: _formatCurrency,
 }: OrderDetailsItemsProps) {
   const { t } = useTranslation();
-  const itemMoneyCurrency = orderDetails.currency || 'USD';
+  const itemMoneyCurrency = orderDetails.totals?.currency ?? orderDetails.currency ?? 'USD';
+  const displayCurrency = ADMIN_PRICE_CURRENCY as CurrencyCode;
 
-  const formatItemAmountWithFixedCollection = (
-    amount: number,
-    quantity: number,
-    collectionPriceAmd?: number | null,
-  ): string => {
-    if (
-      ADMIN_PRICE_CURRENCY !== 'AMD' ||
-      !Number.isFinite(collectionPriceAmd) ||
-      Number(collectionPriceAmd) <= 0
-    ) {
-      return formatCurrency(amount, ADMIN_PRICE_CURRENCY, itemMoneyCurrency);
-    }
+  const formatLineMoneyUsd = (amountUsd: number): string =>
+    formatOrderSummaryUsd(amountUsd, displayCurrency);
 
-    const safeAmountUsd = amountToUsd(amount, itemMoneyCurrency);
-    const safeQuantity = Math.max(0, Number.isFinite(quantity) ? quantity : 0);
-    const collectionPerUnitAmd = Number(collectionPriceAmd);
-    const collectionPerUnitUsd = amountToUsd(collectionPerUnitAmd, 'AMD');
-    const collectionPartUsd = collectionPerUnitUsd * safeQuantity;
-    const baseAmountUsd = Math.max(0, safeAmountUsd - collectionPartUsd);
-    const baseAmountDisplay = convertPrice(baseAmountUsd, 'USD', ADMIN_PRICE_CURRENCY);
-    const collectionPartDisplay = collectionPerUnitAmd * safeQuantity;
-    return formatPriceInCurrency(baseAmountDisplay + collectionPartDisplay, ADMIN_PRICE_CURRENCY);
-  };
+  const formatItemUnitDisplay = (unitPriceStored: number): string =>
+    formatLineMoneyUsd(
+      itemMoneyCurrency.trim().toUpperCase() === 'USD'
+        ? unitPriceStored
+        : persistedOrderMoneyToUsd(unitPriceStored, itemMoneyCurrency)
+    );
+
+  const formatItemLineTotalDisplay = (lineTotalStored: number): string =>
+    formatLineMoneyUsd(
+      itemMoneyCurrency.trim().toUpperCase() === 'USD'
+        ? lineTotalStored
+        : persistedOrderMoneyToUsd(lineTotalStored, itemMoneyCurrency)
+    );
 
   const getColorsArray = (colors: unknown): string[] => {
     if (!colors) return [];
@@ -144,18 +134,10 @@ export function OrderDetailsItems({
                     {Number.isFinite(quantity) ? quantity : '—'}
                   </td>
                   <td className="px-3 py-2 text-right">
-                    {formatItemAmountWithFixedCollection(
-                      Number.isFinite(unitPrice) ? unitPrice : 0,
-                      1,
-                      collectionPriceAmd,
-                    )}
+                    {formatItemUnitDisplay(Number.isFinite(unitPrice) ? unitPrice : 0)}
                   </td>
                   <td className="px-3 py-2 text-right">
-                    {formatItemAmountWithFixedCollection(
-                      Number.isFinite(lineTotal) ? lineTotal : 0,
-                      Number.isFinite(quantity) ? quantity : 0,
-                      collectionPriceAmd,
-                    )}
+                    {formatItemLineTotalDisplay(Number.isFinite(lineTotal) ? lineTotal : 0)}
                   </td>
                 </tr>
               );
@@ -166,4 +148,3 @@ export function OrderDetailsItems({
     </Card>
   );
 }
-

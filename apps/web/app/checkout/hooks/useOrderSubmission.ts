@@ -60,7 +60,14 @@ export function useOrderSubmission({
         const title = item.variant.sizeCatalogTitle?.trim();
         const version = item.variant.sizeCatalogVersion?.trim();
         const img = item.variant.sizeCatalogImageUrl?.trim();
+        const categoryTitle = item.variant.sizeCatalogCategoryTitle?.trim();
         const categoryPriceAmd = item.variant.sizeCatalogCategoryPriceAmd;
+        const hasSizeCatalogPick = Boolean(title);
+        const hasCollectionPrice =
+          typeof categoryPriceAmd === 'number' &&
+          Number.isFinite(categoryPriceAmd) &&
+          categoryPriceAmd >= 0;
+        const hasCollectionContext = Boolean(categoryTitle) || hasCollectionPrice;
         const cPlain = item.variant.customizePlain?.trim();
         const cHtml = item.variant.customizeHtml?.trim();
         const customSizeRequest = item.variant.customSizeRequest;
@@ -69,16 +76,24 @@ export function useOrderSubmission({
           variantId: item.variant.id,
           quantity: item.quantity,
           ...(item.variant.earlyAccess === true ? { earlyAccess: true } : {}),
-          ...(title
+          ...(hasSizeCatalogPick
             ? {
                 sizeCatalogTitle: title,
                 ...(version ? { sizeCatalogVersion: version } : {}),
                 ...(img ? { sizeCatalogImageUrl: img } : {}),
-                ...(typeof categoryPriceAmd === 'number' && categoryPriceAmd >= 0
+                ...(categoryTitle ? { sizeCatalogCategoryTitle: categoryTitle } : {}),
+                ...(hasCollectionPrice
                   ? { sizeCatalogCategoryPriceAmd: Math.round(categoryPriceAmd) }
                   : {}),
               }
-            : {}),
+            : hasCollectionContext
+              ? {
+                  ...(categoryTitle ? { sizeCatalogCategoryTitle: categoryTitle } : {}),
+                  ...(hasCollectionPrice
+                    ? { sizeCatalogCategoryPriceAmd: Math.round(categoryPriceAmd) }
+                    : {}),
+                }
+              : {}),
           ...(cPlain || cHtml
             ? {
                 ...(cPlain ? { customizePlain: cPlain } : {}),

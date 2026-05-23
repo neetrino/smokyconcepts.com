@@ -1,7 +1,8 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { AuthProvider } from '../lib/auth/AuthContext';
+import { enableClientCurrencyStorageReads, initializeCurrencyRates } from '../lib/currency';
 import { ToastContainer } from './Toast';
 import { CartDrawer } from './CartDrawer';
 
@@ -10,6 +11,11 @@ import { CartDrawer } from './CartDrawer';
  * Wraps the app with all client-side providers (Auth, Theme, etc.)
  */
 export function ClientProviders({ children }: { children: ReactNode }) {
+  useEffect(() => {
+    enableClientCurrencyStorageReads();
+    void initializeCurrencyRates();
+  }, []);
+
   return (
     <AuthProvider>
       {children}

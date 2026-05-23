@@ -29,6 +29,9 @@ interface UseProductCartActionsParams {
   selectedCustomSizeRequest: CustomOrderDraft | null;
   /** Last applied PDP customize (Apply) — attached to guest cart lines */
   customizeApplied: { plain: string; html: string | null } | null;
+  /** Collection surcharge from admin sizes (modal pick or product template + customize). */
+  collectionPriceAmd: number;
+  collectionCategoryTitle: string | null;
   setIsAddingToCart: (value: boolean) => void;
   setShowMessage: (value: string | null) => void;
 }
@@ -45,6 +48,8 @@ export function useProductCartActions({
   selectedCatalogSize,
   selectedCustomSizeRequest,
   customizeApplied,
+  collectionPriceAmd,
+  collectionCategoryTitle,
   setIsAddingToCart,
   setShowMessage,
 }: UseProductCartActionsParams) {
@@ -63,16 +68,38 @@ export function useProductCartActions({
 
       setIsAddingToCart(true);
       try {
+        const hasCustomize =
+          customizeApplied != null &&
+          (customizeApplied.plain.trim() !== '' ||
+            (customizeApplied.html != null && customizeApplied.html.trim() !== ''));
+
+        const customizeCollectionPrice =
+          hasCustomize && collectionPriceAmd > 0 && collectionCategoryTitle
+            ? {
+                categoryTitle: collectionCategoryTitle,
+                categoryPriceAmd: collectionPriceAmd,
+              }
+            : null;
+
         const sizeCatalog =
           selectedCatalogSize != null
             ? {
                 title: selectedCatalogSize.title,
                 version: selectedCatalogSize.version,
                 imageUrl: selectedCatalogSize.imageUrl,
-                categoryTitle: selectedCatalogSize.categoryTitle,
-                categoryPriceAmd: 0,
+                categoryTitle:
+                  customizeCollectionPrice?.categoryTitle ?? selectedCatalogSize.categoryTitle,
+                categoryPriceAmd: customizeCollectionPrice?.categoryPriceAmd ?? 0,
               }
-            : null;
+            : customizeCollectionPrice != null
+              ? {
+                  title: '',
+                  version: '',
+                  imageUrl: '',
+                  categoryTitle: customizeCollectionPrice.categoryTitle,
+                  categoryPriceAmd: customizeCollectionPrice.categoryPriceAmd,
+                }
+              : null;
         const customSizeRequest =
           selectedCustomSizeRequest != null
             ? {
@@ -125,6 +152,8 @@ export function useProductCartActions({
       selectedCatalogSize,
       selectedCustomSizeRequest,
       customizeApplied,
+      collectionPriceAmd,
+      collectionCategoryTitle,
       language,
       setIsAddingToCart,
       setShowMessage,

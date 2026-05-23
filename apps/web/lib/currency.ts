@@ -273,6 +273,43 @@ export function amountToUsd(amount: number, storedCurrency: string | undefined):
   return amount;
 }
 
+/**
+ * Order/checkout parity: AMD stays AMD (live rate → USD), USD stays USD.
+ * Mislabeled legacy rows: `currency: USD` with catalog-scale AMD integers (> {@link LEGACY_USD_CATALOG_PRICE_MAX}).
+ * Do not use {@link amountToUsd} for those — it treats AMD code with a fixed 400 rate or leaves large "USD" as-is.
+ */
+export function persistedOrderMoneyToUsd(
+  amount: number,
+  storedCurrency: string | undefined
+): number {
+  const normalized = Number(amount);
+  if (!Number.isFinite(normalized) || normalized <= 0) {
+    return 0;
+  }
+  const code = (storedCurrency ?? 'USD').trim().toUpperCase();
+  if (code === LEGACY_ORDER_DRAM_CODE) {
+    return adminInputAmdToUsd(normalized);
+  }
+  if (code === 'USD' && normalized > LEGACY_USD_CATALOG_PRICE_MAX) {
+    return catalogPriceToUsd(normalized);
+  }
+  if (code === 'USD') {
+    return normalized;
+  }
+  if (isCurrencyCode(code)) {
+    return convertPrice(normalized, code, 'USD');
+  }
+  return normalized;
+}
+
+/** Checkout order summary: USD base → user display currency (AMD / USD / RUB). */
+export function formatStorefrontUsdAmount(
+  amountUsd: number,
+  displayCurrency: CurrencyCode
+): string {
+  return formatPriceInCurrency(convertPrice(amountUsd, 'USD', displayCurrency), displayCurrency);
+}
+
 function usdToDisplayCurrency(amountUsd: number, displayCurrency: string): number {
   const code = displayCurrency.trim().toUpperCase();
   if (isCurrencyCode(code)) {
@@ -283,7 +320,7 @@ function usdToDisplayCurrency(amountUsd: number, displayCurrency: string): numbe
 
 /** Format a raw order line amount for admin (normalizes legacy AMD, displays in {@link ADMIN_PRICE_CURRENCY}). */
 export function formatAdminOrderAmount(amount: number, storedCurrency?: string): string {
-  const amountUsd = amountToUsd(amount, storedCurrency);
+  const amountUsd = persistedOrderMoneyToUsd(amount, storedCurrency);
   return formatPriceInCurrency(usdToDisplayCurrency(amountUsd, ADMIN_PRICE_CURRENCY), ADMIN_PRICE_CURRENCY);
 }
 

@@ -3,7 +3,12 @@
 import { Card, Button } from '@shop/ui';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../../lib/i18n-client';
-import { formatAdminOrderAmount } from '../../../lib/currency';
+import { useCurrencyRatesReady } from '../../../components/hooks/useCurrency';
+import { ADMIN_PRICE_CURRENCY, type CurrencyCode } from '../../../lib/currency';
+import {
+  formatOrderListShippingDisplay,
+  formatOrderListTotalDisplay,
+} from '@/lib/orders/order-summary-display';
 import { formatDate } from '../utils/dashboardUtils';
 
 interface RecentOrder {
@@ -12,7 +17,19 @@ interface RecentOrder {
   status: string;
   paymentStatus: string;
   total: number;
+  subtotal?: number;
+  discountAmount?: number;
+  shippingAmount?: number;
+  taxAmount?: number;
+  collectionPriceAmount?: number;
   currency: string;
+  shippingPriceAmd?: number | null;
+  summaryLines?: Array<{
+    price: number;
+    quantity: number;
+    sizeCatalogCategoryPriceAmd?: number | null;
+    variantBasePriceAmd?: number | null;
+  }>;
   customerEmail?: string;
   customerPhone?: string;
   itemsCount: number;
@@ -27,6 +44,8 @@ interface RecentOrdersCardProps {
 export function RecentOrdersCard({ recentOrders, recentOrdersLoading }: RecentOrdersCardProps) {
   const { t } = useTranslation();
   const router = useRouter();
+  useCurrencyRatesReady();
+  const displayCurrency = ADMIN_PRICE_CURRENCY as CurrencyCode;
 
   return (
     <Card className="border border-[#dcc090]/30 bg-white/90 p-6 shadow-[0_8px_30px_rgba(18,42,38,0.06)]">
@@ -46,7 +65,7 @@ export function RecentOrdersCard({ recentOrders, recentOrdersLoading }: RecentOr
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
               <div key={i} className="animate-pulse">
-                <div className="h-16 rounded bg-[#dcc090]/30"></div>
+                <div className="h-16 rounded bg-[#dcc090]/30" />
               </div>
             ))}
           </div>
@@ -55,49 +74,56 @@ export function RecentOrdersCard({ recentOrders, recentOrdersLoading }: RecentOr
             <p>{t('admin.dashboard.noRecentOrders')}</p>
           </div>
         ) : (
-          recentOrders.map((order) => (
-            <div
-              key={order.id}
-              className="cursor-pointer rounded-lg border border-[#dcc090]/25 bg-white/70 p-4 transition-colors hover:border-[#dcc090] hover:bg-[#dcc090]/10"
-              onClick={() => router.push(`/supersudo/orders?search=${order.number}`)}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-bold text-[#122a26]">#{order.number}</p>
-                    <span
-                      className={`px-2 py-0.5 text-xs rounded-full ${
-                        order.paymentStatus === 'paid'
-                          ? 'bg-[#122a26] text-[#dcc090]'
-                          : order.paymentStatus === 'pending'
-                          ? 'bg-[#dcc090]/35 text-[#122a26]'
-                          : 'bg-[#414141]/10 text-[#414141]'
-                      }`}
-                    >
-                      {order.paymentStatus}
-                    </span>
+          recentOrders.map((order) => {
+            const shippingDisplay = formatOrderListShippingDisplay(order, displayCurrency);
+            return (
+              <div
+                key={order.id}
+                className="cursor-pointer rounded-lg border border-[#dcc090]/25 bg-white/70 p-4 transition-colors hover:border-[#dcc090] hover:bg-[#dcc090]/10"
+                onClick={() => router.push(`/supersudo/orders?search=${order.number}`)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="text-sm font-bold text-[#122a26]">#{order.number}</p>
+                      <span
+                        className={`px-2 py-0.5 text-xs rounded-full ${
+                          order.paymentStatus === 'paid'
+                            ? 'bg-[#122a26] text-[#dcc090]'
+                            : order.paymentStatus === 'pending'
+                              ? 'bg-[#dcc090]/35 text-[#122a26]'
+                              : 'bg-[#414141]/10 text-[#414141]'
+                        }`}
+                      >
+                        {order.paymentStatus}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#414141]/75">
+                      {order.customerEmail || order.customerPhone || t('admin.dashboard.guest')}
+                    </p>
+                    <p className="mt-1 text-xs text-[#414141]/55">
+                      {order.itemsCount === 1
+                        ? t('admin.dashboard.items').replace('{count}', order.itemsCount.toString())
+                        : t('admin.dashboard.itemsPlural').replace('{count}', order.itemsCount.toString())}{' '}
+                      • {formatDate(order.createdAt)}
+                    </p>
                   </div>
-                  <p className="text-xs text-[#414141]/75">
-                    {order.customerEmail || order.customerPhone || t('admin.dashboard.guest')}
-                  </p>
-                  <p className="mt-1 text-xs text-[#414141]/55">
-                    {order.itemsCount === 1
-                      ? t('admin.dashboard.items').replace('{count}', order.itemsCount.toString())
-                      : t('admin.dashboard.itemsPlural').replace('{count}', order.itemsCount.toString())}{' '}
-                    • {formatDate(order.createdAt)}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-black text-[#122a26]">
-                    {formatAdminOrderAmount(order.total, order.currency)}
-                  </p>
+                  <div className="text-right">
+                    <p className="text-sm font-black text-[#122a26]">
+                      {formatOrderListTotalDisplay(order, displayCurrency)}
+                    </p>
+                    {shippingDisplay ? (
+                      <p className="mt-1 text-xs text-[#414141]/55">
+                        {t('orders.orderSummary.shipping')}: {shippingDisplay}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </Card>
   );
 }
-

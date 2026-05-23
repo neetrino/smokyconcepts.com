@@ -8,7 +8,10 @@ import {
 import { logger } from "../utils/logger";
 import { getOutOfStockLabel } from "./utils";
 import type { ProductWithFullRelations, ProductVariantWithOptions } from "./types";
-import { isDefaultPricingVariant } from "@/lib/default-pricing-variant";
+import {
+  extractSizeCatalogSelectionFromAttributes,
+  isDefaultPricingVariant,
+} from "@/lib/default-pricing-variant";
 import { catalogPriceForStorefront } from "@/lib/currency";
 
 /** Option item from variant.attributes JSON (no relation in current schema) */
@@ -27,6 +30,34 @@ type VariantOptionFromAttributes = {
 function getVariantOptions(variant: ProductVariantWithOptions): VariantOptionFromAttributes[] {
   const raw = (variant as { attributes?: unknown }).attributes;
   return Array.isArray(raw) ? (raw as VariantOptionFromAttributes[]) : [];
+}
+
+function collectSizeCatalogCategoryIdsFromVariants(
+  variants: Array<{ attributes?: unknown }>
+): string[] {
+  const ids = new Set<string>();
+  for (const variant of variants) {
+    const { categoryId } = extractSizeCatalogSelectionFromAttributes(variant.attributes);
+    const trimmed = categoryId?.trim();
+    if (trimmed) {
+      ids.add(trimmed);
+    }
+  }
+  return Array.from(ids);
+}
+
+function collectSizeCatalogCategoryTitlesFromVariants(
+  variants: Array<{ attributes?: unknown }>
+): string[] {
+  const titles = new Set<string>();
+  for (const variant of variants) {
+    const { categoryTitle } = extractSizeCatalogSelectionFromAttributes(variant.attributes);
+    const trimmed = categoryTitle?.trim();
+    if (trimmed) {
+      titles.add(trimmed);
+    }
+  }
+  return Array.from(titles);
 }
 
 /**
@@ -439,6 +470,11 @@ export async function transformProduct(
     actualDiscount > 0 ? defaultVariantOriginalPrice : defaultVariantCompareAmd;
 
   const categories = await buildMergedCategoriesForResponse(product, lang);
+  const sizeCatalogCategoryIds = collectSizeCatalogCategoryIdsFromVariants(allVariants);
+  const sizeCatalogCategoryTitles = collectSizeCatalogCategoryTitlesFromVariants(allVariants);
+  const defaultSizeCatalogSelection = extractSizeCatalogSelectionFromAttributes(
+    defaultPricingVariant ? (defaultPricingVariant as { attributes?: unknown }).attributes : null
+  );
 
   return {
     id: product.id,
@@ -475,6 +511,9 @@ export async function transformProduct(
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
     productAttributes: transformProductAttributes(product, lang),
+    sizeCatalogCategoryIds,
+    sizeCatalogCategoryTitles,
+    defaultSizeCatalogSelection,
   };
 }
 

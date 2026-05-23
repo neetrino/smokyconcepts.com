@@ -25,7 +25,19 @@ interface RecentOrder {
   status: string;
   paymentStatus: string;
   total: number;
+  subtotal?: number;
+  discountAmount?: number;
+  shippingAmount?: number;
+  taxAmount?: number;
+  collectionPriceAmount?: number;
   currency: string;
+  shippingPriceAmd?: number | null;
+  summaryLines?: Array<{
+    price: number;
+    quantity: number;
+    sizeCatalogCategoryPriceAmd?: number | null;
+    variantBasePriceAmd?: number | null;
+  }>;
   customerEmail?: string;
   customerPhone?: string;
   itemsCount: number;
