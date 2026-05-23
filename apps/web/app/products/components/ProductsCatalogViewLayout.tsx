@@ -60,6 +60,8 @@ export interface ProductsCatalogViewLayoutProps {
   handleSectionScroll: (title: string) => void;
   registerSectionScrollRef: (title: string, element: HTMLDivElement | null) => void;
   registerSectionPageStartRef: (sectionTitle: string, pageIndex: number, element: HTMLDivElement | null) => void;
+  registerSectionAnchorRef: (title: string, element: HTMLElement | null) => void;
+  catalogSectionScrollMarginClassName: string;
   catalogSizeModalOpen: boolean;
   language: LanguageCode;
   sizeCatalogForModal: SizeCatalogCategoryDto[];
@@ -91,6 +93,8 @@ export function ProductsCatalogViewLayout({
   handleSectionScroll,
   registerSectionScrollRef,
   registerSectionPageStartRef,
+  registerSectionAnchorRef,
+  catalogSectionScrollMarginClassName,
   catalogSizeModalOpen,
   language,
   sizeCatalogForModal,
@@ -238,7 +242,13 @@ export function ProductsCatalogViewLayout({
           <div className="mt-10 space-y-16 lg:mt-10 lg:space-y-20">
             {sections.length > 0 ? (
               sections.map((section) => (
-                <section key={section.title}>
+                <section
+                  key={section.title}
+                  ref={(element) => {
+                    registerSectionAnchorRef(section.title, element);
+                  }}
+                  className={catalogSectionScrollMarginClassName}
+                >
                   <h2 className="text-[2rem] font-extrabold leading-none text-[#414141] sm:text-[2.25rem]">
                     {section.title}
                   </h2>

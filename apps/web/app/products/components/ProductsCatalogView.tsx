@@ -7,6 +7,7 @@ import {
   subscribeCatalogProductsSmViewport,
 } from './catalogProductCardMobilePresentation';
 import { useProductsCatalogFilters } from './hooks/useProductsCatalogFilters';
+import { useProductsCatalogCategoryScroll } from './hooks/useProductsCatalogCategoryScroll';
 import {
   useProductsCatalogCardsPerPage,
   useProductsCatalogSectionScroll,
@@ -35,6 +36,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
     selectedCollection: filters.selectedCollection,
     selectedSectionTitle: filters.selectedSectionTitle,
   });
+  const categoryScroll = useProductsCatalogCategoryScroll({ sections: scroll.sections });
 
   return (
     <ProductsCatalogViewLayout
@@ -61,6 +63,8 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
       handleSectionScroll={scroll.handleSectionScroll}
       registerSectionScrollRef={scroll.registerSectionScrollRef}
       registerSectionPageStartRef={scroll.registerSectionPageStartRef}
+      registerSectionAnchorRef={categoryScroll.registerSectionAnchorRef}
+      catalogSectionScrollMarginClassName={categoryScroll.catalogSectionScrollMarginClassName}
       catalogSizeModalOpen={filters.catalogSizeModalOpen}
       language={filters.language}
       sizeCatalogForModal={filters.sizeCatalogForModal}
