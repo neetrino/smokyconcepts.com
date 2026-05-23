@@ -74,9 +74,9 @@ export function useProductCartActions({
             (customizeApplied.html != null && customizeApplied.html.trim() !== ''));
 
         const customizeCollectionPrice =
-          hasCustomize && collectionPriceAmd > 0 && collectionCategoryTitle
+          hasCustomize && collectionPriceAmd > 0
             ? {
-                categoryTitle: collectionCategoryTitle,
+                categoryTitle: collectionCategoryTitle?.trim() ?? '',
                 categoryPriceAmd: collectionPriceAmd,
               }
             : null;

@@ -24,6 +24,10 @@ import { formatStorePriceForDisplay } from '../lib/currency';
 import { useTranslation } from '../lib/i18n-client';
 import { CART_DRAWER_OPEN_EVENT } from '../app/cart/constants';
 import { readGuestCartFromStorage } from '../app/cart/cart-fetcher';
+import {
+  getCartDisplaySubtotalUsd,
+  getCartLineTotalUsd,
+} from '../app/cart/cart-line-pricing';
 import { handleRemoveItem, handleUpdateQuantity } from '../app/cart/cart-handlers';
 import type { Cart } from '../app/cart/types';
 
@@ -140,6 +144,11 @@ export function CartDrawer() {
     const itemLabel = count === 1 ? 'Item' : 'Items';
     return `( ${count} ${itemLabel} )`;
   }, [cart?.itemsCount]);
+
+  const displaySubtotalUsd = useMemo(
+    () => (cart?.items.length ? getCartDisplaySubtotalUsd(cart.items) : 0),
+    [cart?.items]
+  );
 
   async function onRemoveItem(itemId: string) {
     if (!cart) return;
@@ -294,7 +303,7 @@ export function CartDrawer() {
                       </div>
 
                       <div className="justify-self-end self-center -translate-y-0.5 text-[1.125rem] font-extrabold leading-none text-black">
-                        {formatStorePriceForDisplay(item.total)}
+                        {formatStorePriceForDisplay(getCartLineTotalUsd(item))}
                       </div>
                     </div>
                   </div>
@@ -314,7 +323,7 @@ export function CartDrawer() {
             <div className="mt-6 space-y-3 text-[1rem] leading-none text-[#414141]">
               <div className="flex items-center justify-between font-medium">
                 <span>Subtotal</span>
-                <span>{formatStorePriceForDisplay(cart?.totals.subtotal ?? 0)}</span>
+                <span>{formatStorePriceForDisplay(displaySubtotalUsd)}</span>
               </div>
               <div className="flex items-center justify-between font-medium">
                 <span>Shipping</span>
@@ -330,7 +339,7 @@ export function CartDrawer() {
 
             <div className="mt-4 flex items-center justify-between text-[1.375rem] font-extrabold leading-none text-[#414141]">
               <span>TOTAL</span>
-              <span>{formatStorePriceForDisplay(cart?.totals.total ?? 0)}</span>
+              <span>{formatStorePriceForDisplay(displaySubtotalUsd)}</span>
             </div>
 
             <button
