@@ -62,6 +62,10 @@ export interface OrderDetails {
   fulfillmentStatus: string;
   total: number;
   currency: string;
+  subtotal?: number;
+  discountAmount?: number;
+  shippingAmount?: number;
+  taxAmount?: number;
   totals?: {
     subtotal: number;
     discount: number;
@@ -115,6 +119,7 @@ export interface OrderDetails {
     sizeCatalogVersion?: string | null;
     sizeCatalogImageUrl?: string | null;
     sizeCatalogCategoryPriceAmd?: number | null;
+    variantBasePriceAmd?: number | null;
     customizePlain?: string | null;
     customizeHtml?: string | null;
   }>;

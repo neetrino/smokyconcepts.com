@@ -6,7 +6,7 @@ import {
 
 export function resolveCollectionSurchargeUsd(
   item: {
-    quantity: number | null;
+    quantity?: number | null;
     price?: number | null;
     total?: number | null;
     sizeCatalogTitle?: string | null;
