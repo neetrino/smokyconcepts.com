@@ -105,10 +105,10 @@ export const CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME =
   'max-sm:-translate-y-2 sm:translate-y-0 sm:-translate-y-1 lg:translate-y-0';
 
 export const CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME =
-  'max-sm:-mt-[7rem] sm:-mt-[7rem] lg:-mt-[6.5rem]';
+  'max-sm:-mt-[6rem] sm:-mt-[7rem] lg:-mt-[6.5rem]';
 
 export const CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME =
-  'max-sm:pt-[5.25rem] sm:pt-[5rem] lg:pt-[4.5rem]';
+  'max-sm:pt-[4.5rem] sm:pt-[5rem] lg:pt-[4.5rem]';
 
 export const CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_BOTTOM_PADDING_CLASS_NAME =
   'pb-4 max-sm:pb-3.5 sm:pb-5';
@@ -165,11 +165,11 @@ export const CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME =
 export const CATALOG_PRODUCTS_PAGE_STRIP_SCROLL_CLASS_NAME = `scrollbar-hide mt-4 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory max-sm:pb-14 pb-10 pt-[8rem] sm:pb-12 sm:pt-[8.5rem] lg:pb-14 lg:pt-[9rem] ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_TOP_PADDING_CLASS_NAME}`;
 
 /** `/products` catalog sections — room for overlapping heroes below section h2. */
-export const CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME = `scrollbar-hide mt-1.5 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory max-sm:pb-20 pb-10 max-sm:pt-[7.5rem] pt-[5.5rem] sm:pb-12 sm:pt-[6rem] lg:pb-14 lg:pt-[5.75rem] ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME}`;
+export const CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME = `scrollbar-hide mt-0.5 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory max-sm:pb-10 pb-10 max-sm:pt-[5.75rem] pt-[5.5rem] sm:pb-12 sm:pt-[6rem] lg:pb-14 lg:pt-[5.75rem] ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME}`;
 
 /** Pagination row spacing below catalog / related strips. */
 export const CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME =
-  'relative z-20 mt-4 flex justify-center px-4 max-sm:mt-16 sm:mt-6 sm:mt-8';
+  'relative z-20 mt-4 flex justify-center px-4 max-sm:mt-5 sm:mt-6 sm:mt-8';
 
 /** `/products` horizontal strip — card flex row. */
 export const CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME = `flex min-w-max max-lg:pr-4 lg:pr-[7.5rem] ${CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME}`;
