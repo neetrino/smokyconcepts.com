@@ -42,8 +42,8 @@ const CULTURE_DESKTOP_IMAGE_FRAME_CLASS_NAME = 'sm:-mt-[4rem] sm:mb-1 sm:h-[12.2
 const CULTURE_CARD_META_STACK_GAP_CLASS_NAME = 'gap-1 sm:gap-1.5';
 const CULTURE_DESKTOP_DETAILS_TOP_GAP_CLASS_NAME = 'sm:mt-1.5 sm:pt-0';
 const CULTURE_DESKTOP_EARLY_ACCESS_TOP_GAP_CLASS_NAME = 'sm:mt-2';
-const CULTURE_DESKTOP_FOOTER_ROW_CLASS_NAME =
-  'mt-2 hidden shrink-0 items-center justify-end sm:flex sm:min-h-[1.5rem]';
+const CULTURE_CARD_FOOTER_ROW_CLASS_NAME =
+  'mt-2 flex shrink-0 items-center justify-end sm:min-h-[1.5rem]';
 /** Shifts hero + text inside the white card; article background position stays fixed. */
 const CULTURE_MOBILE_INNER_CONTENT_OFFSET_CLASS_NAME = 'max-sm:translate-y-4';
 /** Nudges hero toward image-switch dots on narrow viewports. */
@@ -59,9 +59,6 @@ const CULTURE_DOTS_ROW_CLASS_NAME =
   'mb-0 flex min-h-3 w-full items-center justify-center gap-1 max-sm:mb-1 sm:-mt-4 sm:gap-[0.3125rem]';
 const CULTURE_COMPACT_EARLY_ACCESS_BUTTON_CLASS_NAME =
   'inline-flex h-[1.375rem] min-w-[2.75rem] items-center justify-center rounded-[0.4375rem] border-2 border-[#dcc090] px-1.5 text-[0.6875rem] font-extrabold leading-tight text-[#dcc090] transition-colors hover:bg-[#dcc090]/10 sm:h-auto sm:min-h-0 sm:rounded-lg sm:px-2 sm:py-1 sm:text-sm';
-/** Inactive like control sits below the white card (Figma mobile only). */
-const CULTURE_EXTERNAL_HEART_ROW_CLASS_NAME = 'mt-2 flex w-full justify-center max-sm:flex sm:hidden';
-
 interface CultureVotingImageDotsProps {
   itemId: string;
   visibleDotCount: number;
@@ -322,23 +319,16 @@ export function CultureVotingCard({
             >
               {earlyAccessLabel}
             </button>
-            <div className={likedByCurrentUser ? 'flex' : 'hidden sm:flex'}>
-              <CultureVotingLikeButton {...likeButtonProps} />
-            </div>
+            <CultureVotingLikeButton {...likeButtonProps} />
           </div>
         ) : (
-          <div className={CULTURE_DESKTOP_FOOTER_ROW_CLASS_NAME}>
+          <div className={CULTURE_CARD_FOOTER_ROW_CLASS_NAME}>
             <CultureVotingLikeButton {...likeButtonProps} />
           </div>
         )}
       </div>
       </div>
     </article>
-    {!likedByCurrentUser ? (
-      <div className={CULTURE_EXTERNAL_HEART_ROW_CLASS_NAME}>
-        <CultureVotingLikeButton {...likeButtonProps} />
-      </div>
-    ) : null}
     </div>
   );
 }
