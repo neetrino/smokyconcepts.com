@@ -23,6 +23,7 @@ import {
 } from '../app/products/components/catalogProductLabels';
 import {
   CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME,
+  CATALOG_MOBILE_STRIP_PROGRAMMATIC_SCROLL_RELEASE_MS,
   CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME,
@@ -45,7 +46,7 @@ import {
   CATALOG_SCROLL_TARGET_TOLERANCE_PX,
   CATALOG_STRIP_PEEK_MEDIA_QUERY,
   getCatalogStripPeekStartScroll,
-  resolveStripPageFromScrollAnchors,
+  resolveMobileStripPageFromScroll,
   scrollMobileStripToPageAnchor,
 } from '../app/products/components/catalogStripScroll';
 
@@ -63,6 +64,7 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
   const sectionScrollRef = useRef<HTMLDivElement | null>(null);
   const pageStartRefs = useRef<Array<HTMLDivElement | null>>([]);
   const scrollIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scrollEndCleanupRef = useRef<(() => void) | null>(null);
   const programmaticScrollRef = useRef(false);
   const { products, loading } = useRelatedProducts({ categorySlug, currentProductId, language });
 
@@ -122,10 +124,41 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
   }, [applyStripPeekStartScroll]);
 
   useEffect(() => {
+    const container = sectionScrollRef.current;
+    scrollEndCleanupRef.current?.();
+    scrollEndCleanupRef.current = null;
+
+    if (!container || isSmUp || totalPages <= 1) {
+      return undefined;
+    }
+
+    const onScrollEnd = () => {
+      if (programmaticScrollRef.current) {
+        return;
+      }
+      setCurrentPage((previous) => {
+        const nextPage = resolveMobileStripPageFromScroll(container, pageStartRefs.current, totalPages);
+        return previous === nextPage ? previous : nextPage;
+      });
+    };
+
+    container.addEventListener('scrollend', onScrollEnd, { passive: true });
+    scrollEndCleanupRef.current = () => {
+      container.removeEventListener('scrollend', onScrollEnd);
+    };
+
+    return () => {
+      scrollEndCleanupRef.current?.();
+      scrollEndCleanupRef.current = null;
+    };
+  }, [isSmUp, totalPages, products.length, cardsPerPage]);
+
+  useEffect(() => {
     return () => {
       if (scrollIdleTimerRef.current) {
         clearTimeout(scrollIdleTimerRef.current);
       }
+      scrollEndCleanupRef.current?.();
     };
   }, []);
 
@@ -164,12 +197,12 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
 
     window.setTimeout(() => {
       programmaticScrollRef.current = false;
-    }, isSmUp ? 450 : 120);
+    }, isSmUp ? 450 : CATALOG_MOBILE_STRIP_PROGRAMMATIC_SCROLL_RELEASE_MS);
   };
 
   const handleSectionScroll = () => {
     const container = sectionScrollRef.current;
-    if (!container || totalPages <= 1 || programmaticScrollRef.current) {
+    if (!container || totalPages <= 1) {
       return;
     }
 
@@ -186,8 +219,12 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
         if (programmaticScrollRef.current) {
           return;
         }
-        commitPage(resolveStripPageFromScrollAnchors(container, pageStartRefs.current));
+        commitPage(resolveMobileStripPageFromScroll(container, pageStartRefs.current, totalPages));
       }, CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS);
+      return;
+    }
+
+    if (programmaticScrollRef.current) {
       return;
     }
 
