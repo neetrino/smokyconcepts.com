@@ -1,6 +1,16 @@
 /** Matches `TrendingFeaturedSection` shop CTA sizing and xl placement. */
 export const UPCOMING_SHOP_BUTTON_CLASS_NAME =
-  '!w-fit !min-h-8 !translate-y-[2rem] !rounded-[0.5rem] !border-[2.5px] !border-[#dcc090] !px-2.5 !py-2 !text-[0.75rem] !font-black !uppercase !leading-none !tracking-[0.07em] sm:!w-auto sm:!min-h-9 sm:!translate-y-[2rem] sm:!rounded-[0.5rem] sm:!border-[2.5px] sm:!border-[#dcc090] sm:!px-5 sm:!py-0 sm:!text-[0.75rem] sm:!font-black sm:!leading-none sm:!tracking-[0.14em] xl:absolute xl:right-[7.5rem] xl:!translate-y-[2rem]';
+  '!w-fit !min-h-8 !translate-y-0 !rounded-[0.5rem] !border-[2.5px] !border-[#dcc090] !px-2.5 !py-2 !text-[0.75rem] !font-black !uppercase !leading-none !tracking-[0.07em] sm:!w-auto sm:!min-h-9 sm:!translate-y-[2rem] sm:!rounded-[0.5rem] sm:!border-[2.5px] sm:!border-[#dcc090] sm:!px-5 sm:!py-0 sm:!text-[0.75rem] sm:!font-black sm:!leading-none sm:!tracking-[0.14em] xl:absolute xl:right-[7.5rem] xl:!translate-y-[2rem]';
+
+/** Mobile: tighter strip padding so cards sit closer to the section title and pagination. */
+export const UPCOMING_MOBILE_SCROLL_TOP_PADDING_CLASS = 'max-sm:pt-[5.5rem]';
+export const UPCOMING_MOBILE_SCROLL_BOTTOM_PADDING_CLASS = 'max-sm:pb-4';
+export const UPCOMING_MOBILE_PAGINATION_MARGIN_TOP_CLASS = 'max-sm:mt-2';
+export const UPCOMING_MOBILE_SECTION_GAP_CLASS = 'max-sm:gap-2';
+
+/** Home upcoming strip — wider mobile cards + trailing gutter for end-of-strip scroll. */
+export const UPCOMING_PRODUCT_STRIP_FLEX_CLASS_NAME =
+  'flex min-w-max items-stretch max-sm:gap-4 max-sm:pr-5 gap-4 sm:gap-7 lg:gap-10 lg:pr-[7.5rem]';
 
 export const UPCOMING_LIMIT = 12;
 export const UPCOMING_CARDS_PER_PAGE_MOBILE = 2;
@@ -23,6 +33,9 @@ export const UPCOMING_PAGE_STAGGER_DELAY_CLASSES = [
   'delay-[516ms]',
 ] as const;
 
+/** Mobile: full-bleed horizontal scroll so the next card clips at the screen edge. */
+export const UPCOMING_MOBILE_SCROLL_BLEED_CLASS = 'max-sm:-mx-5 max-sm:px-5';
+
 /** Matches `/products` catalog section strip (hero overlap + scroll padding). */
 export const UPCOMING_SCROLL_CONTAINER_CLASS_NAME =
-  'scrollbar-hide mt-3 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory max-sm:pb-14 pb-10 max-sm:pt-[7.5rem] pt-[5.5rem] sm:mt-6 sm:pb-12 sm:pt-[6rem] lg:pb-14 lg:pt-[5.75rem]';
+  `scrollbar-hide max-sm:mt-1 mt-3 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory pb-10 ${UPCOMING_MOBILE_SCROLL_BOTTOM_PADDING_CLASS} pt-[5.5rem] ${UPCOMING_MOBILE_SCROLL_TOP_PADDING_CLASS} ${UPCOMING_MOBILE_SCROLL_BLEED_CLASS} sm:mt-6 sm:mx-0 sm:px-0 sm:pb-12 sm:pt-[6rem] lg:pb-14 lg:pt-[5.75rem]`;

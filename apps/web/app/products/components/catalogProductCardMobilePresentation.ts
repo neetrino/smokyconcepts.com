@@ -54,6 +54,13 @@ export const CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_CARD_WIDTH_CLASS_NAME =
 export const HOME_PAGE_MOBILE_STRIP_CARD_WIDTH_CLASS_NAME =
   'max-sm:w-[calc(50vw-1.75rem)] max-sm:min-w-[calc(50vw-1.75rem)] max-sm:max-w-none';
 
+/**
+ * Home upcoming strip — wider cards so the next tile clips at the screen edge on mobile.
+ * `100vw` strip, `px-5` left inset, `gap-4`: `/1.65` leaves ~1 card + peek (matches catalog strip).
+ */
+export const HOME_UPCOMING_MOBILE_STRIP_CARD_WIDTH_CLASS_NAME =
+  'max-sm:w-[calc((100vw-2.25rem)/1.65)] max-sm:min-w-[calc((100vw-2.25rem)/1.65)] max-sm:max-w-none';
+
 /** One mobile coverflow page width on home (`px-5` horizontal padding). */
 export const HOME_PAGE_MOBILE_CAROUSEL_SLOT_WIDTH_CSS = 'calc(100vw - 2.5rem)';
 
@@ -79,8 +86,9 @@ export const HOME_TRENDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME = 'mb-0 max-sm:
 export const HOME_TRENDING_MOBILE_ITEM_WRAPPER_CLASS_NAME =
   `max-sm:flex max-sm:shrink-0 max-sm:flex-col max-sm:justify-center ${HOME_PAGE_MOBILE_STRIP_CARD_WIDTH_CLASS_NAME}`;
 
-/** Home upcoming horizontal strip — same wrapper as trending. */
-export const HOME_UPCOMING_MOBILE_ITEM_WRAPPER_CLASS_NAME = HOME_TRENDING_MOBILE_ITEM_WRAPPER_CLASS_NAME;
+/** Home upcoming horizontal strip — peek of the next card on the right below `sm`. */
+export const HOME_UPCOMING_MOBILE_ITEM_WRAPPER_CLASS_NAME =
+  `max-sm:flex max-sm:shrink-0 max-sm:flex-col max-sm:justify-center ${HOME_UPCOMING_MOBILE_STRIP_CARD_WIDTH_CLASS_NAME}`;
 
 /** Home upcoming strip reuses trending mobile hero + copy spacing. */
 export const HOME_UPCOMING_MOBILE_IMAGE_FRAME_CLASS_NAME = HOME_TRENDING_MOBILE_IMAGE_FRAME_CLASS_NAME;

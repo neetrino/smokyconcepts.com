@@ -15,7 +15,7 @@ export function UpcomingSectionHeader() {
           title={t('home.homepage.upcoming.title')}
           centered={false}
           className="items-start text-left sm:items-center sm:text-center [&_h2]:text-left sm:[&_h2]:text-center"
-          titleClassName="relative top-8 sm:top-10"
+          titleClassName="relative top-2 sm:top-10"
         />
       </div>
       <HomeActionButton

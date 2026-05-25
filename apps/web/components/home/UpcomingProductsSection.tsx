@@ -11,6 +11,7 @@ import { UpcomingSectionHeader } from './UpcomingSectionHeader';
 import {
   UPCOMING_CARDS_PER_PAGE_MOBILE,
   UPCOMING_CARDS_PER_PAGE_SM_UP,
+  UPCOMING_MOBILE_SECTION_GAP_CLASS,
   UPCOMING_SCROLL_CONTAINER_CLASS_NAME,
 } from './upcomingProducts.constants';
 import { useUpcomingProducts } from './useUpcomingProducts';
@@ -45,7 +46,7 @@ export function UpcomingProductsSection() {
   }
 
   return (
-    <section className="relative isolate flex flex-col gap-4 sm:gap-5 xl:mr-[calc(50%_-_50vw)] xl:overflow-x-clip">
+    <section className={`relative isolate flex flex-col gap-4 sm:gap-5 xl:mr-[calc(50%_-_50vw)] xl:overflow-x-clip ${UPCOMING_MOBILE_SECTION_GAP_CLASS}`}>
       <UpcomingSectionHeader />
       <div
         ref={pagination.scrollContainerRef}
