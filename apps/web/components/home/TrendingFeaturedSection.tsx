@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 
 import { HomeActionButton } from './HomeActionButton';
 import { HomeSectionTitle } from './HomeSectionTitle';
@@ -27,6 +27,7 @@ export function TrendingFeaturedSection() {
   const { t } = useTranslation();
   const isXl = useTrendingXlBreakpoint();
   const { items, loading, error, fetchFeatured } = useTrendingFeaturedProducts();
+  const trackRef = useRef<HTMLDivElement | null>(null);
   const pages = useMemo(() => buildTrendingPages(items), [items]);
   const navigation = useTrendingCarouselNavigation(pages, items.length);
 
@@ -62,9 +63,10 @@ export function TrendingFeaturedSection() {
       <TrendingCoverflowTrack
         pages={pages}
         currentDisplayIndex={navigation.safeDisplayIndex}
-        currentLogicalIndex={navigation.safeCurrent}
         suppressTransition={navigation.suppressTransition}
         isXl={isXl}
+        trackRef={trackRef}
+        onTrackTransitionEnd={navigation.handleTrackTransitionEnd}
       />
 
       <TrendingPageSlider
