@@ -36,11 +36,18 @@ const HERO_IMAGE_BOX_SIZE_CLASSES =
 /** Compact thumbnail frame — fixed square, does not stretch with flex. */
 const THUMBNAIL_IMAGE_BOX_SIZE_CLASSES = 'size-[36px] shrink-0 sm:size-[40px]';
 
-/** Thumbnail strip nav control — smaller than hero arrows. */
+/** Thumbnail strip nav control — desktop/tablet; mobile uses in-hero arrows. */
 const THUMBNAIL_NAV_BUTTON_CLASSES =
-  'flex size-9 shrink-0 items-center justify-center rounded-full text-[#122a26] transition-opacity disabled:cursor-not-allowed disabled:opacity-30 sm:size-10';
+  'hidden size-9 shrink-0 items-center justify-center rounded-full text-[#122a26] transition-opacity disabled:cursor-not-allowed disabled:opacity-30 max-sm:hidden sm:flex sm:size-10';
 
 const THUMBNAIL_NAV_ICON_CLASSES = 'size-5 sm:size-6';
+
+/** Mobile hero overlay — kept inside the white card via inset from the hero frame edges. */
+const HERO_NAV_BUTTON_CLASSES =
+  'absolute top-1/2 z-30 flex size-9 -translate-y-1/2 items-center justify-center rounded-full text-[#122a26]/80 transition-opacity disabled:cursor-not-allowed disabled:opacity-30 sm:hidden';
+
+const HERO_NAV_PREVIOUS_BUTTON_CLASSES = `${HERO_NAV_BUTTON_CLASSES} left-2`;
+const HERO_NAV_NEXT_BUTTON_CLASSES = `${HERO_NAV_BUTTON_CLASSES} right-2`;
 
 /** Fills the frame: upscales small assets, downscales large ones, keeps aspect ratio. */
 const GALLERY_IMAGE_FIT_CLASSES = 'size-full object-contain object-center';
@@ -110,7 +117,7 @@ export function ProductImageGallery({
 
   return (
     <div className={`overflow-visible ${GALLERY_TOP_OFFSET_CLASSES}`}>
-      <div className="relative z-0 mx-auto w-full max-w-[520px] overflow-visible rounded-[20px] bg-white px-3 pb-4 pt-3 shadow-[0_1px_0_rgba(18,42,38,0.04)] transition-shadow duration-200 has-[.product-hero:hover]:z-10 has-[.product-hero:hover]:shadow-[0_12px_32px_rgba(18,42,38,0.12)] sm:max-w-[540px] sm:rounded-[24px] sm:px-5 sm:pb-5 sm:pt-4 lg:max-w-[580px]">
+      <div className="relative z-0 mx-auto w-full max-w-[520px] overflow-x-clip overflow-y-visible rounded-[20px] bg-white px-3 pb-4 pt-3 shadow-[0_1px_0_rgba(18,42,38,0.04)] transition-shadow duration-200 has-[.product-hero:hover]:z-10 has-[.product-hero:hover]:shadow-[0_12px_32px_rgba(18,42,38,0.12)] sm:max-w-[540px] sm:overflow-visible sm:rounded-[24px] sm:px-5 sm:pb-5 sm:pt-4 lg:max-w-[580px]">
         <div className={`flex flex-col items-center overflow-visible ${GALLERY_SECTION_GAP_CLASSES}`}>
           <div
             className={`flex w-full justify-center ${
@@ -131,6 +138,30 @@ export function ProductImageGallery({
                   className={`block transition-transform duration-300 ease-out group-hover:scale-[1.03] ${GALLERY_IMAGE_FIT_CLASSES}`}
                 />
                 {customizeOverlayHtml ? <CustomizeProductOverlay html={customizeOverlayHtml} /> : null}
+                {canNavigateImages ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => navigateImageByArrow('previous')}
+                      aria-label={t(language, 'common.ariaLabels.previousThumbnail')}
+                      className={HERO_NAV_PREVIOUS_BUTTON_CLASSES}
+                    >
+                      <svg className={THUMBNAIL_NAV_ICON_CLASSES} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 18l-6-6 6-6" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => navigateImageByArrow('next')}
+                      aria-label={t(language, 'common.ariaLabels.nextThumbnail')}
+                      className={HERO_NAV_NEXT_BUTTON_CLASSES}
+                    >
+                      <svg className={THUMBNAIL_NAV_ICON_CLASSES} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 18l6-6-6-6" />
+                      </svg>
+                    </button>
+                  </>
+                ) : null}
               </div>
             ) : (
               <div className="flex w-full items-center justify-center text-[#9d9d9d]">
@@ -140,7 +171,7 @@ export function ProductImageGallery({
           </div>
 
           {images.length > 0 && (
-            <div className="relative z-20 flex w-full shrink-0 items-center justify-center gap-3">
+            <div className="relative z-20 flex w-full min-w-0 shrink-0 items-center justify-center gap-3 max-sm:gap-2">
               <button
                 type="button"
                 onClick={() => navigateImageByArrow('previous')}
@@ -153,7 +184,7 @@ export function ProductImageGallery({
                 </svg>
               </button>
 
-              <div className="min-h-0 shrink-0 overflow-x-auto overflow-y-visible overscroll-x-contain">
+              <div className="min-h-0 min-w-0 flex-1 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:w-full max-sm:flex-none">
                 <div className="flex min-h-0 flex-nowrap items-center justify-center gap-3">
                   {Array.from({ length: THUMBNAILS_PER_VIEW }, (_, slotIndex) => {
                     const imageIndex = shouldPadThumbnailStrip

@@ -105,9 +105,11 @@ export function buildCatalogCardPresentation({
   const compactArticleWidth =
     catalogStripMobilePeek && compactLayout
       ? `max-sm:w-full max-sm:max-w-full ${stripPeekMobileWidth} ${stripPeekMaxLg} ${stripPeekLgW} ${stripPeekXlW}`
-      : widerCompactCard
-        ? 'w-[12rem] max-sm:w-[10.75rem]'
-        : 'w-[11rem] max-sm:w-[10.25rem]';
+      : productsCatalogPage && compactLayout
+        ? `w-full max-w-none max-sm:w-full max-sm:max-w-none sm:w-[11rem] lg:w-[11rem] xl:w-[11.5rem]`
+        : widerCompactCard
+          ? 'w-[12rem] max-sm:w-[10.75rem]'
+          : 'w-[11rem] max-sm:w-[10.25rem]';
   const cardShadowClass = suppressShadow ? 'shadow-none' : CARD_SHADOW_TAILWIND;
   const articleStackClassName = 'z-0 hover:z-[8] focus-within:z-[8]';
   const compactArticlePaddingClassName = productsCatalogPage

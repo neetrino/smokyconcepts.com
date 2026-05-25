@@ -27,7 +27,6 @@ import {
   CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE,
   CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME,
@@ -37,7 +36,8 @@ import {
   PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
   getCatalogProductCardImageScaleBoost,
   getCatalogProductsSmViewportSnapshot,
-  getProductsCatalogPageSmallerImageScaleMultiplier,
+  getCatalogStripMobileImageFrameClassName,
+  getCatalogStripMobileImageScaleMultiplier,
   getServerCatalogProductsSmViewportSnapshot,
   subscribeCatalogProductsSmViewport,
 } from '../app/products/components/catalogProductCardMobilePresentation';
@@ -155,12 +155,10 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
       scrollIdleTimerRef.current = null;
     }
 
-    if (isSmUp) {
-      container.scrollTo({
-        left: targetScrollLeft,
-        behavior: 'smooth',
-      });
-    }
+    container.scrollTo({
+      left: targetScrollLeft,
+      behavior: isSmUp ? 'smooth' : 'auto',
+    });
 
     setCurrentPage(pageIndex);
 
@@ -214,8 +212,8 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
   };
 
   return (
-    <section className="mt-20 w-full border-t border-[#e8e8e8] py-12 max-sm:overflow-hidden max-sm:py-8 sm:py-16">
-      <h2 className="relative z-10 font-montserrat text-[1.75rem] font-extrabold leading-tight text-[#414141] max-sm:mb-0 max-sm:px-0 sm:text-[2.5rem] sm:leading-none">
+    <section className="relative isolate mt-20 w-full overflow-visible border-t border-[#e8e8e8] py-12 max-sm:py-8 sm:py-16">
+      <h2 className="relative z-10 font-montserrat text-[1.75rem] font-extrabold leading-tight text-[#414141] max-sm:mb-0 sm:text-[2.5rem] sm:leading-none">
         {t(language, 'product.related_products_title')}
       </h2>
 
@@ -271,12 +269,13 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
                     sectionLabel={section}
                     sizeLabel={getSizeLabel(catalogProduct)}
                     categoryLabel={getCategoryLabel(catalogProduct, section)}
-                    productsCatalogPageScaleMultiplier={getProductsCatalogPageSmallerImageScaleMultiplier(
-                      index
+                    productsCatalogPageScaleMultiplier={getCatalogStripMobileImageScaleMultiplier(
+                      index,
+                      isSmUp
                     )}
                     imageNudgeDown={shouldNudgeCatalogProductImage(index)}
                     imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
-                    imageFrameClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME}
+                    imageFrameClassName={getCatalogStripMobileImageFrameClassName(index)}
                     catalogHeroPullUpClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME}
                     catalogCardTopPaddingClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME}
                     catalogDetailsOffsetClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME}

@@ -13,14 +13,14 @@ import {
   CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
   PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME,
   getCatalogProductCardImageScaleBoost,
-  getProductsCatalogPageSmallerImageScaleMultiplier,
+  getCatalogStripMobileImageFrameClassName,
+  getCatalogStripMobileImageScaleMultiplier,
 } from './catalogProductCardMobilePresentation';
 import {
   getCategoryLabel,
@@ -286,12 +286,13 @@ export function ProductsCatalogViewLayout({
                               sectionLabel={section.title}
                               sizeLabel={getSizeLabel(product)}
                               categoryLabel={getCategoryLabel(product, section.title)}
-                              productsCatalogPageScaleMultiplier={getProductsCatalogPageSmallerImageScaleMultiplier(
-                                index
+                              productsCatalogPageScaleMultiplier={getCatalogStripMobileImageScaleMultiplier(
+                                index,
+                                isSmUp
                               )}
                               imageNudgeDown={shouldNudgeCatalogProductImage(index)}
                               imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
-                              imageFrameClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME}
+                              imageFrameClassName={getCatalogStripMobileImageFrameClassName(index)}
                               catalogHeroPullUpClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME}
                               catalogCardTopPaddingClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME}
                               catalogDetailsOffsetClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME}
