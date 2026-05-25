@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient } from '../../../../lib/api-client';
 import { getStoredLanguage, type LanguageCode } from '../../../../lib/language';
@@ -70,6 +70,7 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
     if (searchParams.get(CATALOG_SELECT_SIZE_AUTOOPEN_QUERY) !== CATALOG_SELECT_SIZE_AUTOOPEN_VALUE) {
       return;
     }
+    void preloadSizeCatalogCategories(sizeCatalogCategories);
     setCatalogSizeModalOpen(true);
     const params = new URLSearchParams(searchParams.toString());
     params.delete(CATALOG_SELECT_SIZE_AUTOOPEN_QUERY);
@@ -124,6 +125,11 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
     () => filterSizeCatalogByProducts(sizeCatalogCategories, products),
     [sizeCatalogCategories, products]
   );
+
+  const openCatalogSizeModal = useCallback(() => {
+    void preloadSizeCatalogCategories(sizeCatalogForModal);
+    setCatalogSizeModalOpen(true);
+  }, [sizeCatalogForModal]);
 
   const selectedCatalogItemId = useMemo(() => {
     if (selectedSize === 'all') {
@@ -255,6 +261,7 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
   return {
     catalogSizeModalOpen,
     setCatalogSizeModalOpen,
+    openCatalogSizeModal,
     language,
     mobileFilterOpen,
     setMobileFilterOpen,

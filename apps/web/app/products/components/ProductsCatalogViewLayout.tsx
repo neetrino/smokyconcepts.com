@@ -52,6 +52,7 @@ export interface ProductsCatalogViewLayoutProps {
   activeProductFiltersCount: number;
   updateQuery: (updates: Record<string, string>) => void;
   clearFilters: () => void;
+  openCatalogSizeModal: () => void;
   setCatalogSizeModalOpen: (open: boolean) => void;
   sections: CatalogSectionViewModel[];
   isSmUp: boolean;
@@ -85,6 +86,7 @@ export function ProductsCatalogViewLayout({
   activeProductFiltersCount,
   updateQuery,
   clearFilters,
+  openCatalogSizeModal,
   setCatalogSizeModalOpen,
   sections,
   isSmUp,
@@ -118,7 +120,7 @@ export function ProductsCatalogViewLayout({
         onSortChange={(value) => updateQuery({ sort: value })}
         onOpenSizeCatalog={() => {
           setMobileFilterOpen(false);
-          setCatalogSizeModalOpen(true);
+          openCatalogSizeModal();
         }}
         onClearAll={clearFilters}
       />
@@ -200,7 +202,7 @@ export function ProductsCatalogViewLayout({
 
               <button
                 type="button"
-                onClick={() => setCatalogSizeModalOpen(true)}
+                onClick={openCatalogSizeModal}
                 className={`h-10 w-full whitespace-nowrap rounded-[0.5rem] border-2 px-4 text-left text-[0.9375rem] font-semibold leading-none transition-[box-shadow,ring,border-color,background-color,color] ${
                   isSizeFilterActive ? SIZE_FILTER_BUTTON_ACTIVE : 'border-transparent bg-[#dcc090] text-[#122a26]'
                 }`}

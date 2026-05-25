@@ -5,7 +5,6 @@ import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { useSizeModalExitAnimation } from '@/hooks/useSizeModalExitAnimation';
 import {
-  SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS,
   SIZE_MODAL_BLOCK_ENTER_DELAY_HEADER_MS,
   SIZE_MODAL_BLOCK_ENTER_DELAY_SEARCH_MS,
   SIZE_MODAL_EXIT_DURATION_MS,
@@ -15,7 +14,6 @@ import {
   sizeModalBackdropClass,
   sizeModalBlockClass,
   sizeModalBlockTransitionDelay,
-  sizeModalContentClass,
   sizeModalPanelClass,
 } from '@/lib/size-modal-animation';
 import { sortSizeCatalogCategoriesByDisplayOrder } from '@/lib/constants/size-catalog-display-order.constants';
@@ -331,14 +329,11 @@ export function CustomizeSizeModal({
           ) : null}
 
           <div
-            className={`mt-10 ${sizeModalContentClass(modalMotion)}`}
-            style={{
-              transitionDelay: sizeModalBlockTransitionDelay(
-                SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS,
-                0,
-                modalMotion
-              ),
-            }}
+            className={`mt-10 ${
+              modalMotion.isExiting || modalMotion.isEntered
+                ? 'opacity-100'
+                : 'opacity-0'
+            }`}
           >
             {hasAnyCatalogItems && !hasFilteredItems && sizeSearchQuery.trim().length > 0 ? (
               <CustomizeSizeOrderFallback

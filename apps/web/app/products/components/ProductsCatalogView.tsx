@@ -55,6 +55,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
       activeProductFiltersCount={filters.activeProductFiltersCount}
       updateQuery={filters.updateQuery}
       clearFilters={filters.clearFilters}
+      openCatalogSizeModal={filters.openCatalogSizeModal}
       setCatalogSizeModalOpen={filters.setCatalogSizeModalOpen}
       sections={scroll.sections}
       isSmUp={isSmUp}
