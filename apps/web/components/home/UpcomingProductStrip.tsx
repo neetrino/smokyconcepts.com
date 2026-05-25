@@ -15,11 +15,11 @@ import {
   CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME,
   HOME_UPCOMING_MOBILE_ITEM_WRAPPER_CLASS_NAME,
+  getUpcomingMobileImageFrameClassName,
+  getUpcomingMobileImageScaleMultiplier,
   PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
   getCatalogProductCardImageScaleBoost,
-  getProductsCatalogPageSmallerImageScaleMultiplier,
 } from '../../app/products/components/catalogProductCardMobilePresentation';
 import { UPCOMING_PAGE_STAGGER_DELAY_CLASSES, UPCOMING_PRODUCT_STRIP_FLEX_CLASS_NAME } from './upcomingProducts.constants';
 import type { UpcomingApiProduct } from './upcomingProducts.types';
@@ -101,10 +101,10 @@ export function UpcomingProductStrip({
               sizeLabel={getSizeLabel(catalogProduct)}
               categoryLabel={getCategoryLabel(catalogProduct, section)}
               buyButtonLabel={t('home.homepage.upcoming.orderCta')}
-              productsCatalogPageScaleMultiplier={getProductsCatalogPageSmallerImageScaleMultiplier(index)}
+              productsCatalogPageScaleMultiplier={getUpcomingMobileImageScaleMultiplier(index, isSmUp)}
               imageNudgeDown={shouldNudgeCatalogProductImage(index)}
               imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
-              imageFrameClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME}
+              imageFrameClassName={getUpcomingMobileImageFrameClassName(index)}
               catalogHeroPullUpClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME}
               catalogCardTopPaddingClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME}
               catalogDetailsOffsetClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME}
