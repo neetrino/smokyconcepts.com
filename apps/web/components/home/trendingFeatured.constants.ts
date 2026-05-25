@@ -20,3 +20,5 @@ export const TRACK_TRANSITION_MS = 520;
 export const TRACK_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
 export const TRENDING_FEATURED_PAGE_SIZE = 100;
+export const TRENDING_SWIPE_THRESHOLD_PX = 40;
+export const TRENDING_SWIPE_HORIZONTAL_LOCK_PX = 12;

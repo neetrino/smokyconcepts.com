@@ -18,6 +18,8 @@ export function TrendingCoverflowTrack({
   isXl,
   trackRef,
   onTrackTransitionEnd,
+  dragOffsetPx = 0,
+  isDragging = false,
 }: TrendingCoverflowTrackProps) {
   const totalPages = pages.length;
   if (totalPages === 0) {
@@ -36,9 +38,10 @@ export function TrendingCoverflowTrack({
         ).flat()
       : [{ key: pages[0].key, page: pages[0], logicalIndex: 0, slotIndex: 0 }];
 
-  const trackTransition = suppressTransition
-    ? 'none'
-    : `transform ${TRACK_TRANSITION_MS}ms ${TRACK_EASING}`;
+  const trackTransition =
+    suppressTransition || isDragging
+      ? 'none'
+      : `transform ${TRACK_TRANSITION_MS}ms ${TRACK_EASING}`;
   const slotTransition = suppressTransition
     ? 'none'
     : `opacity ${TRACK_TRANSITION_MS}ms ${TRACK_EASING}, transform ${TRACK_TRANSITION_MS}ms ${TRACK_EASING}`;
@@ -48,10 +51,12 @@ export function TrendingCoverflowTrack({
   const trackWidthStyle = isXl
     ? { width: `${displaySlots.length * PAGE_FRAME_REM}rem` }
     : { width: `calc(${displaySlots.length} * ${HOME_PAGE_MOBILE_CAROUSEL_SLOT_WIDTH_CSS})` };
+  const mobileDragOffset =
+    !isXl && dragOffsetPx !== 0 ? ` + ${dragOffsetPx}px` : '';
   const trackTransformStyle = isXl
     ? { transform: `translateX(-${(currentDisplayIndex + 0.5) * PAGE_FRAME_REM}rem)` }
     : {
-        transform: `translateX(calc(-1 * (${currentDisplayIndex + 0.5}) * ${HOME_PAGE_MOBILE_CAROUSEL_SLOT_WIDTH_CSS}))`,
+        transform: `translateX(calc(-1 * (${currentDisplayIndex + 0.5}) * ${HOME_PAGE_MOBILE_CAROUSEL_SLOT_WIDTH_CSS}${mobileDragOffset}))`,
       };
 
   return (

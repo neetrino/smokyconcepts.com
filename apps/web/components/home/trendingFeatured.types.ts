@@ -38,6 +38,8 @@ export interface TrendingCoverflowTrackProps {
   isXl: boolean;
   trackRef: Ref<HTMLDivElement>;
   onTrackTransitionEnd: (event: TransitionEvent<HTMLDivElement>) => void;
+  dragOffsetPx?: number;
+  isDragging?: boolean;
 }
 
 export interface TrendingMobilePageClusterProps {
