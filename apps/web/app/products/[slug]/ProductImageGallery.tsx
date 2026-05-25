@@ -33,8 +33,14 @@ const HERO_PULL_ABOVE_CARD = '-mt-10 sm:-mt-12 lg:-mt-14';
 const HERO_IMAGE_BOX_SIZE_CLASSES =
   'h-[340px] w-full max-w-full shrink-0 sm:h-[380px] lg:h-[420px]';
 
-/** Fixed thumbnail frame — same fill behavior as hero. */
-const THUMBNAIL_IMAGE_BOX_SIZE_CLASSES = 'h-[68px] w-full shrink-0 sm:h-[82px]';
+/** Compact thumbnail frame — fixed square, does not stretch with flex. */
+const THUMBNAIL_IMAGE_BOX_SIZE_CLASSES = 'size-[36px] shrink-0 sm:size-[40px]';
+
+/** Thumbnail strip nav control — smaller than hero arrows. */
+const THUMBNAIL_NAV_BUTTON_CLASSES =
+  'flex size-9 shrink-0 items-center justify-center rounded-full text-[#122a26] transition-opacity disabled:cursor-not-allowed disabled:opacity-30 sm:size-10';
+
+const THUMBNAIL_NAV_ICON_CLASSES = 'size-5 sm:size-6';
 
 /** Fills the frame: upscales small assets, downscales large ones, keeps aspect ratio. */
 const GALLERY_IMAGE_FIT_CLASSES = 'size-full object-contain object-center';
@@ -124,21 +130,21 @@ export function ProductImageGallery({
           </div>
 
           {images.length > 0 && (
-            <div className="relative z-20 flex w-full shrink-0 items-center gap-2 sm:gap-3">
+            <div className="relative z-20 flex w-full shrink-0 items-center justify-center gap-3">
               <button
                 type="button"
                 onClick={() => navigateImageByArrow('previous')}
                 aria-label={t(language, 'common.ariaLabels.previousThumbnail')}
                 disabled={!canNavigateImages}
-                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-[#122a26] transition-opacity disabled:cursor-not-allowed disabled:opacity-30 sm:h-16 sm:w-16"
+                className={THUMBNAIL_NAV_BUTTON_CLASSES}
               >
-                <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={THUMBNAIL_NAV_ICON_CLASSES} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 18l-6-6 6-6" />
                 </svg>
               </button>
 
-              <div className="min-h-0 min-w-0 flex-1 overflow-x-auto overflow-y-visible overscroll-x-contain">
-                <div className="flex min-h-0 w-full flex-nowrap items-center gap-2 sm:gap-2.5">
+              <div className="min-h-0 min-w-0 max-w-full overflow-x-auto overflow-y-visible overscroll-x-contain">
+                <div className="flex min-h-0 flex-nowrap items-center justify-center gap-3">
                   {visibleThumbnails.map((image, index) => {
                     const actualIndex = thumbnailStartIndex + index;
                     const isActive = actualIndex === currentImageIndex;
@@ -148,12 +154,12 @@ export function ProductImageGallery({
                         key={`${image}-${actualIndex}`}
                         type="button"
                         onClick={() => selectThumbnailByIndex(actualIndex)}
-                        className={`group relative flex min-h-[76px] min-w-0 flex-1 cursor-pointer flex-col items-center justify-center gap-1 overflow-visible rounded-[6px] bg-white py-0.5 transition-opacity sm:min-h-[90px] ${
+                        className={`group relative flex shrink-0 cursor-pointer flex-col items-center justify-center gap-0.5 overflow-visible rounded-[4px] bg-white transition-opacity ${
                           isActive ? 'opacity-100' : 'opacity-75 hover:opacity-100'
                         }`}
                       >
                         <div
-                          className={`flex w-full items-center justify-center overflow-visible ${THUMBNAIL_IMAGE_BOX_SIZE_CLASSES}`}
+                          className={`flex items-center justify-center overflow-visible ${THUMBNAIL_IMAGE_BOX_SIZE_CLASSES}`}
                         >
                           <img
                             src={image}
@@ -164,8 +170,8 @@ export function ProductImageGallery({
                         </div>
                         <span
                           aria-hidden
-                          className={`block h-0.5 max-w-[80%] rounded-[2px] sm:h-1 ${
-                            isActive ? 'w-[70%] bg-[#122a26]' : 'w-1/2 bg-[#d9d9d9]'
+                          className={`block h-0.5 rounded-[1px] ${
+                            isActive ? 'w-full bg-[#122a26]' : 'w-2/3 bg-[#d9d9d9]'
                           }`}
                         />
                       </button>
@@ -179,9 +185,9 @@ export function ProductImageGallery({
                 onClick={() => navigateImageByArrow('next')}
                 aria-label={t(language, 'common.ariaLabels.nextThumbnail')}
                 disabled={!canNavigateImages}
-                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-[#122a26] transition-opacity disabled:cursor-not-allowed disabled:opacity-30 sm:h-16 sm:w-16"
+                className={THUMBNAIL_NAV_BUTTON_CLASSES}
               >
-                <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={THUMBNAIL_NAV_ICON_CLASSES} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 18l6-6-6-6" />
                 </svg>
               </button>
