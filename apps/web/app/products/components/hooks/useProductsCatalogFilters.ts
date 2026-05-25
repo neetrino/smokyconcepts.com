@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { apiClient } from '../../../../lib/api-client';
 import { getStoredLanguage, type LanguageCode } from '../../../../lib/language';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
 import { preloadSizeCatalogCategories } from '@/lib/size-catalog-image-cache';
+import { loadSizeCatalogCategories } from '@/lib/size-catalog-client-cache';
 import {
   CATALOG_SELECT_SIZE_AUTOOPEN_QUERY,
   CATALOG_SELECT_SIZE_AUTOOPEN_VALUE,
@@ -27,7 +27,9 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [catalogSizeModalOpen, setCatalogSizeModalOpen] = useState(false);
+  const [pendingSelectSizeAutopen, setPendingSelectSizeAutopen] = useState(false);
   const [sizeCatalogCategories, setSizeCatalogCategories] = useState<SizeCatalogCategoryDto[]>([]);
+  const [sizeCatalogReady, setSizeCatalogReady] = useState(false);
   const [language, setLanguage] = useState<LanguageCode>('en');
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState(searchParams.get('size') ?? 'all');
@@ -70,8 +72,7 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
     if (searchParams.get(CATALOG_SELECT_SIZE_AUTOOPEN_QUERY) !== CATALOG_SELECT_SIZE_AUTOOPEN_VALUE) {
       return;
     }
-    void preloadSizeCatalogCategories(sizeCatalogCategories);
-    setCatalogSizeModalOpen(true);
+    setPendingSelectSizeAutopen(true);
     const params = new URLSearchParams(searchParams.toString());
     params.delete(CATALOG_SELECT_SIZE_AUTOOPEN_QUERY);
     const nextPath = params.toString() ? `/products?${params.toString()}` : '/products';
@@ -89,20 +90,13 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
 
   useEffect(() => {
     let cancelled = false;
-    void (async () => {
-      try {
-        const res = await apiClient.get<{ data: SizeCatalogCategoryDto[] }>('/api/v1/size-catalog');
-        if (!cancelled) {
-          const data = Array.isArray(res.data) ? res.data : [];
-          setSizeCatalogCategories(data);
-          void preloadSizeCatalogCategories(data);
-        }
-      } catch {
-        if (!cancelled) {
-          setSizeCatalogCategories([]);
-        }
+    void loadSizeCatalogCategories().then((data) => {
+      if (cancelled) {
+        return;
       }
-    })();
+      setSizeCatalogCategories(data);
+      setSizeCatalogReady(true);
+    });
     return () => {
       cancelled = true;
     };
@@ -125,6 +119,24 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
     () => filterSizeCatalogByProducts(sizeCatalogCategories, products),
     [sizeCatalogCategories, products]
   );
+
+  useEffect(() => {
+    if (!pendingSelectSizeAutopen || !sizeCatalogReady) {
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      await preloadSizeCatalogCategories(sizeCatalogForModal);
+      if (cancelled) {
+        return;
+      }
+      setCatalogSizeModalOpen(true);
+      setPendingSelectSizeAutopen(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [pendingSelectSizeAutopen, sizeCatalogReady, sizeCatalogForModal]);
 
   const openCatalogSizeModal = useCallback(() => {
     void preloadSizeCatalogCategories(sizeCatalogForModal);
