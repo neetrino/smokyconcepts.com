@@ -22,14 +22,14 @@ import { useTranslation } from '@/lib/i18n-client';
 
 const UPCOMING_LINE_KEY_BY_TITLE: Record<string, string> = {
   Notebooks: 'notebooks',
-  Knifes: 'knifes',
+  Knives: 'knives',
   Phones: 'phones',
   Wallets: 'wallets',
   Documents: 'documents',
   Keys: 'keys',
 };
 
-const EMPHASIZED_UPCOMING_TITLES = new Set(['Notebooks', 'Knifes', 'Phones', 'Keys', 'Wallets']);
+const EMPHASIZED_UPCOMING_TITLES = new Set(['Notebooks', 'Knives', 'Phones', 'Keys', 'Wallets']);
 
 export function HomeUpcomingLinesSection() {
   const { t } = useTranslation();
@@ -53,7 +53,7 @@ export function HomeUpcomingLinesSection() {
           imageNudgeDown={item.title === 'Notebooks'}
           imageKeysLayout={item.title === 'Keys'}
           imagePhonesLayout={item.title === 'Phones'}
-          imageKnifesLayout={item.title === 'Knifes'}
+          imageKnivesLayout={item.title === 'Knives'}
           imageDocumentsLayout={item.title === 'Documents'}
           imageWalletsLayout={item.title === 'Wallets'}
           title={t(`home.homepage.upcomingLines.cards.${UPCOMING_LINE_KEY_BY_TITLE[item.title] ?? 'documents'}`)}
@@ -92,7 +92,7 @@ export function HomeUpcomingLinesSection() {
           </div>
           <div className={`${UPCOMING_LINES_MASONRY_ROW_CLASS} items-start`}>
             <div className={MASONRY_ROW2_LEFT}>
-              {renderUpcomingLineCard('Knifes', { masonryTile: 'knifes' })}
+              {renderUpcomingLineCard('Knives', { masonryTile: 'knives' })}
             </div>
             <div className={MASONRY_ROW2_RIGHT}>
               {renderUpcomingLineCard('Keys', { masonryTile: 'keys' })}
@@ -114,7 +114,7 @@ export function HomeUpcomingLinesSection() {
             {renderUpcomingLineCard('Wallets')}
           </div>
           <div className="grid h-full xl:[grid-template-rows:234fr_32fr_302fr]">
-            {renderUpcomingLineCard('Knifes')}
+            {renderUpcomingLineCard('Knives')}
             <div aria-hidden="true" />
             {renderUpcomingLineCard('Documents')}
           </div>

@@ -24,8 +24,8 @@ export interface UpcomingLineCardProps {
   imageKeysLayout?: boolean;
   /** Larger Phones artwork, nudged up (less top offset via translate). */
   imagePhonesLayout?: boolean;
-  /** Smaller Knifes artwork vs default emphasized cards. */
-  imageKnifesLayout?: boolean;
+  /** Smaller Knives artwork vs default emphasized cards. */
+  imageKnivesLayout?: boolean;
   /** Documents: more `top` + gentler float so the image clears the title. */
   imageDocumentsLayout?: boolean;
   /** Wallets (xl row, no masonry tile): match masonry-style hero image framing. */
@@ -41,7 +41,7 @@ export function UpcomingLineCard({
   imageNudgeDown = false,
   imageKeysLayout = false,
   imagePhonesLayout = false,
-  imageKnifesLayout = false,
+  imageKnivesLayout = false,
   imageDocumentsLayout = false,
   imageWalletsLayout = false,
   masonryTile,
@@ -51,7 +51,7 @@ export function UpcomingLineCard({
     imageNudgeDown,
     imageKeysLayout,
     imagePhonesLayout,
-    imageKnifesLayout,
+    imageKnivesLayout,
     imageDocumentsLayout,
     imageWalletsLayout,
     masonryTile,

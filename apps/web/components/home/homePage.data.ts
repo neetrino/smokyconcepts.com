@@ -217,7 +217,7 @@ export const CULTURE_PRODUCTS: HomeProductItem[] = [
 
 export const UPCOMING_LINES: HomeSimpleCardItem[] = [
   { title: 'Notebooks', imageSrc: '/assets/home/products/notebook.webp' },
-  { title: 'Knifes', imageSrc: '/assets/home/products/knife.webp' },
+  { title: 'Knives', imageSrc: '/assets/home/products/knife.webp' },
   { title: 'Phones', imageSrc: '/assets/home/products/phone.webp' },
   { title: 'Wallets', imageSrc: '/assets/home/products/wallet.webp' },
   { title: 'Documents', imageSrc: '/assets/home/products/keys.webp' },
