@@ -31,7 +31,7 @@ const HERO_PULL_ABOVE_CARD = '-mt-10 sm:-mt-12 lg:-mt-14';
 
 /** Fixed hero frame — small sources scale up, large sources scale down (no crop). */
 const HERO_IMAGE_BOX_SIZE_CLASSES =
-  'h-[340px] w-full max-w-full shrink-0 sm:h-[380px] lg:h-[420px]';
+  'h-[360px] w-full max-w-full shrink-0 sm:h-[400px] lg:h-[440px]';
 
 /** Compact thumbnail frame — fixed square, does not stretch with flex. */
 const THUMBNAIL_IMAGE_BOX_SIZE_CLASSES = 'size-[36px] shrink-0 sm:size-[40px]';
@@ -100,7 +100,7 @@ export function ProductImageGallery({
 
   return (
     <div className={`overflow-visible ${GALLERY_TOP_OFFSET_CLASSES}`}>
-      <div className="relative z-0 mx-auto w-full max-w-[520px] overflow-visible rounded-[20px] bg-white px-3 pb-3 pt-3 shadow-[0_1px_0_rgba(18,42,38,0.04)] transition-shadow duration-200 has-[.product-hero:hover]:z-10 has-[.product-hero:hover]:shadow-[0_12px_32px_rgba(18,42,38,0.12)] sm:max-w-[540px] sm:rounded-[24px] sm:px-5 sm:pb-4 sm:pt-4 lg:max-w-[580px]">
+      <div className="relative z-0 mx-auto w-full max-w-[520px] overflow-visible rounded-[20px] bg-white px-3 pb-4 pt-3 shadow-[0_1px_0_rgba(18,42,38,0.04)] transition-shadow duration-200 has-[.product-hero:hover]:z-10 has-[.product-hero:hover]:shadow-[0_12px_32px_rgba(18,42,38,0.12)] sm:max-w-[540px] sm:rounded-[24px] sm:px-5 sm:pb-5 sm:pt-4 lg:max-w-[580px]">
         <div className={`flex flex-col items-center overflow-visible ${GALLERY_SECTION_GAP_CLASSES}`}>
           <div
             className={`flex w-full justify-center ${
