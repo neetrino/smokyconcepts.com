@@ -249,7 +249,7 @@ export function buildCatalogCardPresentation({
         : 'mt-5 flex items-center justify-between gap-3';
   const dotsGapClassName = compactLayout ? 'gap-1' : 'gap-[0.3125rem]';
   const dotsMarginClassName = compactLayout ? (productsCatalogPage ? 'mb-0.5' : 'mb-1') : 'mb-3';
-  const dotsRowLayoutClassName = `flex min-h-3 items-center ${dotsGapClassName} ${dotsMarginClassName}`;
+  const dotsRowLayoutClassName = `flex min-h-3 items-center justify-center ${dotsGapClassName} ${dotsMarginClassName}`;
   const sizeBadgeClassName = compactLayout
     ? 'inline-flex items-center px-0 py-0 text-[0.5625rem] font-semibold leading-tight text-[#122a26] sm:text-[0.625rem]'
     : 'inline-flex items-center px-0 py-0 text-[0.6875rem] font-semibold leading-tight text-[#122a26] sm:text-[0.75rem]';
