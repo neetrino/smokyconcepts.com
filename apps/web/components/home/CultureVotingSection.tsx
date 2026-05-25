@@ -147,13 +147,18 @@ export function CultureVotingSection() {
 
     const likedItem = displayItems.find((item) => item.likedByCurrentUser);
 
+    if (!likedItem) {
+      setEarlyAccessItemId(null);
+      return;
+    }
+
     if (!earlyAccessItemId || !displayItems.some((item) => item.id === earlyAccessItemId)) {
-      setEarlyAccessItemId(likedItem?.id ?? displayItems[0]?.id ?? null);
+      setEarlyAccessItemId(likedItem.id);
       return;
     }
 
     const activeEarlyAccessItem = displayItems.find((item) => item.id === earlyAccessItemId);
-    if (activeEarlyAccessItem && !activeEarlyAccessItem.likedByCurrentUser && likedItem) {
+    if (activeEarlyAccessItem && !activeEarlyAccessItem.likedByCurrentUser) {
       setEarlyAccessItemId(likedItem.id);
     }
   }, [displayItems, earlyAccessItemId]);
@@ -193,9 +198,7 @@ export function CultureVotingSection() {
           const activeLikedItem = sortedUpdatedItems.find((item) => item.likedByCurrentUser);
           const toggledItem = updatedItems.find((item) => item.id === itemId);
           nextEarlyAccessItemId =
-            toggledItem?.likedByCurrentUser
-              ? itemId
-              : activeLikedItem?.id ?? sortedUpdatedItems[0]?.id ?? null;
+            toggledItem?.likedByCurrentUser ? itemId : activeLikedItem?.id ?? null;
           return updatedItems;
         });
         setEarlyAccessItemId(nextEarlyAccessItemId);
@@ -212,7 +215,9 @@ export function CultureVotingSection() {
         const sortedOptimisticItems = sortCultureVotingItems(optimisticItems);
         setItems(optimisticItems);
         setEarlyAccessItemId(
-          nextLikedState ? itemId : sortedOptimisticItems.find((item) => item.likedByCurrentUser)?.id ?? sortedOptimisticItems[0]?.id ?? null,
+          nextLikedState
+            ? itemId
+            : sortedOptimisticItems.find((item) => item.likedByCurrentUser)?.id ?? null,
         );
 
         const updatesByItemId = new Map<string, VotingLikeResponse['data']>();
@@ -253,7 +258,7 @@ export function CultureVotingSection() {
           } else if (earlyAccessItemId === itemId) {
             const sortedUpdatedItems = sortCultureVotingItems(updatedItems);
             const fallbackLikedItem = sortedUpdatedItems.find((item) => item.likedByCurrentUser);
-            nextEarlyAccessItemId = fallbackLikedItem?.id ?? sortedUpdatedItems[0]?.id ?? null;
+            nextEarlyAccessItemId = fallbackLikedItem?.id ?? null;
           }
 
           return updatedItems;
@@ -393,7 +398,7 @@ export function CultureVotingSection() {
                     ? t('home.homepage.culture.labels.atelier')
                     : undefined;
             const variantTone = index === 0 ? 'special' : index === 2 ? 'atelier' : 'classic';
-            const showEarlyAccess = item.id === earlyAccessItemId;
+            const showEarlyAccess = item.id === earlyAccessItemId && item.likedByCurrentUser;
             return (
               <div
                 key={item.id}
