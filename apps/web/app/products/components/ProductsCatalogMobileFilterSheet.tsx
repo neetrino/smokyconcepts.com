@@ -2,6 +2,8 @@
 
 import { useEffect, type ReactNode } from 'react';
 
+import { useTranslation } from '@/lib/i18n-client';
+
 import { CatalogForProductLineRow } from './CatalogForProductLineRow';
 
 const MOBILE_FILTER_TOUCH_ROW =
@@ -45,6 +47,9 @@ const FILTER_SECTION_ACTIVE =
   'ring-2 ring-[#122a26] ring-offset-2 ring-offset-[#F2F2F2]';
 
 const MOBILE_FILTER_ROW_MIN_H = 'min-h-[3.25rem]';
+
+const MOBILE_FILTER_APPLY_BUTTON_CLASS =
+  'flex h-12 w-full items-center justify-center rounded-lg border border-[#dcc090] bg-white text-sm font-bold uppercase tracking-[0.2em] text-[#dcc090] transition-colors hover:bg-[#dcc090]/10';
 
 /** Single tap target: invisible native select over the labeled row (no duplicate “All” / default in list). */
 function MobileFilterNativeRow({
@@ -117,6 +122,8 @@ export function ProductsCatalogMobileFilterSheet({
   onOpenSizeCatalog,
   onClearAll,
 }: ProductsCatalogMobileFilterSheetProps) {
+  const { t } = useTranslation();
+
   useEffect(() => {
     if (!open) {
       return;
@@ -155,7 +162,7 @@ export function ProductsCatalogMobileFilterSheet({
     >
       <div className="flex shrink-0 items-start justify-between gap-3 px-5 pb-4 pt-[max(1rem,env(safe-area-inset-top))]">
         <h2 id="mobile-filter-title" className="text-2xl font-bold text-[#333333]">
-          Filter
+          {t('products.mobileFilters.title')}
         </h2>
         <div className="flex shrink-0 items-center gap-2">
           <button
@@ -163,20 +170,20 @@ export function ProductsCatalogMobileFilterSheet({
             onClick={onClearAll}
             className="rounded-full border border-[#dcc090] px-3 py-1.5 text-xs font-semibold text-[#dcc090] transition-colors hover:bg-[#dcc090]/15"
           >
-            Clear All
+            {t('products.mobileFilters.clearAll')}
           </button>
           <button
             type="button"
             onClick={onClose}
             className="flex h-10 w-10 items-center justify-center rounded-full text-[#414141] transition-colors hover:bg-black/5"
-            aria-label="Close filters"
+            aria-label={t('products.mobileFilters.close')}
           >
             <CloseIcon />
           </button>
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-6">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4">
         <div className="mb-6 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
           <CatalogForProductLineRow />
         </div>
@@ -249,6 +256,12 @@ export function ProductsCatalogMobileFilterSheet({
             {selectedSize === 'all' ? 'Select size' : selectedSize}
           </button>
         </div>
+      </div>
+
+      <div className="shrink-0 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+        <button type="button" onClick={onClose} className={MOBILE_FILTER_APPLY_BUTTON_CLASS}>
+          {t('products.mobileFilters.apply')}
+        </button>
       </div>
     </div>
   );
