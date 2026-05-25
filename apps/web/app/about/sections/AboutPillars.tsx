@@ -245,9 +245,9 @@ export function AboutPillars() {
       <div
         ref={mobileScrollerRef}
         onScroll={handleMobileScroll}
-        className="-mx-4 overflow-x-auto px-4 pb-1 touch-pan-x overscroll-x-contain sm:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="-mx-4 snap-x snap-mandatory overflow-x-auto overflow-y-visible overscroll-x-contain px-4 pb-1 sm:hidden [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        <div className="flex snap-x snap-mandatory gap-6">
+        <div className="flex gap-6">
           {pillars.map((pillar, index) => (
             <div
               key={pillar.id}

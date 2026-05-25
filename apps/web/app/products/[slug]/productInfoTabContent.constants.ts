@@ -5,9 +5,10 @@
 export const PRODUCT_INFO_TAB_BLOCK_HEIGHT_CLASS =
   'max-xl:h-[15rem] max-xl:min-h-[15rem] max-xl:max-h-[15rem] sm:max-xl:h-[16.25rem] sm:max-xl:min-h-[16.25rem] sm:max-xl:max-h-[16.25rem]';
 
+/** Matches {@link GALLERY_TOP_OFFSET_CLASSES} in ProductImageGallery so title aligns with the white card top on xl+. */
 export const PRODUCT_INFO_ROOT_CLASS = [
   'flex h-full min-h-0 w-full max-w-[763px] flex-1 flex-col overflow-hidden',
-  'pt-[clamp(3rem,7.8vw,11.25rem)]',
+  'pt-0 xl:pt-16',
 ].join(' ');
 
 export const PRODUCT_INFO_HEADER_CLASS = 'shrink-0';

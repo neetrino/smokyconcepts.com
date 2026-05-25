@@ -1,16 +1,22 @@
 'use client';
 
+import { useEffect } from 'react';
 import { HomeActionButton } from './HomeActionButton';
 import { HomeSectionTitle } from './HomeSectionTitle';
 import { PackFitCard } from './PackFitCard';
 import { PACK_FIT_ITEMS } from './homePage.data';
 import { getProductsPathWithSelectSizeAutopen } from '@/lib/constants/products-catalog.constants';
 import { useTranslation } from '@/lib/i18n-client';
+import { prefetchSizeCatalogCategories } from '@/lib/size-catalog-client-cache';
 
 const PACK_FIT_KEY_BY_INDEX = ['ultraSlims', 'compact', 'superSlims', 'slims', 'kingSize', 'sticks'] as const;
 
 export function HomePackFitSection() {
   const { t } = useTranslation();
+
+  useEffect(() => {
+    prefetchSizeCatalogCategories();
+  }, []);
 
   return (
     <section className="-mt-10 flex flex-col gap-8 pb-8 sm:mt-1 sm:gap-10 sm:pb-10">

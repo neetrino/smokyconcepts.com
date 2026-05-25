@@ -20,12 +20,16 @@ export function TrendingDesktopPageCluster({
   eager,
   label,
   isFocal,
+  freezeClusterMotion = false,
 }: TrendingDesktopPageClusterProps) {
   const displayLabel = label && label !== 'Featured' ? label : '—';
+  const clusterMotionClassName = freezeClusterMotion
+    ? ''
+    : 'transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]';
 
   return (
     <div
-      className={`mx-auto flex flex-col items-center transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+      className={`mx-auto flex flex-col items-center ${clusterMotionClassName} ${
         isFocal ? '-translate-y-2' : '-translate-y-[6.25rem]'
       }`}
       style={{ width: `${CLUSTER_INNER_REM}rem` }}

@@ -15,14 +15,13 @@ import {
   CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME,
+  HOME_UPCOMING_MOBILE_ITEM_WRAPPER_CLASS_NAME,
+  getCatalogStripMobileImageFrameClassName,
+  getCatalogStripMobileImageScaleMultiplier,
   PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
   getCatalogProductCardImageScaleBoost,
-  getProductsCatalogPageSmallerImageScaleMultiplier,
 } from '../../app/products/components/catalogProductCardMobilePresentation';
-import { UPCOMING_PAGE_STAGGER_DELAY_CLASSES } from './upcomingProducts.constants';
+import { UPCOMING_PAGE_STAGGER_DELAY_CLASSES, UPCOMING_PRODUCT_STRIP_FLEX_CLASS_NAME } from './upcomingProducts.constants';
 import type { UpcomingApiProduct } from './upcomingProducts.types';
 import { useTranslation } from '@/lib/i18n-client';
 
@@ -48,7 +47,7 @@ export function UpcomingProductStrip({
   const { t } = useTranslation();
 
   return (
-    <div className={`${CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME} items-stretch`}>
+    <div className={UPCOMING_PRODUCT_STRIP_FLEX_CLASS_NAME}>
       {items.map((item, index) => {
         const pageIndex = Math.floor(index / cardsPerPage);
         const indexInPage = index % cardsPerPage;
@@ -94,7 +93,7 @@ export function UpcomingProductStrip({
             }}
             className={`flex min-h-0 shrink-0 flex-col self-stretch transition-transform transition-shadow duration-300 ease-out will-change-transform ${pageMotionClass} ${pageDelayClass} ${
               isPageStart ? 'max-sm:snap-start max-sm:snap-always' : ''
-            } ${CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME}`}
+            } ${HOME_UPCOMING_MOBILE_ITEM_WRAPPER_CLASS_NAME}`}
           >
             <ProductsCatalogCard
               product={catalogProduct}
@@ -102,10 +101,10 @@ export function UpcomingProductStrip({
               sizeLabel={getSizeLabel(catalogProduct)}
               categoryLabel={getCategoryLabel(catalogProduct, section)}
               buyButtonLabel={t('home.homepage.upcoming.orderCta')}
-              productsCatalogPageScaleMultiplier={getProductsCatalogPageSmallerImageScaleMultiplier(index)}
+              productsCatalogPageScaleMultiplier={getCatalogStripMobileImageScaleMultiplier(index, isSmUp)}
               imageNudgeDown={shouldNudgeCatalogProductImage(index)}
               imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
-              imageFrameClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME}
+              imageFrameClassName={getCatalogStripMobileImageFrameClassName(index)}
               catalogHeroPullUpClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME}
               catalogCardTopPaddingClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME}
               catalogDetailsOffsetClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME}

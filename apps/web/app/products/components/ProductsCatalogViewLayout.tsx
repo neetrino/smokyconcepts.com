@@ -13,14 +13,14 @@ import {
   CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
   PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME,
   getCatalogProductCardImageScaleBoost,
-  getProductsCatalogPageSmallerImageScaleMultiplier,
+  getCatalogStripMobileImageFrameClassName,
+  getCatalogStripMobileImageScaleMultiplier,
 } from './catalogProductCardMobilePresentation';
 import {
   getCategoryLabel,
@@ -52,6 +52,7 @@ export interface ProductsCatalogViewLayoutProps {
   activeProductFiltersCount: number;
   updateQuery: (updates: Record<string, string>) => void;
   clearFilters: () => void;
+  openCatalogSizeModal: () => void;
   setCatalogSizeModalOpen: (open: boolean) => void;
   sections: CatalogSectionViewModel[];
   isSmUp: boolean;
@@ -85,6 +86,7 @@ export function ProductsCatalogViewLayout({
   activeProductFiltersCount,
   updateQuery,
   clearFilters,
+  openCatalogSizeModal,
   setCatalogSizeModalOpen,
   sections,
   isSmUp,
@@ -118,7 +120,7 @@ export function ProductsCatalogViewLayout({
         onSortChange={(value) => updateQuery({ sort: value })}
         onOpenSizeCatalog={() => {
           setMobileFilterOpen(false);
-          setCatalogSizeModalOpen(true);
+          openCatalogSizeModal();
         }}
         onClearAll={clearFilters}
       />
@@ -200,7 +202,7 @@ export function ProductsCatalogViewLayout({
 
               <button
                 type="button"
-                onClick={() => setCatalogSizeModalOpen(true)}
+                onClick={openCatalogSizeModal}
                 className={`h-10 w-full whitespace-nowrap rounded-[0.5rem] border-2 px-4 text-left text-[0.9375rem] font-semibold leading-none transition-[box-shadow,ring,border-color,background-color,color] ${
                   isSizeFilterActive ? SIZE_FILTER_BUTTON_ACTIVE : 'border-transparent bg-[#dcc090] text-[#122a26]'
                 }`}
@@ -284,12 +286,13 @@ export function ProductsCatalogViewLayout({
                               sectionLabel={section.title}
                               sizeLabel={getSizeLabel(product)}
                               categoryLabel={getCategoryLabel(product, section.title)}
-                              productsCatalogPageScaleMultiplier={getProductsCatalogPageSmallerImageScaleMultiplier(
-                                index
+                              productsCatalogPageScaleMultiplier={getCatalogStripMobileImageScaleMultiplier(
+                                index,
+                                isSmUp
                               )}
                               imageNudgeDown={shouldNudgeCatalogProductImage(index)}
                               imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
-                              imageFrameClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME}
+                              imageFrameClassName={getCatalogStripMobileImageFrameClassName(index)}
                               catalogHeroPullUpClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME}
                               catalogCardTopPaddingClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME}
                               catalogDetailsOffsetClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME}

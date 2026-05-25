@@ -161,6 +161,7 @@ export function useProductInfoAndActions({
   };
 
   const openSizeCatalogModal = () => {
+    void preloadSizeCatalogCategories(sizeCatalogCategories);
     setIsCustomizeSizeModalOpen(true);
   };
 

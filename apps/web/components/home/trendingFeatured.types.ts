@@ -1,3 +1,5 @@
+import type { Ref, TransitionEvent } from 'react';
+
 import type { CatalogProduct } from '../../app/products/components/catalogProductLabels';
 
 export interface ApiProduct {
@@ -32,9 +34,12 @@ export interface TrendingPage {
 export interface TrendingCoverflowTrackProps {
   pages: TrendingPage[];
   currentDisplayIndex: number;
-  currentLogicalIndex: number;
   suppressTransition: boolean;
   isXl: boolean;
+  trackRef: Ref<HTMLDivElement>;
+  onTrackTransitionEnd: (event: TransitionEvent<HTMLDivElement>) => void;
+  dragOffsetPx?: number;
+  isDragging?: boolean;
 }
 
 export interface TrendingMobilePageClusterProps {
@@ -49,6 +54,7 @@ export interface TrendingDesktopPageClusterProps {
   eager: boolean;
   label: string;
   isFocal: boolean;
+  freezeClusterMotion?: boolean;
 }
 
 export interface TrendingPageSliderProps {

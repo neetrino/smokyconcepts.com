@@ -16,6 +16,19 @@ export const TRENDING_PAGE_SHIFT_REM =
 export const TRENDING_VIEWPORT_WIDTH_REM = TRENDING_PAGE_SHIFT_REM + 0.25;
 
 /**
+ * Cyclic window start index per slide — advances one product at a time for seamless looping.
+ */
+export function buildTrendingCyclicPageStarts(itemCount: number, itemsPerPage: number): number[] {
+  if (itemCount <= 0) {
+    return [];
+  }
+  if (itemCount <= itemsPerPage) {
+    return [0];
+  }
+  return Array.from({ length: itemCount }, (_, index) => index);
+}
+
+/**
  * Valid `startIndex` values for each carousel "page" when showing `itemsPerPage` products in a row.
  * Mirrors a cyclic window: page k shows indices start, start+1, … (mod n).
  */

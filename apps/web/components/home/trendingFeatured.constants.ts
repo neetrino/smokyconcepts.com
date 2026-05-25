@@ -15,7 +15,10 @@ export const CLUSTER_INNER_REM = TRENDING_PAGE_SHIFT_REM;
 export const PAGE_FRAME_REM = CLUSTER_INNER_REM + 2;
 
 export const XL_MEDIA_QUERY = '(min-width: 1280px)';
+export const TRENDING_TRACK_BUFFER_COPIES = 3;
 export const TRACK_TRANSITION_MS = 520;
 export const TRACK_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
 export const TRENDING_FEATURED_PAGE_SIZE = 100;
+export const TRENDING_SWIPE_THRESHOLD_PX = 40;
+export const TRENDING_SWIPE_HORIZONTAL_LOCK_PX = 12;

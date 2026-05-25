@@ -105,9 +105,11 @@ export function buildCatalogCardPresentation({
   const compactArticleWidth =
     catalogStripMobilePeek && compactLayout
       ? `max-sm:w-full max-sm:max-w-full ${stripPeekMobileWidth} ${stripPeekMaxLg} ${stripPeekLgW} ${stripPeekXlW}`
-      : widerCompactCard
-        ? 'w-[12rem] max-sm:w-[10.75rem]'
-        : 'w-[11rem] max-sm:w-[10.25rem]';
+      : productsCatalogPage && compactLayout
+        ? `w-full max-w-none max-sm:w-full max-sm:max-w-none sm:w-[11rem] lg:w-[11rem] xl:w-[11.5rem]`
+        : widerCompactCard
+          ? 'w-[12rem] max-sm:w-[10.75rem]'
+          : 'w-[11rem] max-sm:w-[10.25rem]';
   const cardShadowClass = suppressShadow ? 'shadow-none' : CARD_SHADOW_TAILWIND;
   const articleStackClassName = 'z-0 hover:z-[8] focus-within:z-[8]';
   const compactArticlePaddingClassName = productsCatalogPage
@@ -249,7 +251,7 @@ export function buildCatalogCardPresentation({
         : 'mt-5 flex items-center justify-between gap-3';
   const dotsGapClassName = compactLayout ? 'gap-1' : 'gap-[0.3125rem]';
   const dotsMarginClassName = compactLayout ? (productsCatalogPage ? 'mb-0.5' : 'mb-1') : 'mb-3';
-  const dotsRowLayoutClassName = `flex min-h-3 items-center ${dotsGapClassName} ${dotsMarginClassName}`;
+  const dotsRowLayoutClassName = `flex min-h-3 items-center justify-center ${dotsGapClassName} ${dotsMarginClassName}`;
   const sizeBadgeClassName = compactLayout
     ? 'inline-flex items-center px-0 py-0 text-[0.5625rem] font-semibold leading-tight text-[#122a26] sm:text-[0.625rem]'
     : 'inline-flex items-center px-0 py-0 text-[0.6875rem] font-semibold leading-tight text-[#122a26] sm:text-[0.75rem]';

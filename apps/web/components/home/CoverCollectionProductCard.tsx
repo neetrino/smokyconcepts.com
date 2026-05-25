@@ -18,11 +18,11 @@ const COVER_COLLECTION_DESKTOP_CARD_HEIGHT_CLASS = 'sm:h-auto';
 const COVER_COLLECTION_DESKTOP_CARD_PADDING_BOTTOM_CLASS = 'sm:pb-4';
 /** Desktop: slight title nudge; keep minimal to avoid empty band under label. */
 const COVER_COLLECTION_DESKTOP_TITLE_OFFSET_CLASS = 'sm:translate-y-1';
-/** Mobile: title aligns to block start (not centered). */
-const COVER_COLLECTION_MOBILE_TITLE_ALIGN_CLASS = 'max-sm:text-left max-sm:text-start';
-/** Mobile: inset follows the fluid centered image band. */
+/** Mobile: category titles centered under the hero image. */
+const COVER_COLLECTION_MOBILE_TITLE_ALIGN_CLASS = 'max-sm:text-center';
+/** Mobile: symmetric inset for centered labels. */
 const COVER_COLLECTION_MOBILE_TITLE_IMAGE_ALIGN_CLASS =
-  'max-sm:pl-[clamp(0.75rem,11vw,1.85rem)] max-sm:pr-2 max-[360px]:pl-3 max-[360px]:pr-1.5';
+  'max-sm:px-[clamp(0.375rem,2vw,0.5rem)]';
 /** White card panel height on mobile. */
 const COVER_COLLECTION_MOBILE_CARD_MIN_HEIGHT_CLASS =
   'max-sm:min-h-[clamp(9.25rem,46vw,11.5rem)] max-[360px]:min-h-[8.875rem]';
@@ -36,10 +36,8 @@ const COVER_COLLECTION_PRODUCT_IMAGE_TRANSFORM_CLASS =
 
 const TITLE_MIN_HEIGHT_MOBILE = 'min-h-[2.75rem]';
 const COVER_COLLECTION_COMPACT_MOBILE_TITLE_MIN_HEIGHT_CLASS = 'max-[360px]:min-h-[2.375rem]';
+/** Mobile: unified tile label size (matches Special Edition). */
 const COVER_COLLECTION_MOBILE_TITLE_SIZE_CLASS =
-  'max-sm:text-[clamp(1rem,5vw,1.25rem)] max-[360px]:text-[0.9375rem]';
-/** Long label; smaller type so it fits the narrow tile. */
-const COVER_COLLECTION_MOBILE_SPECIAL_EDITION_TITLE_SIZE_CLASS =
   'max-sm:text-[clamp(0.8125rem,4vw,1rem)] max-[360px]:text-[0.75rem] max-[360px]:tracking-tight';
 
 /** Mobile image band width in 2-col grid. */
@@ -72,7 +70,7 @@ interface CoverCollectionProductCardProps {
  * Home “Cover collections” tile.
  *
  * **Mobile:** white panel, `24px` radius, enlarged hero slot overlapping the panel,
- * fluid Montserrat ExtraBold title aligned with hero image left edge
+ * fluid Montserrat ExtraBold title centered under the hero image
  * (`#414141`). **Desktop:** single white card with hero image overlap.
  */
 export function CoverCollectionProductCard({ item }: CoverCollectionProductCardProps) {
@@ -81,9 +79,7 @@ export function CoverCollectionProductCard({ item }: CoverCollectionProductCardP
   const titleClampClass = isSpecialEdition
     ? 'line-clamp-1 truncate whitespace-nowrap max-[389px]:leading-snug'
     : 'line-clamp-2 break-words';
-  const titleSizeClass = isSpecialEdition
-    ? COVER_COLLECTION_MOBILE_SPECIAL_EDITION_TITLE_SIZE_CLASS
-    : COVER_COLLECTION_MOBILE_TITLE_SIZE_CLASS;
+  const titleSizeClass = COVER_COLLECTION_MOBILE_TITLE_SIZE_CLASS;
 
   return (
     <Link

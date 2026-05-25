@@ -42,17 +42,23 @@ export const CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_TOP_PADDING_CLASS_NAME = 'max-sm
 export const CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME = 'max-sm:mt-0';
 
 /**
- * Two cards per mobile viewport: `50vw` minus page `px-4` (2rem) and half of `gap-4` (1rem).
- * Replaces fixed `10rem` width that left a sliver of the next card clipped at the strip edge.
+ * `/products` horizontal strip — peek card width below `sm` (`px-4` gutters, same `/1.72` ratio as home upcoming).
  */
 export const CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_CARD_WIDTH_CLASS_NAME =
-  'max-sm:w-[calc(50vw-1.5rem)] max-sm:min-w-[calc(50vw-1.5rem)] max-sm:max-w-none';
+  'max-sm:w-[calc((100vw-2rem)/1.72)] max-sm:min-w-[calc((100vw-2rem)/1.72)] max-sm:max-w-none';
 
 /**
  * Home page (`px-5` gutters): two cards per row with `gap-4` — trending / upcoming on home.
  */
 export const HOME_PAGE_MOBILE_STRIP_CARD_WIDTH_CLASS_NAME =
   'max-sm:w-[calc(50vw-1.75rem)] max-sm:min-w-[calc(50vw-1.75rem)] max-sm:max-w-none';
+
+/**
+ * Home upcoming strip — wider cards so the next tile clips at the screen edge on mobile.
+ * `100vw` strip, `px-5` left inset, `gap-4`: `/1.72` leaves ~1 card + peek (matches catalog strip).
+ */
+export const HOME_UPCOMING_MOBILE_STRIP_CARD_WIDTH_CLASS_NAME =
+  'max-sm:w-[calc((100vw-2.25rem)/1.72)] max-sm:min-w-[calc((100vw-2.25rem)/1.72)] max-sm:max-w-none';
 
 /** One mobile coverflow page width on home (`px-5` horizontal padding). */
 export const HOME_PAGE_MOBILE_CAROUSEL_SLOT_WIDTH_CSS = 'calc(100vw - 2.5rem)';
@@ -79,8 +85,9 @@ export const HOME_TRENDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME = 'mb-0 max-sm:
 export const HOME_TRENDING_MOBILE_ITEM_WRAPPER_CLASS_NAME =
   `max-sm:flex max-sm:shrink-0 max-sm:flex-col max-sm:justify-center ${HOME_PAGE_MOBILE_STRIP_CARD_WIDTH_CLASS_NAME}`;
 
-/** Home upcoming horizontal strip — same wrapper as trending. */
-export const HOME_UPCOMING_MOBILE_ITEM_WRAPPER_CLASS_NAME = HOME_TRENDING_MOBILE_ITEM_WRAPPER_CLASS_NAME;
+/** Home upcoming horizontal strip — peek of the next card on the right below `sm`. */
+export const HOME_UPCOMING_MOBILE_ITEM_WRAPPER_CLASS_NAME =
+  `max-sm:flex max-sm:shrink-0 max-sm:flex-col max-sm:justify-center ${HOME_UPCOMING_MOBILE_STRIP_CARD_WIDTH_CLASS_NAME}`;
 
 /** Home upcoming strip reuses trending mobile hero + copy spacing. */
 export const HOME_UPCOMING_MOBILE_IMAGE_FRAME_CLASS_NAME = HOME_TRENDING_MOBILE_IMAGE_FRAME_CLASS_NAME;
@@ -95,10 +102,13 @@ export const CATALOG_PRODUCT_CARD_MOBILE_ITEM_WRAPPER_CLASS_NAME =
   `max-sm:flex max-sm:shrink-0 max-sm:flex-col max-sm:justify-center max-sm:translate-y-3 ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_CARD_WIDTH_CLASS_NAME}`;
 
 /**
- * `/products` landing strip cell — `px-4` card width; layout matches home Upcoming wrapper.
+ * `/products` landing strip cell — mobile layout matches home Upcoming wrapper.
  */
 export const CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME =
   `flex min-h-0 max-sm:shrink-0 max-sm:flex-col max-sm:self-stretch max-sm:justify-center ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_CARD_WIDTH_CLASS_NAME}`;
+
+/** `/products` — full-bleed horizontal scroll on mobile (`px-4` page gutters). */
+export const CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_SCROLL_BLEED_CLASS_NAME = 'max-sm:-mx-4 max-sm:px-4';
 
 /** `/products` strip — slightly smaller hero/copy spacing from `lg` (desktop). */
 export const CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME =
@@ -165,14 +175,14 @@ export const CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME =
 export const CATALOG_PRODUCTS_PAGE_STRIP_SCROLL_CLASS_NAME = `scrollbar-hide mt-4 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory max-sm:pb-14 pb-10 pt-[8rem] sm:pb-12 sm:pt-[8.5rem] lg:pb-14 lg:pt-[9rem] ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_TOP_PADDING_CLASS_NAME}`;
 
 /** `/products` catalog sections — room for overlapping heroes below section h2. */
-export const CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME = `scrollbar-hide mt-0.5 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory max-sm:pb-10 pb-10 max-sm:pt-[5.75rem] pt-[5.5rem] sm:pb-12 sm:pt-[6rem] lg:pb-14 lg:pt-[5.75rem] ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME}`;
+export const CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME = `scrollbar-hide mt-0.5 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory max-sm:pb-10 pb-10 max-sm:pt-[5.5rem] pt-[5.5rem] sm:pb-12 sm:pt-[6rem] lg:pb-14 lg:pt-[5.75rem] ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_SCROLL_BLEED_CLASS_NAME}`;
 
 /** Pagination row spacing below catalog / related strips. */
 export const CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME =
-  'relative z-20 mt-4 flex justify-center px-4 max-sm:mt-5 sm:mt-6 sm:mt-8';
+  'relative z-20 mt-4 flex justify-center px-4 max-sm:mt-2 sm:mt-6 sm:mt-8';
 
 /** `/products` horizontal strip — card flex row. */
-export const CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME = `flex min-w-max max-lg:pr-4 lg:pr-[7.5rem] ${CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME}`;
+export const CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME = `flex min-w-max items-stretch max-sm:pr-5 max-lg:pr-4 lg:pr-[7.5rem] ${CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME}`;
 
 /** `/products` strip — slightly smaller hero on positions 2 and 5 in each group of six (0-based: 1, 4). */
 export const PRODUCTS_CATALOG_PAGE_SMALLER_IMAGE_SCALE_MULTIPLIER = 0.85;
@@ -182,6 +192,34 @@ export const TRENDING_SECTION_SMALLER_IMAGE_SCALE_MULTIPLIER = 0.9;
 
 export function isProductsCatalogPageSmallerImageCard(cardIndex: number): boolean {
   return cardIndex % 6 === 1 || cardIndex % 6 === 4;
+}
+
+/** Catalog horizontal strip mobile — cards 2 & 5: trim top height while keeping hero bottoms aligned. */
+export const CATALOG_STRIP_MOBILE_SMALLER_IMAGE_SCALE_MULTIPLIER = 0.94;
+
+export function getCatalogStripMobileImageScaleMultiplier(cardIndex: number, isSmUp: boolean): number {
+  if (isSmUp) {
+    return getProductsCatalogPageSmallerImageScaleMultiplier(cardIndex);
+  }
+  return isProductsCatalogPageSmallerImageCard(cardIndex)
+    ? CATALOG_STRIP_MOBILE_SMALLER_IMAGE_SCALE_MULTIPLIER
+    : 1;
+}
+
+export function getUpcomingMobileImageScaleMultiplier(
+  cardIndex: number,
+  isSmUp: boolean
+): number {
+  return getCatalogStripMobileImageScaleMultiplier(cardIndex, isSmUp);
+}
+
+export function getCatalogStripMobileImageFrameClassName(cardIndex: number): string {
+  void cardIndex;
+  return CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME;
+}
+
+export function getUpcomingMobileImageFrameClassName(cardIndex: number): string {
+  return getCatalogStripMobileImageFrameClassName(cardIndex);
 }
 
 export function getProductsCatalogPageSmallerImageScaleMultiplier(cardIndex: number): number {

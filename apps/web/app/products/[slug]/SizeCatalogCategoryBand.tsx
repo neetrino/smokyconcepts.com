@@ -123,9 +123,14 @@ function CatalogSizePagePanel({
 }) {
   const useScrollReveal = pageIdx > 0;
   const { pageRef, revealTick } = useCatalogPageRevealOnScroll(useScrollReveal);
-  const slideStyle = { width: pageWidthPx, minWidth: pageWidthPx, flexShrink: 0 } as const;
+  const slideStyle =
+    pageWidthPx > 0
+      ? ({ width: pageWidthPx, minWidth: pageWidthPx, flexShrink: 0 } as const)
+      : ({ width: '100%', minWidth: '100%', flexShrink: 0 } as const);
 
-  const playEnterAnimation = !suppressEnterAnimation && (!useScrollReveal || revealTick > 0);
+  /** First page shows immediately; later pages may animate on scroll-into-view. */
+  const playEnterAnimation =
+    !suppressEnterAnimation && pageIdx > 0 && (!useScrollReveal || revealTick > 0);
 
   return (
     <div ref={pageRef} style={slideStyle} className="box-border snap-start">
@@ -261,18 +266,14 @@ function CatalogCategorySizeBandView({
           ref={scrollerRef}
           className="scrollbar-hide w-full min-w-0 scroll-smooth overflow-x-auto overflow-y-hidden"
         >
-          {pageWidthPx > 0 ? (
-            <CategorySizeCatalogPages
-              items={category.items}
-              itemsPerRow={itemsPerRow}
-              pageWidthPx={pageWidthPx}
-              selectedItemId={selectedItemId}
-              suppressEnterAnimation={suppressEnterAnimation}
-              onSelectItem={onSelectItem}
-            />
-          ) : (
-            <div className="min-h-[220px]" aria-hidden />
-          )}
+          <CategorySizeCatalogPages
+            items={category.items}
+            itemsPerRow={itemsPerRow}
+            pageWidthPx={pageWidthPx}
+            selectedItemId={selectedItemId}
+            suppressEnterAnimation={suppressEnterAnimation}
+            onSelectItem={onSelectItem}
+          />
         </div>
       </div>
     </section>

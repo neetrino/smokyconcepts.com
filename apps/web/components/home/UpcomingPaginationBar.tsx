@@ -1,6 +1,7 @@
 'use client';
 
 import { CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME } from '../../app/products/components/catalogProductCardMobilePresentation';
+import { UPCOMING_MOBILE_PAGINATION_MARGIN_TOP_CLASS } from './upcomingProducts.constants';
 import { useTranslation } from '@/lib/i18n-client';
 
 interface UpcomingPaginationBarProps {
@@ -21,7 +22,7 @@ export function UpcomingPaginationBar({
   if (totalPages === 1) {
     return (
       <div
-        className="relative z-20 mt-4 flex justify-center px-5 max-sm:mt-10 sm:mt-6"
+        className={`relative z-20 mt-4 flex justify-center px-5 sm:mt-6 ${UPCOMING_MOBILE_PAGINATION_MARGIN_TOP_CLASS}`}
         aria-hidden="true"
       >
         <span className="h-2 w-[6.25rem] shrink-0 rounded-full bg-[#122a26]" />
@@ -30,7 +31,7 @@ export function UpcomingPaginationBar({
   }
 
   return (
-    <div className="relative z-20 mt-4 flex justify-center px-5 max-sm:mt-10 sm:mt-6 sm:mt-8">
+    <div className={`relative z-20 mt-4 flex justify-center px-5 sm:mt-8 ${UPCOMING_MOBILE_PAGINATION_MARGIN_TOP_CLASS}`}>
       <div
         className={`${CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME} sm:max-w-none sm:justify-center sm:gap-4`}
         role="tablist"
