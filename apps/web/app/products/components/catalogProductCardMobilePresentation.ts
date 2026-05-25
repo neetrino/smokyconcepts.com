@@ -4,6 +4,9 @@ export const CATALOG_PRODUCT_CARD_SM_VIEWPORT_QUERY = '(min-width: 640px)';
 /** `/products` horizontal strip — cards per pagination step below `sm`. */
 export const CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE = 2;
 
+/** Release programmatic-scroll guard after mobile strip scroll-to-page (ms). */
+export const CATALOG_MOBILE_STRIP_PROGRAMMATIC_SCROLL_RELEASE_MS = 150;
+
 const CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS = 90;
 
 export function subscribeCatalogProductsSmViewport(onStoreChange: () => void): () => void {
