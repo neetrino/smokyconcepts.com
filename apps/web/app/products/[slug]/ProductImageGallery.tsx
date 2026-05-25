@@ -48,6 +48,10 @@ const GALLERY_IMAGE_FIT_CLASSES = 'size-full object-contain object-center';
 /** Vertical rhythm between hero and thumbnail strip inside the card. */
 const GALLERY_SECTION_GAP_CLASSES = 'gap-3 sm:gap-4';
 
+/** Invisible slot — keeps nav arrow spacing when fewer images than {@link THUMBNAILS_PER_VIEW}. */
+const THUMBNAIL_EMPTY_SLOT_CLASS =
+  'pointer-events-none invisible flex shrink-0 flex-col items-center justify-center gap-0.5';
+
 export function ProductImageGallery({
   images,
   product,
@@ -68,8 +72,14 @@ export function ProductImageGallery({
     }
   }, [currentImageIndex, images.length, thumbnailStartIndex, onThumbnailStartIndexChange]);
 
-  const visibleThumbnails = images.slice(thumbnailStartIndex, thumbnailStartIndex + THUMBNAILS_PER_VIEW);
   const canNavigateImages = images.length > 1;
+  const shouldPadThumbnailStrip = images.length <= THUMBNAILS_PER_VIEW;
+  const visibleThumbnailCount = shouldPadThumbnailStrip
+    ? images.length
+    : Math.min(THUMBNAILS_PER_VIEW, Math.max(0, images.length - thumbnailStartIndex));
+  const leadingEmptyThumbnailSlots = shouldPadThumbnailStrip
+    ? Math.floor((THUMBNAILS_PER_VIEW - visibleThumbnailCount) / 2)
+    : 0;
 
   const navigateImageByArrow = (direction: 'previous' | 'next') => {
     if (!canNavigateImages) {
@@ -143,17 +153,30 @@ export function ProductImageGallery({
                 </svg>
               </button>
 
-              <div className="min-h-0 min-w-0 max-w-full overflow-x-auto overflow-y-visible overscroll-x-contain">
+              <div className="min-h-0 shrink-0 overflow-x-auto overflow-y-visible overscroll-x-contain">
                 <div className="flex min-h-0 flex-nowrap items-center justify-center gap-3">
-                  {visibleThumbnails.map((image, index) => {
-                    const actualIndex = thumbnailStartIndex + index;
-                    const isActive = actualIndex === currentImageIndex;
+                  {Array.from({ length: THUMBNAILS_PER_VIEW }, (_, slotIndex) => {
+                    const imageIndex = shouldPadThumbnailStrip
+                      ? slotIndex - leadingEmptyThumbnailSlots
+                      : thumbnailStartIndex + slotIndex;
+
+                    if (imageIndex < 0 || imageIndex >= images.length) {
+                      return (
+                        <div key={`thumb-slot-empty-${slotIndex}`} aria-hidden className={THUMBNAIL_EMPTY_SLOT_CLASS}>
+                          <div className={THUMBNAIL_IMAGE_BOX_SIZE_CLASSES} />
+                          <span className="block h-0.5 w-full opacity-0" />
+                        </div>
+                      );
+                    }
+
+                    const image = images[imageIndex];
+                    const isActive = imageIndex === currentImageIndex;
 
                     return (
                       <button
-                        key={`${image}-${actualIndex}`}
+                        key={`${image}-${imageIndex}`}
                         type="button"
-                        onClick={() => selectThumbnailByIndex(actualIndex)}
+                        onClick={() => selectThumbnailByIndex(imageIndex)}
                         className={`group relative flex shrink-0 cursor-pointer flex-col items-center justify-center gap-0.5 overflow-visible rounded-[4px] bg-white transition-opacity ${
                           isActive ? 'opacity-100' : 'opacity-75 hover:opacity-100'
                         }`}
