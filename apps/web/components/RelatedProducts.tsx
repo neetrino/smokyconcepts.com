@@ -323,6 +323,7 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
                     catalogStripMobilePeek={isSmUp}
                     compactLayout
                     productsCatalogPage
+                    catalogBuyOnlyCta
                     eagerProductImage
                   />
                 </div>

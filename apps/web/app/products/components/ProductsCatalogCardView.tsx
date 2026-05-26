@@ -204,9 +204,9 @@ export function ProductsCatalogCardView({
           ) : catalogBuyOnlyCta ? (
             <button
               type="button"
-              onClick={handleBuyNow}
-              disabled={!product.inStock || isAddingToCart}
+              onClick={handleShopNavigate}
               className={catalogBuyOnlyButtonClassName}
+              aria-label={`${catalogBuyLabel} — ${product.title}`}
             >
               {catalogBuyLabel}
             </button>
