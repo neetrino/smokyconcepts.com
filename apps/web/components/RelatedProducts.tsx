@@ -248,6 +248,11 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
     commitPage(Math.max(0, Math.min(totalPages - 1, nextPage)));
   };
 
+  const isFirstPage = currentPage === 0;
+  const nonFirstPageScrollClassName = isFirstPage
+    ? ''
+    : 'max-sm:mx-0 max-sm:px-0 lg:-ml-[7.5rem] lg:w-[calc(100%+7.5rem)]';
+
   return (
     <section className="relative isolate mt-20 w-full overflow-visible border-t border-[#e8e8e8] py-12 max-sm:py-8 sm:py-16">
       <h2 className="relative z-10 font-montserrat text-[1.75rem] font-extrabold leading-tight text-[#414141] max-sm:mb-0 sm:text-[2.5rem] sm:leading-none">
@@ -265,7 +270,7 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
         <div
           ref={sectionScrollRef}
           onScroll={handleSectionScroll}
-          className={CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME}
+          className={`${CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME} ${nonFirstPageScrollClassName}`}
         >
           <div className={CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME}>
             {products.map((product, index) => {

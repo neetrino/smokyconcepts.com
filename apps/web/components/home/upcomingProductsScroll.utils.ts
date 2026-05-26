@@ -88,7 +88,12 @@ export function getUpcomingScrollLeftForPage(
   const pageIndex = Math.max(0, Math.min(totalPages - 1, page - 1));
 
   if (isSmUp) {
-    const anchorTarget = getCatalogStripScrollLeftForPage(container, pageIndex, pageStartAnchors);
+    const anchorTarget = getCatalogStripScrollLeftForPage(
+      container,
+      pageIndex,
+      pageStartAnchors,
+      totalPages
+    );
     if (pageStartAnchors[pageIndex]) {
       return anchorTarget;
     }

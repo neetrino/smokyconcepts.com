@@ -12,10 +12,8 @@ export const UPCOMING_MOBILE_SECTION_GAP_CLASS = 'max-sm:gap-2';
 export const UPCOMING_PRODUCT_STRIP_FLEX_CLASS_NAME =
   'flex min-w-max items-stretch max-sm:gap-4 max-sm:pr-5 gap-4 sm:gap-7 lg:gap-10 lg:pr-[7.5rem]';
 
-export const UPCOMING_LIMIT = 12;
 export const UPCOMING_CARDS_PER_PAGE_MOBILE = 2;
 export const UPCOMING_CARDS_PER_PAGE_SM_UP = 6;
-export const UPCOMING_PAGE_ANIMATION_DURATION_MS = 300;
 export const UPCOMING_SCROLL_IDLE_UPDATE_DELAY_MS = 90;
 /** rAF frames where scrollLeft must stay constant before treating smooth scroll as settled. */
 export const UPCOMING_SCROLL_SETTLE_STABLE_FRAMES = 4;
@@ -23,15 +21,6 @@ export const UPCOMING_SCROLL_SETTLE_STABLE_FRAMES = 4;
 export const UPCOMING_SCROLL_SETTLE_MAX_WAIT_MS = 1500;
 /** Tolerance (px) when matching live scrollLeft to the target page anchor. */
 export const UPCOMING_SCROLL_TARGET_TOLERANCE_PX = 2;
-
-export const UPCOMING_PAGE_STAGGER_DELAY_CLASSES = [
-  'delay-[10ms]',
-  'delay-[50ms]',
-  'delay-[154ms]',
-  'delay-[296ms]',
-  'delay-[428ms]',
-  'delay-[516ms]',
-] as const;
 
 /** Mobile: full-bleed horizontal scroll so the next card clips at the screen edge. */
 export const UPCOMING_MOBILE_SCROLL_BLEED_CLASS = 'max-sm:-mx-5 max-sm:px-5';

@@ -104,7 +104,7 @@ export function ProductsCatalogViewLayout({
   applyCatalogSizeFilter,
 }: ProductsCatalogViewLayoutProps) {
   return (
-    <div className="min-h-full bg-[#f5f4f1]">
+    <div className="min-h-full overflow-x-clip bg-[#f5f4f1]">
       <ProductsCatalogMobileFilterSheet
         open={mobileFilterOpen}
         onClose={() => setMobileFilterOpen(false)}
@@ -243,7 +243,13 @@ export function ProductsCatalogViewLayout({
 
           <div className="mt-10 space-y-16 lg:mt-10 lg:space-y-20">
             {sections.length > 0 ? (
-              sections.map((section) => (
+              sections.map((section) => {
+                const isFirstPage = section.currentPage === 0;
+                const nonFirstPageScrollClassName = isFirstPage
+                  ? ''
+                  : 'max-sm:mx-0 max-sm:px-0 lg:-ml-[7.5rem] lg:w-[calc(100%+7.5rem)]';
+
+                return (
                 <section
                   key={section.title}
                   ref={(element) => {
@@ -262,7 +268,7 @@ export function ProductsCatalogViewLayout({
                     onScroll={() => {
                       handleSectionScroll(section.title);
                     }}
-                    className={CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME}
+                    className={`${CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME} ${nonFirstPageScrollClassName}`}
                   >
                     <div className={CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME}>
                       {section.items.map((product, index) => {
@@ -338,7 +344,8 @@ export function ProductsCatalogViewLayout({
                     </div>
                   ) : null}
                 </section>
-              ))
+                );
+              })
             ) : (
               <div className="rounded-[2rem] bg-white px-6 py-12 text-center shadow-[0_4px_22.5px_rgba(0,0,0,0.08)]">
                 <p className="text-xl font-semibold text-[#414141]">No products matched the selected filters.</p>
