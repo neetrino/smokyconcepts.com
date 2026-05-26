@@ -21,7 +21,7 @@ import {
   PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
   getCatalogProductCardImageScaleBoost,
 } from '../../app/products/components/catalogProductCardMobilePresentation';
-import { UPCOMING_PAGE_STAGGER_DELAY_CLASSES, UPCOMING_PRODUCT_STRIP_FLEX_CLASS_NAME } from './upcomingProducts.constants';
+import { UPCOMING_PRODUCT_STRIP_FLEX_CLASS_NAME } from './upcomingProducts.constants';
 import type { UpcomingApiProduct } from './upcomingProducts.types';
 import { useTranslation } from '@/lib/i18n-client';
 
@@ -29,9 +29,6 @@ interface UpcomingProductStripProps {
   items: UpcomingApiProduct[];
   cardsPerPage: number;
   isSmUp: boolean;
-  safePage: number;
-  isPageTransitioning: boolean;
-  pageDirection: 1 | -1;
   pageStartRefs: MutableRefObject<(HTMLDivElement | null)[]>;
 }
 
@@ -39,9 +36,6 @@ export function UpcomingProductStrip({
   items,
   cardsPerPage,
   isSmUp,
-  safePage,
-  isPageTransitioning,
-  pageDirection,
   pageStartRefs,
 }: UpcomingProductStripProps) {
   const { t } = useTranslation();
@@ -50,22 +44,7 @@ export function UpcomingProductStrip({
     <div className={UPCOMING_PRODUCT_STRIP_FLEX_CLASS_NAME}>
       {items.map((item, index) => {
         const pageIndex = Math.floor(index / cardsPerPage);
-        const indexInPage = index % cardsPerPage;
         const isPageStart = index % cardsPerPage === 0;
-        const isActivePageCard = pageIndex === safePage - 1;
-        const shouldAnimateCard = isSmUp && isPageTransitioning && isActivePageCard;
-        const activePageMotionClass =
-          pageDirection === 1
-            ? 'translate-x-[0.35rem] scale-[0.992] rotate-[0.35deg] shadow-[0_10px_26px_rgba(18,42,38,0.16)]'
-            : '-translate-x-[0.35rem] scale-[0.992] -rotate-[0.35deg] shadow-[0_10px_26px_rgba(18,42,38,0.16)]';
-        const pageMotionClass = shouldAnimateCard
-          ? activePageMotionClass
-          : 'translate-x-0 scale-100 rotate-0 shadow-none';
-        const pageDelayClass = shouldAnimateCard
-          ? UPCOMING_PAGE_STAGGER_DELAY_CLASSES[
-              Math.min(indexInPage, UPCOMING_PAGE_STAGGER_DELAY_CLASSES.length - 1)
-            ]
-          : 'delay-0';
         const catalogProduct = toCatalogProduct({
           id: item.id,
           slug: item.slug,
@@ -91,7 +70,7 @@ export function UpcomingProductStrip({
                 pageStartRefs.current[pageIndex] = el;
               }
             }}
-            className={`flex min-h-0 shrink-0 flex-col self-stretch transition-transform transition-shadow duration-300 ease-out will-change-transform ${pageMotionClass} ${pageDelayClass} ${
+            className={`flex min-h-0 shrink-0 flex-col self-stretch ${
               isPageStart ? 'max-sm:snap-start max-sm:snap-always' : ''
             } ${HOME_UPCOMING_MOBILE_ITEM_WRAPPER_CLASS_NAME}`}
           >

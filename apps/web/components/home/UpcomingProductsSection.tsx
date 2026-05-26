@@ -64,9 +64,6 @@ export function UpcomingProductsSection() {
           items={items}
           cardsPerPage={cardsPerPage}
           isSmUp={isSmUp}
-          safePage={pagination.safePage}
-          isPageTransitioning={pagination.isPageTransitioning}
-          pageDirection={pagination.pageDirection}
           pageStartRefs={pagination.pageStartRefs}
         />
       </div>

@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { scrollMobileStripToPageAnchor } from '../../app/products/components/catalogStripScroll';
 import { CATALOG_MOBILE_STRIP_PROGRAMMATIC_SCROLL_RELEASE_MS } from '../../app/products/components/catalogProductCardMobilePresentation';
 import {
-  UPCOMING_PAGE_ANIMATION_DURATION_MS,
   UPCOMING_SCROLL_IDLE_UPDATE_DELAY_MS,
   UPCOMING_SCROLL_SETTLE_MAX_WAIT_MS,
   UPCOMING_SCROLL_SETTLE_STABLE_FRAMES,
@@ -32,9 +31,6 @@ export function useUpcomingScrollPagination({
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const pageStartRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isPageTransitioning, setIsPageTransitioning] = useState(false);
-  const [pageDirection, setPageDirection] = useState<1 | -1>(1);
-  const pageTransitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollEndCleanupRef = useRef<(() => void) | null>(null);
   const isProgrammaticScrollRef = useRef(false);
@@ -53,9 +49,6 @@ export function useUpcomingScrollPagination({
 
   useEffect(() => {
     return () => {
-      if (pageTransitionTimerRef.current) {
-        clearTimeout(pageTransitionTimerRef.current);
-      }
       if (scrollIdleTimerRef.current) {
         clearTimeout(scrollIdleTimerRef.current);
       }
@@ -168,18 +161,6 @@ export function useUpcomingScrollPagination({
     (page: number) => {
       const container = scrollContainerRef.current;
       const clampedPage = Math.max(1, Math.min(totalPages, page));
-      const current = safePage;
-
-      if (clampedPage !== current) {
-        setPageDirection(clampedPage > current ? 1 : -1);
-        setIsPageTransitioning(true);
-        if (pageTransitionTimerRef.current) {
-          clearTimeout(pageTransitionTimerRef.current);
-        }
-        pageTransitionTimerRef.current = setTimeout(() => {
-          setIsPageTransitioning(false);
-        }, UPCOMING_PAGE_ANIMATION_DURATION_MS);
-      }
 
       if (!container) {
         setCurrentPage(clampedPage);
@@ -268,8 +249,6 @@ export function useUpcomingScrollPagination({
     safePage,
     totalPages,
     visiblePaginationPages,
-    isPageTransitioning,
-    pageDirection,
     handlePageChange,
     handleScroll,
   };
