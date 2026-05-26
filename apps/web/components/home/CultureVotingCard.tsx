@@ -14,8 +14,7 @@ interface CultureVotingCardProps {
   title: string;
   images: string[];
   likedByCurrentUser: boolean;
-  pending: boolean;
-  earlyAccessPending?: boolean;
+  isLikePending: boolean;
   onToggleLike: (itemId: string, likedByCurrentUser: boolean) => Promise<void>;
   onEarlyAccess?: (itemId: string) => void;
   sizeLabel?: string;
@@ -229,8 +228,7 @@ export function CultureVotingCard({
   title,
   images,
   likedByCurrentUser,
-  pending,
-  earlyAccessPending = false,
+  isLikePending,
   onToggleLike,
   onEarlyAccess,
   sizeLabel,
@@ -254,7 +252,7 @@ export function CultureVotingCard({
     itemId: id,
     title,
     likedByCurrentUser,
-    pending,
+    pending: isLikePending,
     onToggleLike,
   };
   const heroImageTransformStyle = getCultureHeroImageTransformStyle(compactHero);
@@ -338,10 +336,7 @@ export function CultureVotingCard({
             <button
               type="button"
               onClick={() => onEarlyAccess?.(id)}
-              disabled={pending || earlyAccessPending}
-              className={`whitespace-nowrap ${CULTURE_COMPACT_EARLY_ACCESS_BUTTON_CLASS_NAME} ${
-                pending || earlyAccessPending ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
-              }`}
+              className={`cursor-pointer whitespace-nowrap ${CULTURE_COMPACT_EARLY_ACCESS_BUTTON_CLASS_NAME}`}
               aria-label={earlyAccessLabel}
             >
               {earlyAccessLabel}

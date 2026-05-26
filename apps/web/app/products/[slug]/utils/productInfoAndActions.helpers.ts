@@ -81,3 +81,14 @@ export function getCustomizeCopy(language: LanguageCode): string {
       return 'Pick color and size on this page to personalize your order. For special requests, contact us after checkout.';
   }
 }
+
+/** Matches auto-generated or manual "out of stock" product labels across locales. */
+export function isOutOfStockProductLabel(labelText: string): boolean {
+  const normalized = labelText.toLowerCase().trim();
+  return (
+    normalized.includes('out of stock') ||
+    normalized.includes('արտադրված') ||
+    normalized.includes('нет в наличии') ||
+    normalized.includes('არ არის მარაგში')
+  );
+}

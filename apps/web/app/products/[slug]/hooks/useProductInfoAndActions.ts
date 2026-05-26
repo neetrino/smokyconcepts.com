@@ -16,6 +16,7 @@ import {
 } from '../utils/sanitize-customize-html';
 import {
   CUSTOMIZE_APPLIED_PREVIEW_MS,
+  isOutOfStockProductLabel,
   matchVariantSizeFromCatalogTitle,
 } from '../utils/productInfoAndActions.helpers';
 import type { ProductInfoAndActionsProps, ProductTabKey } from '../productInfoAndActions.types';
@@ -240,8 +241,9 @@ export function useProductInfoAndActions({
               color: label.color?.trim() ?? null,
             }))
             .filter((item) => item.text.length > 0)
+            .filter((item) => !(currentVariant === null && isOutOfStockProductLabel(item.text)))
         : [],
-    [product.labels, product.id]
+    [product.labels, product.id, currentVariant]
   );
 
   const hasTitleRowBadges = collectionBadgeItems.length > 0 || labelBadgeItems.length > 0;
