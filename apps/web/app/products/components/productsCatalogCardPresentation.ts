@@ -42,8 +42,10 @@ export interface CatalogCardPresentation {
   badgeClassNames: string;
   priceClassName: string;
   buyButtonClassName: string;
+  unifiedShopButtonClassName: string;
   iconClassName: string;
   catalogBagIconClassName: string;
+  trendingShopBagIconClassName: string;
   detailsOffsetClassName: string;
   imageWrapperBottomMarginClassName: string;
   catalogDetailsLayoutClassName: string;
@@ -211,12 +213,18 @@ export function buildCatalogCardPresentation({
   const buyButtonClassName = compactLayout
     ? 'inline-flex h-[1.375rem] min-w-[2.75rem] items-center justify-center rounded-[0.4375rem] border-2 border-[#dcc090] px-1.5 text-[0.6875rem] font-extrabold leading-tight text-[#dcc090] transition-colors hover:bg-[#dcc090]/10 sm:h-6 sm:min-w-[3.25rem] sm:rounded-[0.5rem] sm:px-2 sm:text-[0.75rem]'
     : 'inline-flex h-[1.375rem] min-w-[3.25rem] items-center justify-center rounded-[0.5rem] border-2 border-[#dcc090] px-2 text-[0.8125rem] font-extrabold leading-tight text-[#dcc090] transition-colors hover:bg-[#dcc090]/10 sm:h-[1.625rem] sm:min-w-[3.75rem] sm:px-3 sm:text-[0.875rem]';
+  const unifiedShopButtonClassName = trendingSectionCard
+    ? `${buyButtonClassName} gap-1 pr-1 sm:gap-1.5 sm:pr-1.5`
+    : buyButtonClassName;
   const iconClassName = compactLayout
     ? 'h-3.5 w-3.5 object-contain sm:h-4 sm:w-4'
     : 'h-4 w-4 object-contain sm:h-5 sm:w-5';
   const catalogBagIconClassName = compactLayout
     ? 'h-5 w-6 object-contain sm:h-6 sm:w-[28px]'
     : 'h-6 w-8 object-contain sm:h-7 sm:w-9';
+  const trendingShopBagIconClassName = compactLayout
+    ? 'h-3.5 w-4 object-contain sm:h-4 sm:w-5'
+    : 'h-4 w-5 object-contain sm:h-[1.125rem] sm:w-[1.375rem]';
 
   const detailsOffsetClassName = compactLayout
     ? tightenDetailsUnderImage
@@ -271,8 +279,10 @@ export function buildCatalogCardPresentation({
     badgeClassNames,
     priceClassName,
     buyButtonClassName,
+    unifiedShopButtonClassName,
     iconClassName,
     catalogBagIconClassName,
+    trendingShopBagIconClassName,
     detailsOffsetClassName,
     imageWrapperBottomMarginClassName,
     catalogDetailsLayoutClassName,

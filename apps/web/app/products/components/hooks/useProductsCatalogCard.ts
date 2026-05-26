@@ -23,6 +23,7 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
     compactLayout = false,
     legacyHomeCartIcon = false,
     catalogStripMobilePeek = false,
+    trendingSectionCard = false,
   } = props;
 
   const isSmUp = useSyncExternalStore(
@@ -116,6 +117,15 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
     }
   };
 
+  const handleShopNavigate = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (shouldBlockProductNavigation?.()) {
+      return;
+    }
+    router.push(`/products/${product.slug}`);
+  };
+
   const handleImageLoadComplete = (imageElement: HTMLImageElement) => {
     const naturalWidth = imageElement.naturalWidth;
     const naturalHeight = imageElement.naturalHeight;
@@ -146,6 +156,7 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
     handleAddToCart,
     handleBuyNow,
     handleProductLinkClick,
+    handleShopNavigate,
     handleImageLoadComplete,
     setImageError,
     isAddingToCart,
@@ -158,5 +169,6 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
     imageFrameClassName: props.imageFrameClassName,
     eagerProductImage: props.eagerProductImage,
     buyButtonLabel: props.buyButtonLabel,
+    trendingSectionCard,
   };
 }
