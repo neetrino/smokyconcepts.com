@@ -187,11 +187,23 @@ function resolveUserCouponStatus(
   return 'active';
 }
 
+type UserCouponListRow = Prisma.CouponGetPayload<{
+  select: {
+    id: true;
+    code: true;
+    discountType: true;
+    discountValue: true;
+    quantity: true;
+    active: true;
+    expiresAt: true;
+  };
+}>;
+
 /**
  * Lists coupons explicitly assigned to the given user via coupon_allowed_users.
  */
 export async function listCouponsForUser(userId: string): Promise<UserCoupon[]> {
-  const rows = await db.coupon.findMany({
+  const rows: UserCouponListRow[] = await db.coupon.findMany({
     where: {
       allowedUsers: {
         some: { userId },
