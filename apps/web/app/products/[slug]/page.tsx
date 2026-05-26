@@ -16,6 +16,7 @@ import { useProductPage } from './useProductPage';
 import { useProductCartActions } from './useProductCartActions';
 import { useProductSizeCatalogCollectionPrice } from './hooks/useProductSizeCatalogCollectionPrice';
 import { useCustomizeGoogleFontLinks } from './useCustomizeGoogleFontLinks';
+import { useCustomizeOverlayImage } from './hooks/useCustomizeOverlayImage';
 import type { ProductPageProps } from './types';
 import type { CustomOrderDraft } from './CustomizeSizeOrderFallback';
 import { PRODUCT_INFO_COLUMN_CLASS } from './productInfoTabContent.constants';
@@ -27,6 +28,8 @@ export default function ProductPage({ params }: ProductPageProps) {
     product,
     loading,
     images,
+    heroImageSrc,
+    activeThumbnailIndex,
     currentImageIndex,
     setCurrentImageIndex,
     thumbnailStartIndex,
@@ -50,6 +53,8 @@ export default function ProductPage({ params }: ProductPageProps) {
     handleSizeSelect,
     handleCatalogVariantSelect,
   } = useProductPage(params);
+
+  const customizeOverlayImageUrl = useCustomizeOverlayImage(product);
 
   const [selectedCatalogSize, setSelectedCatalogSize] = useState<SizeCatalogItemDto | null>(null);
   const [selectedCustomSizeRequest, setSelectedCustomSizeRequest] = useState<CustomOrderDraft | null>(null);
@@ -85,7 +90,7 @@ export default function ProductPage({ params }: ProductPageProps) {
   }, [customizeDraftText, customizeFormat]);
 
   /** Live preview while on Customize tab; after Apply, keep showing applied HTML when user switches tabs. */
-  const heroCustomizeOverlayHtml = useMemo(() => {
+  const customizePreviewHtml = useMemo(() => {
     const appliedHtml = customizeApplied?.html?.trim();
     const appliedPlain = customizeApplied?.plain?.trim();
 
@@ -149,7 +154,7 @@ export default function ProductPage({ params }: ProductPageProps) {
   const displayPrice =
     collectionPriceAmd > 0 ? price + collectionPriceAmd : price;
 
-  const { handleAddToCart, handleBuyNow } = useProductCartActions({
+  const { handleAddToCart } = useProductCartActions({
     product,
     currentVariant,
     quantity,
@@ -182,13 +187,15 @@ export default function ProductPage({ params }: ProductPageProps) {
           <div className="flex min-h-0 min-w-0 flex-col gap-5 overflow-visible sm:gap-6">
             <ProductImageGallery
               images={images}
+              heroImageSrc={heroImageSrc}
+              activeThumbnailIndex={activeThumbnailIndex}
               product={product}
               language={language}
               currentImageIndex={currentImageIndex}
               onImageIndexChange={setCurrentImageIndex}
               thumbnailStartIndex={thumbnailStartIndex}
               onThumbnailStartIndexChange={setThumbnailStartIndex}
-              customizeOverlayHtml={heroCustomizeOverlayHtml}
+              customizeOverlayHtml={null}
             />
           </div>
 
@@ -218,10 +225,11 @@ export default function ProductPage({ params }: ProductPageProps) {
             onSizeSelect={handleSizeSelect}
             onCatalogVariantSelect={handleCatalogVariantSelect}
             onAddToCart={handleAddToCart}
-            onBuyNow={handleBuyNow}
             onSelectedCatalogSizeChange={setSelectedCatalogSize}
             onSelectedCustomSizeRequestChange={setSelectedCustomSizeRequest}
             onCustomizeTabActiveChange={setIsCustomizeTabActive}
+            customizeOverlayImageUrl={customizeOverlayImageUrl}
+            customizePreviewHtml={customizePreviewHtml}
           />
           </div>
         </div>

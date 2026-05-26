@@ -3,6 +3,12 @@
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { ProfileMenuAction } from '../app/profile/ProfileMenuAction';
+import {
+  ProfileCouponsIcon,
+  ProfileDeleteAccountIcon,
+  ProfileLogoutIcon,
+} from '../app/profile/profile-menu-icons';
 
 export interface ProfileMenuItem {
   id: string;
@@ -14,12 +20,24 @@ interface ProfileMenuDrawerProps {
   tabs: ProfileMenuItem[];
   activeTab: string;
   onSelect: (_tabId: string) => void;
+  onCouponsSelect: () => void;
+  onDeleteAccount: () => void;
+  onLogout: () => void;
+  t: (key: string) => string;
 }
 
 /**
  * Mobile drawer for navigating profile dashboard tabs.
  */
-export function ProfileMenuDrawer({ tabs, activeTab, onSelect }: ProfileMenuDrawerProps) {
+export function ProfileMenuDrawer({
+  tabs,
+  activeTab,
+  onSelect,
+  onCouponsSelect,
+  onDeleteAccount,
+  onLogout,
+  t,
+}: ProfileMenuDrawerProps) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -36,6 +54,21 @@ export function ProfileMenuDrawer({ tabs, activeTab, onSelect }: ProfileMenuDraw
 
   const handleSelect = (tabId: string) => {
     onSelect(tabId);
+    setOpen(false);
+  };
+
+  const handleCouponsSelect = () => {
+    onCouponsSelect();
+    setOpen(false);
+  };
+
+  const handleDeleteAccount = () => {
+    onDeleteAccount();
+    setOpen(false);
+  };
+
+  const handleLogout = () => {
+    onLogout();
     setOpen(false);
   };
 
@@ -94,33 +127,58 @@ export function ProfileMenuDrawer({ tabs, activeTab, onSelect }: ProfileMenuDraw
               </button>
             </div>
 
-            <div className="flex-1 divide-y divide-gray-100 overflow-y-auto">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => handleSelect(tab.id)}
-                  className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium ${
-                    activeTab === tab.id
-                      ? 'bg-[#dcc090] text-[#122a26]'
-                      : 'text-[#414141] hover:bg-[#dcc090]/10'
-                  }`}
-                >
-                  <span className="flex items-center gap-3">
-                    <span className={activeTab === tab.id ? 'text-[#122a26]' : 'text-[#414141]/55'}>
-                      {tab.icon}
-                    </span>
-                    {tab.label}
-                  </span>
-                  <svg
-                    className={`h-4 w-4 ${activeTab === tab.id ? 'text-[#122a26]' : 'text-[#414141]/45'}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+            <div className="flex-1 overflow-y-auto">
+              <div className="divide-y divide-gray-100">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => handleSelect(tab.id)}
+                    className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium ${
+                      activeTab === tab.id
+                        ? 'bg-[#dcc090] text-[#122a26]'
+                        : 'text-[#414141] hover:bg-[#dcc090]/10'
+                    }`}
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              ))}
+                    <span className="flex items-center gap-3">
+                      <span className={activeTab === tab.id ? 'text-[#122a26]' : 'text-[#414141]/55'}>
+                        {tab.icon}
+                      </span>
+                      {tab.label}
+                    </span>
+                    <svg
+                      className={`h-4 w-4 ${activeTab === tab.id ? 'text-[#122a26]' : 'text-[#414141]/45'}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                ))}
+              </div>
+
+              <div className="border-t border-gray-100 p-2">
+                <ProfileMenuAction
+                  label={t('profile.menu.coupons')}
+                  icon={<ProfileCouponsIcon />}
+                  isActive={activeTab === 'coupons'}
+                  onClick={handleCouponsSelect}
+                />
+                <ProfileMenuAction
+                  label={t('profile.menu.deleteAccount')}
+                  icon={<ProfileDeleteAccountIcon />}
+                  onClick={handleDeleteAccount}
+                />
+
+                <div className="border-t border-gray-200 pt-1">
+                  <ProfileMenuAction
+                    label={t('common.navigation.logout')}
+                    icon={<ProfileLogoutIcon />}
+                    variant="danger"
+                    onClick={handleLogout}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -128,6 +186,3 @@ export function ProfileMenuDrawer({ tabs, activeTab, onSelect }: ProfileMenuDraw
     </div>
   );
 }
-
-
-

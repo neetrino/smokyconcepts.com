@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { SizeModalMotionState } from '@/lib/size-modal-animation';
 import {
   sizeModalBlockClass,
-  sizeModalBlockTransitionDelay,
+  sizeModalBlockEnterStyle,
 } from '@/lib/size-modal-animation';
 import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
@@ -242,13 +242,7 @@ function CatalogCategorySizeBandView({
           className={`font-montserrat text-[22px] font-extrabold leading-none text-[#414141] sm:text-[24px] ${sizeModalBlockClass(modalMotion)} ${
             hasOverflow ? 'min-w-0 flex-1 truncate' : 'w-full'
           }`}
-          style={{
-            transitionDelay: sizeModalBlockTransitionDelay(
-              Math.max(0, sectionHeadingDelayMs),
-              0,
-              modalMotion
-            ),
-          }}
+          style={sizeModalBlockEnterStyle(Math.max(0, sectionHeadingDelayMs), modalMotion)}
         >
           {category.title}
         </h3>

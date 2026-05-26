@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslation } from '@/lib/i18n-client';
 import {
   BAG_ICON_PATH,
   CATALOG_BAG_ICON_PATH,
@@ -21,7 +22,7 @@ export function ProductsCatalogCardView({
   productsCatalogPage = false,
   imageFrameClassName,
   eagerProductImage = false,
-  buyButtonLabel = 'Buy',
+  buyButtonLabel,
   activeImage,
   activeImageIndex,
   imageError,
@@ -30,6 +31,7 @@ export function ProductsCatalogCardView({
   setImageError,
   handleAddToCart,
   handleBuyNow,
+  handleShopNavigate,
   handleProductLinkClick,
   handleImageLoadComplete,
   isAddingToCart,
@@ -37,7 +39,15 @@ export function ProductsCatalogCardView({
   isAmdCurrency,
   sizeLabel,
   categoryLabel,
+  trendingSectionCard = false,
+  showUnifiedNavCta = false,
+  catalogBuyOnlyCta = false,
 }: ProductsCatalogCardViewProps) {
+  const { t } = useTranslation();
+  const catalogBuyLabel = buyButtonLabel ?? 'Buy';
+  const unifiedNavButtonLabel =
+    buyButtonLabel ?? (trendingSectionCard ? t('home.homepage.trending.shopCta') : catalogBuyLabel);
+
   const {
     articleClassName,
     imageWrapperClassName,
@@ -52,8 +62,11 @@ export function ProductsCatalogCardView({
     badgeClassNames,
     priceClassName,
     buyButtonClassName,
+    unifiedShopButtonClassName,
+    catalogBuyOnlyButtonClassName,
     iconClassName,
     catalogBagIconClassName,
+    trendingShopBagIconClassName,
     detailsOffsetClassName,
     imageWrapperBottomMarginClassName,
     catalogDetailsLayoutClassName,
@@ -171,51 +184,79 @@ export function ProductsCatalogCardView({
             {isAmdCurrency ? <span className="ml-1 text-[0.78em]">֏</span> : null}
           </span>
 
-          <div className="flex items-center gap-0.5">
+          {showUnifiedNavCta ? (
             <button
               type="button"
-              onClick={handleBuyNow}
-              disabled={!product.inStock || isAddingToCart}
-              className={buyButtonClassName}
+              onClick={handleShopNavigate}
+              className={unifiedShopButtonClassName}
+              aria-label={`${unifiedNavButtonLabel} — ${product.title}`}
             >
-              {buyButtonLabel}
+              <span>{unifiedNavButtonLabel}</span>
+              <Image
+                src={legacyHomeCartIcon ? BAG_ICON_PATH : CATALOG_BAG_ICON_PATH}
+                alt=""
+                width={legacyHomeCartIcon ? 16 : 24}
+                height={legacyHomeCartIcon ? 16 : 24}
+                aria-hidden
+                className={legacyHomeCartIcon ? iconClassName : trendingShopBagIconClassName}
+              />
             </button>
+          ) : catalogBuyOnlyCta ? (
+            <button
+              type="button"
+              onClick={handleShopNavigate}
+              className={catalogBuyOnlyButtonClassName}
+              aria-label={`${catalogBuyLabel} — ${product.title}`}
+            >
+              {catalogBuyLabel}
+            </button>
+          ) : (
+            <div className="flex items-center gap-0.5">
+              <button
+                type="button"
+                onClick={handleBuyNow}
+                disabled={!product.inStock || isAddingToCart}
+                className={buyButtonClassName}
+              >
+                {catalogBuyLabel}
+              </button>
 
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              disabled={!product.inStock || isAddingToCart}
-              className="inline-flex h-7 w-7 shrink-0 items-center justify-center transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50 sm:h-8 sm:w-8"
-              aria-label={product.inStock ? 'Add to cart' : 'Out of stock'}
-              title={product.inStock ? 'Add to cart' : 'Out of stock'}
-            >
-              {isAddingToCart ? (
-                <svg
-                  className="h-5 w-5 animate-spin text-[#dcc090] sm:h-6 sm:w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  aria-hidden
-                >
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                disabled={!product.inStock || isAddingToCart}
+                className="inline-flex h-7 w-7 shrink-0 items-center justify-center transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50 sm:h-8 sm:w-8"
+                aria-label={product.inStock ? 'Add to cart' : 'Out of stock'}
+                title={product.inStock ? 'Add to cart' : 'Out of stock'}
+              >
+                {isAddingToCart ? (
+                  <svg
+                    className="h-5 w-5 animate-spin text-[#dcc090] sm:h-6 sm:w-6"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    aria-hidden
+                  >
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                ) : (
+                  <Image
+                    src={legacyHomeCartIcon ? BAG_ICON_PATH : CATALOG_BAG_ICON_PATH}
+                    alt=""
+                    width={legacyHomeCartIcon ? 20 : 32}
+                    height={legacyHomeCartIcon ? 20 : 32}
+                    aria-hidden
+                    className={legacyHomeCartIcon ? iconClassName : catalogBagIconClassName}
                   />
-                </svg>
-              ) : (
-                <Image
-                  src={legacyHomeCartIcon ? BAG_ICON_PATH : CATALOG_BAG_ICON_PATH}
-                  alt=""
-                  width={legacyHomeCartIcon ? 20 : 32}
-                  height={legacyHomeCartIcon ? 20 : 32}
-                  aria-hidden
-                  className={legacyHomeCartIcon ? iconClassName : catalogBagIconClassName}
-                />
-              )}
-            </button>
-          </div>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </article>

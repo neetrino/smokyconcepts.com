@@ -16,7 +16,7 @@ import {
 import {
   sizeModalBackdropClass,
   sizeModalBlockClass,
-  sizeModalBlockTransitionDelay,
+  sizeModalBlockEnterStyle,
   sizeModalContentClass,
   sizeModalPanelClass,
 } from '@/lib/size-modal-animation';
@@ -74,7 +74,11 @@ export function CartDrawer() {
     isOpen,
     exitDurationMs,
   });
-  const drawerMotion = { isEntered, isExiting };
+  const drawerMotion = {
+    isEntered,
+    isExiting,
+    skipEnterAnimation: prefersReducedMotion,
+  };
 
   const handleClose = useCallback(() => {
     if (isExiting) {
@@ -202,13 +206,10 @@ export function CartDrawer() {
         <div className="flex h-full flex-col px-8 pb-6 pt-6 font-montserrat">
           <div
             className={`flex items-center gap-4 ${sizeModalBlockClass(drawerMotion)}`}
-            style={{
-              transitionDelay: sizeModalBlockTransitionDelay(
-                SIZE_MODAL_BLOCK_ENTER_DELAY_HEADER_MS,
-                0,
-                drawerMotion
-              ),
-            }}
+            style={sizeModalBlockEnterStyle(
+              SIZE_MODAL_BLOCK_ENTER_DELAY_HEADER_MS,
+              drawerMotion
+            )}
           >
             <h2 className="text-[1.625rem] font-extrabold leading-none text-[#414141]">My Cart</h2>
             <span className="pt-1 text-[0.875rem] font-medium leading-none text-[#414141]">
@@ -218,13 +219,10 @@ export function CartDrawer() {
 
           <div
             className={`mt-8 flex min-h-0 flex-1 flex-col ${sizeModalContentClass(drawerMotion)}`}
-            style={{
-              transitionDelay: sizeModalBlockTransitionDelay(
-                SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS,
-                0,
-                drawerMotion
-              ),
-            }}
+            style={sizeModalBlockEnterStyle(
+              SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS,
+              drawerMotion
+            )}
           >
           <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-1">
             {cart && cart.items.length > 0 ? (

@@ -11,11 +11,12 @@ import { ProfileAddresses } from './ProfileAddresses';
 import { ProfileOrders } from './ProfileOrders';
 import { ProfilePassword } from './ProfilePassword';
 import { ProfileDeleteAccount } from './ProfileDeleteAccount';
+import { ProfileCoupons } from './ProfileCoupons';
 import { OrderDetailsModal } from './OrderDetailsModal';
 import type { ProfileTab, ProfileTabConfig } from './types';
 
 function ProfilePageContent() {
-  const { isLoggedIn, isLoading: authLoading } = useAuth();
+  const { isLoggedIn, isLoading: authLoading, logout } = useAuth();
   const { t } = useTranslation();
   
   const {
@@ -57,6 +58,8 @@ function ProfilePageContent() {
     handleDeleteAccount,
     dashboardData,
     dashboardLoading,
+    coupons,
+    couponsLoading,
     orders,
     ordersLoading,
     ordersPage,
@@ -148,6 +151,8 @@ function ProfilePageContent() {
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={handleTabChange}
+            onDeleteAccount={openDeleteModal}
+            onLogout={logout}
             t={t}
           />
 
@@ -222,28 +227,32 @@ function ProfilePageContent() {
 
             {/* Password Tab */}
             {activeTab === 'password' && (
-              <>
-                <ProfilePassword
-                  passwordForm={passwordForm}
-                  setPasswordForm={setPasswordForm}
-                  savingPassword={savingPassword}
-                  onSave={handleChangePassword}
-                  t={t}
-                />
-                <ProfileDeleteAccount
-                  showDeleteModal={showDeleteModal}
-                  confirmText={deleteConfirmText}
-                  setConfirmText={setDeleteConfirmText}
-                  deletingAccount={deletingAccount}
-                  modalError={deleteModalError}
-                  isConfirmValid={isDeleteConfirmValid}
-                  onOpenModal={openDeleteModal}
-                  onCloseModal={closeDeleteModal}
-                  onConfirmDelete={handleDeleteAccount}
-                  t={t}
-                />
-              </>
+              <ProfilePassword
+                passwordForm={passwordForm}
+                setPasswordForm={setPasswordForm}
+                savingPassword={savingPassword}
+                onSave={handleChangePassword}
+                t={t}
+              />
             )}
+
+            {activeTab === 'coupons' && (
+              <ProfileCoupons coupons={coupons} couponsLoading={couponsLoading} t={t} />
+            )}
+
+            <ProfileDeleteAccount
+              showDeleteModal={showDeleteModal}
+              confirmText={deleteConfirmText}
+              setConfirmText={setDeleteConfirmText}
+              deletingAccount={deletingAccount}
+              modalError={deleteModalError}
+              isConfirmValid={isDeleteConfirmValid}
+              onOpenModal={openDeleteModal}
+              onCloseModal={closeDeleteModal}
+              onConfirmDelete={handleDeleteAccount}
+              showTrigger={false}
+              t={t}
+            />
 
             {/* Order Details Modal */}
             {selectedOrder && (

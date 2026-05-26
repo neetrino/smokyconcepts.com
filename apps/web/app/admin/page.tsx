@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { useTranslation } from '../../lib/i18n-client';
 import { AdminSidebar } from './components/AdminSidebar';
+import { useAdminMobileHubRedirect } from './hooks/useAdminMobileHubRedirect';
 import { StatsGrid } from './components/StatsGrid';
 import { RecentOrdersCard } from './components/RecentOrdersCard';
 import { TopProductsCard } from './components/TopProductsCard';
@@ -56,6 +57,8 @@ export default function AdminPanel() {
     }
   }, [pathname]);
 
+  useAdminMobileHubRedirect({ enabled: !isLoading && isLoggedIn && isAdmin });
+
   if (isLoading) {
     return (
       <div className={ADMIN_CENTERED_LOADING_CLASS}>
@@ -74,15 +77,15 @@ export default function AdminPanel() {
   return (
     <div className={ADMIN_PAGE_SHELL_CLASS}>
       <div className="w-full px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          <AdminSidebar currentPath={currentPath} router={router} t={t} />
+        <div className="flex flex-col gap-8 lg:flex-row">
+          <div className="hidden lg:contents">
+            <AdminSidebar currentPath={currentPath} router={router} t={t} />
+          </div>
 
-          {/* Main Content */}
-          <div className="flex-1 min-w-0">
+          <div className="hidden min-w-0 flex-1 lg:block">
             <StatsGrid stats={stats} statsLoading={statsLoading} />
 
-            {/* Dashboard Sections */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
               <RecentOrdersCard recentOrders={recentOrders} recentOrdersLoading={recentOrdersLoading} />
               <TopProductsCard topProducts={topProducts} topProductsLoading={topProductsLoading} />
             </div>

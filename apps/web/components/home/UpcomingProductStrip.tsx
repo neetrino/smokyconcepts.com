@@ -101,6 +101,7 @@ export function UpcomingProductStrip({
               sizeLabel={getSizeLabel(catalogProduct)}
               categoryLabel={getCategoryLabel(catalogProduct, section)}
               buyButtonLabel={t('home.homepage.upcoming.orderCta')}
+              unifiedNavCta
               productsCatalogPageScaleMultiplier={getCatalogStripMobileImageScaleMultiplier(index, isSmUp)}
               imageNudgeDown={shouldNudgeCatalogProductImage(index)}
               imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}

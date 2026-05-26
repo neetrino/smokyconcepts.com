@@ -146,13 +146,11 @@ export function buildGuestCartLineSnapshot(
     typeof categoryPriceRaw === 'number' &&
     Number.isFinite(categoryPriceRaw) &&
     categoryPriceRaw > 0;
-  const hasCollectionContext =
-    trimmedCategoryTitle !== '' || trimmedTitle !== '' || hasCollectionPrice;
-  const sizeCatalogCategoryPriceAmd = hasCollectionContext && hasCollectionPrice
-    ? Math.round(categoryPriceRaw)
-    : null;
   const plain = customize?.plain?.trim() ?? '';
   const html = customize?.html?.trim() ?? '';
+  const hasSavedCustomize = plain !== '' || html !== '';
+  const sizeCatalogCategoryPriceAmd =
+    hasSavedCustomize && hasCollectionPrice ? Math.round(categoryPriceRaw) : null;
   const customRequest =
     customSizeRequest != null
       ? {

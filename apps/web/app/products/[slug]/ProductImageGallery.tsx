@@ -5,10 +5,15 @@ import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import { THUMBNAILS_PER_VIEW } from './constants';
 import type { Product } from './types';
-import { CustomizeProductOverlay } from './CustomizeProductOverlay';
+import { CustomizeProductOverlay, type CustomizeOverlayPosition } from './CustomizeProductOverlay';
 
 interface ProductImageGalleryProps {
+  /** Main product images for the thumbnail strip (admin media only). */
   images: string[];
+  /** Hero image — main gallery image or variant override when a variant is selected. */
+  heroImageSrc: string;
+  /** Highlighted thumbnail index; null when hero shows a variant image. */
+  activeThumbnailIndex: number | null;
   product: Product;
   language: LanguageCode;
   currentImageIndex: number;
@@ -17,6 +22,7 @@ interface ProductImageGalleryProps {
   onThumbnailStartIndexChange: (index: number) => void;
   /** Sanitized customize HTML overlaid on the hero image after Apply */
   customizeOverlayHtml: string | null;
+  customizeOverlayPosition?: CustomizeOverlayPosition;
 }
 
 /**
@@ -57,12 +63,22 @@ const GALLERY_IMAGE_FIT_CLASSES = 'size-full object-contain object-center';
 /** Vertical rhythm between hero and thumbnail strip inside the card. */
 const GALLERY_SECTION_GAP_CLASSES = 'gap-3 sm:gap-4';
 
+/** Thumbnail underline — desktop only; mobile uses in-hero arrows. */
+const THUMBNAIL_ACTIVE_INDICATOR_CLASSES =
+  'hidden h-0.5 rounded-[1px] sm:block';
+
+/** Thumbnail strip scroll — hide native scrollbar (avoids grey line on mobile). */
+const THUMBNAIL_STRIP_SCROLL_BASE_CLASSES =
+  'scrollbar-hide min-h-0 min-w-0 flex-1 overflow-y-visible overscroll-x-contain max-sm:w-full max-sm:flex-none';
+
 /** Invisible slot — keeps nav arrow spacing when fewer images than {@link THUMBNAILS_PER_VIEW}. */
 const THUMBNAIL_EMPTY_SLOT_CLASS =
   'pointer-events-none invisible flex shrink-0 flex-col items-center justify-center gap-0.5';
 
 export function ProductImageGallery({
   images,
+  heroImageSrc,
+  activeThumbnailIndex,
   product,
   language,
   currentImageIndex,
@@ -70,6 +86,7 @@ export function ProductImageGallery({
   thumbnailStartIndex,
   onThumbnailStartIndexChange,
   customizeOverlayHtml,
+  customizeOverlayPosition = 'bottom',
 }: ProductImageGalleryProps) {
   useEffect(() => {
     if (images.length > THUMBNAILS_PER_VIEW) {
@@ -81,6 +98,7 @@ export function ProductImageGallery({
     }
   }, [currentImageIndex, images.length, thumbnailStartIndex, onThumbnailStartIndexChange]);
 
+  const hasHeroImage = heroImageSrc.length > 0;
   const canNavigateImages = images.length > 1;
   const shouldPadThumbnailStrip = images.length <= THUMBNAILS_PER_VIEW;
   const visibleThumbnailCount = shouldPadThumbnailStrip
@@ -89,6 +107,11 @@ export function ProductImageGallery({
   const leadingEmptyThumbnailSlots = shouldPadThumbnailStrip
     ? Math.floor((THUMBNAILS_PER_VIEW - visibleThumbnailCount) / 2)
     : 0;
+
+  const thumbnailStripNeedsHorizontalScroll = images.length > THUMBNAILS_PER_VIEW;
+  const thumbnailStripScrollClassName = `${THUMBNAIL_STRIP_SCROLL_BASE_CLASSES} ${
+    thumbnailStripNeedsHorizontalScroll ? 'overflow-x-auto' : 'overflow-x-hidden'
+  }`;
 
   const navigateImageByArrow = (direction: 'previous' | 'next') => {
     if (!canNavigateImages) {
@@ -119,27 +142,29 @@ export function ProductImageGallery({
 
   return (
     <div className={`overflow-visible ${GALLERY_TOP_OFFSET_CLASSES}`}>
-      <div className="relative z-0 mx-auto w-full max-w-[520px] overflow-visible rounded-[20px] bg-white px-3 pb-4 pt-3 shadow-[0_1px_0_rgba(18,42,38,0.04)] transition-shadow duration-200 has-[.product-hero:hover]:z-10 has-[.product-hero:hover]:shadow-[0_12px_32px_rgba(18,42,38,0.12)] sm:max-w-[540px] sm:overflow-x-clip sm:overflow-y-visible sm:rounded-[24px] sm:px-5 sm:pb-5 sm:pt-4 lg:max-w-[580px]">
+      <div className="relative z-0 mx-auto w-full max-w-[520px] overflow-visible rounded-[20px] bg-white px-3 pb-4 pt-3 shadow-none transition-shadow duration-200 has-[.product-hero:hover]:z-10 sm:max-w-[540px] sm:overflow-x-clip sm:overflow-y-visible sm:rounded-[24px] sm:px-5 sm:pb-5 sm:pt-4 sm:shadow-[0_1px_0_rgba(18,42,38,0.04)] sm:has-[.product-hero:hover]:shadow-[0_12px_32px_rgba(18,42,38,0.12)] lg:max-w-[580px]">
         <div className={`flex flex-col items-center overflow-visible ${GALLERY_SECTION_GAP_CLASSES}`}>
           <div
             className={`flex w-full justify-center ${
-              images.length > 0
+              hasHeroImage
                 ? `product-hero group relative z-10 ${HERO_PULL_ABOVE_CARD}`
                 : 'min-h-[200px] items-center sm:min-h-[220px]'
             }`}
           >
-            {images.length > 0 ? (
+            {hasHeroImage ? (
               <div
                 className={`relative mx-auto flex w-full max-w-full items-center justify-center ${HERO_IMAGE_BOX_SIZE_CLASSES}`}
               >
                 <img
-                  src={images[currentImageIndex]}
+                  src={heroImageSrc}
                   alt={product.title}
                   decoding="async"
                   draggable={false}
                   className={`block transition-transform duration-300 ease-out max-sm:group-hover:scale-100 sm:group-hover:scale-[1.03] ${GALLERY_IMAGE_FIT_CLASSES}`}
                 />
-                {customizeOverlayHtml ? <CustomizeProductOverlay html={customizeOverlayHtml} /> : null}
+                {customizeOverlayHtml ? (
+                  <CustomizeProductOverlay html={customizeOverlayHtml} position={customizeOverlayPosition} />
+                ) : null}
                 {canNavigateImages ? (
                   <>
                     <button
@@ -186,7 +211,7 @@ export function ProductImageGallery({
                 </svg>
               </button>
 
-              <div className="min-h-0 min-w-0 flex-1 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:w-full max-sm:flex-none">
+              <div className={thumbnailStripScrollClassName}>
                 <div className="flex min-h-0 flex-nowrap items-center justify-center gap-3">
                   {Array.from({ length: THUMBNAILS_PER_VIEW }, (_, slotIndex) => {
                     const imageIndex = shouldPadThumbnailStrip
@@ -197,13 +222,13 @@ export function ProductImageGallery({
                       return (
                         <div key={`thumb-slot-empty-${slotIndex}`} aria-hidden className={THUMBNAIL_EMPTY_SLOT_CLASS}>
                           <div className={THUMBNAIL_IMAGE_BOX_SIZE_CLASSES} />
-                          <span className="block h-0.5 w-full opacity-0" />
+                          <span className={`${THUMBNAIL_ACTIVE_INDICATOR_CLASSES} w-full opacity-0`} />
                         </div>
                       );
                     }
 
                     const image = images[imageIndex];
-                    const isActive = imageIndex === currentImageIndex;
+                    const isActive = activeThumbnailIndex !== null && imageIndex === activeThumbnailIndex;
 
                     return (
                       <button
@@ -226,7 +251,7 @@ export function ProductImageGallery({
                         </div>
                         <span
                           aria-hidden
-                          className={`block h-0.5 rounded-[1px] ${
+                          className={`${THUMBNAIL_ACTIVE_INDICATOR_CLASSES} ${
                             isActive ? 'w-full bg-[#122a26]' : 'w-2/3 bg-[#d9d9d9]'
                           }`}
                         />

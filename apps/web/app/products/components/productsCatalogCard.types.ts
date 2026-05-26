@@ -51,8 +51,15 @@ export interface ProductsCatalogCardProps {
   slimCatalogGrid?: boolean;
   /** `/products` — slightly less vertical gap between hero image and details. */
   productsCatalogPage?: boolean;
+  /** `/products` and related strip: Buy only (no cart icon), navigates to PDP. */
+  catalogBuyOnlyCta?: boolean;
   /** Home trending carousel — keeps legacy card geometry separate from `/products` strip tuning. */
   trendingSectionCard?: boolean;
+  /**
+   * Home sections (e.g. Upcoming): single CTA with `buyButtonLabel` + bag icon navigates to PDP.
+   * Trending enables the same via `trendingSectionCard`.
+   */
+  unifiedNavCta?: boolean;
   /** `/products` only: per-card hero scale multiplier (for visual balancing by index). */
   productsCatalogPageScaleMultiplier?: number;
   /** Overrides default catalog hero pull-up below `sm` (e.g. home trending). */

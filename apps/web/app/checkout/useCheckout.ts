@@ -1,5 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { getCartMerchandiseSubtotalUsd } from './utils/getCartBaseSubtotalUsd';
+import {
+  getCartCheckoutSubtotalUsd,
+} from './utils/getCartBaseSubtotalUsd';
+import { useSizeCatalogPriceByTitle } from '@/lib/size-catalog/use-size-catalog-price-by-title';
 import { apiClient } from '../../lib/api-client';
 import { useForm } from 'react-hook-form';
 import type { FieldErrors } from 'react-hook-form';
@@ -19,6 +22,7 @@ import {
   resolveDefaultDeliveryCountry,
 } from './utils/delivery-location-utils';
 import { useCart } from './hooks/useCart';
+import { handleRemoveItem } from '../cart/cart-handlers';
 import { useUserProfile } from './hooks/useUserProfile';
 import { useOrderSubmission } from './hooks/useOrderSubmission';
 import { useOrderSummary } from './hooks/useOrderSummary';
@@ -37,6 +41,7 @@ export function useCheckout() {
   const [couponDiscountUsd, setCouponDiscountUsd] = useState(0);
   const [couponApplying, setCouponApplying] = useState(false);
   const [couponFieldError, setCouponFieldError] = useState<string | null>(null);
+  const [removingItemId, setRemovingItemId] = useState<string | null>(null);
 
   const paymentMethods = usePaymentMethods();
   const checkoutSchema = useCheckoutSchema();
@@ -118,9 +123,13 @@ export function useCheckout() {
     }
   }, [shippingCountry, filteredDeliveryLocations, shippingRegion, setValue]);
 
-  const { cart, loading, fetchCart } = useCart();
+  const { cart, loading, fetchCart, setCart } = useCart();
+  const categoryPriceByTitle = useSizeCatalogPriceByTitle();
 
-  const merchandiseSubtotalUsd = useMemo(() => getCartMerchandiseSubtotalUsd(cart), [cart]);
+  const checkoutSubtotalUsd = useMemo(
+    () => getCartCheckoutSubtotalUsd(cart, categoryPriceByTitle),
+    [cart, categoryPriceByTitle]
+  );
 
   const cartFingerprint = useMemo(
     () => cart?.items.map((i) => `${i.id}:${i.quantity}`).join('|') ?? '',
@@ -138,7 +147,7 @@ export function useCheckout() {
     shippingMethod,
     activeDeliveryLocation?.city,
     activeDeliveryLocation?.country,
-    merchandiseSubtotalUsd,
+    checkoutSubtotalUsd,
   );
   useUserProfile(isLoggedIn, isLoading, setValue, deliveryLocations);
 
@@ -162,8 +171,8 @@ export function useCheckout() {
     if (!cart) {
       return;
     }
-    const merch = getCartMerchandiseSubtotalUsd(cart);
-    if (merch == null || merch <= 0) {
+    const subtotalForCoupon = getCartCheckoutSubtotalUsd(cart, categoryPriceByTitle);
+    if (subtotalForCoupon == null || subtotalForCoupon <= 0) {
       setCouponFieldError(t('checkout.coupon.cartEmpty'));
       return;
     }
@@ -176,7 +185,7 @@ export function useCheckout() {
         reason?: 'not_eligible_user';
       }>('/api/v1/coupons/validate', {
         code: couponDraft,
-        merchandiseSubtotalUsd: merch,
+        merchandiseSubtotalUsd: subtotalForCoupon,
       });
       if (!res.valid) {
         setAppliedCouponCode(null);
@@ -201,7 +210,7 @@ export function useCheckout() {
     } finally {
       setCouponApplying(false);
     }
-  }, [cart, couponDraft, t]);
+  }, [cart, categoryPriceByTitle, couponDraft, t]);
 
   const removeCoupon = useCallback(() => {
     setAppliedCouponCode(null);
@@ -209,6 +218,22 @@ export function useCheckout() {
     setCouponFieldError(null);
     setCouponDraft('');
   }, []);
+
+  const removeCartItem = useCallback(
+    async (itemId: string) => {
+      if (!cart || removingItemId) {
+        return;
+      }
+
+      setRemovingItemId(itemId);
+      try {
+        await handleRemoveItem(itemId, cart, setCart, fetchCart);
+      } finally {
+        setRemovingItemId(null);
+      }
+    },
+    [cart, fetchCart, removingItemId, setCart],
+  );
 
   useEffect(() => {
     if (isLoading) {
@@ -313,6 +338,8 @@ export function useCheckout() {
     couponApplying,
     couponFieldError,
     appliedCouponCode,
+    removingItemId,
+    removeCartItem,
     // Actions
     handlePlaceOrder,
     onSubmit,

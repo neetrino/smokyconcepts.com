@@ -4,10 +4,7 @@ import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
 import type { SizeModalMotionState } from '@/lib/size-modal-animation';
-import {
-  sizeModalBlockClass,
-  sizeModalBlockTransitionDelay,
-} from '@/lib/size-modal-animation';
+import { sizeModalBlockClass, sizeModalBlockEnterStyle } from '@/lib/size-modal-animation';
 import { SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS } from '@/lib/size-modal-animation.constants';
 import { CatalogCategorySizeBand } from './SizeCatalogCategoryBand';
 import {
@@ -38,13 +35,7 @@ export function SizeCatalogPickerContent({
     return (
       <p
         className={`font-montserrat text-[16px] font-medium text-[#414141] ${sizeModalBlockClass(modalMotion)}`}
-        style={{
-          transitionDelay: sizeModalBlockTransitionDelay(
-            SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS,
-            0,
-            modalMotion
-          ),
-        }}
+        style={sizeModalBlockEnterStyle(SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS, modalMotion)}
       >
         {t(language, 'product.size_catalog_empty')}
       </p>

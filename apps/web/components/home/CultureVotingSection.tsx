@@ -8,7 +8,6 @@ import { apiClient } from '../../lib/api-client';
 import { showToast } from '../Toast';
 import { useTranslation } from '@/lib/i18n-client';
 
-import { addCultureEarlyAccessLine } from './cultureEarlyAccessToCheckout';
 import { CultureVotingCard } from './CultureVotingCard';
 import { HomeSectionTitle } from './HomeSectionTitle';
 
@@ -118,7 +117,6 @@ export function CultureVotingSection() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pendingItemId, setPendingItemId] = useState<string | null>(null);
-  const [earlyAccessPendingId, setEarlyAccessPendingId] = useState<string | null>(null);
   const displayItems = useMemo(() => sortCultureVotingItems(items), [items]);
 
   const fetchVotingItems = useCallback(async () => {
@@ -278,25 +276,15 @@ export function CultureVotingSection() {
     [pendingItemId, isLoggedIn, t, items, earlyAccessItemId],
   );
 
-  const handleEarlyAccessCheckout = useCallback(
-    async (itemId: string) => {
+  const handleEarlyAccessNavigate = useCallback(
+    (itemId: string) => {
       const item = items.find((row) => row.id === itemId);
       const slug = item?.productSlug?.trim();
       if (!slug) {
         showToast(t('home.homepage.culture.earlyAccessNoProduct'), 'warning');
         return;
       }
-      setEarlyAccessPendingId(itemId);
-      try {
-        const result = await addCultureEarlyAccessLine(slug);
-        if (!result.ok) {
-          showToast(t(result.messageKey), 'error');
-          return;
-        }
-        router.push('/checkout');
-      } finally {
-        setEarlyAccessPendingId(null);
-      }
+      router.push(`/products/${encodeURIComponent(slug)}`);
     },
     [items, router, t],
   );
@@ -409,7 +397,7 @@ export function CultureVotingSection() {
                 } ${index % 3 === 2 ? 'col-span-2 justify-center sm:col-span-1' : ''}`}
               >
                 <CultureVotingCard
-                  compactDesktopHero={index === 1}
+                  compactHero={index === 1}
                   id={item.id}
                   title={item.title}
                   images={
@@ -420,10 +408,9 @@ export function CultureVotingSection() {
                         : []
                   }
                   likedByCurrentUser={item.likedByCurrentUser}
-                  pending={pendingItemId === item.id}
-                  earlyAccessPending={earlyAccessPendingId === item.id}
+                  isLikePending={pendingItemId === item.id}
                   onToggleLike={handleToggleLike}
-                  onEarlyAccess={handleEarlyAccessCheckout}
+                  onEarlyAccess={handleEarlyAccessNavigate}
                   sizeLabel={sizeLabel}
                   variantLabel={variantLabel}
                   variantTone={variantTone}

@@ -15,7 +15,7 @@ export const HEADER_LABEL_CLASS =
   'text-[15px] font-normal uppercase tracking-[0.1em] text-[#dcc090]';
 
 export const HEADER_SWITCHER_PILL_CLASS =
-  'flex h-[2.125rem] min-w-[11.9375rem] items-center rounded-[0.9375rem] border border-solid border-[#dcc090] py-[0.4375rem] pl-[1.125rem] pr-[0.9375rem] font-[family-name:var(--font-montserrat)]';
+  'flex h-[2.125rem] items-center font-[family-name:var(--font-montserrat)]';
 
 /** Cart / account — same row height as locale switcher pill (34px) */
 export const HEADER_ACTION_HIT_CLASS =

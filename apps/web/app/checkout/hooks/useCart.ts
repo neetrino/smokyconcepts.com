@@ -21,10 +21,28 @@ export function useCart() {
     }
   }, [t]);
 
+  const syncCartFromStorage = useCallback(async () => {
+    try {
+      const guestCart = await fetchCartForGuest();
+      setCart(guestCart);
+    } catch {
+      setError(t('checkout.errors.failedToLoadCart'));
+    }
+  }, [t]);
+
   useEffect(() => {
     fetchCart();
   }, [fetchCart]);
 
-  return { cart, loading, error, setError, fetchCart };
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      void syncCartFromStorage();
+    };
+
+    window.addEventListener('cart-updated', handleCartUpdate);
+    return () => window.removeEventListener('cart-updated', handleCartUpdate);
+  }, [syncCartFromStorage]);
+
+  return { cart, loading, error, setError, setCart, fetchCart };
 }
 

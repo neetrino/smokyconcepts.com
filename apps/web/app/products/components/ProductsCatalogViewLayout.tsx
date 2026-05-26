@@ -303,6 +303,7 @@ export function ProductsCatalogViewLayout({
                               catalogStripMobilePeek={isSmUp}
                               compactLayout
                               productsCatalogPage
+                              catalogBuyOnlyCta
                               eagerProductImage
                             />
                           </div>

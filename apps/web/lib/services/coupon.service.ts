@@ -18,14 +18,15 @@ export function roundMoneyUsd(amount: number): number {
 }
 
 /**
- * Discount on merchandise subtotal (USD), capped so total discount never exceeds subtotal.
+ * Discount on checkout subtotal (USD), capped so total discount never exceeds subtotal.
+ * Subtotal must match server checkout: variant base + customize surcharges per line.
  */
 export function computeCouponDiscountUsd(
-  merchandiseSubtotalUsd: number,
+  checkoutSubtotalUsd: number,
   discountType: string,
   discountValue: number,
 ): number {
-  const subtotal = Math.max(0, merchandiseSubtotalUsd);
+  const subtotal = Math.max(0, checkoutSubtotalUsd);
   if (subtotal <= 0) {
     return 0;
   }
@@ -64,11 +65,12 @@ function isMissingCouponQuantityColumnError(error: unknown): boolean {
 }
 
 /**
- * Looks up a coupon and computes discount for the given merchandise subtotal (no throw).
+ * Looks up a coupon and computes discount for the given checkout subtotal (no throw).
+ * `checkoutSubtotalUsd` must include customize surcharges — same basis as `orders.service` checkout.
  */
 export async function tryApplyCoupon(
   rawCode: string | undefined,
-  merchandiseSubtotalUsd: number,
+  checkoutSubtotalUsd: number,
   options: TryApplyCouponOptions = {},
 ): Promise<TryCouponResult> {
   const input = typeof rawCode === 'string' ? rawCode.trim() : '';
@@ -150,10 +152,89 @@ export async function tryApplyCoupon(
   }
 
   const discountAmountUsd = computeCouponDiscountUsd(
-    merchandiseSubtotalUsd,
+    checkoutSubtotalUsd,
     coupon.discountType,
     coupon.discountValue,
   );
 
   return { status: 'ok', discountAmountUsd, code: coupon.code };
+}
+
+export type UserCouponStatus = 'active' | 'expired' | 'inactive' | 'exhausted';
+
+export interface UserCoupon {
+  id: string;
+  code: string;
+  discountType: string;
+  discountValue: number;
+  expiresAt: string | null;
+  status: UserCouponStatus;
+}
+
+function resolveUserCouponStatus(
+  coupon: { active: boolean; expiresAt: Date | null; quantity: number | null },
+  usedCount: number,
+): UserCouponStatus {
+  if (!coupon.active) {
+    return 'inactive';
+  }
+  if (coupon.expiresAt && coupon.expiresAt < new Date()) {
+    return 'expired';
+  }
+  if (typeof coupon.quantity === 'number' && coupon.quantity > 0 && usedCount >= coupon.quantity) {
+    return 'exhausted';
+  }
+  return 'active';
+}
+
+/**
+ * Lists coupons explicitly assigned to the given user via coupon_allowed_users.
+ */
+export async function listCouponsForUser(userId: string): Promise<UserCoupon[]> {
+  const rows = await db.coupon.findMany({
+    where: {
+      allowedUsers: {
+        some: { userId },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      code: true,
+      discountType: true,
+      discountValue: true,
+      quantity: true,
+      active: true,
+      expiresAt: true,
+    },
+  });
+
+  if (rows.length === 0) {
+    return [];
+  }
+
+  const codes = rows.map((row) => row.code);
+  const usageRows = await db.order.groupBy({
+    by: ['couponCode'],
+    where: {
+      couponCode: { in: codes },
+    },
+    _count: { _all: true },
+  });
+
+  const usedByCode = new Map<string, number>();
+  for (const usageRow of usageRows) {
+    if (usageRow.couponCode) {
+      usedByCode.set(usageRow.couponCode, usageRow._count._all);
+    }
+  }
+
+  return rows.map((row) => ({
+    id: row.id,
+    code: row.code,
+    discountType: row.discountType,
+    discountValue: row.discountValue,
+    expiresAt: row.expiresAt?.toISOString() ?? null,
+    status: resolveUserCouponStatus(row, usedByCode.get(row.code) ?? 0),
+  }));
 }

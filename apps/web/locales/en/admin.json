@@ -299,11 +299,12 @@
     "titlePlaceholder": "Enter item title",
     "productSlugField": "Product slug (early access)",
     "productSlugPlaceholder": "e.g. smoky-cover-classic",
-    "productSlugHint": "Published product URL slug. When set, liked users can open checkout for this product from the home Culture section.",
+    "productSlugHint": "Product URL slug (published or draft). When set, liked users can open checkout for this product from the home Culture section.",
     "selectedProduct": "Selected product",
     "noProductSelected": "No product selected yet.",
     "chooseProductHint": "Choose one product from your catalog to use as the voting option. Title, image, and checkout link are taken from this product.",
     "allCategories": "All categories",
+    "allPublishStatuses": "All statuses",
     "productSearchPlaceholder": "Search products...",
     "productsLoadError": "Failed to load products.",
     "noProductsFound": "No products found for current filters.",
@@ -540,6 +541,8 @@
       "uploadImages": "Upload Images",
       "setAsMain": "Set as Main",
       "main": "Main",
+      "setAsCustomizeOverlay": "Customize overlay",
+      "customizeOverlayActive": "Customize overlay",
       "backToAdmin": "Back to Admin Dashboard",
       "editProduct": "Edit Product",
       "addNewProduct": "Add New Product",
@@ -911,6 +914,9 @@
     "loadError": "Could not load hero settings. Showing defaults in the form.",
     "saveError": "Could not save. Check the fields and try again.",
     "uploadError": "Upload failed. Try another file."
+  },
+  "mobileHub": {
+    "chooseSection": "Choose a section"
   },
   "common": {
     "loading": "Loading...",

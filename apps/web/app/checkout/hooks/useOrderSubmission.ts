@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminInputAmdToUsd } from '../../../lib/currency';
+import { resolveCartLineCollectionPriceAmd } from '../../cart/cart-line-pricing';
+import { useSizeCatalogPriceByTitle } from '@/lib/size-catalog/use-size-catalog-price-by-title';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { clearGuestCart } from '../checkoutUtils';
@@ -46,6 +48,7 @@ export function useOrderSubmission({
   const router = useRouter();
   const { t } = useTranslation();
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const categoryPriceByTitle = useSizeCatalogPriceByTitle();
 
   const submitOrder = async (data: CheckoutFormData) => {
     setError(null);
@@ -61,15 +64,12 @@ export function useOrderSubmission({
         const version = item.variant.sizeCatalogVersion?.trim();
         const img = item.variant.sizeCatalogImageUrl?.trim();
         const categoryTitle = item.variant.sizeCatalogCategoryTitle?.trim();
-        const categoryPriceAmd = item.variant.sizeCatalogCategoryPriceAmd;
+        const resolvedCategoryPriceAmd = resolveCartLineCollectionPriceAmd(item, categoryPriceByTitle);
         const hasSizeCatalogPick = Boolean(title);
-        const hasCollectionPrice =
-          typeof categoryPriceAmd === 'number' &&
-          Number.isFinite(categoryPriceAmd) &&
-          categoryPriceAmd >= 0;
-        const hasCollectionContext = Boolean(categoryTitle) || hasCollectionPrice;
+        const hasCollectionContext = Boolean(categoryTitle) || resolvedCategoryPriceAmd > 0;
         const cPlain = item.variant.customizePlain?.trim();
         const cHtml = item.variant.customizeHtml?.trim();
+        const hasSavedCustomize = Boolean(cPlain || cHtml);
         const customSizeRequest = item.variant.customSizeRequest;
         return {
           productId: item.variant.product.id,
@@ -82,19 +82,19 @@ export function useOrderSubmission({
                 ...(version ? { sizeCatalogVersion: version } : {}),
                 ...(img ? { sizeCatalogImageUrl: img } : {}),
                 ...(categoryTitle ? { sizeCatalogCategoryTitle: categoryTitle } : {}),
-                ...(hasCollectionPrice
-                  ? { sizeCatalogCategoryPriceAmd: Math.round(categoryPriceAmd) }
+                ...(hasSavedCustomize && resolvedCategoryPriceAmd > 0
+                  ? { sizeCatalogCategoryPriceAmd: resolvedCategoryPriceAmd }
                   : {}),
               }
             : hasCollectionContext
               ? {
                   ...(categoryTitle ? { sizeCatalogCategoryTitle: categoryTitle } : {}),
-                  ...(hasCollectionPrice
-                    ? { sizeCatalogCategoryPriceAmd: Math.round(categoryPriceAmd) }
+                  ...(hasSavedCustomize && resolvedCategoryPriceAmd > 0
+                    ? { sizeCatalogCategoryPriceAmd: resolvedCategoryPriceAmd }
                     : {}),
                 }
               : {}),
-          ...(cPlain || cHtml
+          ...(hasSavedCustomize
             ? {
                 ...(cPlain ? { customizePlain: cPlain } : {}),
                 ...(cHtml ? { customizeHtml: cHtml } : {}),

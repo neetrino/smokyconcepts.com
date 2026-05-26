@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import type { Category, Variant, ProductLabel, GeneratedVariant } from '../types';
 import type { CategoryAttribute } from '@/lib/category-attributes';
+import { DEFAULT_NEW_PRODUCT_TYPE } from '../constants/defaultProductType.constants';
 import { DEFAULT_SIMPLE_PRODUCT_DATA } from '../constants/defaultSimpleProductData.constants';
 
 export function useProductFormState() {
@@ -22,6 +23,7 @@ export function useProductFormState() {
     upcoming: false,
     imageUrls: [] as string[],
     featuredImageIndex: 0,
+    customizeOverlayImageIndex: null as number | null,
     mainProductImage: '' as string,
     variants: [] as Variant[],
     labels: [] as ProductLabel[],
@@ -34,7 +36,7 @@ export function useProductFormState() {
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [useNewCategory, setUseNewCategory] = useState(false);
-  const [productType, setProductType] = useState<'simple' | 'variable'>('simple');
+  const [productType, setProductType] = useState<'simple' | 'variable'>(DEFAULT_NEW_PRODUCT_TYPE);
   const [simpleProductData, setSimpleProductData] = useState({
     price: DEFAULT_SIMPLE_PRODUCT_DATA.price,
     compareAtPrice: DEFAULT_SIMPLE_PRODUCT_DATA.compareAtPrice,

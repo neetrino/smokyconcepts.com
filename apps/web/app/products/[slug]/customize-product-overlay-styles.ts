@@ -2,8 +2,16 @@
 
 export const CUSTOMIZE_TEXT_ON_IMAGE_MAX_WIDTH_CLASS = 'max-w-[min(92%,220px)] sm:max-w-[280px]';
 
+export const CUSTOMIZE_TEXT_ON_IMAGE_COMPACT_MAX_WIDTH_CLASS = 'max-w-[min(92%,188px)]';
+
 export const CUSTOMIZE_OVERLAY_IMAGE_ANCHOR_CLASS =
   'pointer-events-none absolute inset-x-0 bottom-[18%] z-10 flex justify-center px-2 sm:bottom-[22%]';
+
+export const CUSTOMIZE_OVERLAY_IMAGE_TOP_ANCHOR_CLASS =
+  'pointer-events-none absolute inset-x-0 top-[14%] z-10 flex justify-center px-2 sm:top-[18%]';
+
+export const CUSTOMIZE_OVERLAY_IMAGE_TOP_COMPACT_ANCHOR_CLASS =
+  'pointer-events-none absolute inset-x-0 top-[4%] z-10 flex justify-center px-1.5 sm:top-[5%]';
 
 /** No upward (-y) shadow — it reads as a thin black line above glyphs. */
 const CUSTOMIZE_ON_IMAGE_GLASS_TEXT_SHADOW_CLASS =
@@ -15,5 +23,13 @@ export const CUSTOMIZE_ON_IMAGE_TEXT_CLASS = [
   CUSTOMIZE_ON_IMAGE_GLASS_TEXT_SHADOW_CLASS,
   '[&_*]:text-inherit',
   'sm:px-4 sm:py-2.5 sm:text-base',
+  '[&_b]:font-extrabold [&_em]:italic [&_i]:italic [&_strong]:font-extrabold [&_u]:underline',
+].join(' ');
+
+export const CUSTOMIZE_ON_IMAGE_TEXT_COMPACT_CLASS = [
+  CUSTOMIZE_TEXT_ON_IMAGE_COMPACT_MAX_WIDTH_CLASS,
+  'px-2.5 py-1.5 text-center text-[13px] font-normal leading-snug tracking-[0.04em] text-gray-500 sm:text-sm',
+  CUSTOMIZE_ON_IMAGE_GLASS_TEXT_SHADOW_CLASS,
+  '[&_*]:text-inherit',
   '[&_b]:font-extrabold [&_em]:italic [&_i]:italic [&_strong]:font-extrabold [&_u]:underline',
 ].join(' ');

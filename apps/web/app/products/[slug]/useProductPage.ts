@@ -10,11 +10,12 @@ import { useProductCalculations } from './hooks/useProductCalculations';
 import { useAttributeGroups } from './useAttributeGroups';
 import type { ProductVariant } from './types';
 import { getOptionValue } from './utils/variant-helpers';
-import { findVariantByAllAttributes, findVariantByGalleryImage } from './utils/variant-finders';
+import { findVariantByAllAttributes } from './utils/variant-finders';
 import { switchToVariantImage } from './utils/image-switching';
 
 export function useProductPage(params: Promise<{ slug?: string }>) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [variantHeroImageUrl, setVariantHeroImageUrl] = useState<string | null>(null);
   const [language, setLanguage] = useState<LanguageCode>('en');
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [showMessage, setShowMessage] = useState<string | null>(null);
@@ -38,6 +39,10 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
   });
 
   const images = useProductImages(product);
+  const heroImageSrc =
+    variantHeroImageUrl ??
+    (images.length > 0 ? images[currentImageIndex] : '');
+  const activeThumbnailIndex = variantHeroImageUrl ? null : currentImageIndex;
   const selectedAttributeValues = useMemo(() => {
     const map = new Map<string, string>();
     if (selectedSizeVersion) {
@@ -144,6 +149,7 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
       setSelectedSizeVersion(getOptionValue(initialVariant.options, 'size_version'));
       setCurrentImageIndex(0);
       setThumbnailStartIndex(0);
+      switchToVariantImage(initialVariant, product, setVariantHeroImageUrl);
       return;
     }
 
@@ -154,6 +160,7 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
         setSelectedColor(null);
         setSelectedSize(null);
         setSelectedSizeVersion(null);
+        setVariantHeroImageUrl(null);
         return;
       }
       const fallbackVariant = product.variants[0];
@@ -161,8 +168,9 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
       setSelectedColor(getOptionValue(fallbackVariant.options, 'color'));
       setSelectedSize(getOptionValue(fallbackVariant.options, 'size'));
       setSelectedSizeVersion(getOptionValue(fallbackVariant.options, 'size_version'));
+      switchToVariantImage(fallbackVariant, product, setVariantHeroImageUrl);
     }
-  }, [product?.id, product?.variants, variantIdFromUrl, setSelectedVariant]);
+  }, [product, product?.id, product?.variants, variantIdFromUrl, setSelectedVariant]);
 
   useEffect(() => {
     if (!product?.variants?.length) {
@@ -190,7 +198,7 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     }
 
     setSelectedVariant(nextVariant);
-    switchToVariantImage(nextVariant, product, images, setCurrentImageIndex);
+    switchToVariantImage(nextVariant, product, setVariantHeroImageUrl);
     /**
      * Use images.length (not `images` reference) so a stable gallery index is not reset when
      * useMemo returns a new array reference for the same product. Thumbnail clicks only change
@@ -272,26 +280,20 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     setSelectedSizeVersion(nextVariantVersion ?? normalizedVersion);
     const nextColor = getOptionValue(nextVariant.options, 'color');
     setSelectedColor(nextColor);
-    switchToVariantImage(nextVariant, product, images, setCurrentImageIndex);
+    switchToVariantImage(nextVariant, product, setVariantHeroImageUrl);
   };
 
   const handleImageIndexChange = (index: number) => {
+    setVariantHeroImageUrl(null);
     setCurrentImageIndex(index);
-    const matchedVariant = findVariantByGalleryImage(product, images, index);
-    if (!matchedVariant) {
-      return;
-    }
-
-    setSelectedVariant(matchedVariant);
-    setSelectedColor(getOptionValue(matchedVariant.options, 'color'));
-    setSelectedSize(getOptionValue(matchedVariant.options, 'size'));
-    setSelectedSizeVersion(getOptionValue(matchedVariant.options, 'size_version'));
   };
 
   return {
     product,
     loading,
     images,
+    heroImageSrc,
+    activeThumbnailIndex,
     currentImageIndex,
     setCurrentImageIndex: handleImageIndexChange,
     thumbnailStartIndex,

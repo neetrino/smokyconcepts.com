@@ -16,6 +16,7 @@ import {
 } from '../utils/sanitize-customize-html';
 import {
   CUSTOMIZE_APPLIED_PREVIEW_MS,
+  isOutOfStockProductLabel,
   matchVariantSizeFromCatalogTitle,
 } from '../utils/productInfoAndActions.helpers';
 import type { ProductInfoAndActionsProps, ProductTabKey } from '../productInfoAndActions.types';
@@ -46,6 +47,8 @@ export function useProductInfoAndActions({
   const [selectedCatalogSize, setSelectedCatalogSize] = useState<SizeCatalogItemDto | null>(null);
   const [selectedCustomSizeRequest, setSelectedCustomSizeRequest] = useState<CustomOrderDraft | null>(null);
   const [appliedPreviewPlain, setAppliedPreviewPlain] = useState<string | null>(null);
+  const [showSizeRequired, setShowSizeRequired] = useState(false);
+  const [isSizeShaking, setIsSizeShaking] = useState(false);
   const appliedPreviewTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearAppliedPreviewTimer = useCallback(() => {
@@ -111,6 +114,8 @@ export function useProductInfoAndActions({
     setActiveTab('description');
     clearAppliedPreviewTimer();
     setAppliedPreviewPlain(null);
+    setShowSizeRequired(false);
+    setIsSizeShaking(false);
   }, [product.id, clearAppliedPreviewTimer]);
 
   useEffect(() => {
@@ -136,6 +141,29 @@ export function useProductInfoAndActions({
     selectedCatalogSize?.title ||
     activeSizeOption?.label ||
     t(language, 'product.choose_size');
+
+  const isSizeSelected =
+    !showSizeSection ||
+    Boolean(selectedCustomSizeRequest || selectedCatalogSize || activeSizeOption);
+
+  useEffect(() => {
+    if (isSizeSelected) {
+      setShowSizeRequired(false);
+      setIsSizeShaking(false);
+    }
+  }, [isSizeSelected]);
+
+  const triggerSizeValidation = useCallback(() => {
+    setShowSizeRequired(true);
+    setIsSizeShaking(false);
+    requestAnimationFrame(() => {
+      setIsSizeShaking(true);
+    });
+  }, []);
+
+  const handleSizeShakeAnimationEnd = useCallback(() => {
+    setIsSizeShaking(false);
+  }, []);
 
   const handleSelectCatalogSizeItem = (item: SizeCatalogItemDto) => {
     setSelectedCatalogSize(item);
@@ -213,8 +241,9 @@ export function useProductInfoAndActions({
               color: label.color?.trim() ?? null,
             }))
             .filter((item) => item.text.length > 0)
+            .filter((item) => !(currentVariant === null && isOutOfStockProductLabel(item.text)))
         : [],
-    [product.labels, product.id]
+    [product.labels, product.id, currentVariant]
   );
 
   const hasTitleRowBadges = collectionBadgeItems.length > 0 || labelBadgeItems.length > 0;
@@ -285,5 +314,10 @@ export function useProductInfoAndActions({
     labelBadgeItems,
     hasTitleRowBadges,
     showCustomizeApplyButton,
+    isSizeSelected,
+    showSizeRequired,
+    isSizeShaking,
+    triggerSizeValidation,
+    handleSizeShakeAnimationEnd,
   };
 }

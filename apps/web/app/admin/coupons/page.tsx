@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card, Button } from '@shop/ui';
 import { apiClient } from '../../../lib/api-client';
-import { AdminMenuDrawer } from '../../../components/AdminMenuDrawer';
+import { AdminMobileNavigation } from '../components/AdminMobileNavigation';
 import { showToast } from '../../../components/Toast';
 import { useTranslation } from '../../../lib/i18n-client';
 import { getAdminMenuTABS } from '../admin-menu.config';
@@ -231,7 +231,7 @@ export default function AdminCouponsPage() {
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="lg:hidden mb-6">
-            <AdminMenuDrawer tabs={adminTabs} currentPath="/supersudo/coupons" />
+            <AdminMobileNavigation currentPath="/supersudo/coupons" />
           </div>
           <aside className={ADMIN_FIXED_SIDEBAR_CLASS}>
             <nav className="h-full space-y-1 overflow-y-auto border-r border-[#dcc090]/25 bg-[#122a26] p-3">
