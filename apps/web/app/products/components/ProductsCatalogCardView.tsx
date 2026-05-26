@@ -41,6 +41,7 @@ export function ProductsCatalogCardView({
   categoryLabel,
   trendingSectionCard = false,
   showUnifiedNavCta = false,
+  catalogBuyOnlyCta = false,
 }: ProductsCatalogCardViewProps) {
   const { t } = useTranslation();
   const catalogBuyLabel = buyButtonLabel ?? 'Buy';
@@ -62,6 +63,7 @@ export function ProductsCatalogCardView({
     priceClassName,
     buyButtonClassName,
     unifiedShopButtonClassName,
+    catalogBuyOnlyButtonClassName,
     iconClassName,
     catalogBagIconClassName,
     trendingShopBagIconClassName,
@@ -198,6 +200,15 @@ export function ProductsCatalogCardView({
                 aria-hidden
                 className={legacyHomeCartIcon ? iconClassName : trendingShopBagIconClassName}
               />
+            </button>
+          ) : catalogBuyOnlyCta ? (
+            <button
+              type="button"
+              onClick={handleBuyNow}
+              disabled={!product.inStock || isAddingToCart}
+              className={catalogBuyOnlyButtonClassName}
+            >
+              {catalogBuyLabel}
             </button>
           ) : (
             <div className="flex items-center gap-0.5">

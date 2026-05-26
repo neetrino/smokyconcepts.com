@@ -51,6 +51,8 @@ export interface ProductsCatalogCardProps {
   slimCatalogGrid?: boolean;
   /** `/products` — slightly less vertical gap between hero image and details. */
   productsCatalogPage?: boolean;
+  /** `/products` catalog strip/grid: Buy only (no separate cart icon). */
+  catalogBuyOnlyCta?: boolean;
   /** Home trending carousel — keeps legacy card geometry separate from `/products` strip tuning. */
   trendingSectionCard?: boolean;
   /**

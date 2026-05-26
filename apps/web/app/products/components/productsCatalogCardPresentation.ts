@@ -43,6 +43,7 @@ export interface CatalogCardPresentation {
   priceClassName: string;
   buyButtonClassName: string;
   unifiedShopButtonClassName: string;
+  catalogBuyOnlyButtonClassName: string;
   iconClassName: string;
   catalogBagIconClassName: string;
   trendingShopBagIconClassName: string;
@@ -68,6 +69,7 @@ export function buildCatalogCardPresentation({
   catalogStripMobilePeek = false,
   slimCatalogGrid = false,
   productsCatalogPage = false,
+  catalogBuyOnlyCta = false,
   trendingSectionCard = false,
   unifiedNavCta = false,
   productsCatalogPageScaleMultiplier = 1,
@@ -218,6 +220,11 @@ export function buildCatalogCardPresentation({
   const unifiedShopButtonClassName = showUnifiedNavCta
     ? `${buyButtonClassName} gap-1 pr-1 sm:gap-1.5 sm:pr-1.5`
     : buyButtonClassName;
+  const catalogBuyOnlyButtonClassName = catalogBuyOnlyCta
+    ? compactLayout
+      ? `${buyButtonClassName} ml-0.5 min-w-[3.125rem] sm:ml-1 sm:min-w-[3.625rem]`
+      : `${buyButtonClassName} ml-1 min-w-[3.5rem] sm:ml-1.5 sm:min-w-[4rem]`
+    : buyButtonClassName;
   const iconClassName = compactLayout
     ? 'h-3.5 w-3.5 object-contain sm:h-4 sm:w-4'
     : 'h-4 w-4 object-contain sm:h-5 sm:w-5';
@@ -282,6 +289,7 @@ export function buildCatalogCardPresentation({
     priceClassName,
     buyButtonClassName,
     unifiedShopButtonClassName,
+    catalogBuyOnlyButtonClassName,
     iconClassName,
     catalogBagIconClassName,
     trendingShopBagIconClassName,

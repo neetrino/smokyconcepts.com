@@ -169,6 +169,7 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
     categoryLabel,
     className: props.className,
     productsCatalogPage: props.productsCatalogPage,
+    catalogBuyOnlyCta: props.catalogBuyOnlyCta ?? false,
     imageFrameClassName: props.imageFrameClassName,
     eagerProductImage: props.eagerProductImage,
     buyButtonLabel: props.buyButtonLabel,
