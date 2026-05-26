@@ -24,7 +24,10 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
     legacyHomeCartIcon = false,
     catalogStripMobilePeek = false,
     trendingSectionCard = false,
+    unifiedNavCta = false,
   } = props;
+
+  const showUnifiedNavCta = trendingSectionCard || unifiedNavCta;
 
   const isSmUp = useSyncExternalStore(
     subscribeCatalogProductsSmViewport,
@@ -170,5 +173,7 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
     eagerProductImage: props.eagerProductImage,
     buyButtonLabel: props.buyButtonLabel,
     trendingSectionCard,
+    unifiedNavCta,
+    showUnifiedNavCta,
   };
 }

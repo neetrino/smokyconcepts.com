@@ -53,6 +53,11 @@ export interface ProductsCatalogCardProps {
   productsCatalogPage?: boolean;
   /** Home trending carousel — keeps legacy card geometry separate from `/products` strip tuning. */
   trendingSectionCard?: boolean;
+  /**
+   * Home sections (e.g. Upcoming): single CTA with `buyButtonLabel` + bag icon navigates to PDP.
+   * Trending enables the same via `trendingSectionCard`.
+   */
+  unifiedNavCta?: boolean;
   /** `/products` only: per-card hero scale multiplier (for visual balancing by index). */
   productsCatalogPageScaleMultiplier?: number;
   /** Overrides default catalog hero pull-up below `sm` (e.g. home trending). */

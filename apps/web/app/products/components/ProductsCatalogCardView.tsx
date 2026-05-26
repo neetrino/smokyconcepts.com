@@ -40,12 +40,12 @@ export function ProductsCatalogCardView({
   sizeLabel,
   categoryLabel,
   trendingSectionCard = false,
+  showUnifiedNavCta = false,
 }: ProductsCatalogCardViewProps) {
   const { t } = useTranslation();
   const catalogBuyLabel = buyButtonLabel ?? 'Buy';
-  const shopButtonLabel = trendingSectionCard
-    ? (buyButtonLabel ?? t('home.homepage.trending.shopCta'))
-    : catalogBuyLabel;
+  const unifiedNavButtonLabel =
+    buyButtonLabel ?? (trendingSectionCard ? t('home.homepage.trending.shopCta') : catalogBuyLabel);
 
   const {
     articleClassName,
@@ -182,14 +182,14 @@ export function ProductsCatalogCardView({
             {isAmdCurrency ? <span className="ml-1 text-[0.78em]">֏</span> : null}
           </span>
 
-          {trendingSectionCard ? (
+          {showUnifiedNavCta ? (
             <button
               type="button"
               onClick={handleShopNavigate}
               className={unifiedShopButtonClassName}
-              aria-label={`${shopButtonLabel} — ${product.title}`}
+              aria-label={`${unifiedNavButtonLabel} — ${product.title}`}
             >
-              <span>{shopButtonLabel}</span>
+              <span>{unifiedNavButtonLabel}</span>
               <Image
                 src={legacyHomeCartIcon ? BAG_ICON_PATH : CATALOG_BAG_ICON_PATH}
                 alt=""
