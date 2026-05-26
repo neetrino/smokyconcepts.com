@@ -19,6 +19,7 @@ import {
   resolveDefaultDeliveryCountry,
 } from './utils/delivery-location-utils';
 import { useCart } from './hooks/useCart';
+import { handleRemoveItem } from '../cart/cart-handlers';
 import { useUserProfile } from './hooks/useUserProfile';
 import { useOrderSubmission } from './hooks/useOrderSubmission';
 import { useOrderSummary } from './hooks/useOrderSummary';
@@ -37,6 +38,7 @@ export function useCheckout() {
   const [couponDiscountUsd, setCouponDiscountUsd] = useState(0);
   const [couponApplying, setCouponApplying] = useState(false);
   const [couponFieldError, setCouponFieldError] = useState<string | null>(null);
+  const [removingItemId, setRemovingItemId] = useState<string | null>(null);
 
   const paymentMethods = usePaymentMethods();
   const checkoutSchema = useCheckoutSchema();
@@ -118,7 +120,7 @@ export function useCheckout() {
     }
   }, [shippingCountry, filteredDeliveryLocations, shippingRegion, setValue]);
 
-  const { cart, loading, fetchCart } = useCart();
+  const { cart, loading, fetchCart, setCart } = useCart();
 
   const merchandiseSubtotalUsd = useMemo(() => getCartMerchandiseSubtotalUsd(cart), [cart]);
 
@@ -209,6 +211,22 @@ export function useCheckout() {
     setCouponFieldError(null);
     setCouponDraft('');
   }, []);
+
+  const removeCartItem = useCallback(
+    async (itemId: string) => {
+      if (!cart || removingItemId) {
+        return;
+      }
+
+      setRemovingItemId(itemId);
+      try {
+        await handleRemoveItem(itemId, cart, setCart, fetchCart);
+      } finally {
+        setRemovingItemId(null);
+      }
+    },
+    [cart, fetchCart, removingItemId, setCart],
+  );
 
   useEffect(() => {
     if (isLoading) {
@@ -313,6 +331,8 @@ export function useCheckout() {
     couponApplying,
     couponFieldError,
     appliedCouponCode,
+    removingItemId,
+    removeCartItem,
     // Actions
     handlePlaceOrder,
     onSubmit,
