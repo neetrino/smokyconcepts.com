@@ -17,6 +17,8 @@ import {
 } from '@/app/admin/constants/adminMenuThemeClasses';
 import { useAdminTheme } from '@/app/admin/context/AdminThemeContext';
 import { getAdminDrawerNavIndentClass } from '@/app/admin/utils/adminMenuIndent';
+import { useAuth } from '@/lib/auth/AuthContext';
+import { useTranslation } from '@/lib/i18n-client';
 
 export interface AdminMenuItem {
   id: string;
@@ -33,12 +35,21 @@ export interface AdminMenuItem {
 interface AdminMenuDrawerProps {
   tabs: AdminMenuItem[];
   currentPath: string;
+  /** Open the drawer on mount (e.g. admin mobile landing). */
+  initialOpen?: boolean;
+  /** Show logout below nav items (mobile admin menu). */
+  showLogout?: boolean;
 }
 
-export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
+export function AdminMenuDrawer({
+  tabs,
+  currentPath,
+  initialOpen = false,
+  showLogout = false,
+}: AdminMenuDrawerProps) {
   const router = useRouter();
   const { theme } = useAdminTheme();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(initialOpen);
 
   const parentIds = new Set(tabs.filter((tab) => tab.parentId).map((tab) => tab.parentId!));
 
@@ -76,20 +87,30 @@ export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
     setOpen(false);
   };
 
+  const { logout } = useAuth();
+  const { t } = useTranslation();
+
+  const handleLogout = () => {
+    setOpen(false);
+    logout();
+  };
+
   return (
     <div className="lg:hidden">
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className={adminDrawerTriggerClass(theme)}
-      >
-        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6H20M4 12H16M4 18H12" />
-        </svg>
-        Menu
-      </button>
+      {!open ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className={adminDrawerTriggerClass(theme)}
+        >
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6H20M4 12H16M4 18H12" />
+          </svg>
+          Menu
+        </button>
+      ) : null}
 
-      {open && (
+      {open ? (
         <div
           className="fixed inset-0 z-50 flex bg-black/40 backdrop-blur-sm"
           onClick={() => setOpen(false)}
@@ -183,9 +204,21 @@ export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
                 );
               })}
             </div>
+
+            {showLogout ? (
+              <div className="border-t border-[#dcc090]/20 p-4">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex h-11 w-full items-center justify-center rounded-lg border border-[#dcc090]/30 bg-white/5 text-sm font-semibold text-red-400 transition-colors hover:bg-white/10 hover:text-red-300"
+                >
+                  {t('common.navigation.logout')}
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

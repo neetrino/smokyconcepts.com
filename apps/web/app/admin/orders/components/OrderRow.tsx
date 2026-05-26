@@ -130,7 +130,7 @@ export function OrderRow({
           </span>
         )}
       </td>
-      <td className="whitespace-nowrap border-y border-[#dcc090]/25 bg-white/95 px-3 py-3 transition-all duration-200 group-hover:border-[#dcc090] group-hover:bg-[#fffaf0]">
+      <td className="min-w-[7.5rem] whitespace-nowrap border-y border-[#dcc090]/25 bg-white/95 px-3 py-3 transition-all duration-200 group-hover:border-[#dcc090] group-hover:bg-[#fffaf0]">
         <div className="flex items-center gap-2">
           {updatingStatus ? (
             <div className="flex items-center gap-2">
@@ -151,7 +151,7 @@ export function OrderRow({
           )}
         </div>
       </td>
-      <td className="whitespace-nowrap border-y border-[#dcc090]/25 bg-white/95 px-3 py-3 transition-all duration-200 group-hover:border-[#dcc090] group-hover:bg-[#fffaf0]">
+      <td className="min-w-[7.5rem] whitespace-nowrap border-y border-[#dcc090]/25 bg-white/95 px-3 py-3 transition-all duration-200 group-hover:border-[#dcc090] group-hover:bg-[#fffaf0]">
         <div className="flex items-center gap-2">
           {updatingPaymentStatus ? (
             <div className="flex items-center gap-2">

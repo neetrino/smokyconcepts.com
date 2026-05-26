@@ -915,6 +915,9 @@
     "saveError": "Could not save. Check the fields and try again.",
     "uploadError": "Upload failed. Try another file."
   },
+  "mobileHub": {
+    "chooseSection": "Choose a section"
+  },
   "common": {
     "loading": "Loading...",
     "error": "Error",
