@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { formatCatalogPrice } from '../../../lib/currency';
 import { t } from '../../../lib/i18n';
 import { useCurrency } from '../../../components/hooks/useCurrency';
@@ -22,8 +21,6 @@ import {
   PRODUCT_INFO_TABS_SECTION_CLASS,
 } from './productInfoTabContent.constants';
 
-const CATALOG_BAG_ICON_PATH = '/assets/home/icons/bag-catalog.svg';
-
 type ProductInfoViewState = ReturnType<typeof useProductInfoAndActions>;
 
 interface ProductInfoAndActionsViewProps extends ProductInfoAndActionsProps {
@@ -43,7 +40,6 @@ export function ProductInfoAndActionsView({
   colorOptions,
   onColorSelect,
   onAddToCart,
-  onBuyNow,
   customizeDraftText,
   onCustomizeDraftTextChange,
   customizeTextMaxLength,
@@ -77,7 +73,29 @@ export function ProductInfoAndActionsView({
     labelBadgeItems,
     hasTitleRowBadges,
     showCustomizeApplyButton,
+    isSizeSelected,
+    showSizeRequired,
+    isSizeShaking,
+    triggerSizeValidation,
+    handleSizeShakeAnimationEnd,
   } = view;
+
+  const handleAddToCartClick = () => {
+    if (showSizeSection && !isSizeSelected) {
+      triggerSizeValidation();
+      return;
+    }
+    if (!canAddToCart || isAddingToCart) {
+      return;
+    }
+    void onAddToCart();
+  };
+
+  const addToCartLabel = isAddingToCart
+    ? t(language, 'product.adding')
+    : isOutOfStock
+      ? t(language, 'product.outOfStock')
+      : t(language, 'product.addToCart');
 
   return (
     <>
@@ -156,11 +174,19 @@ export function ProductInfoAndActionsView({
             <div className="relative mt-6">
               <p className="font-montserrat text-[18px] font-extrabold leading-none text-[#414141]">
                 {t(language, 'product.size')}
+                {showSizeRequired ? (
+                  <span className="ml-1 text-red-600" aria-hidden>
+                    *
+                  </span>
+                ) : null}
               </p>
               <button
                 type="button"
                 onClick={openSizeCatalogModal}
-                className="mt-3 flex w-full min-h-9 items-center justify-center gap-2 rounded-[6px] bg-[#dcc090] px-3 py-2 text-center font-montserrat text-[16px] font-bold leading-normal tracking-normal text-neutral-700 sm:inline-flex sm:w-auto sm:min-w-[160px]"
+                onAnimationEnd={handleSizeShakeAnimationEnd}
+                className={`mt-3 flex w-full min-h-9 items-center justify-center gap-2 rounded-[6px] bg-[#dcc090] px-3 py-2 text-center font-montserrat text-[16px] font-bold leading-normal tracking-normal text-neutral-700 sm:inline-flex sm:w-auto sm:min-w-[160px] ${
+                  isSizeShaking ? 'animate-size-shake' : ''
+                }`}
               >
                 <span className="truncate">{sizeButtonLabel}</span>
               </button>
@@ -235,57 +261,15 @@ export function ProductInfoAndActionsView({
             </p>
           </div>
 
-          <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1.5">
+          <div className="ml-auto flex shrink-0 items-center">
             <Button
               type="button"
-              disabled={!canAddToCart || isAddingToCart}
-              onClick={() => {
-                void onBuyNow();
-              }}
-              className="h-10 rounded-[8px] !bg-[#dcc090] px-4 text-[56px] font-bold capitalize tracking-normal !text-[#122a26] hover:!bg-[#d3b67f] sm:px-5 sm:text-[20px]"
+              disabled={isAddingToCart}
+              onClick={handleAddToCartClick}
+              className="h-10 rounded-[8px] !bg-[#dcc090] px-4 text-[56px] font-bold capitalize tracking-normal !text-[#122a26] hover:!bg-[#d3b67f] disabled:cursor-wait disabled:!opacity-100 sm:px-5 sm:text-[20px]"
             >
-              {isAddingToCart
-                ? t(language, 'product.adding')
-                : isOutOfStock
-                  ? t(language, 'product.outOfStock')
-                  : t(language, 'product.buy_now')}
+              {addToCartLabel}
             </Button>
-
-            <button
-              type="button"
-              onClick={() => {
-                void onAddToCart();
-              }}
-              disabled={!canAddToCart || isAddingToCart}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] text-[#dcc090] transition-colors hover:bg-[#dcc090]/10 disabled:cursor-not-allowed disabled:opacity-50"
-              aria-label={t(language, 'product.addToCart')}
-            >
-              {isAddingToCart ? (
-                <svg
-                  className="h-6 w-6 animate-spin text-[#dcc090]"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  aria-hidden
-                >
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-              ) : (
-                <Image
-                  src={CATALOG_BAG_ICON_PATH}
-                  alt=""
-                  width={32}
-                  height={32}
-                  className="h-7 w-9 object-contain"
-                  aria-hidden
-                />
-              )}
-            </button>
           </div>
         </div>
 

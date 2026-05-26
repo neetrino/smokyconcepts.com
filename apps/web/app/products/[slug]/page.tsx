@@ -151,7 +151,7 @@ export default function ProductPage({ params }: ProductPageProps) {
   const displayPrice =
     collectionPriceAmd > 0 ? price + collectionPriceAmd : price;
 
-  const { handleAddToCart, handleBuyNow } = useProductCartActions({
+  const { handleAddToCart } = useProductCartActions({
     product,
     currentVariant,
     quantity,
@@ -222,7 +222,6 @@ export default function ProductPage({ params }: ProductPageProps) {
             onSizeSelect={handleSizeSelect}
             onCatalogVariantSelect={handleCatalogVariantSelect}
             onAddToCart={handleAddToCart}
-            onBuyNow={handleBuyNow}
             onSelectedCatalogSizeChange={setSelectedCatalogSize}
             onSelectedCustomSizeRequestChange={setSelectedCustomSizeRequest}
             onCustomizeTabActiveChange={setIsCustomizeTabActive}

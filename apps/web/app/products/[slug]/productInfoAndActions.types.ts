@@ -42,10 +42,8 @@ export interface ProductInfoAndActionsProps {
   onSizeSelect: (size: string) => void;
   /** Select variant by size collection + version from size catalog modal item. */
   onCatalogVariantSelect?: (sizeCollectionTitle: string, version: string) => void;
-  /** Quick add (e.g. bag icon) — stay on page. */
+  /** Add to cart — stay on page and open cart drawer. */
   onAddToCart: () => Promise<void>;
-  /** Primary CTA — add line then continue to checkout. */
-  onBuyNow: () => Promise<void>;
   /** Sync size-catalog selection to parent for cart / checkout snapshot */
   onSelectedCatalogSizeChange?: (item: SizeCatalogItemDto | null) => void;
   /** Sync custom-size request selection to parent for checkout payload */
