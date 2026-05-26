@@ -3,12 +3,12 @@
 import { useTranslation } from '../../../../lib/i18n-client';
 import { Card } from '@shop/ui';
 import {
-  ADMIN_ORDERS_TABLE_HEAD_CLASS,
+  ADMIN_ORDERS_TABLE_CLASS,
   ADMIN_ORDERS_TABLE_MIN_WIDTH_CLASS,
   ADMIN_ORDERS_TABLE_SCROLL_CLASS,
-  ADMIN_ORDERS_TABLE_TH_CLASS,
   ADMIN_ORDERS_TABLE_TH_FIRST_CLASS,
   ADMIN_ORDERS_TABLE_TH_LAST_CLASS,
+  ADMIN_ORDERS_TABLE_TH_MIDDLE_CLASS,
 } from '../constants/ordersTable.constants';
 import { OrderRow } from './OrderRow';
 import { OrdersPagination } from './OrdersPagination';
@@ -81,12 +81,10 @@ export function OrdersTable({
   return (
     <Card className="border-[#dcc090]/30 bg-white/85 p-2 shadow-[0_18px_50px_rgba(18,42,38,0.08)] sm:p-3">
       <div className={`rounded-[1.15rem] ${ADMIN_ORDERS_TABLE_SCROLL_CLASS}`}>
-        <table
-          className={`w-full border-separate border-spacing-y-2 lg:table-fixed ${ADMIN_ORDERS_TABLE_MIN_WIDTH_CLASS}`}
-        >
-          <colgroup className="hidden lg:table-column-group">
-            <col className="w-[4.5%]" />
-            <col className="w-[10%]" />
+        <table className={`${ADMIN_ORDERS_TABLE_CLASS} ${ADMIN_ORDERS_TABLE_MIN_WIDTH_CLASS}`}>
+          <colgroup>
+            <col className="w-12" />
+            <col className="w-[6.5rem]" />
             <col className="w-[23%]" />
             <col className="w-[11%]" />
             <col className="w-[13%]" />
@@ -94,9 +92,9 @@ export function OrdersTable({
             <col className="w-[14%]" />
             <col className="w-[10.5%]" />
           </colgroup>
-          <thead className={ADMIN_ORDERS_TABLE_HEAD_CLASS}>
+          <thead className="max-lg:[&_th]:relative max-lg:[&_th]:z-0">
             <tr>
-              <th className={`${ADMIN_ORDERS_TABLE_TH_FIRST_CLASS} ${ADMIN_ORDERS_TABLE_TH_CLASS} w-12 px-3 py-4`}>
+              <th className={`${ADMIN_ORDERS_TABLE_TH_FIRST_CLASS} w-12 px-3 py-4`}>
                 <input
                   type="checkbox"
                   aria-label={t('admin.orders.selectAllOrders')}
@@ -105,14 +103,14 @@ export function OrdersTable({
                   className="h-4 w-4 rounded border-[#dcc090]/60 bg-white text-[#122a26] focus:ring-[#dcc090]"
                 />
               </th>
-              <th className={`${ADMIN_ORDERS_TABLE_TH_CLASS} ${headerTextClass}`}>
+              <th className={`${ADMIN_ORDERS_TABLE_TH_MIDDLE_CLASS} ${headerTextClass} min-w-[6.5rem]`}>
                 {t('admin.orders.orderNumber')}
               </th>
-              <th className={`${ADMIN_ORDERS_TABLE_TH_CLASS} ${headerTextClass} min-w-[10rem]`}>
+              <th className={`${ADMIN_ORDERS_TABLE_TH_MIDDLE_CLASS} ${headerTextClass} min-w-[10rem]`}>
                 {t('admin.orders.customer')}
               </th>
               <th
-                className={`${ADMIN_ORDERS_TABLE_TH_CLASS} min-w-[6.5rem] cursor-pointer select-none ${headerTextClass} transition-colors hover:bg-[#18352f]`}
+                className={`${ADMIN_ORDERS_TABLE_TH_MIDDLE_CLASS} min-w-[6.5rem] cursor-pointer select-none ${headerTextClass} transition-colors hover:bg-[#18352f]`}
                 onClick={() => onSort('total')}
               >
                 <div className="flex items-center gap-1">
@@ -135,17 +133,17 @@ export function OrdersTable({
                   </div>
                 </div>
               </th>
-              <th className={`${ADMIN_ORDERS_TABLE_TH_CLASS} ${headerTextClass} min-w-[8rem]`}>
+              <th className={`${ADMIN_ORDERS_TABLE_TH_MIDDLE_CLASS} ${headerTextClass} min-w-[8rem]`}>
                 {t('admin.orders.orderDetails.colorSize')}
               </th>
-              <th className={`${ADMIN_ORDERS_TABLE_TH_CLASS} ${headerTextClass} min-w-[7.5rem]`}>
+              <th className={`${ADMIN_ORDERS_TABLE_TH_MIDDLE_CLASS} ${headerTextClass} min-w-[7.5rem]`}>
                 {t('admin.orders.status')}
               </th>
-              <th className={`${ADMIN_ORDERS_TABLE_TH_CLASS} ${headerTextClass} min-w-[7.5rem]`}>
+              <th className={`${ADMIN_ORDERS_TABLE_TH_MIDDLE_CLASS} ${headerTextClass} min-w-[7.5rem]`}>
                 {t('admin.orders.payment')}
               </th>
               <th
-                className={`${ADMIN_ORDERS_TABLE_TH_LAST_CLASS} ${ADMIN_ORDERS_TABLE_TH_CLASS} min-w-[6rem] cursor-pointer select-none ${headerTextClass} transition-colors hover:bg-[#18352f]`}
+                className={`${ADMIN_ORDERS_TABLE_TH_LAST_CLASS} min-w-[6rem] cursor-pointer select-none ${headerTextClass} transition-colors hover:bg-[#18352f]`}
                 onClick={() => onSort('createdAt')}
               >
                 <div className="flex items-center gap-1">
