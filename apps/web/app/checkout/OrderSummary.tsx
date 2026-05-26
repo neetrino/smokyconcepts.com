@@ -1,10 +1,9 @@
 'use client';
 
 import { Button } from '@shop/ui';
-import { useCurrency } from '../../components/hooks/useCurrency';
 import { useTranslation } from '../../lib/i18n-client';
-import { convertPrice, formatPriceInCurrency } from '../../lib/currency';
 import type { CheckoutOrderSummaryTotals } from './types';
+import { CheckoutSummaryBreakdown } from './components/CheckoutSummaryBreakdown';
 
 interface OrderSummaryProps {
   orderSummary: CheckoutOrderSummaryTotals;
@@ -38,9 +37,6 @@ export function OrderSummary({
   appliedCouponCode,
 }: OrderSummaryProps) {
   const { t } = useTranslation();
-  const displayCurrency = useCurrency();
-  const formatCheckoutUsd = (amountUsd: number) =>
-    formatPriceInCurrency(convertPrice(amountUsd, 'USD', displayCurrency), displayCurrency);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-6">
@@ -97,40 +93,11 @@ export function OrderSummary({
         </div>
 
         <div className="space-y-4 mb-6">
-          <div className="flex justify-between text-gray-600">
-            <span>{t('checkout.summary.subtotal')}</span>
-            <span>{formatCheckoutUsd(orderSummary.subtotalDisplay)}</span>
-          </div>
-          <div className="flex justify-between text-gray-600">
-            <span>{t('checkout.summary.shipping')}</span>
-            <span>
-              {shippingMethod === 'pickup'
-                ? t('checkout.shipping.freePickup')
-                : loadingDeliveryPrice
-                  ? t('checkout.shipping.loading')
-                  : deliveryPrice !== null
-                    ? formatCheckoutUsd(orderSummary.shippingDisplay)
-                    : t('checkout.shipping.enterRegion')}
-            </span>
-          </div>
-          {orderSummary.collectionPriceDisplay > 0 && (
-            <div className="flex justify-between text-gray-600">
-              <span>{t('checkout.summary.collectionPrice')}</span>
-              <span>{formatCheckoutUsd(orderSummary.collectionPriceDisplay)}</span>
-            </div>
-          )}
-          {orderSummary.couponDiscountDisplay > 0 && (
-            <div className="flex justify-between text-emerald-700">
-              <span>{t('checkout.summary.couponDiscount')}</span>
-              <span>-{formatCheckoutUsd(orderSummary.couponDiscountDisplay)}</span>
-            </div>
-          )}
-          <div className="border-t border-gray-200 pt-4">
-            <div className="flex justify-between text-lg font-bold text-gray-900">
-              <span>{t('checkout.summary.total')}</span>
-              <span>{formatCheckoutUsd(orderSummary.totalDisplay)}</span>
-            </div>
-          </div>
+          <CheckoutSummaryBreakdown
+            orderSummary={orderSummary}
+            shippingMethod={shippingMethod}
+            loadingDeliveryPrice={loadingDeliveryPrice}
+          />
         </div>
 
         {error && (

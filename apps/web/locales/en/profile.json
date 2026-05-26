@@ -9,6 +9,28 @@
     "password": "Change Password",
     "orders": "Orders"
   },
+  "menu": {
+    "coupons": "Coupons",
+    "deleteAccount": "Delete account"
+  },
+  "coupons": {
+    "title": "Coupons",
+    "empty": "You do not have any coupons yet.",
+    "loading": "Loading coupons...",
+    "loadError": "Could not load coupons.",
+    "discount": "Discount",
+    "expiresAt": "Expires",
+    "noExpiry": "No expiry date",
+    "copyCode": "Copy coupon code",
+    "copySuccess": "Coupon code copied",
+    "copyError": "Could not copy coupon code",
+    "status": {
+      "active": "Active",
+      "expired": "Expired",
+      "inactive": "Inactive",
+      "exhausted": "Used up"
+    }
+  },
   "dashboard": {
     "loading": "Loading dashboard...",
     "totalOrders": "Total Orders",

@@ -2,13 +2,13 @@ import type { Prisma } from "@prisma/client";
 import { filterDisplayableVariantOptions } from "@/lib/default-pricing-variant";
 import { mergeSizeCatalogIntoVariantOptions } from "@/lib/orders/merge-size-catalog-into-variant-options";
 import {
-  adminInputAmdToUsd,
   catalogPriceForStorefront,
   catalogPriceToUsd,
   persistedOrderMoneyToUsd,
 } from "@/lib/currency";
 import { resolveCollectionSurchargeUsd } from "@/lib/orders/resolve-collection-surcharge-usd";
 import { resolveOrderShippingPriceAmd, buildOrderSummaryLinesFromPersistedItems } from "@/lib/orders/order-summary-display";
+import { resolvePersistedOrderItemCollectionPriceAmd } from "@/lib/orders/resolve-persisted-order-item-collection-price-amd";
 
 type VariantOptionFromAttributes = {
   attributeKey?: string | null;
@@ -350,15 +350,13 @@ export function formatOrderItem(
   const mappedCollectionPriceAmd =
     normalizedTitle !== '' ? (sizeCatalogPriceByTitle?.get(normalizedTitle) ?? null) : null;
   const variantCatalogBaseUsd = catalogPriceToUsd(Number(variant?.price ?? Number.NaN));
-  const usdPerAmd = adminInputAmdToUsd(1);
-  const inferredCollectionPriceAmd =
-    Number.isFinite(variantCatalogBaseUsd) &&
-    Number.isFinite(unitPrice) &&
-    Number.isFinite(usdPerAmd) &&
-    usdPerAmd > 0
-      ? Math.max(0, Math.round((unitPrice - variantCatalogBaseUsd) / usdPerAmd))
-      : null;
-  const sizeCatalogCategoryPriceAmd = mappedCollectionPriceAmd ?? inferredCollectionPriceAmd;
+  const sizeCatalogCategoryPriceAmd = resolvePersistedOrderItemCollectionPriceAmd({
+    unitPriceUsd: unitPrice,
+    variantBaseUsd: variantCatalogBaseUsd,
+    mappedCollectionPriceAmd,
+    customizePlain: item.customizePlain,
+    customizeHtml: item.customizeHtml,
+  });
   const variantBasePriceAmd =
     variant?.price != null ? catalogPriceForStorefront(Number(variant.price)) : null;
 
