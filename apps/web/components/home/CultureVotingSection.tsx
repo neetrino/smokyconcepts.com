@@ -409,7 +409,7 @@ export function CultureVotingSection() {
                 } ${index % 3 === 2 ? 'col-span-2 justify-center sm:col-span-1' : ''}`}
               >
                 <CultureVotingCard
-                  compactDesktopHero={index === 1}
+                  compactHero={index === 1}
                   id={item.id}
                   title={item.title}
                   images={

@@ -1,7 +1,12 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 
+import {
+  IMAGE_SIZES,
+  PRODUCTS_CATALOG_PAGE_DESIRED_IMAGE_SCALE,
+} from '@/app/products/components/productsCatalogCardImage.utils';
 import { MAX_VOTING_GALLERY_IMAGES } from '@/lib/voting/voting-gallery';
 
 interface CultureVotingCardProps {
@@ -18,7 +23,8 @@ interface CultureVotingCardProps {
   variantTone?: CultureVotingVariantTone;
   showEarlyAccess?: boolean;
   earlyAccessLabel?: string;
-  compactDesktopHero?: boolean;
+  /** Middle "Compact" card — slightly smaller hero inside the shared box. */
+  compactHero?: boolean;
 }
 
 type CultureVotingVariantTone = 'special' | 'classic' | 'atelier';
@@ -38,27 +44,42 @@ const CULTURE_CARD_SHADOW_CLASS_NAME = 'shadow-[0_4px_22.5px_rgba(0,0,0,0.08)]';
 const CULTURE_MOBILE_CARD_SURFACE_CLASS_NAME = 'max-sm:pb-[1.625rem]';
 const CULTURE_DESKTOP_CARD_BOTTOM_PADDING_CLASS_NAME = 'sm:pb-4';
 const CULTURE_DESKTOP_CARD_INSET_CLASS_NAME = 'sm:px-3.5 sm:pt-2.5';
-const CULTURE_DESKTOP_IMAGE_FRAME_CLASS_NAME = 'sm:-mt-[4rem] sm:mb-1 sm:h-[12.25rem]';
+/** Less pull-up than catalog strip — keeps hero sitting lower inside the white card. */
+const CULTURE_HERO_FRAME_PULL_UP_CLASS_NAME = '-mt-[3.125rem] sm:-mt-[2rem]';
+const CULTURE_DESKTOP_IMAGE_FRAME_CLASS_NAME = 'sm:mb-1 sm:h-[12.25rem]';
 const CULTURE_CARD_META_STACK_GAP_CLASS_NAME = 'gap-1 sm:gap-1.5';
 const CULTURE_DESKTOP_DETAILS_TOP_GAP_CLASS_NAME = 'sm:mt-1.5 sm:pt-0';
 const CULTURE_DESKTOP_EARLY_ACCESS_TOP_GAP_CLASS_NAME = 'sm:mt-2';
 const CULTURE_CARD_FOOTER_ROW_CLASS_NAME =
   'mt-2 flex shrink-0 items-center justify-end sm:min-h-[1.5rem]';
 /** Shifts hero + text inside the white card; article background position stays fixed. */
-const CULTURE_MOBILE_INNER_CONTENT_OFFSET_CLASS_NAME = 'max-sm:translate-y-4';
+const CULTURE_MOBILE_INNER_CONTENT_OFFSET_CLASS_NAME = 'max-sm:translate-y-1';
 /** Nudges hero toward image-switch dots on narrow viewports. */
-const CULTURE_MOBILE_IMAGE_FRAME_CLASS_NAME = 'max-sm:translate-y-5';
+const CULTURE_MOBILE_IMAGE_FRAME_CLASS_NAME = 'max-sm:translate-y-1';
 const CULTURE_MOBILE_DETAILS_OFFSET_CLASS_NAME = 'max-sm:-mt-[3.25rem]';
 /** Dots, title, and category row — nudged down without moving the hero image. */
 const CULTURE_MOBILE_META_BLOCK_OFFSET_CLASS_NAME = 'max-sm:mt-2';
-const CULTURE_MOBILE_HERO_SCALE_CLASS_NAME = 'max-sm:scale-[1.32]';
-/** Desktop: nudge hero image only (frame slot stays fixed). */
-const CULTURE_DESKTOP_HERO_IMAGE_CLASS_NAME = 'sm:translate-y-12 sm:scale-[1.48]';
-const CULTURE_DESKTOP_COMPACT_HERO_IMAGE_CLASS_NAME = 'sm:translate-y-10 sm:scale-[1.32]';
+/** Same dimensions as catalog strip box, lowered ~2rem vs upcoming translate. */
+const CULTURE_VOTING_IMAGE_BOX_CLASS_NAME =
+  'relative -translate-y-[1.25rem] sm:-translate-y-[1.35rem] lg:-translate-y-[1rem] flex h-[12rem] w-[8.5rem] items-end justify-center overflow-hidden rounded-[0.875rem] bg-transparent sm:h-[14.25rem] sm:w-[10rem] lg:h-[12rem] lg:w-[8.75rem]';
+const CULTURE_HERO_IMAGE_OBJECT_CLASS_NAME = 'object-contain object-bottom';
+const CULTURE_COMPACT_HERO_IMAGE_SCALE = 0.88;
+
+function getCultureHeroImageTransformStyle(compactHero: boolean): {
+  transform: string;
+  transformOrigin: string;
+} {
+  const scale = compactHero ? CULTURE_COMPACT_HERO_IMAGE_SCALE : PRODUCTS_CATALOG_PAGE_DESIRED_IMAGE_SCALE;
+  return {
+    transform: `scale(${scale})`,
+    transformOrigin: 'bottom center',
+  };
+}
 const CULTURE_DOTS_ROW_CLASS_NAME =
   'mb-0 flex min-h-3 w-full items-center justify-center gap-1 max-sm:mb-1 sm:-mt-4 sm:gap-[0.3125rem]';
 const CULTURE_COMPACT_EARLY_ACCESS_BUTTON_CLASS_NAME =
   'inline-flex h-[1.375rem] min-w-[2.75rem] items-center justify-center rounded-[0.4375rem] border-2 border-[#dcc090] px-1.5 text-[0.6875rem] font-extrabold leading-tight text-[#dcc090] transition-colors hover:bg-[#dcc090]/10 sm:h-auto sm:min-h-0 sm:rounded-lg sm:px-2 sm:py-1 sm:text-sm';
+
 interface CultureVotingImageDotsProps {
   itemId: string;
   visibleDotCount: number;
@@ -217,7 +238,7 @@ export function CultureVotingCard({
   variantTone = 'classic',
   showEarlyAccess = false,
   earlyAccessLabel = 'Early Access',
-  compactDesktopHero = false,
+  compactHero = false,
 }: CultureVotingCardProps) {
   const {
     activeImageIndex,
@@ -236,9 +257,7 @@ export function CultureVotingCard({
     pending,
     onToggleLike,
   };
-  const desktopHeroImageClassName = compactDesktopHero
-    ? CULTURE_DESKTOP_COMPACT_HERO_IMAGE_CLASS_NAME
-    : CULTURE_DESKTOP_HERO_IMAGE_CLASS_NAME;
+  const heroImageTransformStyle = getCultureHeroImageTransformStyle(compactHero);
 
   return (
     <div
@@ -250,23 +269,31 @@ export function CultureVotingCard({
       <div
         className={`flex min-h-0 flex-1 flex-col ${CULTURE_MOBILE_INNER_CONTENT_OFFSET_CLASS_NAME} sm:translate-y-0`}
       >
-      <div className={`relative z-10 mb-2 flex h-[14.75rem] shrink-0 items-end justify-center overflow-visible -mt-[5.125rem] ${CULTURE_DESKTOP_IMAGE_FRAME_CLASS_NAME}`}>
+      <div className={`relative z-10 mb-2 flex h-[14.75rem] shrink-0 items-end justify-center overflow-visible ${CULTURE_HERO_FRAME_PULL_UP_CLASS_NAME} ${CULTURE_DESKTOP_IMAGE_FRAME_CLASS_NAME}`}>
         <div
-          className={`relative h-[13.75rem] w-full ${CULTURE_MOBILE_IMAGE_FRAME_CLASS_NAME} sm:h-full`}
+          className={`relative flex h-[13.75rem] w-full items-end justify-center ${CULTURE_MOBILE_IMAGE_FRAME_CLASS_NAME} sm:h-full`}
         >
           {activeSrc && !imageError ? (
-            <img
-              key={`${id}-${activeImageIndex}-${activeSrc}`}
-              src={activeSrc}
-              alt={title}
-              className={`h-full w-full origin-bottom object-contain ${CULTURE_MOBILE_HERO_SCALE_CLASS_NAME} ${desktopHeroImageClassName}`}
-              loading="lazy"
-              onError={onHeroImageError}
-            />
+            <span className={CULTURE_VOTING_IMAGE_BOX_CLASS_NAME}>
+              <Image
+                key={`${id}-${activeImageIndex}-${activeSrc}`}
+                src={activeSrc}
+                alt={title}
+                fill
+                className={CULTURE_HERO_IMAGE_OBJECT_CLASS_NAME}
+                style={heroImageTransformStyle}
+                sizes={IMAGE_SIZES}
+                unoptimized
+                loading="lazy"
+                onError={onHeroImageError}
+              />
+            </span>
           ) : (
-            <div className="flex h-full w-full items-center justify-center rounded-[1rem] bg-[#f1f1ef] text-xs font-medium text-[#9d9d9d]">
-              No image
-            </div>
+            <span className={CULTURE_VOTING_IMAGE_BOX_CLASS_NAME}>
+              <div className="flex h-full w-full items-center justify-center rounded-[0.875rem] bg-[#f1f1ef] text-xs font-medium text-[#9d9d9d]">
+                No image
+              </div>
+            </span>
           )}
         </div>
       </div>
