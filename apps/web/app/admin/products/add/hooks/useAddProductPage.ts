@@ -27,7 +27,7 @@ export function useAddProductPage() {
   const productId = searchParams.get('id');
   const isEditMode = !!productId;
   const attributePoolSeededForProductRef = useRef<string | null>(null);
-  const variableChosenWithEmptyRowsRef = useRef(false);
+  const variableChosenWithEmptyRowsRef = useRef(!isEditMode);
 
   const formState = useProductFormState();
   const [sizeCatalogCategories, setSizeCatalogCategories] = useState<SizeCatalogCategoryDto[]>([]);
