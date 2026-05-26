@@ -5,8 +5,20 @@ const config: Config = {
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './lib/**/*.{js,ts}',
+    './hooks/**/*.{js,ts}',
     '!./app/api/**',
     '../../packages/ui/**/*.{js,ts,jsx,tsx}',
+  ],
+  safelist: [
+    'animate-size-modal-backdrop-in',
+    'animate-size-modal-panel-in',
+    'animate-size-modal-block-in',
+    'duration-[420ms]',
+    'delay-[0ms]',
+    'duration-[320ms]',
+    'delay-[48ms]',
+    'ease-[cubic-bezier(0.4,0,1,1)]',
   ],
   theme: {
     extend: {
