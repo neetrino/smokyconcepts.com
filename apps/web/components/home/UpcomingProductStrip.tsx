@@ -110,7 +110,7 @@ export function UpcomingProductStrip({
               catalogCardTopPaddingClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME}
               catalogDetailsOffsetClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME}
               catalogImageBottomMarginClassName={PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME}
-              className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} max-sm:!w-full max-sm:!min-w-0 max-sm:!max-w-none`}
+              className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} max-sm:!w-full max-sm:!min-w-0 max-sm:!max-w-none lg:!w-[11.75rem] lg:!min-w-[11.75rem] xl:!w-[12rem] xl:!min-w-[12rem]`}
               catalogStripMobilePeek={isSmUp}
               compactLayout
               productsCatalogPage
