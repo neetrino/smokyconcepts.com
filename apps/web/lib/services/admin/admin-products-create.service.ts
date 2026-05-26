@@ -6,6 +6,7 @@ import {
   cleanImageUrls,
   separateMainAndVariantImages,
 } from "../utils/image-utils";
+import { mergeProductMediaMetadata } from "../utils/product-media";
 import { resolveUniqueSlug } from "./admin-products-update/product-updater";
 
 class AdminProductsCreateService {
@@ -214,7 +215,7 @@ class AdminProductsCreateService {
 
         // Separate main images from variant images and clean them
         const { main } = separateMainAndVariantImages(rawMedia, allVariantImages);
-        const finalMedia = cleanImageUrls(main);
+        const finalMedia = mergeProductMediaMetadata(cleanImageUrls(main), rawMedia);
         
         console.log('📸 [ADMIN PRODUCTS CREATE SERVICE] Final main media count:', finalMedia.length);
         console.log('📸 [ADMIN PRODUCTS CREATE SERVICE] Variant images excluded:', allVariantImages.length);

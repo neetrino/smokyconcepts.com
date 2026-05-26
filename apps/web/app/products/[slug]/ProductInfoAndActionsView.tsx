@@ -45,6 +45,8 @@ export function ProductInfoAndActionsView({
   customizeTextMaxLength,
   customizeFormat,
   onCustomizeFormatChange,
+  customizeOverlayImageUrl,
+  customizePreviewHtml,
   view,
 }: ProductInfoAndActionsViewProps) {
   const displayCurrency = useCurrency();
@@ -250,6 +252,8 @@ export function ProductInfoAndActionsView({
               showCustomizeApplyButton={showCustomizeApplyButton}
               onCustomizeApplyClick={handleCustomizeApplyClick}
               onCustomizeClearApplied={handleCustomizeClearApplied}
+              customizeOverlayImageUrl={customizeOverlayImageUrl}
+              customizePreviewHtml={customizePreviewHtml}
             />
           </div>
         </div>

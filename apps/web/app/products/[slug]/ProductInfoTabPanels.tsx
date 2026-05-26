@@ -4,6 +4,7 @@ import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import type { Product } from './types';
 import { CustomizeFormatToolbar } from './CustomizeFormatToolbar';
+import { CustomizeTabImagePreview } from './CustomizeTabImagePreview';
 import type { CustomizeFormatState } from './utils/build-customize-preview-html';
 import {
   getCustomizeCopy,
@@ -31,6 +32,8 @@ export interface ProductInfoTabPanelsProps {
   showCustomizeApplyButton: boolean;
   onCustomizeApplyClick: () => void;
   onCustomizeClearApplied: () => void;
+  customizeOverlayImageUrl?: string | null;
+  customizePreviewHtml?: string | null;
 }
 
 export function ProductInfoTabPanels({
@@ -51,6 +54,8 @@ export function ProductInfoTabPanels({
   showCustomizeApplyButton,
   onCustomizeApplyClick,
   onCustomizeClearApplied,
+  customizeOverlayImageUrl,
+  customizePreviewHtml,
 }: ProductInfoTabPanelsProps) {
   if (activeTab === 'description') {
     if (!productDescription) {
@@ -121,6 +126,12 @@ export function ProductInfoTabPanels({
             </button>
           ) : null}
         </div>
+        {customizeOverlayImageUrl ? (
+          <CustomizeTabImagePreview
+            imageUrl={customizeOverlayImageUrl}
+            overlayHtml={customizePreviewHtml?.trim() ? customizePreviewHtml : null}
+          />
+        ) : null}
         {appliedCustomize?.plain ? (
           <button
             type="button"

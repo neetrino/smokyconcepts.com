@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { logger } from "../../utils/logger";
 import { cleanImageUrls, separateMainAndVariantImages, smartSplitUrls } from "../../utils/image-utils";
+import { mergeProductMediaMetadata, type ProductMediaItem } from "../../utils/product-media";
 import type { UpdateProductData } from "./types";
 
 /**
@@ -81,7 +82,7 @@ export function buildProductUpdateData(
 ): {
   primaryCategoryId?: string | null;
   categoryIds?: string[];
-  media?: string[];
+  media?: ProductMediaItem[];
   published?: boolean;
   publishedAt?: Date;
   featured?: boolean;
@@ -90,7 +91,7 @@ export function buildProductUpdateData(
   const updateData: {
     primaryCategoryId?: string | null;
     categoryIds?: string[];
-    media?: string[];
+    media?: ProductMediaItem[];
     published?: boolean;
     publishedAt?: Date;
     featured?: boolean;
@@ -106,8 +107,9 @@ export function buildProductUpdateData(
       data.media as Array<string | { url?: string; src?: string; value?: string }>,
       allVariantImages
     );
-    updateData.media = cleanImageUrls(main);
-    logger.debug('Updated main media', { count: updateData.media.length, variantImagesExcluded: allVariantImages.length });
+    const mergedMedia = mergeProductMediaMetadata(cleanImageUrls(main), data.media as Array<string | ProductMediaItem>);
+    updateData.media = mergedMedia;
+    logger.debug('Updated main media', { count: mergedMedia.length, variantImagesExcluded: allVariantImages.length });
   }
   
   if (data.published !== undefined) {

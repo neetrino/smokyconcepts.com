@@ -5,7 +5,7 @@ import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import { THUMBNAILS_PER_VIEW } from './constants';
 import type { Product } from './types';
-import { CustomizeProductOverlay } from './CustomizeProductOverlay';
+import { CustomizeProductOverlay, type CustomizeOverlayPosition } from './CustomizeProductOverlay';
 
 interface ProductImageGalleryProps {
   /** Main product images for the thumbnail strip (admin media only). */
@@ -22,6 +22,7 @@ interface ProductImageGalleryProps {
   onThumbnailStartIndexChange: (index: number) => void;
   /** Sanitized customize HTML overlaid on the hero image after Apply */
   customizeOverlayHtml: string | null;
+  customizeOverlayPosition?: CustomizeOverlayPosition;
 }
 
 /**
@@ -85,6 +86,7 @@ export function ProductImageGallery({
   thumbnailStartIndex,
   onThumbnailStartIndexChange,
   customizeOverlayHtml,
+  customizeOverlayPosition = 'bottom',
 }: ProductImageGalleryProps) {
   useEffect(() => {
     if (images.length > THUMBNAILS_PER_VIEW) {
@@ -160,7 +162,9 @@ export function ProductImageGallery({
                   draggable={false}
                   className={`block transition-transform duration-300 ease-out max-sm:group-hover:scale-100 sm:group-hover:scale-[1.03] ${GALLERY_IMAGE_FIT_CLASSES}`}
                 />
-                {customizeOverlayHtml ? <CustomizeProductOverlay html={customizeOverlayHtml} /> : null}
+                {customizeOverlayHtml ? (
+                  <CustomizeProductOverlay html={customizeOverlayHtml} position={customizeOverlayPosition} />
+                ) : null}
                 {canNavigateImages ? (
                   <>
                     <button

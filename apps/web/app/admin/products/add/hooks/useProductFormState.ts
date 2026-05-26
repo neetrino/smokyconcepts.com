@@ -23,6 +23,7 @@ export function useProductFormState() {
     upcoming: false,
     imageUrls: [] as string[],
     featuredImageIndex: 0,
+    customizeOverlayImageIndex: null as number | null,
     mainProductImage: '' as string,
     variants: [] as Variant[],
     labels: [] as ProductLabel[],
