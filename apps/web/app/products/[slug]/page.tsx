@@ -27,6 +27,8 @@ export default function ProductPage({ params }: ProductPageProps) {
     product,
     loading,
     images,
+    heroImageSrc,
+    activeThumbnailIndex,
     currentImageIndex,
     setCurrentImageIndex,
     thumbnailStartIndex,
@@ -182,6 +184,8 @@ export default function ProductPage({ params }: ProductPageProps) {
           <div className="flex min-h-0 min-w-0 flex-col gap-5 overflow-visible sm:gap-6">
             <ProductImageGallery
               images={images}
+              heroImageSrc={heroImageSrc}
+              activeThumbnailIndex={activeThumbnailIndex}
               product={product}
               language={language}
               currentImageIndex={currentImageIndex}

@@ -8,7 +8,12 @@ import type { Product } from './types';
 import { CustomizeProductOverlay } from './CustomizeProductOverlay';
 
 interface ProductImageGalleryProps {
+  /** Main product images for the thumbnail strip (admin media only). */
   images: string[];
+  /** Hero image — main gallery image or variant override when a variant is selected. */
+  heroImageSrc: string;
+  /** Highlighted thumbnail index; null when hero shows a variant image. */
+  activeThumbnailIndex: number | null;
   product: Product;
   language: LanguageCode;
   currentImageIndex: number;
@@ -71,6 +76,8 @@ const THUMBNAIL_EMPTY_SLOT_CLASS =
 
 export function ProductImageGallery({
   images,
+  heroImageSrc,
+  activeThumbnailIndex,
   product,
   language,
   currentImageIndex,
@@ -89,6 +96,7 @@ export function ProductImageGallery({
     }
   }, [currentImageIndex, images.length, thumbnailStartIndex, onThumbnailStartIndexChange]);
 
+  const hasHeroImage = heroImageSrc.length > 0;
   const canNavigateImages = images.length > 1;
   const shouldPadThumbnailStrip = images.length <= THUMBNAILS_PER_VIEW;
   const visibleThumbnailCount = shouldPadThumbnailStrip
@@ -136,17 +144,17 @@ export function ProductImageGallery({
         <div className={`flex flex-col items-center overflow-visible ${GALLERY_SECTION_GAP_CLASSES}`}>
           <div
             className={`flex w-full justify-center ${
-              images.length > 0
+              hasHeroImage
                 ? `product-hero group relative z-10 ${HERO_PULL_ABOVE_CARD}`
                 : 'min-h-[200px] items-center sm:min-h-[220px]'
             }`}
           >
-            {images.length > 0 ? (
+            {hasHeroImage ? (
               <div
                 className={`relative mx-auto flex w-full max-w-full items-center justify-center ${HERO_IMAGE_BOX_SIZE_CLASSES}`}
               >
                 <img
-                  src={images[currentImageIndex]}
+                  src={heroImageSrc}
                   alt={product.title}
                   decoding="async"
                   draggable={false}
@@ -216,7 +224,7 @@ export function ProductImageGallery({
                     }
 
                     const image = images[imageIndex];
-                    const isActive = imageIndex === currentImageIndex;
+                    const isActive = activeThumbnailIndex !== null && imageIndex === activeThumbnailIndex;
 
                     return (
                       <button
