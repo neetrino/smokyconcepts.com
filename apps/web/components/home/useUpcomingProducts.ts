@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { apiClient } from '../../lib/api-client';
-import { UPCOMING_LIMIT } from './upcomingProducts.constants';
 import type { UpcomingApiProduct, UpcomingProductsResponse } from './upcomingProducts.types';
 
 export function useUpcomingProducts() {
@@ -14,7 +13,6 @@ export function useUpcomingProducts() {
     return apiClient.get<UpcomingProductsResponse>('/api/v1/products', {
       params: {
         filter: 'upcoming',
-        limit: String(UPCOMING_LIMIT),
         page: String(page),
       },
     });
@@ -24,21 +22,35 @@ export function useUpcomingProducts() {
     try {
       setLoading(true);
       setError(null);
-      const firstPageResponse = await fetchUpcomingPage(1);
-      const firstPageItems = Array.isArray(firstPageResponse?.data) ? firstPageResponse.data : [];
-      const totalPages = Math.max(1, firstPageResponse?.meta?.totalPages ?? 1);
+      const allItems: UpcomingApiProduct[] = [];
+      const seenProductIds = new Set<string>();
+      let page = 1;
+      let shouldContinue = true;
 
-      if (totalPages <= 1) {
-        setItems(firstPageItems);
-        setFetchGeneration((g) => g + 1);
-        return;
-      }
-
-      const allItems = [...firstPageItems];
-      for (let page = 2; page <= totalPages; page += 1) {
+      while (shouldContinue) {
         const pageResponse = await fetchUpcomingPage(page);
         const pageItems = Array.isArray(pageResponse?.data) ? pageResponse.data : [];
-        allItems.push(...pageItems);
+        let addedItemsCount = 0;
+
+        for (const item of pageItems) {
+          if (!seenProductIds.has(item.id)) {
+            seenProductIds.add(item.id);
+            allItems.push(item);
+            addedItemsCount += 1;
+          }
+        }
+
+        const totalPages = pageResponse?.meta?.totalPages;
+        const hasMetaTotalPages = typeof totalPages === 'number' && totalPages > 0;
+        const hasMoreByMeta = hasMetaTotalPages && page < totalPages;
+        const hasMoreWithoutMeta = !hasMetaTotalPages && pageItems.length > 0 && addedItemsCount > 0;
+        shouldContinue = hasMoreByMeta || hasMoreWithoutMeta;
+        page += 1;
+
+        // Safety guard against accidental infinite pagination loops.
+        if (page > 100) {
+          shouldContinue = false;
+        }
       }
 
       setItems(allItems);

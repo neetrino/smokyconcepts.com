@@ -12,7 +12,6 @@ export const UPCOMING_MOBILE_SECTION_GAP_CLASS = 'max-sm:gap-2';
 export const UPCOMING_PRODUCT_STRIP_FLEX_CLASS_NAME =
   'flex min-w-max items-stretch max-sm:gap-4 max-sm:pr-5 gap-4 sm:gap-7 lg:gap-10 lg:pr-[7.5rem]';
 
-export const UPCOMING_LIMIT = 12;
 export const UPCOMING_CARDS_PER_PAGE_MOBILE = 2;
 export const UPCOMING_CARDS_PER_PAGE_SM_UP = 6;
 export const UPCOMING_PAGE_ANIMATION_DURATION_MS = 300;
