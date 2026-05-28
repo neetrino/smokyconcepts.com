@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@white-shop/db';
+import type { Payment } from '@prisma/client';
 import { authenticateToken } from '@/lib/middleware/auth';
 import { registerArcaOrder } from '@/lib/payments/arca/client';
 import { getArcaConfig } from '@/lib/payments/arca/config';
@@ -139,7 +140,7 @@ export async function POST(req: NextRequest) {
       };
     }
 
-    const payment = order.payments.find((item) => item.provider === 'arca');
+    const payment = order.payments.find((item: Payment) => item.provider === 'arca');
     if (!payment) {
       throw {
         status: HTTP_STATUS_FAILED_DEPENDENCY,
