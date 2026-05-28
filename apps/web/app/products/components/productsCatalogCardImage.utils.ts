@@ -17,7 +17,7 @@ export const PRODUCTS_CATALOG_PAGE_IMAGE_BOX_CLASS_NAME =
 
 /** Home trending — pre–catalog-strip hero frame (centered, no `lg` resize). */
 export const TRENDING_SECTION_IMAGE_BOX_CLASS_NAME =
-  'relative -translate-y-[2.55rem] sm:-translate-y-[2.75rem] flex h-[12rem] w-[8.5rem] items-center justify-center overflow-hidden rounded-[0.875rem] bg-transparent sm:h-[14.25rem] sm:w-[10rem]';
+  'relative -translate-y-[2.55rem] sm:-translate-y-[2.75rem] flex h-[12rem] w-[8.5rem] items-center justify-center overflow-hidden rounded-[0.875rem] bg-white sm:h-[14.25rem] sm:w-[10rem]';
 
 export const MAX_IMAGE_DOT_COUNT = 8;
 
