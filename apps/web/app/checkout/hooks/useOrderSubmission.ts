@@ -160,7 +160,9 @@ export function useOrderSubmission({
         ...(appliedCouponCode ? { couponCode: appliedCouponCode } : {}),
       });
 
-      if (data.paymentMethod === 'arca') {
+      const resolvedProvider = response.payment?.provider?.trim().toLowerCase() || data.paymentMethod;
+
+      if (resolvedProvider === 'arca') {
         const initToken = response.payment?.initToken;
         if (!initToken) {
           throw new Error(t('checkout.errors.failedToCreateOrder'));
@@ -181,7 +183,7 @@ export function useOrderSubmission({
         return;
       }
 
-      if (data.paymentMethod === 'cash_on_delivery') {
+      if (resolvedProvider === 'cash_on_delivery') {
         clearGuestCart();
       }
 

@@ -25,10 +25,60 @@ function buildFailureRedirect(orderNumber?: string): string {
   if (orderNumber) {
     query.set('orderNumber', orderNumber);
   }
-  return `${appUrl}/checkout?${query.toString()}`;
+  return `${appUrl}/checkout/payment-failed?${query.toString()}`;
+}
+
+function resolveProviderOrderId(query: URLSearchParams): string {
+  const candidates = [
+    query.get('orderId'),
+    query.get('mdOrder'),
+    query.get('mdorder'),
+    query.get('paymentID'),
+    query.get('paymentId'),
+    query.get('paymentid'),
+  ];
+  for (const candidate of candidates) {
+    const value = candidate?.trim();
+    if (value) {
+      return value;
+    }
+  }
+  return '';
 }
 
 async function findOrderForCallback(orderNumber: string | null, providerOrderId: string) {
+  const requestedOrder = orderNumber?.trim() ?? '';
+
+  if (requestedOrder) {
+    const order = await db.order.findUnique({
+      where: { number: requestedOrder },
+      include: {
+        payments: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+    if (order) {
+      if (
+        providerOrderId &&
+        !order.payments.some(
+          (item: { provider: string; providerTransactionId: string | null }) =>
+            item.provider === PAYMENT_PROVIDER && (item.providerTransactionId ?? '') === providerOrderId,
+        )
+      ) {
+        logger.warn('Arca callback provider id mismatch for order', {
+          requestedOrder,
+          providerOrderId,
+        });
+      }
+      return order;
+    }
+  }
+
+  if (!providerOrderId) {
+    return null;
+  }
+
   const payment = await db.payment.findFirst({
     where: {
       provider: PAYMENT_PROVIDER,
@@ -45,31 +95,15 @@ async function findOrderForCallback(orderNumber: string | null, providerOrderId:
     },
     orderBy: { createdAt: 'desc' },
   });
-
-  const order = payment?.order ?? null;
-  if (!order) {
-    return null;
-  }
-
-  const requestedOrder = orderNumber?.trim();
-  if (requestedOrder && requestedOrder !== order.number) {
-    logger.warn('Arca callback order mismatch', {
-      requestedOrder,
-      actualOrder: order.number,
-      providerOrderId,
-    });
-    return null;
-  }
-
-  return order;
+  return payment?.order ?? null;
 }
 
 export async function GET(req: NextRequest) {
   const query = req.nextUrl.searchParams;
   const orderNumber = query.get('order');
-  const providerOrderId = query.get('orderId')?.trim() ?? '';
+  const providerOrderId = resolveProviderOrderId(query);
 
-  if (!providerOrderId) {
+  if (!providerOrderId && !(orderNumber?.trim() ?? '')) {
     return NextResponse.redirect(buildFailureRedirect(orderNumber ?? undefined));
   }
 
@@ -96,7 +130,23 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(buildSuccessRedirect(order.number));
     }
 
-    const statusResponse = await getArcaOrderStatus(providerOrderId);
+    const statusOrderId = providerOrderId || payment.providerTransactionId?.trim() || '';
+    if (!statusOrderId) {
+      logger.warn('Arca callback missing provider order id after order lookup', {
+        orderNumber: order.number,
+      });
+      return NextResponse.redirect(buildFailureRedirect(order.number));
+    }
+
+    const statusResponse = await getArcaOrderStatus(statusOrderId);
+    logger.info('Arca callback status response', {
+      orderNumber: order.number,
+      statusOrderId,
+      errorCode: statusResponse.errorCode,
+      orderStatus: statusResponse.orderStatus,
+      paymentState: statusResponse.paymentAmountInfo?.paymentState,
+      errorMessage: statusResponse.errorMessage,
+    });
     const isPaid = isArcaStatusPaid(statusResponse);
     const now = new Date();
 
@@ -114,7 +164,7 @@ export async function GET(req: NextRequest) {
           data: {
             status: 'completed',
             completedAt: now,
-            providerTransactionId: providerOrderId,
+            providerTransactionId: statusOrderId,
             providerResponse: statusResponse,
             errorCode: null,
             errorMessage: null,
@@ -128,7 +178,7 @@ export async function GET(req: NextRequest) {
             data: {
               provider: PAYMENT_PROVIDER,
               status: 'paid',
-              providerOrderId,
+              providerOrderId: statusOrderId,
             },
           },
         });
@@ -149,7 +199,7 @@ export async function GET(req: NextRequest) {
         data: {
           status: 'failed',
           failedAt: now,
-          providerTransactionId: providerOrderId,
+          providerTransactionId: statusOrderId,
           providerResponse: statusResponse,
           errorCode: String(statusResponse.errorCode ?? ''),
           errorMessage: statusResponse.errorMessage ?? 'Arca returned non-success payment state',
@@ -162,7 +212,7 @@ export async function GET(req: NextRequest) {
           data: {
             provider: PAYMENT_PROVIDER,
             status: 'failed',
-            providerOrderId,
+            providerOrderId: statusOrderId,
           },
         },
       });
