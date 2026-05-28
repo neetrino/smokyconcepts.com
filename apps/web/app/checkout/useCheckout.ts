@@ -284,10 +284,6 @@ export function useCheckout() {
 
     void handleSubmit(
       async (data) => {
-        if (data.paymentMethod === 'arca' || data.paymentMethod === 'idram') {
-          setShowCardModal(true);
-          return;
-        }
         await submitOrder(data);
       },
       handleValidationError,

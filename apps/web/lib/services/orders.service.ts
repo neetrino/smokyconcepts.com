@@ -31,6 +31,7 @@ import {
   buildSizeCatalogPriceAmdByTitle,
   resolveSizeCatalogCategoryPriceAmd,
 } from "@/lib/size-catalog/resolve-size-catalog-category-price-amd";
+import { signPaymentInitToken } from "@/lib/payments/payment-init-token";
 
 type ProductVariantWithProduct = Prisma.ProductVariantGetPayload<{
   include: {
@@ -778,6 +779,16 @@ class OrdersService {
         };
       }
 
+      const paymentInitToken =
+        paymentMethod === 'arca'
+          ? signPaymentInitToken({
+              orderId: order.order.id,
+              orderNumber: order.order.number,
+              paymentMethod: 'arca',
+              userId: userId ?? null,
+            })
+          : null;
+
       // Return order and payment info
       return {
         order: {
@@ -792,6 +803,7 @@ class OrdersService {
           provider: order.payment.provider,
           paymentUrl: null, // TODO: Generate payment URL for Idram/ArCa
           expiresAt: null, // TODO: Set expiration if needed
+          initToken: paymentInitToken,
         },
         nextAction: paymentMethod === 'idram' || paymentMethod === 'arca' 
           ? 'redirect_to_payment' 
