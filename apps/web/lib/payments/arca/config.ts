@@ -29,6 +29,20 @@ function normalizeAppUrl(url: string): string {
   return url.endsWith('/') ? url.slice(0, -1) : url;
 }
 
+function resolveAppUrl(): string {
+  const explicitUrl = process.env.APP_URL?.trim() || process.env.NEXT_PUBLIC_APP_URL?.trim() || '';
+  if (explicitUrl.length > 0) {
+    return normalizeAppUrl(explicitUrl);
+  }
+
+  const vercelHost = process.env.VERCEL_URL?.trim() || '';
+  if (vercelHost.length > 0) {
+    return normalizeAppUrl(`https://${vercelHost}`);
+  }
+
+  return 'http://localhost:3000';
+}
+
 function readArcaBank(): ArcaBank {
   const raw = (process.env.ARCA_BANK ?? 'idbank').trim().toLowerCase();
   if (raw === 'idbank' || raw === 'inecobank' || raw === 'ameriabank') {
@@ -105,8 +119,6 @@ export function getArcaConfig(): ArcaConfig {
   const bank = readArcaBank();
   const baseUrl = resolveBaseUrl(bank, testMode);
   const { username, password, clientId } = resolveCredentials(bank, testMode);
-  const appUrlSource =
-    process.env.APP_URL?.trim() || process.env.NEXT_PUBLIC_APP_URL?.trim() || 'http://localhost:3000';
 
   return {
     bank,
@@ -114,7 +126,7 @@ export function getArcaConfig(): ArcaConfig {
     username,
     password,
     clientId,
-    appUrl: normalizeAppUrl(appUrlSource),
+    appUrl: resolveAppUrl(),
     testMode,
   };
 }
