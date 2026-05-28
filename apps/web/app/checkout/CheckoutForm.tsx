@@ -175,10 +175,21 @@ export function CheckoutForm({
             >
               <input
                 type="radio"
-                {...register('paymentMethod')}
+                {...register('paymentMethod', {
+                  onChange: (e) => {
+                    setValue(
+                      'paymentMethod',
+                      e.target.value as 'idram' | 'arca' | 'cash_on_delivery',
+                      {
+                        shouldDirty: true,
+                        shouldTouch: true,
+                        shouldValidate: true,
+                      },
+                    );
+                  },
+                })}
                 value={method.id}
                 checked={paymentMethod === method.id}
-                onChange={(e) => setValue('paymentMethod', e.target.value as 'idram' | 'arca' | 'cash_on_delivery')}
                 className="mr-4"
                 disabled={isSubmitting}
               />

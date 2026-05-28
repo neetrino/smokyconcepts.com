@@ -216,10 +216,10 @@ function isLegacyUsdCatalogStoredPrice(stored: number): boolean {
   if (!(stored > 0) || !Number.isFinite(stored)) {
     return false;
   }
-  // Admin product prices are now saved as rounded AMD integers.
-  // Treat larger integer values as AMD to avoid false legacy-USD inflation
-  // (e.g. 100 AMD being rendered as 40,000 AMD).
-  if (Number.isInteger(stored) && stored > 50) {
+  // Admin product prices are saved as rounded AMD integers.
+  // Keep integer values as AMD to prevent false legacy-USD inflation
+  // (e.g. 10 AMD being rendered as 4,000 AMD).
+  if (Number.isInteger(stored)) {
     return false;
   }
   return stored <= LEGACY_USD_CATALOG_PRICE_MAX;

@@ -5,6 +5,7 @@ import { authenticateToken } from '@/lib/middleware/auth';
 import { registerArcaOrder } from '@/lib/payments/arca/client';
 import { getArcaConfig } from '@/lib/payments/arca/config';
 import type { ArcaCurrencyCode } from '@/lib/payments/arca/types';
+import { convertPrice, roundCatalogAmd } from '@/lib/currency';
 import { verifyPaymentInitToken } from '@/lib/payments/payment-init-token';
 import { toApiError } from '@/lib/types/errors';
 import { logger } from '@/lib/utils/logger';
@@ -22,6 +23,7 @@ const HTTP_STATUS_BAD_GATEWAY = 502;
 const HTTP_STATUS_TOO_MANY_REQUESTS = 429;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_REQUESTS = 20;
+const ARCA_TEST_MODE_REQUIRED_AMOUNT_AMD = 10;
 
 const initRateLimitStore = new Map<string, number[]>();
 
@@ -61,6 +63,22 @@ function validateOrderNumber(value: string | undefined): string {
     };
   }
   return trimmed;
+}
+
+function resolveOrderAmountForArcaAmd(orderTotal: number, orderCurrency: string, testMode: boolean): number {
+  if (testMode) {
+    return ARCA_TEST_MODE_REQUIRED_AMOUNT_AMD;
+  }
+
+  const normalizedCurrency = orderCurrency.trim().toUpperCase();
+  if (normalizedCurrency === 'AMD') {
+    return roundCatalogAmd(orderTotal);
+  }
+  if (normalizedCurrency === 'USD') {
+    return roundCatalogAmd(convertPrice(orderTotal, 'USD', 'AMD'));
+  }
+
+  return roundCatalogAmd(orderTotal);
 }
 
 export async function POST(req: NextRequest) {
@@ -163,9 +181,13 @@ export async function POST(req: NextRequest) {
     // Merchant test account can be AMD-only even when internal order currency is USD.
     // Arca register.do accepts AMD numeric code `051`, which is the safest baseline.
     const currency: ArcaCurrencyCode = '051';
-    const amountMinor = Math.round(Number(order.total) * 100);
+    const amountAmd = resolveOrderAmountForArcaAmd(
+      Number(order.total),
+      String(order.currency ?? 'USD'),
+      config.testMode,
+    );
 
-    if (!Number.isFinite(amountMinor) || amountMinor <= 0) {
+    if (!Number.isFinite(amountAmd) || amountAmd <= 0) {
       throw {
         status: HTTP_STATUS_BAD_REQUEST,
         type: 'https://api.shop.am/problems/validation-error',
@@ -180,7 +202,7 @@ export async function POST(req: NextRequest) {
 
     const registerResult = await registerArcaOrder({
       orderNumber: order.number,
-      amount: amountMinor,
+      amount: amountAmd,
       currency,
       returnUrl: callbackUrl,
       description: `Order ${order.number}`,

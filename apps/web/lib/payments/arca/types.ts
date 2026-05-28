@@ -1,4 +1,4 @@
-export type ArcaBank = 'idbank' | 'inecobank';
+export type ArcaBank = 'idbank' | 'inecobank' | 'ameriabank';
 
 export type ArcaCurrencyCode = '051' | '840' | '978' | '643';
 
@@ -19,7 +19,7 @@ export type ArcaRegisterOrderResponse = {
 };
 
 export type ArcaPaymentAmountInfo = {
-  paymentState?: string;
+  paymentState?: string | number;
 };
 
 export type ArcaOrderStatusResponse = {
