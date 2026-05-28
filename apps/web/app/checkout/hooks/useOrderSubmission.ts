@@ -144,6 +144,7 @@ export function useOrderSubmission({
           provider: string;
           paymentUrl: string | null;
           expiresAt: string | null;
+          initToken?: string | null;
         };
         nextAction: string;
       }>('/api/v1/orders/checkout', {
@@ -159,11 +160,29 @@ export function useOrderSubmission({
         ...(appliedCouponCode ? { couponCode: appliedCouponCode } : {}),
       });
 
-      clearGuestCart();
+      if (data.paymentMethod === 'arca') {
+        const initToken = response.payment?.initToken;
+        if (!initToken) {
+          throw new Error(t('checkout.errors.failedToCreateOrder'));
+        }
+        const arcaInit = await apiClient.post<{
+          redirectUrl: string;
+          providerOrderId: string;
+        }>('/api/v1/payments/arca/init', {
+          orderNumber: response.order.number,
+          initToken,
+        });
+        window.location.href = arcaInit.redirectUrl;
+        return;
+      }
 
       if (response.payment?.paymentUrl) {
         window.location.href = response.payment.paymentUrl;
         return;
+      }
+
+      if (data.paymentMethod === 'cash_on_delivery') {
+        clearGuestCart();
       }
 
       const orderNumber = encodeURIComponent(response.order.number);

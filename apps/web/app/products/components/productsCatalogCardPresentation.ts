@@ -117,6 +117,7 @@ export function buildCatalogCardPresentation({
           : 'w-[11rem] max-sm:w-[10.25rem]';
   const cardShadowClass = suppressShadow ? 'shadow-none' : CARD_SHADOW_TAILWIND;
   const articleStackClassName = 'z-0 hover:z-[8] focus-within:z-[8]';
+  const articleBackgroundClassName = trendingSectionCard ? 'bg-transparent' : 'bg-white';
   const compactArticlePaddingClassName = productsCatalogPage
     ? useCatalogStripGeometry
       ? `px-0 ${CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_BOTTOM_PADDING_CLASS_NAME} ${catalogCardTopPaddingClassName ?? CATALOG_PRODUCTS_PAGE_CARD_TOP_PADDING_CLASS_NAME}`
@@ -130,8 +131,8 @@ export function buildCatalogCardPresentation({
         : '';
   const catalogDetailsPaddingClassName = productsCatalogPage ? 'px-2.5 sm:px-3' : '';
   const articleClassName = compactLayout
-    ? `relative ${compactArticleWidth} ${articleStackClassName} flex h-full min-h-0 shrink-0 flex-col overflow-visible rounded-[1.125rem] bg-white ${compactArticlePaddingClassName} ${cardShadowClass}`
-    : `relative w-[14.25rem] max-sm:w-[12.5rem] ${articleStackClassName} shrink-0 overflow-visible rounded-[1.375rem] bg-white px-3 pb-3 pt-2.5 sm:px-3.5 sm:pb-3.5 sm:pt-3 ${cardShadowClass}`;
+    ? `relative ${compactArticleWidth} ${articleStackClassName} flex h-full min-h-0 shrink-0 flex-col overflow-visible rounded-[1.125rem] ${articleBackgroundClassName} ${compactArticlePaddingClassName} ${cardShadowClass}`
+    : `relative w-[14.25rem] max-sm:w-[12.5rem] ${articleStackClassName} shrink-0 overflow-visible rounded-[1.375rem] ${articleBackgroundClassName} px-3 pb-3 pt-2.5 sm:px-3.5 sm:pb-3.5 sm:pt-3 ${cardShadowClass}`;
 
   const imageWrapperClassName = compactLayout
     ? widerCompactCard

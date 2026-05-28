@@ -213,7 +213,16 @@ export function normalizeAdminProductPriceInput(amountAmd: number): number {
 }
 
 function isLegacyUsdCatalogStoredPrice(stored: number): boolean {
-  return stored > 0 && stored <= LEGACY_USD_CATALOG_PRICE_MAX;
+  if (!(stored > 0) || !Number.isFinite(stored)) {
+    return false;
+  }
+  // Admin product prices are now saved as rounded AMD integers.
+  // Treat larger integer values as AMD to avoid false legacy-USD inflation
+  // (e.g. 100 AMD being rendered as 40,000 AMD).
+  if (Number.isInteger(stored) && stored > 50) {
+    return false;
+  }
+  return stored <= LEGACY_USD_CATALOG_PRICE_MAX;
 }
 
 /**

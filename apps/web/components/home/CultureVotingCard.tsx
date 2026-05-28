@@ -40,11 +40,11 @@ const CULTURE_DESKTOP_CARD_MAX_WIDTH_CLASS_NAME = 'sm:max-w-[13.25rem] lg:max-w-
 /** Matches `ProductsCatalogCard` / `UpcomingProductsSection` mobile card elevation. */
 const CULTURE_CARD_SHADOW_CLASS_NAME = 'shadow-[0_4px_22.5px_rgba(0,0,0,0.08)]';
 /** Extra bottom padding on narrow viewports — extends white card surface (1.625rem). */
-const CULTURE_MOBILE_CARD_SURFACE_CLASS_NAME = 'max-sm:pb-[1.625rem]';
+const CULTURE_MOBILE_CARD_SURFACE_CLASS_NAME = 'max-sm:pb-2';
 const CULTURE_DESKTOP_CARD_BOTTOM_PADDING_CLASS_NAME = 'sm:pb-4';
 const CULTURE_DESKTOP_CARD_INSET_CLASS_NAME = 'sm:px-3.5 sm:pt-2.5';
 /** Less pull-up than catalog strip — keeps hero sitting lower inside the white card. */
-const CULTURE_HERO_FRAME_PULL_UP_CLASS_NAME = '-mt-[3.125rem] sm:-mt-[2rem]';
+const CULTURE_HERO_FRAME_PULL_UP_CLASS_NAME = '-mt-[3.85rem] sm:-mt-[2rem]';
 const CULTURE_DESKTOP_IMAGE_FRAME_CLASS_NAME = 'sm:mb-1 sm:h-[12.25rem]';
 const CULTURE_CARD_META_STACK_GAP_CLASS_NAME = 'gap-1 sm:gap-1.5';
 const CULTURE_DESKTOP_DETAILS_TOP_GAP_CLASS_NAME = 'sm:mt-1.5 sm:pt-0';
@@ -53,8 +53,8 @@ const CULTURE_CARD_FOOTER_ROW_CLASS_NAME =
   'mt-2 flex shrink-0 items-center justify-end sm:min-h-[1.5rem]';
 /** Shifts hero + text inside the white card; article background position stays fixed. */
 const CULTURE_MOBILE_INNER_CONTENT_OFFSET_CLASS_NAME = 'max-sm:translate-y-1';
-/** Nudges hero toward image-switch dots on narrow viewports. */
-const CULTURE_MOBILE_IMAGE_FRAME_CLASS_NAME = 'max-sm:translate-y-1';
+/** Lift hero on mobile so it shows more from the top area. */
+const CULTURE_MOBILE_IMAGE_FRAME_CLASS_NAME = 'max-sm:-translate-y-1';
 const CULTURE_MOBILE_DETAILS_OFFSET_CLASS_NAME = 'max-sm:-mt-[3.25rem]';
 /** Dots, title, and category row — nudged down without moving the hero image. */
 const CULTURE_MOBILE_META_BLOCK_OFFSET_CLASS_NAME = 'max-sm:mt-2';
@@ -62,20 +62,35 @@ const CULTURE_MOBILE_META_BLOCK_OFFSET_CLASS_NAME = 'max-sm:mt-2';
 const CULTURE_VOTING_IMAGE_BOX_CLASS_NAME =
   'relative -translate-y-[1.25rem] sm:-translate-y-[1.35rem] lg:-translate-y-[1rem] flex h-[12rem] w-[8.5rem] items-end justify-center overflow-hidden rounded-[0.875rem] bg-transparent sm:h-[14.25rem] sm:w-[10rem] lg:h-[12rem] lg:w-[8.75rem]';
 const CULTURE_HERO_IMAGE_OBJECT_CLASS_NAME = 'object-contain object-bottom';
-const CULTURE_COMPACT_HERO_IMAGE_SCALE = 0.88;
+/**
+ * Keep extra breathing room on mobile so edge embossing is not clipped inside voting cards.
+ * Desktop keeps the existing catalog-aligned scale.
+ */
+const CULTURE_MOBILE_HERO_IMAGE_SCALE = 0.9;
+const CULTURE_MOBILE_COMPACT_HERO_IMAGE_SCALE = 0.84;
+const CULTURE_DESKTOP_COMPACT_HERO_IMAGE_SCALE = 0.88;
 
-function getCultureHeroImageTransformStyle(compactHero: boolean): {
+function getCultureHeroImageTransformStyle(
+  compactHero: boolean,
+  isDesktopViewport: boolean,
+): {
   transform: string;
   transformOrigin: string;
 } {
-  const scale = compactHero ? CULTURE_COMPACT_HERO_IMAGE_SCALE : PRODUCTS_CATALOG_PAGE_DESIRED_IMAGE_SCALE;
+  const scale = isDesktopViewport
+    ? compactHero
+      ? CULTURE_DESKTOP_COMPACT_HERO_IMAGE_SCALE
+      : PRODUCTS_CATALOG_PAGE_DESIRED_IMAGE_SCALE
+    : compactHero
+      ? CULTURE_MOBILE_COMPACT_HERO_IMAGE_SCALE
+      : CULTURE_MOBILE_HERO_IMAGE_SCALE;
   return {
     transform: `scale(${scale})`,
     transformOrigin: 'bottom center',
   };
 }
 const CULTURE_DOTS_ROW_CLASS_NAME =
-  'mb-0 flex min-h-3 w-full items-center justify-center gap-1 max-sm:mb-1 sm:-mt-4 sm:gap-[0.3125rem]';
+  'mb-0 flex min-h-3 w-full items-center justify-center gap-1 max-sm:mt-3 max-sm:mb-1 sm:-mt-4 sm:gap-[0.3125rem]';
 const CULTURE_COMPACT_EARLY_ACCESS_BUTTON_CLASS_NAME =
   'inline-flex h-[1.375rem] min-w-[2.75rem] items-center justify-center rounded-[0.4375rem] border-2 border-[#dcc090] px-1.5 text-[0.6875rem] font-extrabold leading-tight text-[#dcc090] transition-colors hover:bg-[#dcc090]/10 sm:h-auto sm:min-h-0 sm:rounded-lg sm:px-2 sm:py-1 sm:text-sm';
 
@@ -238,6 +253,26 @@ export function CultureVotingCard({
   earlyAccessLabel = 'Early Access',
   compactHero = false,
 }: CultureVotingCardProps) {
+  const [isDesktopViewport, setIsDesktopViewport] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia('(min-width: 640px)');
+    const updateViewport = () => {
+      setIsDesktopViewport(mediaQuery.matches);
+    };
+
+    updateViewport();
+    mediaQuery.addEventListener('change', updateViewport);
+
+    return () => {
+      mediaQuery.removeEventListener('change', updateViewport);
+    };
+  }, []);
+
   const {
     activeImageIndex,
     setActiveImageIndex,
@@ -255,7 +290,7 @@ export function CultureVotingCard({
     pending: isLikePending,
     onToggleLike,
   };
-  const heroImageTransformStyle = getCultureHeroImageTransformStyle(compactHero);
+  const heroImageTransformStyle = getCultureHeroImageTransformStyle(compactHero, isDesktopViewport);
 
   return (
     <div
@@ -267,9 +302,9 @@ export function CultureVotingCard({
       <div
         className={`flex min-h-0 flex-1 flex-col ${CULTURE_MOBILE_INNER_CONTENT_OFFSET_CLASS_NAME} sm:translate-y-0`}
       >
-      <div className={`relative z-10 mb-2 flex h-[14.75rem] shrink-0 items-end justify-center overflow-visible ${CULTURE_HERO_FRAME_PULL_UP_CLASS_NAME} ${CULTURE_DESKTOP_IMAGE_FRAME_CLASS_NAME}`}>
+      <div className={`relative z-10 mb-2 flex h-[13.5rem] shrink-0 items-end justify-center overflow-visible ${CULTURE_HERO_FRAME_PULL_UP_CLASS_NAME} ${CULTURE_DESKTOP_IMAGE_FRAME_CLASS_NAME}`}>
         <div
-          className={`relative flex h-[13.75rem] w-full items-end justify-center ${CULTURE_MOBILE_IMAGE_FRAME_CLASS_NAME} sm:h-full`}
+          className={`relative flex h-[12.5rem] w-full items-end justify-center ${CULTURE_MOBILE_IMAGE_FRAME_CLASS_NAME} sm:h-full`}
         >
           {activeSrc && !imageError ? (
             <span className={CULTURE_VOTING_IMAGE_BOX_CLASS_NAME}>

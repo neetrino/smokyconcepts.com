@@ -1,13 +1,22 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button, Card } from '@shop/ui';
+import { clearGuestCart } from '../checkoutUtils';
 
 export default function ThankYouPage() {
   const searchParams = useSearchParams();
   const orderNumber = searchParams.get('orderNumber');
+  const shouldClearGuestCart = searchParams.get('clearCart') === '1';
   const orderHref = orderNumber ? `/orders/${encodeURIComponent(orderNumber)}` : '/profile';
+
+  useEffect(() => {
+    if (shouldClearGuestCart) {
+      clearGuestCart();
+    }
+  }, [shouldClearGuestCart]);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
