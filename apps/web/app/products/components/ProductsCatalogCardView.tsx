@@ -66,7 +66,6 @@ export function ProductsCatalogCardView({
     catalogBuyOnlyButtonClassName,
     iconClassName,
     catalogBagIconClassName,
-    trendingShopBagIconClassName,
     detailsOffsetClassName,
     imageWrapperBottomMarginClassName,
     catalogDetailsLayoutClassName,
@@ -192,14 +191,6 @@ export function ProductsCatalogCardView({
               aria-label={`${unifiedNavButtonLabel} — ${product.title}`}
             >
               <span>{unifiedNavButtonLabel}</span>
-              <Image
-                src={legacyHomeCartIcon ? BAG_ICON_PATH : CATALOG_BAG_ICON_PATH}
-                alt=""
-                width={legacyHomeCartIcon ? 16 : 24}
-                height={legacyHomeCartIcon ? 16 : 24}
-                aria-hidden
-                className={legacyHomeCartIcon ? iconClassName : trendingShopBagIconClassName}
-              />
             </button>
           ) : catalogBuyOnlyCta ? (
             <button
