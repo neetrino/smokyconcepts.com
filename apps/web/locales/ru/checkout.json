@@ -50,7 +50,7 @@
     "idram": "Idram",
     "idramDescription": "Оплатите кошельком Idram или картой",
     "arca": "ArCa",
-    "arcaDescription": "Оплатите картой ArCa",
+    "arcaDescription": "Оплачивайте Visa, Mastercard, картой ArCa или через Apple Pay",
     "paymentDetails": "Детали оплаты",
     "enterCardDetails": "Введите данные вашей карты для завершения оплаты"
   },

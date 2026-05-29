@@ -50,7 +50,7 @@
     "idram": "Idram",
     "idramDescription": "Վճարեք Idram դրամապանակով կամ քարտով",
     "arca": "ArCa",
-    "arcaDescription": "Վճարեք ArCa քարտով",
+    "arcaDescription": "Ընդունեք Visa, Mastercard, ArCa քարտով կամ Apple Pay-ով",
     "paymentDetails": "Վճարման մանրամասներ",
     "enterCardDetails": "Մուտքագրեք ձեր քարտի տվյալները՝ վճարումն ավարտելու համար"
   },
