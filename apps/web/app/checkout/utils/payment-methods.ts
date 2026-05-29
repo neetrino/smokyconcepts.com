@@ -17,7 +17,7 @@ export function usePaymentMethods(): PaymentMethod[] {
       id: 'cash_on_delivery',
       name: t('checkout.payment.cashOnDelivery'),
       description: t('checkout.payment.cashOnDeliveryDescription'),
-      logo: null,
+      logo: '/assets/payments/dollar.svg',
     },
     {
       id: 'idram',
