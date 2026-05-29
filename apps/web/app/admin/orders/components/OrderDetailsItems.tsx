@@ -98,11 +98,13 @@ export function OrderDetailsItems({
                         {allOptions.map((opt, optIndex) => {
                           if (!opt.attributeKey || !opt.value) return null;
                           const attributeKey = opt.attributeKey.toLowerCase().trim();
+                          const optionValue = opt.value;
                           const isColor = attributeKey === 'color' || attributeKey === 'colour';
-                          const displayLabel = opt.label || opt.value;
+                          const displayLabel = opt.label || optionValue;
                           const hasImage = opt.imageUrl && opt.imageUrl.trim() !== '';
                           const colors = getColorsArray(opt.colors);
-                          const colorHex = colors.length > 0 ? colors[0] : (isColor ? getColorValue(opt.value) : null);
+                          const primaryColor = colors[0];
+                          const colorHex = primaryColor ?? (isColor ? getColorValue(optionValue) : null);
                           return (
                             <div key={optIndex} className="flex items-center gap-1.5">
                               {hasImage ? (
