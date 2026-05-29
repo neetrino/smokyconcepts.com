@@ -98,6 +98,7 @@ export function ProductInfoAndActionsView({
     : isOutOfStock
       ? t(language, 'product.outOfStock')
       : t(language, 'product.addToCart');
+  const showSizeAsterisk = showSizeSection && (!isSizeSelected || showSizeRequired);
 
   return (
     <>
@@ -176,7 +177,7 @@ export function ProductInfoAndActionsView({
             <div className="relative mt-6">
               <p className="font-montserrat text-[18px] font-extrabold leading-none text-[#414141]">
                 {t(language, 'product.size')}
-                {showSizeRequired ? (
+                {showSizeAsterisk ? (
                   <span className="ml-1 text-red-600" aria-hidden>
                     *
                   </span>
