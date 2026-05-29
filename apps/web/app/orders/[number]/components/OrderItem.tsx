@@ -136,9 +136,10 @@ export function OrderItem({ item, orderTotalsCurrency }: OrderItemProps) {
             {displayOptions.map((opt, optIndex) => {
               if (!opt.attributeKey) return null;
               const normalizedAttributeKey = opt.attributeKey.toLowerCase().trim();
+              const optionValue = opt.value ?? '';
 
               const isColor = getAttributeType(normalizedAttributeKey) === 'color';
-              const rawDisplayLabel = opt.label || opt.value;
+              const rawDisplayLabel = opt.label || optionValue;
               const shouldAppendSizeVersion =
                 normalizedAttributeKey === 'size' &&
                 selectedSizeVersion !== '' &&
@@ -148,7 +149,8 @@ export function OrderItem({ item, orderTotalsCurrency }: OrderItemProps) {
                 : rawDisplayLabel;
               const hasImage = opt.imageUrl && opt.imageUrl.trim() !== '';
               const colors = getColorsArray(opt.colors);
-              const colorHex = colors.length > 0 ? colors[0] : (isColor ? getColorValue(opt.value) : null);
+              const primaryColor = colors[0];
+              const colorHex = primaryColor ?? (isColor && optionValue ? getColorValue(optionValue) : null);
 
               return (
                 <div key={optIndex} className="flex items-center gap-2">
