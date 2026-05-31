@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef } from 'react';
 import { formatCatalogPrice } from '../../../lib/currency';
 import { t } from '../../../lib/i18n';
 import { useCurrency } from '../../../components/hooks/useCurrency';
@@ -16,6 +17,7 @@ import {
   PRODUCT_INFO_HEADER_CLASS,
   PRODUCT_INFO_PURCHASE_ROW_CLASS,
   PRODUCT_INFO_ROOT_CLASS,
+  PRODUCT_INFO_SCROLL_BODY_CLASS,
   PRODUCT_INFO_TAB_INDICATOR_BASE_CLASS,
   PRODUCT_INFO_TAB_PANEL_CLASS,
   PRODUCT_INFO_TABS_SECTION_CLASS,
@@ -82,9 +84,12 @@ export function ProductInfoAndActionsView({
     handleSizeShakeAnimationEnd,
   } = view;
 
+  const sizeSectionRef = useRef<HTMLDivElement>(null);
+
   const handleAddToCartClick = () => {
     if (showSizeSection && !isSizeSelected) {
       triggerSizeValidation();
+      sizeSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       return;
     }
     if (!canAddToCart || isAddingToCart) {
@@ -174,11 +179,11 @@ export function ProductInfoAndActionsView({
           )}
 
           {showSizeSection && (
-            <div className="relative mt-6">
+            <div ref={sizeSectionRef} className="relative z-40 mt-6 overflow-visible px-1">
               <p className="font-montserrat text-[18px] font-extrabold leading-none text-[#414141]">
                 {t(language, 'product.size')}
                 {showSizeAsterisk ? (
-                  <span className="ml-1 text-red-600" aria-hidden>
+                  <span className="relative z-10 ml-1 text-red-600" aria-hidden>
                     *
                   </span>
                 ) : null}
@@ -187,7 +192,7 @@ export function ProductInfoAndActionsView({
                 type="button"
                 onClick={openSizeCatalogModal}
                 onAnimationEnd={handleSizeShakeAnimationEnd}
-                className={`mt-3 flex w-full min-h-9 items-center justify-center gap-2 rounded-[6px] bg-[#dcc090] px-3 py-2 text-center font-montserrat text-[16px] font-bold leading-normal tracking-normal text-neutral-700 sm:inline-flex sm:w-auto sm:min-w-[160px] ${
+                className={`relative z-40 mt-3 flex w-full min-h-9 items-center justify-center gap-2 overflow-visible rounded-[6px] bg-[#dcc090] px-3 py-2 text-center font-montserrat text-[16px] font-bold leading-normal tracking-normal text-neutral-700 sm:inline-flex sm:w-auto sm:min-w-[160px] ${
                   isSizeShaking ? 'animate-size-shake' : ''
                 }`}
               >
@@ -197,6 +202,7 @@ export function ProductInfoAndActionsView({
           )}
         </div>
 
+        <div className={PRODUCT_INFO_SCROLL_BODY_CLASS}>
         <div className={PRODUCT_INFO_TABS_SECTION_CLASS}>
           <div className="w-full min-w-0 shrink-0 touch-pan-x overflow-x-auto overscroll-x-contain scroll-px-1 pb-2 scrollbar-hide [-webkit-overflow-scrolling:touch] sm:touch-auto sm:pb-0">
             <div
@@ -283,6 +289,7 @@ export function ProductInfoAndActionsView({
             {showMessage}
           </div>
         ) : null}
+        </div>
       </div>
       <CustomizeSizeModal
         isOpen={isCustomizeSizeModalOpen}
