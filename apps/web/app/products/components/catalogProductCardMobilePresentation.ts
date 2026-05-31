@@ -117,9 +117,18 @@ export const CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_SCROLL_BLEED_CLASS_NAME = 'max-s
 export const CATALOG_PRODUCTS_PAGE_SCROLL_CONTAINER_LEFT_BLEED_CLASS_NAME =
   'lg:-ml-[7.5rem] lg:w-[calc(100%+7.5rem)]';
 
-/** Desktop: scrollable inset so page 1 keeps parent padding without toggling layout mid-scroll. */
+/** Matches `/products` page `lg:pl-[7.5rem]` content column. */
+export const CATALOG_PRODUCTS_PAGE_DESKTOP_CONTENT_INSET_REM = 7.5;
+
+/** Hero bleed uses `lg:pl-10` (2.5rem) on the strip — partial compensation so card edges match section titles. */
+export const CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_LEADING_INSET_REM = 5;
+
+/** Desktop leading inset — scrolls away so the strip can fill the viewport left edge. */
 export const CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_LEADING_INSET_CLASS_NAME =
-  'hidden shrink-0 lg:block lg:w-[7.5rem]';
+  'hidden shrink-0 lg:block lg:w-[5rem]';
+
+/** Extra scroll room so scaled heroes stay visible at the strip’s left edge while scrolling. */
+export const CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_HERO_HORIZONTAL_BLEED_CLASS_NAME = 'lg:-ml-10 lg:pl-10';
 
 /** Mobile-only bleed removal after page 1; desktop inset is handled by the leading spacer. */
 export function getCatalogProductsPageMobileNonFirstPageScrollClassName(isFirstPage: boolean): string {
@@ -198,7 +207,7 @@ export const CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME =
   'relative z-20 mt-4 flex justify-center px-4 max-sm:mt-2 sm:mt-6 sm:mt-8';
 
 /** `/products` horizontal strip — card flex row. */
-export const CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME = `flex min-w-max items-stretch max-sm:pr-5 max-lg:pr-4 lg:pr-[7.5rem] ${CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME}`;
+export const CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME = `flex min-w-max items-stretch max-sm:pr-5 max-lg:pr-4 lg:pr-[7.5rem] ${CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_HERO_HORIZONTAL_BLEED_CLASS_NAME}`;
 
 /** `/products` strip — slightly smaller hero on positions 2 and 5 in each group of six (0-based: 1, 4). */
 export const PRODUCTS_CATALOG_PAGE_SMALLER_IMAGE_SCALE_MULTIPLIER = 0.85;
