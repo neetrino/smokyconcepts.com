@@ -8,12 +8,26 @@ export const UPCOMING_MOBILE_SCROLL_BOTTOM_PADDING_CLASS = 'max-sm:pb-4';
 export const UPCOMING_MOBILE_PAGINATION_MARGIN_TOP_CLASS = 'max-sm:mt-2';
 export const UPCOMING_MOBILE_SECTION_GAP_CLASS = 'max-sm:gap-2';
 
-/** Desktop: scrollable inset so page 1 keeps parent padding without toggling layout mid-scroll. */
-export const UPCOMING_DESKTOP_STRIP_LEADING_INSET_CLASS_NAME = 'hidden shrink-0 lg:block lg:w-[7.5rem]';
+/** Matches home page `lg:px-[7.5rem]` content column. */
+export const UPCOMING_HOME_DESKTOP_CONTENT_INSET_REM = 7.5;
+
+/** Hero bleed uses `lg:pl-10` (2.5rem) on the strip — partial compensation so card edges match neighbouring sections. */
+export const UPCOMING_DESKTOP_STRIP_LEADING_INSET_REM = 5;
+
+/** Desktop leading inset — scrolls away so the strip can fill the viewport left edge. */
+export const UPCOMING_DESKTOP_STRIP_LEADING_INSET_CLASS_NAME =
+  'hidden shrink-0 lg:block lg:w-[5rem]';
+
+/** Escapes home `overflow-x-hidden` so strip heroes are not clipped while scrolling into the left bleed. */
+export const UPCOMING_SECTION_BLEED_WRAPPER_CLASS_NAME =
+  'relative min-w-0 overflow-x-visible lg:-mx-[7.5rem]';
+
+/** Extra scroll room so scaled heroes stay visible at the strip’s left edge while scrolling. */
+export const UPCOMING_DESKTOP_STRIP_HERO_HORIZONTAL_BLEED_CLASS_NAME = 'lg:-ml-10 lg:pl-10';
 
 /** Home upcoming strip — wider mobile cards + trailing gutter for end-of-strip scroll. */
 export const UPCOMING_PRODUCT_STRIP_FLEX_CLASS_NAME =
-  'flex min-w-max items-stretch max-sm:gap-4 max-sm:pr-5 gap-4 sm:gap-7 lg:gap-10 lg:pr-[7.5rem]';
+  `flex min-w-max items-stretch max-sm:gap-4 max-sm:pr-5 gap-4 sm:gap-7 lg:gap-10 lg:pr-[7.5rem] ${UPCOMING_DESKTOP_STRIP_HERO_HORIZONTAL_BLEED_CLASS_NAME}`;
 
 export const UPCOMING_CARDS_PER_PAGE_MOBILE = 2;
 export const UPCOMING_CARDS_PER_PAGE_SM_UP = 6;
@@ -28,10 +42,10 @@ export const UPCOMING_SCROLL_TARGET_TOLERANCE_PX = 2;
 /** Mobile: full-bleed horizontal scroll so the next card clips at the screen edge. */
 export const UPCOMING_MOBILE_SCROLL_BLEED_CLASS = 'max-sm:-mx-5 max-sm:px-5';
 
-/** Desktop: counteract home page `lg:px-[7.5rem]` so the strip aligns flush with the viewport left edge. */
+/** Desktop: kept for `/products` parity; home upcoming uses {@link UPCOMING_SECTION_BLEED_WRAPPER_CLASS_NAME} instead. */
 export const UPCOMING_SCROLL_CONTAINER_LEFT_BLEED_CLASS_NAME =
   'lg:-ml-[7.5rem] lg:w-[calc(100%+7.5rem)]';
 
 /** Matches `/products` catalog section strip (hero overlap + scroll padding). */
 export const UPCOMING_SCROLL_CONTAINER_CLASS_NAME =
-  `scrollbar-hide max-sm:mt-1 mt-3 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory pb-10 ${UPCOMING_MOBILE_SCROLL_BOTTOM_PADDING_CLASS} pt-[5.5rem] ${UPCOMING_MOBILE_SCROLL_TOP_PADDING_CLASS} ${UPCOMING_MOBILE_SCROLL_BLEED_CLASS} sm:mt-6 sm:mx-0 sm:px-0 sm:pb-12 sm:pt-[6rem] lg:pb-14 lg:pt-[5.75rem] ${UPCOMING_SCROLL_CONTAINER_LEFT_BLEED_CLASS_NAME}`;
+  `scrollbar-hide max-sm:mt-1 mt-3 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory pb-10 ${UPCOMING_MOBILE_SCROLL_BOTTOM_PADDING_CLASS} pt-[5.5rem] ${UPCOMING_MOBILE_SCROLL_TOP_PADDING_CLASS} ${UPCOMING_MOBILE_SCROLL_BLEED_CLASS} sm:mt-6 sm:mx-0 sm:px-0 sm:pb-12 sm:pt-[6rem] lg:pb-14 lg:pt-[5.75rem]`;
