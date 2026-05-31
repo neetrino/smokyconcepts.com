@@ -21,7 +21,10 @@ import {
   PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
   getCatalogProductCardImageScaleBoost,
 } from '../../app/products/components/catalogProductCardMobilePresentation';
-import { UPCOMING_PRODUCT_STRIP_FLEX_CLASS_NAME } from './upcomingProducts.constants';
+import {
+  UPCOMING_DESKTOP_STRIP_LEADING_INSET_CLASS_NAME,
+  UPCOMING_PRODUCT_STRIP_FLEX_CLASS_NAME,
+} from './upcomingProducts.constants';
 import type { UpcomingApiProduct } from './upcomingProducts.types';
 import { useTranslation } from '@/lib/i18n-client';
 
@@ -42,6 +45,7 @@ export function UpcomingProductStrip({
 
   return (
     <div className={UPCOMING_PRODUCT_STRIP_FLEX_CLASS_NAME}>
+      <div className={UPCOMING_DESKTOP_STRIP_LEADING_INSET_CLASS_NAME} aria-hidden="true" />
       {items.map((item, index) => {
         const pageIndex = Math.floor(index / cardsPerPage);
         const isPageStart = index % cardsPerPage === 0;

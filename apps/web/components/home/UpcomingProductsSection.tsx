@@ -32,11 +32,7 @@ export function UpcomingProductsSection() {
     isSmUp,
     fetchGeneration,
   });
-  const isFirstPage = pagination.safePage === 1;
-  const nonFirstPageScrollClassName = isFirstPage
-    ? ''
-    : 'max-sm:mx-0 max-sm:px-0 lg:-ml-[7.5rem] lg:w-[calc(100%+7.5rem)]';
-  const scrollContainerClassName = `${UPCOMING_SCROLL_CONTAINER_CLASS_NAME} ${nonFirstPageScrollClassName}`;
+  const scrollContainerClassName = `${UPCOMING_SCROLL_CONTAINER_CLASS_NAME} ${pagination.mobileNonFirstPageScrollClassName}`;
 
   if (error) {
     return <UpcomingProductsErrorState error={error} onRetry={fetchUpcoming} />;
