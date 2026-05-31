@@ -71,9 +71,21 @@ const THUMBNAIL_ACTIVE_INDICATOR_CLASSES =
 const THUMBNAIL_STRIP_SCROLL_BASE_CLASSES =
   'scrollbar-hide min-h-0 min-w-0 flex-1 overflow-y-visible overscroll-x-contain max-sm:w-full max-sm:flex-none';
 
-/** Invisible slot — keeps nav arrow spacing when fewer images than {@link THUMBNAILS_PER_VIEW}. */
+/** Invisible slot — fills the scroll window when the trailing edge has fewer than {@link THUMBNAILS_PER_VIEW} images. */
 const THUMBNAIL_EMPTY_SLOT_CLASS =
   'pointer-events-none invisible flex shrink-0 flex-col items-center justify-center gap-0.5';
+
+/** Compact strip (≤ {@link THUMBNAILS_PER_VIEW} images): thumbs centered under hero; arrows overlay the row on sm+. */
+const THUMBNAIL_STRIP_COMPACT_ROW_CLASSES = 'relative z-20 w-full min-w-0 shrink-0';
+
+const THUMBNAIL_STRIP_COMPACT_THUMBS_CLASSES =
+  'flex w-full items-center justify-center gap-3 max-sm:gap-2 sm:px-11';
+
+const THUMBNAIL_STRIP_COMPACT_NAV_BUTTON_CLASSES =
+  `${THUMBNAIL_NAV_BUTTON_CLASSES} absolute top-1/2 z-10 -translate-y-1/2`;
+
+const THUMBNAIL_STRIP_COMPACT_PREVIOUS_CLASSES = `${THUMBNAIL_STRIP_COMPACT_NAV_BUTTON_CLASSES} left-0`;
+const THUMBNAIL_STRIP_COMPACT_NEXT_CLASSES = `${THUMBNAIL_STRIP_COMPACT_NAV_BUTTON_CLASSES} right-0`;
 
 export function ProductImageGallery({
   images,
@@ -100,18 +112,9 @@ export function ProductImageGallery({
 
   const hasHeroImage = heroImageSrc.length > 0;
   const canNavigateImages = images.length > 1;
-  const shouldPadThumbnailStrip = images.length <= THUMBNAILS_PER_VIEW;
-  const visibleThumbnailCount = shouldPadThumbnailStrip
-    ? images.length
-    : Math.min(THUMBNAILS_PER_VIEW, Math.max(0, images.length - thumbnailStartIndex));
-  const leadingEmptyThumbnailSlots = shouldPadThumbnailStrip
-    ? Math.floor((THUMBNAILS_PER_VIEW - visibleThumbnailCount) / 2)
-    : 0;
+  const usesCompactThumbnailStrip = images.length <= THUMBNAILS_PER_VIEW;
 
-  const thumbnailStripNeedsHorizontalScroll = images.length > THUMBNAILS_PER_VIEW;
-  const thumbnailStripScrollClassName = `${THUMBNAIL_STRIP_SCROLL_BASE_CLASSES} ${
-    thumbnailStripNeedsHorizontalScroll ? 'overflow-x-auto' : 'overflow-x-hidden'
-  }`;
+  const thumbnailStripScrollClassName = `${THUMBNAIL_STRIP_SCROLL_BASE_CLASSES} overflow-x-auto`;
 
   const navigateImageByArrow = (direction: 'previous' | 'next') => {
     if (!canNavigateImages) {
@@ -138,6 +141,31 @@ export function ProductImageGallery({
     } else if (index >= thumbnailStartIndex + THUMBNAILS_PER_VIEW) {
       onThumbnailStartIndexChange(index - THUMBNAILS_PER_VIEW + 1);
     }
+  };
+
+  const renderGalleryThumbnail = (image: string, imageIndex: number) => {
+    const isActive = activeThumbnailIndex !== null && imageIndex === activeThumbnailIndex;
+
+    return (
+      <button
+        key={`${image}-${imageIndex}`}
+        type="button"
+        onClick={() => selectThumbnailByIndex(imageIndex)}
+        className={`group relative flex shrink-0 cursor-pointer flex-col items-center justify-center gap-0.5 overflow-visible rounded-[4px] bg-white transition-opacity ${
+          isActive ? 'opacity-100' : 'opacity-75 hover:opacity-100'
+        }`}
+      >
+        <div className={`flex items-center justify-center overflow-visible ${THUMBNAIL_IMAGE_BOX_SIZE_CLASSES}`}>
+          <img src={image} alt="" draggable={false} className={`block ${GALLERY_IMAGE_FIT_CLASSES}`} />
+        </div>
+        <span
+          aria-hidden
+          className={`${THUMBNAIL_ACTIVE_INDICATOR_CLASSES} ${
+            isActive ? 'w-full bg-[#122a26]' : 'w-2/3 bg-[#d9d9d9]'
+          }`}
+        />
+      </button>
+    );
   };
 
   return (
@@ -197,83 +225,83 @@ export function ProductImageGallery({
             )}
           </div>
 
-          {images.length > 0 && (
-            <div className="relative z-20 flex w-full min-w-0 shrink-0 items-center justify-center gap-3 max-sm:gap-2">
-              <button
-                type="button"
-                onClick={() => navigateImageByArrow('previous')}
-                aria-label={t(language, 'common.ariaLabels.previousThumbnail')}
-                disabled={!canNavigateImages}
-                className={THUMBNAIL_NAV_BUTTON_CLASSES}
-              >
-                <svg className={THUMBNAIL_NAV_ICON_CLASSES} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 18l-6-6 6-6" />
-                </svg>
-              </button>
-
-              <div className={thumbnailStripScrollClassName}>
-                <div className="flex min-h-0 flex-nowrap items-center justify-center gap-3">
-                  {Array.from({ length: THUMBNAILS_PER_VIEW }, (_, slotIndex) => {
-                    const imageIndex = shouldPadThumbnailStrip
-                      ? slotIndex - leadingEmptyThumbnailSlots
-                      : thumbnailStartIndex + slotIndex;
-
-                    if (imageIndex < 0 || imageIndex >= images.length) {
-                      return (
-                        <div key={`thumb-slot-empty-${slotIndex}`} aria-hidden className={THUMBNAIL_EMPTY_SLOT_CLASS}>
-                          <div className={THUMBNAIL_IMAGE_BOX_SIZE_CLASSES} />
-                          <span className={`${THUMBNAIL_ACTIVE_INDICATOR_CLASSES} w-full opacity-0`} />
-                        </div>
-                      );
-                    }
-
-                    const image = images[imageIndex];
-                    const isActive = activeThumbnailIndex !== null && imageIndex === activeThumbnailIndex;
-
-                    return (
-                      <button
-                        key={`${image}-${imageIndex}`}
-                        type="button"
-                        onClick={() => selectThumbnailByIndex(imageIndex)}
-                        className={`group relative flex shrink-0 cursor-pointer flex-col items-center justify-center gap-0.5 overflow-visible rounded-[4px] bg-white transition-opacity ${
-                          isActive ? 'opacity-100' : 'opacity-75 hover:opacity-100'
-                        }`}
-                      >
-                        <div
-                          className={`flex items-center justify-center overflow-visible ${THUMBNAIL_IMAGE_BOX_SIZE_CLASSES}`}
-                        >
-                          <img
-                            src={image}
-                            alt=""
-                            draggable={false}
-                            className={`block ${GALLERY_IMAGE_FIT_CLASSES}`}
-                          />
-                        </div>
-                        <span
-                          aria-hidden
-                          className={`${THUMBNAIL_ACTIVE_INDICATOR_CLASSES} ${
-                            isActive ? 'w-full bg-[#122a26]' : 'w-2/3 bg-[#d9d9d9]'
-                          }`}
-                        />
-                      </button>
-                    );
-                  })}
+          {images.length > 0 &&
+            (usesCompactThumbnailStrip ? (
+              <div className={THUMBNAIL_STRIP_COMPACT_ROW_CLASSES}>
+                {canNavigateImages ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => navigateImageByArrow('previous')}
+                      aria-label={t(language, 'common.ariaLabels.previousThumbnail')}
+                      className={THUMBNAIL_STRIP_COMPACT_PREVIOUS_CLASSES}
+                    >
+                      <svg className={THUMBNAIL_NAV_ICON_CLASSES} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 18l-6-6 6-6" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => navigateImageByArrow('next')}
+                      aria-label={t(language, 'common.ariaLabels.nextThumbnail')}
+                      className={THUMBNAIL_STRIP_COMPACT_NEXT_CLASSES}
+                    >
+                      <svg className={THUMBNAIL_NAV_ICON_CLASSES} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 18l6-6-6-6" />
+                      </svg>
+                    </button>
+                  </>
+                ) : null}
+                <div className={THUMBNAIL_STRIP_COMPACT_THUMBS_CLASSES}>
+                  {images.map((image, imageIndex) => renderGalleryThumbnail(image, imageIndex))}
                 </div>
               </div>
+            ) : (
+              <div className="relative z-20 flex w-full min-w-0 shrink-0 items-center justify-center gap-3 max-sm:gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigateImageByArrow('previous')}
+                  aria-label={t(language, 'common.ariaLabels.previousThumbnail')}
+                  disabled={!canNavigateImages}
+                  className={THUMBNAIL_NAV_BUTTON_CLASSES}
+                >
+                  <svg className={THUMBNAIL_NAV_ICON_CLASSES} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 18l-6-6 6-6" />
+                  </svg>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => navigateImageByArrow('next')}
-                aria-label={t(language, 'common.ariaLabels.nextThumbnail')}
-                disabled={!canNavigateImages}
-                className={THUMBNAIL_NAV_BUTTON_CLASSES}
-              >
-                <svg className={THUMBNAIL_NAV_ICON_CLASSES} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 18l6-6-6-6" />
-                </svg>
-              </button>
-            </div>
-          )}
+                <div className={thumbnailStripScrollClassName}>
+                  <div className="flex min-h-0 flex-nowrap items-center gap-3">
+                    {Array.from({ length: THUMBNAILS_PER_VIEW }, (_, slotIndex) => {
+                      const imageIndex = thumbnailStartIndex + slotIndex;
+
+                      if (imageIndex >= images.length) {
+                        return (
+                          <div key={`thumb-slot-empty-${slotIndex}`} aria-hidden className={THUMBNAIL_EMPTY_SLOT_CLASS}>
+                            <div className={THUMBNAIL_IMAGE_BOX_SIZE_CLASSES} />
+                            <span className={`${THUMBNAIL_ACTIVE_INDICATOR_CLASSES} w-full opacity-0`} />
+                          </div>
+                        );
+                      }
+
+                      return renderGalleryThumbnail(images[imageIndex], imageIndex);
+                    })}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => navigateImageByArrow('next')}
+                  aria-label={t(language, 'common.ariaLabels.nextThumbnail')}
+                  disabled={!canNavigateImages}
+                  className={THUMBNAIL_NAV_BUTTON_CLASSES}
+                >
+                  <svg className={THUMBNAIL_NAV_ICON_CLASSES} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 18l6-6-6-6" />
+                  </svg>
+                </button>
+              </div>
+            ))}
         </div>
       </div>
     </div>
