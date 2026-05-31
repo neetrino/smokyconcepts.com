@@ -40,6 +40,7 @@ export function useUpcomingScrollPagination({
   const totalPages = Math.max(1, Math.ceil(itemCount / cardsPerPage));
   const safePage = Math.min(currentPage, totalPages);
   const visiblePaginationPages = getUpcomingVisiblePageNumbers(totalPages);
+  const stripScrollOffsetClassName = safePage === 1 ? '' : 'max-sm:mx-0 max-sm:px-0';
 
   useEffect(() => {
     pageStartRefs.current = [];
@@ -249,6 +250,7 @@ export function useUpcomingScrollPagination({
     safePage,
     totalPages,
     visiblePaginationPages,
+    stripScrollOffsetClassName,
     handlePageChange,
     handleScroll,
   };

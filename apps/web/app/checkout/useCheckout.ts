@@ -69,6 +69,7 @@ export function useCheckout() {
       cardExpiry: '',
       cardCvv: '',
       cardHolderName: '',
+      acceptedPrivacyPolicy: false,
     },
   });
 

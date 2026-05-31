@@ -240,7 +240,6 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
                   key={index}
                   type="button"
                   onClick={() => setActiveIndex(index)}
-                  onMouseEnter={() => setActiveIndex(index)}
                   className={`rounded-full transition-all ${
                     isActive
                       ? 'h-1.5 w-4 bg-white'

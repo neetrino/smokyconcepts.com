@@ -126,6 +126,8 @@ export default function CheckoutPage() {
           {/* Order Summary */}
           <div className="lg:col-span-1 lg:row-span-2 self-start lg:sticky lg:top-24">
             <OrderSummary
+              register={register}
+              errors={errors}
               orderSummary={orderSummary}
               shippingMethod={shippingMethod}
               loadingDeliveryPrice={loadingDeliveryPrice}

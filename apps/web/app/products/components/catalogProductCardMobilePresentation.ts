@@ -113,6 +113,28 @@ export const CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME =
 /** `/products` — full-bleed horizontal scroll on mobile (`px-4` page gutters). */
 export const CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_SCROLL_BLEED_CLASS_NAME = 'max-sm:-mx-4 max-sm:px-4';
 
+/** Desktop: counteract `/products` page `lg:pl-[7.5rem]` for edge-to-edge strip scroll. */
+export const CATALOG_PRODUCTS_PAGE_SCROLL_CONTAINER_LEFT_BLEED_CLASS_NAME =
+  'lg:-ml-[7.5rem] lg:w-[calc(100%+7.5rem)]';
+
+/** Matches `/products` page `lg:pl-[7.5rem]` content column. */
+export const CATALOG_PRODUCTS_PAGE_DESKTOP_CONTENT_INSET_REM = 7.5;
+
+/** Hero bleed uses `lg:pl-10` (2.5rem) on the strip — partial compensation so card edges match section titles. */
+export const CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_LEADING_INSET_REM = 5;
+
+/** Desktop leading inset — scrolls away so the strip can fill the viewport left edge. */
+export const CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_LEADING_INSET_CLASS_NAME =
+  'hidden shrink-0 lg:block lg:w-[5rem]';
+
+/** Extra scroll room so scaled heroes stay visible at the strip’s left edge while scrolling. */
+export const CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_HERO_HORIZONTAL_BLEED_CLASS_NAME = 'lg:-ml-10 lg:pl-10';
+
+/** Mobile-only bleed removal after page 1; desktop inset is handled by the leading spacer. */
+export function getCatalogProductsPageMobileNonFirstPageScrollClassName(isFirstPage: boolean): string {
+  return isFirstPage ? '' : 'max-sm:mx-0 max-sm:px-0';
+}
+
 /** `/products` strip — slightly smaller hero/copy spacing from `lg` (desktop). */
 export const CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME =
   'max-sm:-translate-y-2 sm:translate-y-0 sm:-translate-y-1 lg:translate-y-0';
@@ -178,14 +200,14 @@ export const CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME =
 export const CATALOG_PRODUCTS_PAGE_STRIP_SCROLL_CLASS_NAME = `scrollbar-hide mt-4 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory max-sm:pb-14 pb-10 pt-[8rem] sm:pb-12 sm:pt-[8.5rem] lg:pb-14 lg:pt-[9rem] ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_TOP_PADDING_CLASS_NAME}`;
 
 /** `/products` catalog sections — room for overlapping heroes below section h2. */
-export const CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME = `scrollbar-hide mt-0.5 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory max-sm:pb-10 pb-10 max-sm:pt-[5.5rem] pt-[5.5rem] sm:pb-12 sm:pt-[6rem] lg:pb-14 lg:pt-[5.75rem] ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_SCROLL_BLEED_CLASS_NAME}`;
+export const CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME = `scrollbar-hide mt-0.5 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory max-sm:pb-10 pb-10 max-sm:pt-[5.5rem] pt-[5.5rem] sm:pb-12 sm:pt-[6rem] lg:pb-14 lg:pt-[5.75rem] ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_SCROLL_BLEED_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_SCROLL_CONTAINER_LEFT_BLEED_CLASS_NAME}`;
 
 /** Pagination row spacing below catalog / related strips. */
 export const CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME =
   'relative z-20 mt-4 flex justify-center px-4 max-sm:mt-2 sm:mt-6 sm:mt-8';
 
 /** `/products` horizontal strip — card flex row. */
-export const CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME = `flex min-w-max items-stretch max-sm:pr-5 max-lg:pr-4 lg:pr-[7.5rem] ${CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME}`;
+export const CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME = `flex min-w-max items-stretch max-sm:pr-5 max-lg:pr-4 lg:pr-[7.5rem] ${CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_HERO_HORIZONTAL_BLEED_CLASS_NAME}`;
 
 /** `/products` strip — slightly smaller hero on positions 2 and 5 in each group of six (0-based: 1, 4). */
 export const PRODUCTS_CATALOG_PAGE_SMALLER_IMAGE_SCALE_MULTIPLIER = 0.85;

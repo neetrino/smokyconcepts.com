@@ -6,6 +6,8 @@ import type { GeneratedVariant } from '../types';
 import type { CategoryAttribute } from '@/lib/category-attributes';
 import {
   enforceSizeVersionCompatibility,
+  expandSizeVersionSelection,
+  getSelectedSizeCollectionTokens,
   isDuplicateVariantCombination,
   mergeVariantAttributeValues,
   removeAttributeValuesFromVariant,
@@ -64,9 +66,10 @@ export function VariantBuilder({
   const attributeToggles = categoryAttributes.filter(
     (attribute) => attribute.key !== SIZE_VERSION_ATTRIBUTE_KEY
   );
+  const hasCatalogVersions = (sizeVersionAttribute?.values.length ?? 0) > 0;
   const attributesInUse = categoryAttributes.filter((attribute) => {
     if (attribute.key === SIZE_VERSION_ATTRIBUTE_KEY) {
-      return isSizeEnabled;
+      return isSizeEnabled && hasCatalogVersions;
     }
     return enabledAttributeIds[attribute.id] === true;
   });
@@ -120,7 +123,19 @@ export function VariantBuilder({
       return;
     }
 
-    const nextIds = withCompatibleSizeVersions(mergeVariantAttributeValues(variant, attribute, valueIds));
+    let resolvedValueIds = valueIds;
+    if (attribute.key === SIZE_VERSION_ATTRIBUTE_KEY && sizeAttribute && sizeVersionAttribute) {
+      const selectedCollectionTokens = getSelectedSizeCollectionTokens(variant, sizeAttribute);
+      resolvedValueIds = expandSizeVersionSelection(
+        valueIds,
+        sizeVersionAttribute,
+        selectedCollectionTokens
+      );
+    }
+
+    const nextIds = withCompatibleSizeVersions(
+      mergeVariantAttributeValues(variant, attribute, resolvedValueIds)
+    );
 
     if (nextIds.length > 0 && isDuplicateVariantCombination(nextIds, generatedVariants, variantId)) {
       setAttributeCombinationError(t('admin.products.add.duplicateVariantCombination'));
@@ -137,9 +152,13 @@ export function VariantBuilder({
     return categoryAttributes
       .filter((attribute) => enabledAttributeIds[attribute.id] === true)
       .map((attribute) => {
-        const labels = attribute.values
-          .filter((value) => variant.selectedValueIds.includes(value.id))
-          .map((value) => value.label);
+        const matchedValues = attribute.values.filter((value) =>
+          variant.selectedValueIds.includes(value.id)
+        );
+        const labels =
+          attribute.key === SIZE_VERSION_ATTRIBUTE_KEY
+            ? [...new Set(matchedValues.map((value) => value.label))]
+            : matchedValues.map((value) => value.label);
 
         if (labels.length === 0) {
           return null;

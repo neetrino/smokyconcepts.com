@@ -32,11 +32,7 @@ export function UpcomingProductsSection() {
     isSmUp,
     fetchGeneration,
   });
-  const isFirstPage = pagination.safePage === 1;
-  const nonFirstPageScrollClassName = isFirstPage
-    ? ''
-    : 'max-sm:mx-0 max-sm:px-0 lg:-ml-[7.5rem] lg:w-[calc(100%+7.5rem)]';
-  const scrollContainerClassName = `${UPCOMING_SCROLL_CONTAINER_CLASS_NAME} ${nonFirstPageScrollClassName}`;
+  const scrollContainerClassName = `${UPCOMING_SCROLL_CONTAINER_CLASS_NAME} ${pagination.stripScrollOffsetClassName}`;
 
   if (error) {
     return <UpcomingProductsErrorState error={error} onRetry={fetchUpcoming} />;
@@ -52,7 +48,7 @@ export function UpcomingProductsSection() {
 
   return (
     <section
-      className={`relative isolate flex flex-col gap-4 sm:gap-5 xl:mr-[calc(50%_-_50vw)] ${UPCOMING_MOBILE_SECTION_GAP_CLASS}`}
+      className={`relative isolate flex flex-col gap-4 overflow-x-visible overflow-y-visible sm:gap-5 xl:mr-[calc(50%_-_50vw)] ${UPCOMING_MOBILE_SECTION_GAP_CLASS}`}
     >
       <UpcomingSectionHeader />
       <div

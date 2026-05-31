@@ -82,21 +82,27 @@ export function buildCategoryAttributesWithSizeCatalog(
     })),
   };
 
+  const versionValues = collections.flatMap((collection) =>
+    Array.from(collection.versions)
+      .sort((a, b) => a.localeCompare(b))
+      .map((version) => ({
+        id: `size-catalog-version:${collection.token}:${normalizeCatalogToken(version)}`,
+        value: version,
+        label: version,
+        colors: [],
+        imageUrl: null,
+      }))
+  );
+
+  if (versionValues.length === 0) {
+    return [...baseAttributes, sizeAttribute];
+  }
+
   const versionAttribute: CategoryAttribute = {
     id: DYNAMIC_SIZE_VERSION_ATTRIBUTE_ID,
     key: DYNAMIC_SIZE_VERSION_ATTRIBUTE_KEY,
     title: DYNAMIC_SIZE_VERSION_ATTRIBUTE_TITLE,
-    values: collections.flatMap((collection) =>
-      Array.from(collection.versions)
-        .sort((a, b) => a.localeCompare(b))
-        .map((version) => ({
-          id: `size-catalog-version:${collection.token}:${normalizeCatalogToken(version)}`,
-          value: version,
-          label: version,
-          colors: [],
-          imageUrl: null,
-        }))
-    ),
+    values: versionValues,
   };
 
   return [...baseAttributes, sizeAttribute, versionAttribute];

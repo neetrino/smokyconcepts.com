@@ -1,11 +1,15 @@
 'use client';
 
+import Link from 'next/link';
 import { Button } from '@shop/ui';
+import type { FieldErrors, UseFormRegister } from 'react-hook-form';
 import { useTranslation } from '../../lib/i18n-client';
-import type { CheckoutOrderSummaryTotals } from './types';
+import type { CheckoutFormData, CheckoutOrderSummaryTotals } from './types';
 import { CheckoutSummaryBreakdown } from './components/CheckoutSummaryBreakdown';
 
 interface OrderSummaryProps {
+  register: UseFormRegister<CheckoutFormData>;
+  errors: FieldErrors<CheckoutFormData>;
   orderSummary: CheckoutOrderSummaryTotals;
   shippingMethod: 'pickup' | 'delivery';
   loadingDeliveryPrice: boolean;
@@ -22,6 +26,8 @@ interface OrderSummaryProps {
 }
 
 export function OrderSummary({
+  register,
+  errors,
   orderSummary,
   shippingMethod,
   loadingDeliveryPrice,
@@ -105,6 +111,29 @@ export function OrderSummary({
             <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
+
+        <div className="mb-4">
+          <div className="flex items-start">
+            <input
+              type="checkbox"
+              id="acceptedPrivacyPolicy"
+              {...register('acceptedPrivacyPolicy')}
+              className="mt-1 rounded border-gray-300 text-[#dcc090] focus:ring-[#dcc090]"
+              disabled={isSubmitting}
+            />
+            <label htmlFor="acceptedPrivacyPolicy" className="ml-2 text-sm text-gray-600">
+              {t('checkout.form.acceptPrivacyPolicy')}{' '}
+              <Link href="/privacy" className="text-[#122a26] underline underline-offset-2 hover:text-[#0f221f]">
+                {t('checkout.form.privacyPolicy')}
+              </Link>
+            </label>
+          </div>
+          {errors.acceptedPrivacyPolicy?.message ? (
+            <p className="mt-2 text-sm text-red-600" role="alert">
+              {errors.acceptedPrivacyPolicy.message}
+            </p>
+          ) : null}
+        </div>
 
       <Button
         type="submit"

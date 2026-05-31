@@ -7,11 +7,16 @@ export const PRODUCT_INFO_TAB_BLOCK_HEIGHT_CLASS =
 
 /** Matches {@link GALLERY_TOP_OFFSET_CLASSES} in ProductImageGallery so title aligns with the white card top on xl+. */
 export const PRODUCT_INFO_ROOT_CLASS = [
-  'flex h-full min-h-0 w-full max-w-[763px] flex-1 flex-col overflow-hidden',
+  'flex h-full min-h-0 w-full max-w-[763px] flex-1 flex-col',
   'pt-0 xl:pt-16',
 ].join(' ');
 
-export const PRODUCT_INFO_HEADER_CLASS = 'shrink-0';
+/** Tabs + purchase row — clipped so the tab panel scrolls; header stays overflow-visible for size shake. */
+export const PRODUCT_INFO_SCROLL_BODY_CLASS =
+  'flex min-h-0 flex-1 flex-col overflow-hidden';
+
+/** Above gallery hero hover (`z-10`) and in-hero nav icons (`z-30` within that card). */
+export const PRODUCT_INFO_HEADER_CLASS = 'relative z-40 shrink-0 overflow-visible';
 
 export const PRODUCT_INFO_TABS_SECTION_CLASS = [
   'mt-8 flex min-h-0 max-xl:shrink-0 flex-col overflow-hidden',
@@ -31,7 +36,7 @@ export const PRODUCT_INFO_TAB_INDICATOR_BASE_CLASS =
  * growing the row when tab copy is long (see PDP grid in `page.tsx`).
  */
 export const PRODUCT_INFO_COLUMN_CLASS = [
-  'flex min-h-0 min-w-0 flex-col overflow-hidden',
+  'relative z-30 flex min-h-0 min-w-0 flex-col overflow-visible',
   'xl:h-0 xl:min-h-full',
 ].join(' ');
 

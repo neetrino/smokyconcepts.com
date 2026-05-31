@@ -24,4 +24,5 @@ export type CheckoutFormData = {
   cardExpiry?: string;
   cardCvv?: string;
   cardHolderName?: string;
+  acceptedPrivacyPolicy: boolean;
 };

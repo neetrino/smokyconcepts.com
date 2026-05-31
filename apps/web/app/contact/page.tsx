@@ -4,7 +4,7 @@ import { Input } from '@shop/ui';
 import { useState } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
-import { apiClient } from '../../lib/api-client';
+import { apiClient, ApiError } from '../../lib/api-client';
 import { sanitizeContactPhoneInput } from '../../lib/utils/contact-phone-input';
 import contactData from '../../../../json/contact.json';
 
@@ -42,6 +42,12 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
+    if (!formData.message.trim()) {
+      alert(t('contact.form.commentRequired'));
+      return;
+    }
+
     setSubmitting(true);
     
     try {
@@ -63,9 +69,21 @@ export default function ContactPage() {
       });
       
       alert(t('contact.form.submitSuccess') || 'Ձեր հաղորդագրությունը հաջողությամբ ուղարկվեց');
-    } catch (error: any) {
-      console.error('Error submitting contact form:', error);
-      alert(t('contact.form.submitError') || 'Սխալ: ' + (error.message || 'Չհաջողվեց ուղարկել հաղորդագրությունը'));
+    } catch (error: unknown) {
+      const isCommentRequiredError =
+        error instanceof ApiError &&
+        error.message.toLowerCase().includes("field 'message'");
+      if (isCommentRequiredError) {
+        alert(t('contact.form.commentRequired'));
+        return;
+      }
+      const detail =
+        error instanceof Error ? error.message : '';
+      alert(
+        detail
+          ? `${t('contact.form.submitError')}: ${detail}`
+          : t('contact.form.submitError'),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -200,6 +218,7 @@ export default function ContactPage() {
                   id="message"
                   name="message"
                   rows={6}
+                  required
                   value={formData.message}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
