@@ -23,6 +23,9 @@ export function useCheckoutSchema() {
     cardExpiry: z.string().optional(),
     cardCvv: z.string().optional(),
     cardHolderName: z.string().optional(),
+    acceptedPrivacyPolicy: z.boolean().refine((value) => value === true, {
+      message: t('checkout.errors.privacyPolicyRequired'),
+    }),
   }).refine((data) => {
     if (data.shippingMethod === 'delivery') {
       return data.shippingAddress && data.shippingAddress.trim().length > 0;

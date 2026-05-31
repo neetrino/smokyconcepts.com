@@ -19,7 +19,9 @@
     "cardNumber": "Քարտի համար",
     "expiryDate": "Վավերականության ժամկետ",
     "cvv": "CVV",
-    "cardHolderName": "Քարտի տիրոջ անուն"
+    "cardHolderName": "Քարտի տիրոջ անուն",
+    "acceptPrivacyPolicy": "Հաստատում եմ, որ ծանոթացել եմ",
+    "privacyPolicy": "Գաղտնիության քաղաքականությանը"
   },
   "placeholders": {
     "phone": "+374XXXXXXXX",
@@ -127,7 +129,8 @@
     "fillShippingAddress": "Խնդրում ենք լրացնել բոլոր առաքման հասցեի դաշտերը",
     "cartEmpty": "Զամբյուղը դատարկ է",
     "failedToLoadCart": "Չհաջողվեց բեռնել զամբյուղը",
-    "failedToCreateOrder": "Չհաջողվեց ստեղծել պատվերը: Խնդրում ենք կրկին փորձել:"
+    "failedToCreateOrder": "Չհաջողվեց ստեղծել պատվերը: Խնդրում ենք կրկին փորձել:",
+    "privacyPolicyRequired": "Պետք է հաստատեք, որ ծանոթացել եք Գաղտնիության քաղաքականությանը"
   }
 }
 

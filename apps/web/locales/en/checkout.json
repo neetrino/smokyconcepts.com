@@ -19,7 +19,9 @@
     "cardNumber": "Card Number",
     "expiryDate": "Expiry Date",
     "cvv": "CVV",
-    "cardHolderName": "Card Holder Name"
+    "cardHolderName": "Card Holder Name",
+    "acceptPrivacyPolicy": "I confirm that I have read the",
+    "privacyPolicy": "Privacy Policy"
   },
   "placeholders": {
     "phone": "+374XXXXXXXX",
@@ -127,7 +129,8 @@
     "fillShippingAddress": "Please fill in all shipping address fields",
     "cartEmpty": "Cart is empty",
     "failedToLoadCart": "Failed to load cart",
-    "failedToCreateOrder": "Failed to create order. Please try again."
+    "failedToCreateOrder": "Failed to create order. Please try again.",
+    "privacyPolicyRequired": "You must confirm that you have read the Privacy Policy"
   }
 }
 
