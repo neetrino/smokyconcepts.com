@@ -415,7 +415,7 @@ class ProductsFindTransformService {
 
       const categories = [...relationCategories, ...missingCategories];
 
-      const productImages = buildCatalogGalleryImages(product.media, variants);
+      const productImages = buildCatalogGalleryImages(product.media);
 
       return {
         id: product.id,
