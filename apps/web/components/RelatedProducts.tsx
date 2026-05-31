@@ -28,6 +28,7 @@ import {
   CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_LEADING_INSET_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE,
   CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME,
@@ -36,6 +37,7 @@ import {
   CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS,
   PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
   getCatalogProductCardImageScaleBoost,
+  getCatalogProductsPageMobileNonFirstPageScrollClassName,
   getCatalogProductsSmViewportSnapshot,
   getCatalogStripMobileImageFrameClassName,
   getCatalogStripMobileImageScaleMultiplier,
@@ -249,9 +251,8 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
   };
 
   const isFirstPage = currentPage === 0;
-  const nonFirstPageScrollClassName = isFirstPage
-    ? ''
-    : 'max-sm:mx-0 max-sm:px-0 lg:-ml-[7.5rem] lg:w-[calc(100%+7.5rem)]';
+  const mobileNonFirstPageScrollClassName =
+    getCatalogProductsPageMobileNonFirstPageScrollClassName(isFirstPage);
 
   return (
     <section className="relative isolate mt-20 w-full overflow-visible border-t border-[#e8e8e8] py-12 max-sm:py-8 sm:py-16">
@@ -270,9 +271,13 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
         <div
           ref={sectionScrollRef}
           onScroll={handleSectionScroll}
-          className={`${CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME} ${nonFirstPageScrollClassName}`}
+          className={`${CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME} ${mobileNonFirstPageScrollClassName}`}
         >
           <div className={CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME}>
+            <div
+              className={CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_LEADING_INSET_CLASS_NAME}
+              aria-hidden="true"
+            />
             {products.map((product, index) => {
               const catalogProduct = toCatalogProduct({
                 id: product.id,

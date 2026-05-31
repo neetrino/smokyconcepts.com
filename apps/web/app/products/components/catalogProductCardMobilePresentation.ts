@@ -113,6 +113,19 @@ export const CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME =
 /** `/products` — full-bleed horizontal scroll on mobile (`px-4` page gutters). */
 export const CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_SCROLL_BLEED_CLASS_NAME = 'max-sm:-mx-4 max-sm:px-4';
 
+/** Desktop: counteract `/products` page `lg:pl-[7.5rem]` for edge-to-edge strip scroll. */
+export const CATALOG_PRODUCTS_PAGE_SCROLL_CONTAINER_LEFT_BLEED_CLASS_NAME =
+  'lg:-ml-[7.5rem] lg:w-[calc(100%+7.5rem)]';
+
+/** Desktop: scrollable inset so page 1 keeps parent padding without toggling layout mid-scroll. */
+export const CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_LEADING_INSET_CLASS_NAME =
+  'hidden shrink-0 lg:block lg:w-[7.5rem]';
+
+/** Mobile-only bleed removal after page 1; desktop inset is handled by the leading spacer. */
+export function getCatalogProductsPageMobileNonFirstPageScrollClassName(isFirstPage: boolean): string {
+  return isFirstPage ? '' : 'max-sm:mx-0 max-sm:px-0';
+}
+
 /** `/products` strip — slightly smaller hero/copy spacing from `lg` (desktop). */
 export const CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME =
   'max-sm:-translate-y-2 sm:translate-y-0 sm:-translate-y-1 lg:translate-y-0';
@@ -178,7 +191,7 @@ export const CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME =
 export const CATALOG_PRODUCTS_PAGE_STRIP_SCROLL_CLASS_NAME = `scrollbar-hide mt-4 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory max-sm:pb-14 pb-10 pt-[8rem] sm:pb-12 sm:pt-[8.5rem] lg:pb-14 lg:pt-[9rem] ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_TOP_PADDING_CLASS_NAME}`;
 
 /** `/products` catalog sections — room for overlapping heroes below section h2. */
-export const CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME = `scrollbar-hide mt-0.5 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory max-sm:pb-10 pb-10 max-sm:pt-[5.5rem] pt-[5.5rem] sm:pb-12 sm:pt-[6rem] lg:pb-14 lg:pt-[5.75rem] ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_SCROLL_BLEED_CLASS_NAME}`;
+export const CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME = `scrollbar-hide mt-0.5 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory max-sm:pb-10 pb-10 max-sm:pt-[5.5rem] pt-[5.5rem] sm:pb-12 sm:pt-[6rem] lg:pb-14 lg:pt-[5.75rem] ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_SCROLL_BLEED_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_SCROLL_CONTAINER_LEFT_BLEED_CLASS_NAME}`;
 
 /** Pagination row spacing below catalog / related strips. */
 export const CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME =
