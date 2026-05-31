@@ -9,7 +9,7 @@ import { useProductQuantity } from './hooks/useProductQuantity';
 import { useProductCalculations } from './hooks/useProductCalculations';
 import { useAttributeGroups } from './useAttributeGroups';
 import type { ProductVariant } from './types';
-import { getOptionValue } from './utils/variant-helpers';
+import { getOptionValue, getOptionValues, normalizeVersionToken, variantHasColor, variantHasOptionValue } from './utils/variant-helpers';
 import { findVariantByAllAttributes } from './utils/variant-finders';
 import { switchToVariantImage } from './utils/image-switching';
 
@@ -50,22 +50,6 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     }
     return map;
   }, [selectedSizeVersion]);
-
-  const normalizeVersionToken = (value: string | null): string | null => {
-    if (!value) {
-      return null;
-    }
-    const normalized = value.toLowerCase().trim();
-    if (!normalized) {
-      return null;
-    }
-    const compact = normalized.replace(/\s+/g, '');
-    const numericMatch = compact.match(/(\d+)/);
-    if (!numericMatch) {
-      return compact;
-    }
-    return `v${numericMatch[1]}`;
-  };
 
   const { setSelectedVariant, currentVariant } = useVariantSelection({ product });
   const fallbackDefaultVariant = useMemo<ProductVariant | null>(() => {
@@ -220,12 +204,36 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     }
 
     const nextColor = getOptionValue(currentVariant.options, 'color');
-    const nextSize = getOptionValue(currentVariant.options, 'size');
-    const nextSizeVersion = getOptionValue(currentVariant.options, 'size_version');
+    const sizeValues = getOptionValues(currentVariant.options, 'size');
+    const sizeVersionValues = getOptionValues(currentVariant.options, 'size_version');
 
-    setSelectedColor((prev) => (prev === nextColor ? prev : nextColor));
-    setSelectedSize((prev) => (prev === nextSize ? prev : nextSize));
-    setSelectedSizeVersion((prev) => (prev === nextSizeVersion ? prev : nextSizeVersion));
+    setSelectedColor((prev) => {
+      if (prev && variantHasColor(currentVariant, prev)) {
+        return prev;
+      }
+      return nextColor ?? prev;
+    });
+    setSelectedSize((prev) => {
+      if (prev && sizeValues.includes(prev)) {
+        return prev;
+      }
+      return sizeValues[0] ?? prev;
+    });
+    setSelectedSizeVersion((prev) => {
+      if (!prev) {
+        const firstVersion = sizeVersionValues[0];
+        return firstVersion ? normalizeVersionToken(firstVersion) : prev;
+      }
+      const normalizedPrev = normalizeVersionToken(prev);
+      const hasMatch = sizeVersionValues.some(
+        (value) => normalizeVersionToken(value) === normalizedPrev
+      );
+      if (hasMatch) {
+        return prev;
+      }
+      const firstVersion = sizeVersionValues[0];
+      return firstVersion ? normalizeVersionToken(firstVersion) : null;
+    });
   }, [currentVariant?.id]);
 
   const handleColorSelect = (color: string) => {
@@ -245,18 +253,18 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     }
 
     const exactMatches = product.variants.filter((variant) => {
-      const variantSize = getOptionValue(variant.options, 'size');
-      const variantVersion = normalizeVersionToken(getOptionValue(variant.options, 'size_version'));
-      if (!normalizedVersion) {
-        return variantSize === normalizedSize;
+      if (!variantHasOptionValue(variant, 'size', normalizedSize)) {
+        return false;
       }
-      return variantSize === normalizedSize && variantVersion === normalizedVersion;
+      if (!normalizedVersion) {
+        return true;
+      }
+      return variantHasOptionValue(variant, 'size_version', normalizedVersion);
     });
 
-    const sizeOnlyMatches = product.variants.filter((variant) => {
-      const variantSize = getOptionValue(variant.options, 'size');
-      return variantSize === normalizedSize;
-    });
+    const sizeOnlyMatches = product.variants.filter((variant) =>
+      variantHasOptionValue(variant, 'size', normalizedSize)
+    );
 
     const candidateMatches = exactMatches.length > 0 ? exactMatches : sizeOnlyMatches;
 
@@ -266,13 +274,20 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
 
     const colorPreferredMatch =
       selectedColor != null
-        ? candidateMatches.find((variant) => getOptionValue(variant.options, 'color') === selectedColor)
+        ? candidateMatches.find((variant) => variantHasColor(variant, selectedColor))
         : null;
     const inStockMatch = candidateMatches.find((variant) => variant.stock > 0);
     const nextVariant = colorPreferredMatch || inStockMatch || candidateMatches[0];
-    const nextVariantSize = getOptionValue(nextVariant.options, 'size') ?? normalizedSize;
+    const nextVariantSize =
+      variantHasOptionValue(nextVariant, 'size', normalizedSize)
+        ? normalizedSize
+        : getOptionValue(nextVariant.options, 'size') ?? normalizedSize;
+    const variantVersionValues = getOptionValues(nextVariant.options, 'size_version');
+    const matchedVersion = variantVersionValues.find(
+      (value) => normalizeVersionToken(value) === normalizedVersion
+    );
     const nextVariantVersion = normalizeVersionToken(
-      getOptionValue(nextVariant.options, 'size_version')
+      matchedVersion ?? variantVersionValues[0] ?? null
     );
 
     setSelectedVariant(nextVariant);
