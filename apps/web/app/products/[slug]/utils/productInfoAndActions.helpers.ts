@@ -2,9 +2,6 @@ import type { LanguageCode } from '../../../../lib/language';
 import { normalizeHexPalette, parseHexFromText } from './swatch-color-utils';
 import type { ProductOptionValue } from '../productInfoAndActions.types';
 
-/** How long the “applied text” confirmation stays visible under Apply (ms). */
-export const CUSTOMIZE_APPLIED_PREVIEW_MS = 1000;
-
 export const PRODUCT_TAB_HTML_PROSE_CLASS =
   'prose max-w-none text-[15px] leading-[24px] text-[#414141] prose-p:my-0 prose-p:text-[15px] prose-p:leading-[24px] sm:text-[16px] sm:leading-[26px] sm:prose-p:text-[16px] sm:prose-p:leading-[26px]';
 

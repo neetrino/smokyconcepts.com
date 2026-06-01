@@ -26,13 +26,11 @@ async function uploadImagesToR2(images: string[]): Promise<string[]> {
 interface UseImageHandlingProps {
   imageUrls: string[];
   featuredImageIndex: number;
-  customizeOverlayImageIndex: number | null;
   variants: Variant[];
   generatedVariants: GeneratedVariant[];
   colorImageTarget: { variantId: string; colorValue: string } | null;
   setImageUrls: (updater: (prev: string[]) => string[]) => void;
   setFeaturedImageIndex: (index: number) => void;
-  setCustomizeOverlayImageIndex: (index: number | null) => void;
   setMainProductImage: (image: string) => void;
   setVariants: (updater: (prev: Variant[]) => Variant[]) => void;
   setGeneratedVariants: (updater: (prev: GeneratedVariant[]) => GeneratedVariant[]) => void;
@@ -47,7 +45,6 @@ interface UseImageHandlingReturn {
   removeImageUrl: (index: number) => void;
   updateImageUrl: (index: number, url: string) => void;
   setFeaturedImage: (index: number) => void;
-  setCustomizeOverlayImage: (index: number) => void;
   handleUploadImageFiles: (files: File[]) => Promise<void>;
   handleUploadImages: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
   handleUploadVariantImage: (variantId: string, event: ChangeEvent<HTMLInputElement>) => Promise<void>;
@@ -58,13 +55,11 @@ interface UseImageHandlingReturn {
 export function useImageHandling({
   imageUrls,
   featuredImageIndex,
-  customizeOverlayImageIndex,
   variants,
   generatedVariants,
   colorImageTarget,
   setImageUrls,
   setFeaturedImageIndex,
-  setCustomizeOverlayImageIndex,
   setMainProductImage,
   setVariants,
   setGeneratedVariants,
@@ -171,15 +166,6 @@ export function useImageHandling({
       setFeaturedImageIndex(finalFeaturedIndex);
       setMainProductImage(mainImage);
 
-      if (customizeOverlayImageIndex === null) {
-        return newUrls;
-      }
-      if (index === customizeOverlayImageIndex) {
-        setCustomizeOverlayImageIndex(null);
-      } else if (index < customizeOverlayImageIndex) {
-        setCustomizeOverlayImageIndex(customizeOverlayImageIndex - 1);
-      }
-
       return newUrls;
     });
   };
@@ -199,13 +185,6 @@ export function useImageHandling({
     const mainImage = imageUrls[index] || '';
     setFeaturedImageIndex(index);
     setMainProductImage(mainImage);
-  };
-
-  const setCustomizeOverlayImage = (index: number) => {
-    if (index < 0 || index >= imageUrls.length) {
-      return;
-    }
-    setCustomizeOverlayImageIndex(customizeOverlayImageIndex === index ? null : index);
   };
 
   const addColorImages = (variantId: string, colorValue: string, images: string[]) => {
@@ -357,7 +336,6 @@ export function useImageHandling({
     removeImageUrl,
     updateImageUrl,
     setFeaturedImage,
-    setCustomizeOverlayImage,
     handleUploadImageFiles: processAndUploadFiles,
     handleUploadImages,
     handleUploadVariantImage,

@@ -106,21 +106,17 @@ export function useAddProductPage() {
   const {
     removeImageUrl,
     setFeaturedImage,
-    setCustomizeOverlayImage,
     handleUploadImageFiles,
     handleUploadImages,
     handleUploadVariantImage,
   } = useImageHandling({
     imageUrls: formState.formData.imageUrls,
     featuredImageIndex: formState.formData.featuredImageIndex,
-    customizeOverlayImageIndex: formState.formData.customizeOverlayImageIndex,
     variants: formState.formData.variants,
     generatedVariants: formState.generatedVariants,
     colorImageTarget: formState.colorImageTarget,
     setImageUrls: (updater) => formState.setFormData((prev) => ({ ...prev, imageUrls: updater(prev.imageUrls) })),
     setFeaturedImageIndex: (index) => formState.setFormData((prev) => ({ ...prev, featuredImageIndex: index })),
-    setCustomizeOverlayImageIndex: (index) =>
-      formState.setFormData((prev) => ({ ...prev, customizeOverlayImageIndex: index })),
     setMainProductImage: (image) => formState.setFormData((prev) => ({ ...prev, mainProductImage: image })),
     setVariants: (updater) => formState.setFormData((prev) => ({ ...prev, variants: updater(prev.variants) })),
     setGeneratedVariants: formState.setGeneratedVariants,
@@ -186,6 +182,7 @@ export function useAddProductPage() {
     isClothingCategory,
     categoryAttributes: categoryAttributesForVariants,
     setSubmitErrorKey: formState.setSubmitErrorKey,
+    setSubmitErrorFieldId: formState.setSubmitErrorFieldId,
   });
 
   const handleProductTypeChange = (type: 'simple' | 'variable') => {
@@ -193,6 +190,7 @@ export function useAddProductPage() {
       return;
     }
     formState.setSubmitErrorKey(null);
+    formState.setSubmitErrorFieldId(null);
     if (type === 'variable') {
       variableChosenWithEmptyRowsRef.current = true;
     } else {
@@ -218,7 +216,6 @@ export function useAddProductPage() {
     handleVariantAdd,
     removeImageUrl,
     setFeaturedImage,
-    setCustomizeOverlayImage,
     handleUploadImageFiles,
     handleUploadImages,
     handleUploadVariantImage,

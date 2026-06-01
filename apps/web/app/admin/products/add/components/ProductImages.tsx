@@ -7,7 +7,6 @@ import { ADMIN_RASTER_IMAGE_FILE_ACCEPT } from '@/lib/services/utils/heic-browse
 interface ProductImagesProps {
   imageUrls: string[];
   featuredImageIndex: number;
-  customizeOverlayImageIndex: number | null;
   imageUploadLoading: boolean;
   imageUploadError: string | null;
   fileInputRef: RefObject<HTMLInputElement>;
@@ -15,13 +14,11 @@ interface ProductImagesProps {
   onUploadImageFiles: (files: File[]) => Promise<void>;
   onRemoveImage: (index: number) => void;
   onSetFeaturedImage: (index: number) => void;
-  onSetCustomizeOverlayImage: (index: number) => void;
 }
 
 export function ProductImages({
   imageUrls,
   featuredImageIndex,
-  customizeOverlayImageIndex,
   imageUploadLoading,
   imageUploadError,
   fileInputRef,
@@ -29,7 +26,6 @@ export function ProductImages({
   onUploadImageFiles,
   onRemoveImage,
   onSetFeaturedImage,
-  onSetCustomizeOverlayImage,
 }: ProductImagesProps) {
   const { t } = useTranslation();
   const [isDragOver, setIsDragOver] = useState(false);
@@ -113,8 +109,8 @@ export function ProductImages({
                       className="w-full h-48 object-cover"
                     />
                     
-                    {/* Main + Customize checkboxes */}
-                    <div className="absolute top-2 left-2 flex flex-col gap-1.5">
+                    {/* Main image checkbox */}
+                    <div className="absolute top-2 left-2">
                       <label className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md cursor-pointer hover:bg-white transition-colors">
                         <input
                           type="checkbox"
@@ -124,19 +120,6 @@ export function ProductImages({
                         />
                         <span className="text-xs font-medium text-gray-700">
                           {featuredImageIndex === index ? t('admin.products.add.main') : t('admin.products.add.setAsMain')}
-                        </span>
-                      </label>
-                      <label className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md cursor-pointer hover:bg-white transition-colors">
-                        <input
-                          type="checkbox"
-                          checked={customizeOverlayImageIndex === index}
-                          onChange={() => onSetCustomizeOverlayImage(index)}
-                          className="w-4 h-4 text-[#122a26] border-[#dcc090]/40 rounded focus:ring-[#dcc090]"
-                        />
-                        <span className="text-xs font-medium text-gray-700">
-                          {customizeOverlayImageIndex === index
-                            ? t('admin.products.add.customizeOverlayActive')
-                            : t('admin.products.add.setAsCustomizeOverlay')}
                         </span>
                       </label>
                     </div>

@@ -15,6 +15,8 @@ import { ProductLabels } from './ProductLabels';
 import { Publishing } from './Publishing';
 import { FormActions } from './FormActions';
 import { SHOW_COMPARE_AT_PRICE_FIELD } from '../constants/compareAtPriceVisibility.constants';
+import { PRODUCT_FORM_FIELD, type ProductFormFieldId } from '../constants/productFormFieldIds.constants';
+import { getProductFieldInputClassName } from '../utils/productFieldInputClassName';
 
 interface AddProductFormContentProps {
   formData: {
@@ -29,7 +31,6 @@ interface AddProductFormContentProps {
     sizeCatalogCategoryTitle: string;
     imageUrls: string[];
     featuredImageIndex: number;
-    customizeOverlayImageIndex: number | null;
     labels: ProductLabel[];
     featured: boolean;
     upcoming: boolean;
@@ -71,7 +72,6 @@ interface AddProductFormContentProps {
   onUploadImageFiles: (files: File[]) => Promise<void>;
   onRemoveImage: (index: number) => void;
   onSetFeaturedImage: (index: number) => void;
-  onSetCustomizeOverlayImage: (index: number) => void;
   onCategoriesExpandedChange: (expanded: boolean) => void;
   onUseNewCategoryChange: (use: boolean) => void;
   onNewCategoryNameChange: (name: string) => void;
@@ -98,6 +98,7 @@ interface AddProductFormContentProps {
   handleSubmit: (e: React.FormEvent) => void;
   /** Suffix for t('admin.products.add.<key>') when client-side validation blocks save. */
   submitErrorKey: string | null;
+  submitErrorFieldId?: ProductFormFieldId | null;
 }
 
 export function AddProductFormContent({
@@ -132,7 +133,6 @@ export function AddProductFormContent({
   onUploadImageFiles,
   onRemoveImage,
   onSetFeaturedImage,
-  onSetCustomizeOverlayImage,
   onCategoriesExpandedChange,
   onUseNewCategoryChange,
   onNewCategoryNameChange,
@@ -158,6 +158,7 @@ export function AddProductFormContent({
   generateSlug,
   handleSubmit,
   submitErrorKey,
+  submitErrorFieldId,
 }: AddProductFormContentProps) {
   const { t } = useTranslation();
 
@@ -184,7 +185,6 @@ export function AddProductFormContent({
         <ProductImages
           imageUrls={formData.imageUrls}
           featuredImageIndex={formData.featuredImageIndex}
-          customizeOverlayImageIndex={formData.customizeOverlayImageIndex}
           imageUploadLoading={imageUploadLoading}
           imageUploadError={imageUploadError}
           fileInputRef={fileInputRef}
@@ -192,7 +192,6 @@ export function AddProductFormContent({
           onUploadImageFiles={onUploadImageFiles}
           onRemoveImage={onRemoveImage}
           onSetFeaturedImage={onSetFeaturedImage}
-          onSetCustomizeOverlayImage={onSetCustomizeOverlayImage}
         />
 
         {productType === 'variable' && (
@@ -207,18 +206,24 @@ export function AddProductFormContent({
             >
               <div className="flex items-center gap-2">
                 <label className="text-sm font-medium text-gray-600 shrink-0">
-                  {t('admin.products.add.price')}
+                  {t('admin.products.add.price')} *
                 </label>
                 <Input
                   type="number"
+                  data-product-field={PRODUCT_FORM_FIELD.PRICE}
                   value={simpleProductData.price}
                   onChange={(e) => {
                     onPriceChange(e.target.value);
                   }}
                   placeholder={t('admin.products.add.pricePlaceholder')}
-                  className="w-32 text-sm"
+                  className={getProductFieldInputClassName(
+                    PRODUCT_FORM_FIELD.PRICE,
+                    submitErrorFieldId,
+                    'w-32 text-sm'
+                  )}
                   min="0"
                   step="0.01"
+                  aria-invalid={submitErrorFieldId === PRODUCT_FORM_FIELD.PRICE}
                 />
                 <span className="text-sm text-gray-500">{CURRENCIES[ADMIN_PRODUCT_INPUT_CURRENCY].symbol}</span>
               </div>
@@ -257,17 +262,23 @@ export function AddProductFormContent({
               </div>
               <div className="flex items-center gap-2">
                 <label className="text-sm font-medium text-gray-600 shrink-0">
-                  {t('admin.products.add.quantity')}
+                  {t('admin.products.add.quantity')} *
                 </label>
                 <Input
                   type="number"
+                  data-product-field={PRODUCT_FORM_FIELD.QUANTITY}
                   value={simpleProductData.quantity}
                   onChange={(e) => {
                     onQuantityChange(e.target.value);
                   }}
                   placeholder={t('admin.products.add.quantityPlaceholder')}
-                  className="w-28 text-sm"
+                  className={getProductFieldInputClassName(
+                    PRODUCT_FORM_FIELD.QUANTITY,
+                    submitErrorFieldId,
+                    'w-28 text-sm'
+                  )}
                   min="0"
+                  aria-invalid={submitErrorFieldId === PRODUCT_FORM_FIELD.QUANTITY}
                 />
               </div>
             </div>
@@ -296,6 +307,7 @@ export function AddProductFormContent({
             compareAtPrice={simpleProductData.compareAtPrice}
             sku={simpleProductData.sku}
             quantity={simpleProductData.quantity}
+            invalidFieldId={submitErrorFieldId}
             onPriceChange={onPriceChange}
             onCompareAtPriceChange={onCompareAtPriceChange}
             onSkuChange={onSkuChange}

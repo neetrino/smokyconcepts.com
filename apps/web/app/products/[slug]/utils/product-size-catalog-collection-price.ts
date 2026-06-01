@@ -195,44 +195,80 @@ function pushUniqueSelection(
   }
 }
 
+function collectActiveSizeLabelKeys(
+  selectedSizeLabel: string | null,
+  currentVariant: ProductVariant | null
+): Set<string> {
+  const keys = new Set<string>();
+  for (const raw of [selectedSizeLabel, getVariantSizeLabel(currentVariant)]) {
+    const key = normalizeSizeCatalogCategoryTitleKey(raw);
+    if (key) {
+      keys.add(key);
+    }
+  }
+  return keys;
+}
+
 /**
- * Customize surcharge category — prefers active size/catalog pick, then product template.
- * Only returns a selection that the product is allowed to use.
+ * Customize surcharge category — follows the active size/catalog pick.
+ * Product template is used only before the shopper selects a size (PDP typing flow).
  */
 export function resolveCustomizeCollectionSelection(params: {
   product: Product;
   currentVariant: ProductVariant | null;
   categories: SizeCatalogCategoryDto[];
-  selectedCatalogSize: { categoryId: string; categoryTitle: string } | null;
+  selectedCatalogSize: {
+    categoryId: string;
+    categoryTitle: string;
+    categoryPriceAmd?: number;
+  } | null;
   selectedSizeLabel: string | null;
+  /** Size chosen in catalog modal — never fall back to product template. */
+  hasExplicitCatalogSizePick?: boolean;
 }): ProductSizeCatalogSelection {
-  const { product, currentVariant, categories, selectedCatalogSize, selectedSizeLabel } = params;
-  const candidates: ProductSizeCatalogSelection[] = [];
+  const {
+    product,
+    currentVariant,
+    categories,
+    selectedCatalogSize,
+    selectedSizeLabel,
+    hasExplicitCatalogSizePick = false,
+  } = params;
 
   if (selectedCatalogSize != null) {
-    pushUniqueSelection(candidates, {
+    const catalogSelection: ProductSizeCatalogSelection = {
       categoryId: selectedCatalogSize.categoryId,
       categoryTitle: selectedCatalogSize.categoryTitle,
-    });
+    };
+    const fromCatalogPick = resolveCollectionPriceAmdFromCategories(categories, catalogSelection);
+    const embeddedPrice = selectedCatalogSize.categoryPriceAmd ?? 0;
+    if (fromCatalogPick.priceAmd > 0 || embeddedPrice > 0) {
+      return catalogSelection;
+    }
   }
 
-  const sizeKey = normalizeSizeCatalogCategoryTitleKey(selectedSizeLabel);
-  if (sizeKey) {
+  const activeSizeKeys = collectActiveSizeLabelKeys(selectedSizeLabel, currentVariant);
+  const hasActiveSize =
+    hasExplicitCatalogSizePick || selectedCatalogSize != null || activeSizeKeys.size > 0;
+  const sizeMatchedCandidates: ProductSizeCatalogSelection[] = [];
+
+  for (const key of activeSizeKeys) {
     for (const title of product.sizeCatalogCategoryTitles ?? []) {
-      if (normalizeSizeCatalogCategoryTitleKey(title) === sizeKey) {
-        pushUniqueSelection(candidates, { categoryId: null, categoryTitle: title });
+      if (normalizeSizeCatalogCategoryTitleKey(title) === key) {
+        pushUniqueSelection(sizeMatchedCandidates, { categoryId: null, categoryTitle: title });
       }
     }
     for (const cat of categories) {
-      if (normalizeSizeCatalogCategoryTitleKey(cat.title) === sizeKey) {
-        pushUniqueSelection(candidates, { categoryId: cat.id, categoryTitle: cat.title });
+      if (normalizeSizeCatalogCategoryTitleKey(cat.title) === key) {
+        pushUniqueSelection(sizeMatchedCandidates, {
+          categoryId: cat.id,
+          categoryTitle: cat.title,
+        });
       }
     }
   }
 
-  pushUniqueSelection(candidates, resolveProductSizeCatalogSelection(product, currentVariant));
-
-  for (const selection of candidates) {
+  for (const selection of sizeMatchedCandidates) {
     if (
       !productAllowsCustomizeCollectionSelection(
         product,
@@ -246,6 +282,23 @@ export function resolveCustomizeCollectionSelection(params: {
     const resolved = resolveCollectionPriceAmdFromCategories(categories, selection);
     if (resolved.priceAmd > 0) {
       return selection;
+    }
+  }
+
+  if (!hasActiveSize) {
+    const templateSelection = resolveProductSizeCatalogSelection(product, currentVariant);
+    if (
+      productAllowsCustomizeCollectionSelection(
+        product,
+        currentVariant,
+        templateSelection,
+        selectedSizeLabel
+      )
+    ) {
+      const resolved = resolveCollectionPriceAmdFromCategories(categories, templateSelection);
+      if (resolved.priceAmd > 0) {
+        return templateSelection;
+      }
     }
   }
 

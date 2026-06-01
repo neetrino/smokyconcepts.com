@@ -5,6 +5,7 @@ import { apiClient } from '@/lib/api-client';
 import { buildSelectedAttributeValueIdsMap } from '@/lib/category-attributes';
 import type { CategoryAttribute } from '@/lib/category-attributes';
 import type { SizeCatalogCategoryDto } from '@/lib/types/size-catalog';
+import { scrollToProductFormField } from '../utils/scrollToProductFormField';
 import type { useProductFormState } from './useProductFormState';
 
 type ProductFormState = ReturnType<typeof useProductFormState>;
@@ -87,6 +88,13 @@ export function useAddProductPageEffects({
     formState.generatedVariants.length,
     formState.setSubmitErrorKey,
   ]);
+
+  useEffect(() => {
+    if (!formState.submitErrorFieldId) {
+      return;
+    }
+    scrollToProductFormField(formState.submitErrorFieldId);
+  }, [formState.submitErrorFieldId, formState.submitErrorKey]);
 
   useEffect(() => {
     if (!isLoggedIn || !isAdmin) {

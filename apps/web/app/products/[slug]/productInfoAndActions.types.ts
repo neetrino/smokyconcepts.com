@@ -16,18 +16,17 @@ export interface ProductOptionValue extends AttributeGroupValue {
  */
 export interface ProductInfoAndActionsProps {
   product: Product;
-  /** Last applied customize (cart). */
+  /** Live customize snapshot (auto-synced from draft + format for cart). */
   appliedCustomize: { plain: string; html: string | null } | null;
-  onCustomizeApplied: (value: { plain: string; html: string | null } | null) => void;
-  /** Rich preview HTML for cart — built from draft text + toolbar format on the parent. */
-  getCustomizeSanitizedHtml: () => string;
-  /** Admin-marked image for customize tab preview. */
-  customizeOverlayImageUrl?: string | null;
-  /** Live / applied HTML shown on the customize tab preview image. */
+  /** Show Figma black-body preview in the hero gallery while customize text is entered. */
+  showCustomizeHeroPreview: boolean;
+  /** @deprecated Use showCustomizeHeroPreview */
+  showCustomizePackPreview?: boolean;
+  /** Live / applied HTML rendered on the pack preview. */
   customizePreviewHtml?: string | null;
   customizeFormat: CustomizeFormatState;
   onCustomizeFormatChange: (next: CustomizeFormatState) => void;
-  /** Plain line next to Apply — drives editor seed when it does not match applied rich HTML. */
+  /** Plain line input for customize text. */
   customizeDraftText: string;
   onCustomizeDraftTextChange: (value: string) => void;
   customizeTextMaxLength: number;

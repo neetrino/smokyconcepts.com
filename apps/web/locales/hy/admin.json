@@ -541,8 +541,6 @@
       "uploadImages": "Վերբեռնել նկարներ",
       "setAsMain": "Նշել որպես գլխավոր",
       "main": "Գլխավոր",
-      "setAsCustomizeOverlay": "Customize overlay",
-      "customizeOverlayActive": "Customize overlay",
       "backToAdmin": "Վերադառնալ ադմինիստրատորի վահան",
       "editProduct": "Խմբագրել ապրանք",
       "addNewProduct": "Ավելացնել նոր ապրանք",
@@ -664,7 +662,10 @@
       "variableSubmitNeedVariants": "Փոփոխական ապրանք․ ավելացրեք առնվազն մեկ տարբերակ («Ավելացնել» կոճակով), լրացրեք Լռելյայն գինը (վավեր գին), ապա յուրաքանչյուր տողում՝ գին (զրոյից մեծ), պաշար և SKU, հետո պահպանեք։",
       "variableSubmitDefaultPriceInvalid": "Փոփոխական ապրանք․ Լռելյայն գին բաժնում մուտքագրեք վավեր գին (զրոյից մեծ)։",
       "variableSubmitVariantRowInvalid": "Փոփոխական ապրանք․ յուրաքանչյուր տարբերակի տողում պետք է լինեն վավեր գին (զրոյից մեծ) և SKU։",
-      "variableSubmitDuplicateVariantSku": "Փոփոխական ապրանք․ յուրաքանչյուր տարբերակի SKU-ն պետք է եզակի լինի․ ուղղեք կրկնվող SKU-ները։"
+      "variableSubmitDuplicateVariantSku": "Փոփոխական ապրանք․ յուրաքանչյուր տարբերակի SKU-ն պետք է եզակի լինի․ ուղղեք կրկնվող SKU-ները։",
+      "simpleSubmitPriceRequired": "Մուտքագրեք ապրանքի գինը (զրոյից մեծ)։",
+      "simpleSubmitQuantityRequired": "Մուտքագրեք ապրանքի քանակը (պաշարը)։",
+      "variableSubmitDefaultQuantityRequired": "Փոփոխական ապրանք․ Լռելյայն գին բաժնում մուտքագրեք պաշարը։"
     }
   },
   "settings": {

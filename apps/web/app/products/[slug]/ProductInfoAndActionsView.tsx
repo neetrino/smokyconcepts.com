@@ -18,9 +18,12 @@ import {
   PRODUCT_INFO_PURCHASE_ROW_CLASS,
   PRODUCT_INFO_ROOT_CLASS,
   PRODUCT_INFO_SCROLL_BODY_CLASS,
+  PRODUCT_INFO_SCROLL_BODY_CUSTOMIZE_CLASS,
   PRODUCT_INFO_TAB_INDICATOR_BASE_CLASS,
   PRODUCT_INFO_TAB_PANEL_CLASS,
+  PRODUCT_INFO_TAB_PANEL_CUSTOMIZE_CLASS,
   PRODUCT_INFO_TABS_SECTION_CLASS,
+  PRODUCT_INFO_TABS_SECTION_CUSTOMIZE_CLASS,
 } from './productInfoTabContent.constants';
 
 type ProductInfoViewState = ReturnType<typeof useProductInfoAndActions>;
@@ -31,7 +34,6 @@ interface ProductInfoAndActionsViewProps extends ProductInfoAndActionsProps {
 
 export function ProductInfoAndActionsView({
   product,
-  appliedCustomize,
   language,
   price,
   isOutOfStock,
@@ -47,8 +49,6 @@ export function ProductInfoAndActionsView({
   customizeTextMaxLength,
   customizeFormat,
   onCustomizeFormatChange,
-  customizeOverlayImageUrl,
-  customizePreviewHtml,
   view,
 }: ProductInfoAndActionsViewProps) {
   const displayCurrency = useCurrency();
@@ -69,14 +69,10 @@ export function ProductInfoAndActionsView({
     selectedCatalogSize,
     handleSelectCatalogSizeItem,
     handleSelectCustomSizeRequest,
-    appliedPreviewPlain,
-    handleCustomizeApplyClick,
-    handleCustomizeClearApplied,
     productTabLabelClass,
     collectionBadgeItems,
     labelBadgeItems,
     hasTitleRowBadges,
-    showCustomizeApplyButton,
     isSizeSelected,
     showSizeRequired,
     isSizeShaking,
@@ -85,6 +81,16 @@ export function ProductInfoAndActionsView({
   } = view;
 
   const sizeSectionRef = useRef<HTMLDivElement>(null);
+  const isCustomizeTab = activeTab === 'customize';
+  const tabsSectionClass = isCustomizeTab
+    ? PRODUCT_INFO_TABS_SECTION_CUSTOMIZE_CLASS
+    : PRODUCT_INFO_TABS_SECTION_CLASS;
+  const tabPanelClass = isCustomizeTab
+    ? PRODUCT_INFO_TAB_PANEL_CUSTOMIZE_CLASS
+    : PRODUCT_INFO_TAB_PANEL_CLASS;
+  const scrollBodyClass = isCustomizeTab
+    ? PRODUCT_INFO_SCROLL_BODY_CUSTOMIZE_CLASS
+    : PRODUCT_INFO_SCROLL_BODY_CLASS;
 
   const handleAddToCartClick = () => {
     if (showSizeSection && !isSizeSelected) {
@@ -202,8 +208,8 @@ export function ProductInfoAndActionsView({
           )}
         </div>
 
-        <div className={PRODUCT_INFO_SCROLL_BODY_CLASS}>
-        <div className={PRODUCT_INFO_TABS_SECTION_CLASS}>
+        <div className={scrollBodyClass}>
+        <div className={tabsSectionClass}>
           <div className="w-full min-w-0 shrink-0 touch-pan-x overflow-x-auto overscroll-x-contain scroll-px-1 pb-2 scrollbar-hide [-webkit-overflow-scrolling:touch] sm:touch-auto sm:pb-0">
             <div
               className="flex w-max max-w-none snap-x snap-mandatory flex-nowrap items-end gap-5 pr-4 sm:snap-none sm:gap-7 sm:pr-5"
@@ -240,7 +246,7 @@ export function ProductInfoAndActionsView({
             </div>
           </div>
 
-          <div role="tabpanel" className={PRODUCT_INFO_TAB_PANEL_CLASS}>
+          <div role="tabpanel" className={tabPanelClass}>
             <ProductInfoTabPanels
               activeTab={activeTab}
               language={language}
@@ -249,39 +255,27 @@ export function ProductInfoAndActionsView({
               productTabHtml={productTabHtml}
               shippingTabHtml={shippingTabHtml}
               productDetails={productDetails}
-              appliedCustomize={appliedCustomize}
-              appliedPreviewPlain={appliedPreviewPlain}
               customizeDraftText={customizeDraftText}
               customizeTextMaxLength={customizeTextMaxLength}
               onCustomizeDraftTextChange={onCustomizeDraftTextChange}
               customizeFormat={customizeFormat}
               onCustomizeFormatChange={onCustomizeFormatChange}
-              showCustomizeApplyButton={showCustomizeApplyButton}
-              onCustomizeApplyClick={handleCustomizeApplyClick}
-              onCustomizeClearApplied={handleCustomizeClearApplied}
-              customizeOverlayImageUrl={customizeOverlayImageUrl}
-              customizePreviewHtml={customizePreviewHtml}
             />
           </div>
         </div>
 
-        <div className={`flex w-full min-w-0 items-end justify-between gap-3 ${PRODUCT_INFO_PURCHASE_ROW_CLASS}`}>
-          <div className="flex min-w-0 flex-1 flex-wrap items-end gap-2 sm:max-w-[291px] sm:gap-3">
-            <p className="font-montserrat text-[30px] font-extrabold leading-none text-black sm:text-[32px]">
-              {formatCatalogPrice(price, displayCurrency)}
-            </p>
-          </div>
-
-          <div className="ml-auto flex shrink-0 items-center">
-            <Button
-              type="button"
-              disabled={isAddingToCart}
-              onClick={handleAddToCartClick}
-              className="h-10 rounded-[8px] !bg-[#dcc090] px-4 text-[56px] font-bold capitalize tracking-normal !text-[#122a26] hover:!bg-[#d3b67f] disabled:cursor-wait disabled:!opacity-100 sm:px-5 sm:text-[20px]"
-            >
-              {addToCartLabel}
-            </Button>
-          </div>
+        <div className={`flex w-full min-w-0 items-end justify-between gap-4 sm:gap-6 ${PRODUCT_INFO_PURCHASE_ROW_CLASS}`}>
+          <p className="font-montserrat text-[30px] font-extrabold leading-none text-black sm:text-[32px]">
+            {formatCatalogPrice(price, displayCurrency)}
+          </p>
+          <Button
+            type="button"
+            disabled={isAddingToCart}
+            onClick={handleAddToCartClick}
+            className="h-10 shrink-0 rounded-[8px] !bg-[#dcc090] px-4 text-[56px] font-bold capitalize tracking-normal !text-[#122a26] hover:!bg-[#d3b67f] disabled:cursor-wait disabled:!opacity-100 sm:px-5 sm:text-[20px]"
+          >
+            {addToCartLabel}
+          </Button>
         </div>
 
         {showMessage ? (

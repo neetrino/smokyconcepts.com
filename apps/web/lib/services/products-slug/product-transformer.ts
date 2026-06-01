@@ -5,7 +5,6 @@ import {
   cleanImageUrls,
   separateMainAndVariantImages,
 } from "../utils/image-utils";
-import { extractCustomizeOverlayImageUrl } from "../utils/product-media";
 import { logger } from "../utils/logger";
 import { getOutOfStockLabel } from "./utils";
 import type { ProductWithFullRelations, ProductVariantWithOptions } from "./types";
@@ -487,7 +486,6 @@ export async function transformProduct(
     shippingHtml: translation?.shippingHtml || null,
     categories,
     media: transformMedia(product),
-    customizeOverlayImageUrl: extractCustomizeOverlayImageUrl(product.media),
     labels: transformLabels(product, lang),
     variants: transformVariants(
       selectableVariants,

@@ -8,7 +8,6 @@ export interface ProductMedia {
   url?: string;
   type?: string;
   isFeatured?: boolean;
-  isCustomizeOverlay?: boolean;
 }
 
 export interface VariantOption {
@@ -77,8 +76,6 @@ export interface Product {
   productDetailsHtml?: string | null;
   shippingHtml?: string | null;
   media: ProductMedia[] | string[];
-  /** Admin-marked image for customize text preview on the PDP hero. */
-  customizeOverlayImageUrl?: string | null;
   variants: ProductVariant[];
   labels?: ProductLabel[];
   brand?: {

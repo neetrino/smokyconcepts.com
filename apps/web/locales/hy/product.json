@@ -6,7 +6,7 @@
   "shipping_title": "Առաքում",
   "customize_title": "Անհատականացում",
   "customize_apply": "ՊԱՀԵԼ",
-  "customize_apply_cart_hint": "«ՊԱՀԵԼ» սեղմելուց հետո պատվերը զամբյուղ ավելացնելիս տեքստը կներառվի պատվերում։",
+  "customize_apply_cart_hint": "Պատվերը զամբյուղ ավելացնելիս տեքստը ավտոմատ կներառվի պատվերում։",
   "customize_applied_text_label": "Պատվերին ավելացված տեքստ",
   "customize_clear_applied": "Ջնջել կիրառված տեքստը",
   "customize_format_bold": "Թավ",

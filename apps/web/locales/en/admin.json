@@ -541,8 +541,6 @@
       "uploadImages": "Upload Images",
       "setAsMain": "Set as Main",
       "main": "Main",
-      "setAsCustomizeOverlay": "Customize overlay",
-      "customizeOverlayActive": "Customize overlay",
       "backToAdmin": "Back to Admin Dashboard",
       "editProduct": "Edit Product",
       "addNewProduct": "Add New Product",
@@ -664,7 +662,10 @@
       "variableSubmitNeedVariants": "Variable product: add at least one variant (use “Add variant”), fill Default pricing with a valid price, then complete each variant row (price greater than zero, stock, SKU) before saving.",
       "variableSubmitDefaultPriceInvalid": "Variable product: enter a valid default price (greater than zero) in the Default pricing section.",
       "variableSubmitVariantRowInvalid": "Variable product: every variant row needs a valid price greater than zero and a SKU.",
-      "variableSubmitDuplicateVariantSku": "Variable product: each variant must have a unique SKU — remove or change duplicate SKUs."
+      "variableSubmitDuplicateVariantSku": "Variable product: each variant must have a unique SKU — remove or change duplicate SKUs.",
+      "simpleSubmitPriceRequired": "Enter a product price greater than zero.",
+      "simpleSubmitQuantityRequired": "Enter the product quantity (stock).",
+      "variableSubmitDefaultQuantityRequired": "Variable product: enter stock in the Default pricing section."
     }
   },
   "settings": {

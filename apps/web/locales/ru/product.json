@@ -6,7 +6,7 @@
   "shipping_title": "Доставка",
   "customize_title": "Персонализация",
   "customize_apply": "СОХРАНИТЬ",
-  "customize_apply_cart_hint": "После нажатия «Сохранить» этот текст будет добавлен к заказу при добавлении в корзину.",
+  "customize_apply_cart_hint": "Этот текст автоматически добавляется к заказу при добавлении в корзину.",
   "customize_applied_text_label": "Текст, добавленный к заказу",
   "customize_clear_applied": "Удалить применённый текст",
   "customize_format_bold": "Жирный",

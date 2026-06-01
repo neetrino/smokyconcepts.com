@@ -10,6 +10,7 @@ import type { CategoryAttribute } from '@/lib/category-attributes';
 import { buildDefaultPricingAttributes } from '@/lib/default-pricing-variant';
 import { initializeCurrencyRates, normalizeAdminProductPriceInput } from '@/lib/currency';
 import { buildAutoSkuBaseFromSlug } from '../utils/autoSku';
+import type { ProductFormFieldId } from '../constants/productFormFieldIds.constants';
 
 interface UseProductFormHandlersProps {
   formData: {
@@ -27,7 +28,6 @@ interface UseProductFormHandlersProps {
     upcoming: boolean;
     imageUrls: string[];
     featuredImageIndex: number;
-    customizeOverlayImageIndex: number | null;
     mainProductImage: string;
     variants: Variant[];
     labels: any[];
@@ -50,6 +50,7 @@ interface UseProductFormHandlersProps {
   isClothingCategory: () => boolean;
   categoryAttributes: CategoryAttribute[];
   setSubmitErrorKey: (key: string | null) => void;
+  setSubmitErrorFieldId: (fieldId: ProductFormFieldId | null) => void;
 }
 
 export function useProductFormHandlers({
@@ -67,6 +68,7 @@ export function useProductFormHandlers({
   isClothingCategory,
   categoryAttributes,
   setSubmitErrorKey,
+  setSubmitErrorFieldId,
 }: UseProductFormHandlersProps) {
   const router = useRouter();
 
@@ -87,12 +89,14 @@ export function useProductFormHandlers({
     isClothingCategory,
     setLoading,
     setSubmitErrorKey,
+    setSubmitErrorFieldId,
   });
 
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitErrorKey(null);
+    setSubmitErrorFieldId(null);
     setLoading(true);
 
     try {
@@ -241,7 +245,6 @@ export function useProductFormHandlers({
       const { finalMedia, mainImage, processedVariants } = processImagesForSubmit({
         imageUrls: currentFormData.imageUrls,
         featuredImageIndex: currentFormData.featuredImageIndex,
-        customizeOverlayImageIndex: currentFormData.customizeOverlayImageIndex,
         mainProductImage: currentFormData.mainProductImage,
         variants: variants,
       });

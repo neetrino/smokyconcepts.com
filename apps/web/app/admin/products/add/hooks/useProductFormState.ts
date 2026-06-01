@@ -3,6 +3,7 @@ import type { Category, Variant, ProductLabel, GeneratedVariant } from '../types
 import type { CategoryAttribute } from '@/lib/category-attributes';
 import { DEFAULT_NEW_PRODUCT_TYPE } from '../constants/defaultProductType.constants';
 import { DEFAULT_SIMPLE_PRODUCT_DATA } from '../constants/defaultSimpleProductData.constants';
+import type { ProductFormFieldId } from '../constants/productFormFieldIds.constants';
 
 export function useProductFormState() {
   const [loading, setLoading] = useState(false);
@@ -23,7 +24,6 @@ export function useProductFormState() {
     upcoming: false,
     imageUrls: [] as string[],
     featuredImageIndex: 0,
-    customizeOverlayImageIndex: null as number | null,
     mainProductImage: '' as string,
     variants: [] as Variant[],
     labels: [] as ProductLabel[],
@@ -53,6 +53,8 @@ export function useProductFormState() {
   const [variableProductTypeAllowed, setVariableProductTypeAllowed] = useState(true);
   /** i18n key under admin.products.add.* — client validation message above submit. */
   const [submitErrorKey, setSubmitErrorKey] = useState<string | null>(null);
+  /** DOM field id to scroll to and highlight when validation fails. */
+  const [submitErrorFieldId, setSubmitErrorFieldId] = useState<ProductFormFieldId | null>(null);
 
   return {
     loading,
@@ -95,6 +97,8 @@ export function useProductFormState() {
     setVariableProductTypeAllowed,
     submitErrorKey,
     setSubmitErrorKey,
+    submitErrorFieldId,
+    setSubmitErrorFieldId,
   };
 }
 
