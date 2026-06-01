@@ -45,6 +45,10 @@ export const PRODUCT_INFO_TAB_PANEL_CUSTOMIZE_CLASS =
 export const PRODUCT_INFO_CUSTOMIZE_COPY_CLASS =
   'font-montserrat text-[16px] font-bold leading-[26px] text-[#414141]';
 
+/** Mobile: text input + toolbar above copy; desktop keeps copy first (Figma). */
+export const PRODUCT_INFO_CUSTOMIZE_PANEL_CLASS =
+  'flex min-h-0 flex-1 flex-col gap-5 max-sm:flex-col-reverse';
+
 export const PRODUCT_INFO_TAB_INDICATOR_BASE_CLASS =
   'absolute bottom-0 left-0 right-0 h-0.5 rounded-[2px]';
 

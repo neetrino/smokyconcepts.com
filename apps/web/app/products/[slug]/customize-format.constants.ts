@@ -55,11 +55,12 @@ export const CUSTOMIZE_FORMAT_BUTTON_ACTIVE_CLASS = 'bg-[#122a26]/8';
 export const CUSTOMIZE_FORMAT_TOOLBAR_CLASS =
   'relative flex shrink-0 flex-nowrap items-center gap-2 overflow-visible sm:gap-3';
 
-/** Customize format row — input left, toolbar flush right. */
+/** Customize format row — mobile: input then toolbar; desktop: input left, toolbar flush right. */
 export const CUSTOMIZE_FORMAT_ROW_CLASS =
-  'flex w-full min-w-0 flex-row items-end gap-3 overflow-visible sm:gap-6';
+  'flex w-full min-w-0 flex-col items-stretch gap-3 overflow-visible sm:flex-row sm:items-end sm:gap-6';
 
 export const CUSTOMIZE_FORMAT_INPUT_WRAPPER_CLASS =
-  'min-w-0 w-full max-w-[32%] shrink sm:max-w-[200px]';
+  'min-w-0 w-full shrink sm:max-w-[200px]';
 
-export const CUSTOMIZE_FORMAT_ROW_SPACER_CLASS = 'min-w-0 flex-1';
+/** Desktop-only flex spacer between input and toolbar. */
+export const CUSTOMIZE_FORMAT_ROW_SPACER_CLASS = 'hidden min-w-0 flex-1 sm:block';

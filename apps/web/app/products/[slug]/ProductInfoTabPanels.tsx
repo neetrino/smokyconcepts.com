@@ -10,7 +10,10 @@ import {
   CUSTOMIZE_FORMAT_ROW_CLASS,
   CUSTOMIZE_FORMAT_ROW_SPACER_CLASS,
 } from './customize-format.constants';
-import { PRODUCT_INFO_CUSTOMIZE_COPY_CLASS } from './productInfoTabContent.constants';
+import {
+  PRODUCT_INFO_CUSTOMIZE_COPY_CLASS,
+  PRODUCT_INFO_CUSTOMIZE_PANEL_CLASS,
+} from './productInfoTabContent.constants';
 import {
   getCustomizeCopy,
   getShippingCopy,
@@ -83,7 +86,7 @@ export function ProductInfoTabPanels({
 
   if (activeTab === 'customize') {
     return (
-      <div className="flex min-h-0 flex-1 flex-col gap-5">
+      <div className={PRODUCT_INFO_CUSTOMIZE_PANEL_CLASS}>
         <p className={PRODUCT_INFO_CUSTOMIZE_COPY_CLASS}>
           {getCustomizeCopy(language)}
         </p>

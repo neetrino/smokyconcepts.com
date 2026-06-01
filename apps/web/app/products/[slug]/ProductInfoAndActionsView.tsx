@@ -264,7 +264,7 @@ export function ProductInfoAndActionsView({
           </div>
         </div>
 
-        <div className={`flex w-full min-w-0 flex-wrap items-end gap-4 sm:gap-6 ${PRODUCT_INFO_PURCHASE_ROW_CLASS}`}>
+        <div className={`flex w-full min-w-0 items-end justify-between gap-4 sm:gap-6 ${PRODUCT_INFO_PURCHASE_ROW_CLASS}`}>
           <p className="font-montserrat text-[30px] font-extrabold leading-none text-black sm:text-[32px]">
             {formatCatalogPrice(price, displayCurrency)}
           </p>
