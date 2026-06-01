@@ -138,16 +138,21 @@ export default function ProductPage({ params }: ProductPageProps) {
     ? getProductText(language, product.id, 'title') || product.title
     : '';
 
-  const hasAppliedCustomize = Boolean(
-    customizeApplied?.plain?.trim() || customizeApplied?.html?.trim()
+  const hasCustomizeForPricing = Boolean(
+    customizeDraftText.trim() ||
+      customizeApplied?.plain?.trim() ||
+      customizeApplied?.html?.trim()
   );
+
+  const hasExplicitCatalogSizePick = selectedCatalogSize != null;
 
   const { collectionPriceAmd, collectionCategoryTitle } = useProductSizeCatalogCollectionPrice({
     product,
     currentVariant,
     selectedSizeLabel: selectedSize,
     selectedCatalogSize,
-    hasAppliedCustomize,
+    hasExplicitCatalogSizePick,
+    hasAppliedCustomize: hasCustomizeForPricing,
   });
 
   const displayPrice =

@@ -141,6 +141,8 @@ export function useProductInfoAndActions({
   const handleSelectCatalogSizeItem = (item: SizeCatalogItemDto) => {
     setSelectedCatalogSize(item);
     setSelectedCustomSizeRequest(null);
+    onSelectedCatalogSizeChange?.(item);
+    onSelectedCustomSizeRequestChange?.(null);
     if (onCatalogVariantSelect) {
       onCatalogVariantSelect(item.categoryTitle, item.version);
       return;
@@ -156,6 +158,8 @@ export function useProductInfoAndActions({
   const handleSelectCustomSizeRequest = (draft: CustomOrderDraft) => {
     setSelectedCatalogSize(null);
     setSelectedCustomSizeRequest(draft);
+    onSelectedCatalogSizeChange?.(null);
+    onSelectedCustomSizeRequestChange?.(draft);
     if (sizeOptions.length > 0) {
       onSizeSelect(sizeOptions[0].value);
     }
