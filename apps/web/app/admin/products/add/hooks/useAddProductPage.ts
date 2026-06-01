@@ -182,6 +182,7 @@ export function useAddProductPage() {
     isClothingCategory,
     categoryAttributes: categoryAttributesForVariants,
     setSubmitErrorKey: formState.setSubmitErrorKey,
+    setSubmitErrorFieldId: formState.setSubmitErrorFieldId,
   });
 
   const handleProductTypeChange = (type: 'simple' | 'variable') => {
@@ -189,6 +190,7 @@ export function useAddProductPage() {
       return;
     }
     formState.setSubmitErrorKey(null);
+    formState.setSubmitErrorFieldId(null);
     if (type === 'variable') {
       variableChosenWithEmptyRowsRef.current = true;
     } else {

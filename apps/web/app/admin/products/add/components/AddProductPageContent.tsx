@@ -3,6 +3,20 @@
 import { AdminShell } from '../../../components/AdminShell';
 import { AddProductFormContent } from './AddProductFormContent';
 import { useAddProductPage } from '../hooks/useAddProductPage';
+import { PRODUCT_FORM_FIELD, type ProductFormFieldId } from '../constants/productFormFieldIds.constants';
+
+function clearPricingFieldError(
+  fieldId: ProductFormFieldId,
+  submitErrorFieldId: ProductFormFieldId | null,
+  setSubmitErrorKey: (key: string | null) => void,
+  setSubmitErrorFieldId: (fieldId: ProductFormFieldId | null) => void
+): void {
+  if (submitErrorFieldId !== fieldId) {
+    return;
+  }
+  setSubmitErrorKey(null);
+  setSubmitErrorFieldId(null);
+}
 
 export function AddProductPageContent() {
   const {
@@ -93,10 +107,26 @@ export function AddProductPageContent() {
             onCategoryIdsChange={(ids) => formState.setFormData((prev) => ({ ...prev, categoryIds: ids }))}
             onPrimaryCategoryIdChange={(id) => formState.setFormData((prev) => ({ ...prev, primaryCategoryId: id }))}
             onCreateCategory={handleCreateCategory}
-            onPriceChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, price: value }))}
+            onPriceChange={(value) => {
+              formState.setSimpleProductData((prev) => ({ ...prev, price: value }));
+              clearPricingFieldError(
+                PRODUCT_FORM_FIELD.PRICE,
+                formState.submitErrorFieldId,
+                formState.setSubmitErrorKey,
+                formState.setSubmitErrorFieldId
+              );
+            }}
             onCompareAtPriceChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, compareAtPrice: value }))}
             onSkuChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, sku: value }))}
-            onQuantityChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, quantity: value }))}
+            onQuantityChange={(value) => {
+              formState.setSimpleProductData((prev) => ({ ...prev, quantity: value }));
+              clearPricingFieldError(
+                PRODUCT_FORM_FIELD.QUANTITY,
+                formState.submitErrorFieldId,
+                formState.setSubmitErrorKey,
+                formState.setSubmitErrorFieldId
+              );
+            }}
             onVariantUpdate={formState.setGeneratedVariants}
             onVariantAdd={handleVariantAdd}
             onSelectedAttributeValueIdsChange={formState.setSelectedAttributeValueIds}
@@ -112,6 +142,7 @@ export function AddProductPageContent() {
             generateSlug={generateSlug}
             handleSubmit={handleSubmit}
             submitErrorKey={formState.submitErrorKey}
+            submitErrorFieldId={formState.submitErrorFieldId}
           />
         </AdminShell>
       </div>

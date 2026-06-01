@@ -10,6 +10,7 @@ import type { CategoryAttribute } from '@/lib/category-attributes';
 import { buildDefaultPricingAttributes } from '@/lib/default-pricing-variant';
 import { initializeCurrencyRates, normalizeAdminProductPriceInput } from '@/lib/currency';
 import { buildAutoSkuBaseFromSlug } from '../utils/autoSku';
+import type { ProductFormFieldId } from '../constants/productFormFieldIds.constants';
 
 interface UseProductFormHandlersProps {
   formData: {
@@ -49,6 +50,7 @@ interface UseProductFormHandlersProps {
   isClothingCategory: () => boolean;
   categoryAttributes: CategoryAttribute[];
   setSubmitErrorKey: (key: string | null) => void;
+  setSubmitErrorFieldId: (fieldId: ProductFormFieldId | null) => void;
 }
 
 export function useProductFormHandlers({
@@ -66,6 +68,7 @@ export function useProductFormHandlers({
   isClothingCategory,
   categoryAttributes,
   setSubmitErrorKey,
+  setSubmitErrorFieldId,
 }: UseProductFormHandlersProps) {
   const router = useRouter();
 
@@ -86,12 +89,14 @@ export function useProductFormHandlers({
     isClothingCategory,
     setLoading,
     setSubmitErrorKey,
+    setSubmitErrorFieldId,
   });
 
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitErrorKey(null);
+    setSubmitErrorFieldId(null);
     setLoading(true);
 
     try {

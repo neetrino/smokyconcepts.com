@@ -51,10 +51,10 @@ const GALLERY_TOP_OFFSET_CLASSES = 'pt-5 sm:pt-14 lg:pt-16';
 const HERO_PULL_ABOVE_CARD = 'max-sm:-mt-7 sm:-mt-12 lg:-mt-14';
 
 /** Mobile hero height (px) — fits typical phone viewport without clipping below the fold. */
-const MOBILE_HERO_IMAGE_HEIGHT_CLASS = 'h-[230px]';
+const MOBILE_HERO_IMAGE_HEIGHT_CLASS = 'h-[270px]';
 
 /** Fixed hero frame — small sources scale up, large sources scale down (no crop). */
-const HERO_IMAGE_BOX_SIZE_CLASSES = `${MOBILE_HERO_IMAGE_HEIGHT_CLASS} w-full max-w-full shrink-0 sm:h-[400px] lg:h-[440px]`;
+const HERO_IMAGE_BOX_SIZE_CLASSES = `${MOBILE_HERO_IMAGE_HEIGHT_CLASS} w-full max-w-full shrink-0 sm:h-[440px] lg:h-[480px]`;
 
 /** Compact thumbnail frame — fixed square, does not stretch with flex. */
 const THUMBNAIL_IMAGE_BOX_SIZE_CLASSES = 'size-[36px] shrink-0 sm:size-[40px]';
@@ -303,7 +303,7 @@ export function ProductImageGallery({
               className={`flex w-full justify-center ${
                 hasHeroContent
                   ? `product-hero group relative z-10 ${HERO_PULL_ABOVE_CARD}`
-                  : 'min-h-[200px] items-center sm:min-h-[220px]'
+                  : 'min-h-[240px] items-center sm:min-h-[260px]'
               }`}
             >
               {hasHeroImage ? (

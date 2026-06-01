@@ -661,7 +661,10 @@
       "variableSubmitNeedVariants": "Вариативный товар: добавьте хотя бы один вариант (кнопка «Добавить»), заполните цену по умолчанию, затем каждую строку (цена больше нуля, остаток, SKU) и сохраните.",
       "variableSubmitDefaultPriceInvalid": "Вариативный товар: укажите корректную цену по умолчанию (больше нуля).",
       "variableSubmitVariantRowInvalid": "Вариативный товар: в каждой строке варианта нужны корректная цена (больше нуля) и SKU.",
-      "variableSubmitDuplicateVariantSku": "Вариативный товар: SKU вариантов должны быть уникальными — исправьте дубликаты."
+      "variableSubmitDuplicateVariantSku": "Вариативный товар: SKU вариантов должны быть уникальными — исправьте дубликаты.",
+      "simpleSubmitPriceRequired": "Укажите цену товара (больше нуля).",
+      "simpleSubmitQuantityRequired": "Укажите количество товара (остаток).",
+      "variableSubmitDefaultQuantityRequired": "Вариативный товар: укажите остаток в разделе «Цена по умолчанию»."
     }
   },
   "settings": {
