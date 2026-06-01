@@ -36,6 +36,7 @@ export const CUSTOMIZE_FIGMA_3D_BADGE = {
 
 export const CUSTOMIZE_HERO_PREVIEW_ASSETS = {
   productBadgeSrc: '/assets/product/customize/hero-3d-product-badge.png',
+  productLogoSrc: '/assets/product/customize/hero-3d-product-logo.png',
 } as const;
 
 /** Card width share — 450 / 760. */
