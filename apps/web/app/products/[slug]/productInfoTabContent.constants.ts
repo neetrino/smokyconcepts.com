@@ -15,6 +15,10 @@ export const PRODUCT_INFO_ROOT_CLASS = [
 export const PRODUCT_INFO_SCROLL_BODY_CLASS =
   'flex min-h-0 flex-1 flex-col overflow-hidden';
 
+/** Customize tab: allow font menu to extend into the purchase-row gap without clipping. */
+export const PRODUCT_INFO_SCROLL_BODY_CUSTOMIZE_CLASS =
+  'flex min-h-0 flex-1 flex-col overflow-visible';
+
 /** Above gallery hero hover (`z-10`) and in-hero nav icons (`z-30` within that card). */
 export const PRODUCT_INFO_HEADER_CLASS = 'relative z-40 shrink-0 overflow-visible';
 
@@ -27,6 +31,19 @@ export const PRODUCT_INFO_TABS_SECTION_CLASS = [
 
 export const PRODUCT_INFO_TAB_PANEL_CLASS =
   'scrollbar-visible min-h-0 flex-1 overflow-y-auto overscroll-y-contain pt-7 [-webkit-overflow-scrolling:touch] sm:pt-8';
+
+/** Customize tab: natural height, no inner scroll — font menu uses the gap below. */
+export const PRODUCT_INFO_TABS_SECTION_CUSTOMIZE_CLASS = [
+  'mt-8 flex min-h-0 shrink-0 flex-col overflow-visible',
+  'max-xl:min-h-[15rem] sm:max-xl:min-h-[16.25rem]',
+  'xl:mt-10 xl:min-h-0 xl:flex-1',
+].join(' ');
+
+export const PRODUCT_INFO_TAB_PANEL_CUSTOMIZE_CLASS =
+  'flex min-h-0 flex-1 flex-col overflow-visible pt-7 sm:pt-8';
+
+export const PRODUCT_INFO_CUSTOMIZE_COPY_CLASS =
+  'font-montserrat text-[16px] font-bold leading-[26px] text-[#414141]';
 
 export const PRODUCT_INFO_TAB_INDICATOR_BASE_CLASS =
   'absolute bottom-0 left-0 right-0 h-0.5 rounded-[2px]';

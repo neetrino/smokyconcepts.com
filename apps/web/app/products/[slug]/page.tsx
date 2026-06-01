@@ -11,7 +11,7 @@ import {
   getDefaultCustomizeFormat,
   type CustomizeFormatState,
 } from './utils/build-customize-preview-html';
-import { sanitizeCustomizeHtml } from './utils/sanitize-customize-html';
+import { getPlainTextFromHtml, sanitizeCustomizeHtml } from './utils/sanitize-customize-html';
 import { useProductPage } from './useProductPage';
 import { useProductCartActions } from './useProductCartActions';
 import { useProductSizeCatalogCollectionPrice } from './hooks/useProductSizeCatalogCollectionPrice';
@@ -71,13 +71,28 @@ export default function ProductPage({ params }: ProductPageProps) {
     setCustomizeFormat(getDefaultCustomizeFormat());
   }, [product?.id]);
 
-  const onCustomizeApplied = useCallback((value: { plain: string; html: string | null } | null) => {
-    setCustomizeApplied(value);
-    setCustomizeDraftText(value?.plain ?? '');
-    if (value === null) {
-      setCustomizeFormat(getDefaultCustomizeFormat());
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return;
     }
-  }, []);
+    const raw = buildCustomizePreviewHtml(customizeDraftText, customizeFormat);
+    const sanitized = sanitizeCustomizeHtml(raw);
+    const plain = getPlainTextFromHtml(sanitized).trim();
+
+    setCustomizeApplied((previous) => {
+      if (!plain) {
+        return previous === null ? previous : null;
+      }
+      const next = {
+        plain,
+        html: sanitized.trim().length > 0 ? sanitized : null,
+      };
+      if (previous?.plain === next.plain && (previous?.html ?? '') === (next.html ?? '')) {
+        return previous;
+      }
+      return next;
+    });
+  }, [customizeDraftText, customizeFormat]);
 
   const liveOverlayHtml = useMemo(() => {
     if (!customizeDraftText.trim()) {
@@ -118,14 +133,6 @@ export default function ProductPage({ params }: ProductPageProps) {
   }, []);
 
   useCustomizeGoogleFontLinks(shouldLoadCustomizeFonts);
-
-  const getCustomizeSanitizedHtml = useCallback(() => {
-    if (typeof document === 'undefined') {
-      return '';
-    }
-    const raw = buildCustomizePreviewHtml(customizeDraftText, customizeFormat);
-    return sanitizeCustomizeHtml(raw);
-  }, [customizeDraftText, customizeFormat]);
 
   const productDisplayTitle = product
     ? getProductText(language, product.id, 'title') || product.title
@@ -197,8 +204,6 @@ export default function ProductPage({ params }: ProductPageProps) {
           <ProductInfoAndActions
             product={product}
             appliedCustomize={customizeApplied}
-            onCustomizeApplied={onCustomizeApplied}
-            getCustomizeSanitizedHtml={getCustomizeSanitizedHtml}
             customizeDraftText={customizeDraftText}
             onCustomizeDraftTextChange={onCustomizeDraftTextChange}
             customizeTextMaxLength={CUSTOMIZE_TEXT_MAX_LENGTH}

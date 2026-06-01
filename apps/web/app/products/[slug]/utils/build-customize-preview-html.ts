@@ -1,18 +1,18 @@
-import { CUSTOMIZE_GOOGLE_FONT_OPTIONS } from '../constants/customize-google-fonts';
+import { CUSTOMIZE_FONT_OPTIONS } from '../constants/customize-google-fonts';
 import { escapePlainTextForHtml } from './sanitize-customize-html';
 
 export type CustomizeFormatState = {
   bold: boolean;
   italic: boolean;
   underline: boolean;
-  /** CSS `font-family` stack (from `CUSTOMIZE_GOOGLE_FONT_OPTIONS`). */
+  /** CSS `font-family` stack (from `CUSTOMIZE_FONT_OPTIONS`). */
   fontStack: string;
 };
 
 export function getDefaultCustomizeFormat(): CustomizeFormatState {
   const scriptFont =
-    CUSTOMIZE_GOOGLE_FONT_OPTIONS.find((option) => option.id === 'pacifico') ??
-    CUSTOMIZE_GOOGLE_FONT_OPTIONS[0];
+    CUSTOMIZE_FONT_OPTIONS.find((option) => option.id === 'arm-allegro-u') ??
+    CUSTOMIZE_FONT_OPTIONS[0];
 
   return {
     bold: false,
