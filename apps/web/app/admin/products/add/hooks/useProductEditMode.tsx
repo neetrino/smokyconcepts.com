@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
 import { cleanImageUrls } from '@/lib/services/utils/image-utils';
-import { findCustomizeOverlayImageIndex } from '@/lib/services/utils/product-media';
 import {
   extractSizeCatalogSelectionFromAttributes,
   isDefaultPricingVariant,
@@ -83,7 +82,6 @@ export function useProductEditMode({
           imageUrls: normalizedMedia,
           featuredImageIndex:
             featuredIndexFromApi >= 0 && featuredIndexFromApi < normalizedMedia.length ? featuredIndexFromApi : 0,
-          customizeOverlayImageIndex: findCustomizeOverlayImageIndex(mediaList, normalizedMedia),
           mainProductImage: mainProductImage || '',
           variants: [] as unknown[],
           labels: (product.labels || []).map((label: { id?: string; type?: string; value?: string; position?: string; color?: string | null }) => ({

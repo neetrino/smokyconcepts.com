@@ -29,7 +29,6 @@ interface AddProductFormContentProps {
     sizeCatalogCategoryTitle: string;
     imageUrls: string[];
     featuredImageIndex: number;
-    customizeOverlayImageIndex: number | null;
     labels: ProductLabel[];
     featured: boolean;
     upcoming: boolean;
@@ -71,7 +70,6 @@ interface AddProductFormContentProps {
   onUploadImageFiles: (files: File[]) => Promise<void>;
   onRemoveImage: (index: number) => void;
   onSetFeaturedImage: (index: number) => void;
-  onSetCustomizeOverlayImage: (index: number) => void;
   onCategoriesExpandedChange: (expanded: boolean) => void;
   onUseNewCategoryChange: (use: boolean) => void;
   onNewCategoryNameChange: (name: string) => void;
@@ -132,7 +130,6 @@ export function AddProductFormContent({
   onUploadImageFiles,
   onRemoveImage,
   onSetFeaturedImage,
-  onSetCustomizeOverlayImage,
   onCategoriesExpandedChange,
   onUseNewCategoryChange,
   onNewCategoryNameChange,
@@ -184,7 +181,6 @@ export function AddProductFormContent({
         <ProductImages
           imageUrls={formData.imageUrls}
           featuredImageIndex={formData.featuredImageIndex}
-          customizeOverlayImageIndex={formData.customizeOverlayImageIndex}
           imageUploadLoading={imageUploadLoading}
           imageUploadError={imageUploadError}
           fileInputRef={fileInputRef}
@@ -192,7 +188,6 @@ export function AddProductFormContent({
           onUploadImageFiles={onUploadImageFiles}
           onRemoveImage={onRemoveImage}
           onSetFeaturedImage={onSetFeaturedImage}
-          onSetCustomizeOverlayImage={onSetCustomizeOverlayImage}
         />
 
         {productType === 'variable' && (

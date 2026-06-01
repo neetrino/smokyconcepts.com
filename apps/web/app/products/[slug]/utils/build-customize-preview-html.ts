@@ -10,11 +10,15 @@ export type CustomizeFormatState = {
 };
 
 export function getDefaultCustomizeFormat(): CustomizeFormatState {
+  const scriptFont =
+    CUSTOMIZE_GOOGLE_FONT_OPTIONS.find((option) => option.id === 'pacifico') ??
+    CUSTOMIZE_GOOGLE_FONT_OPTIONS[0];
+
   return {
     bold: false,
     italic: false,
     underline: false,
-    fontStack: CUSTOMIZE_GOOGLE_FONT_OPTIONS[0]?.stack ?? 'sans-serif',
+    fontStack: scriptFont?.stack ?? 'sans-serif',
   };
 }
 

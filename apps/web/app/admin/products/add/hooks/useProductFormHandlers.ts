@@ -27,7 +27,6 @@ interface UseProductFormHandlersProps {
     upcoming: boolean;
     imageUrls: string[];
     featuredImageIndex: number;
-    customizeOverlayImageIndex: number | null;
     mainProductImage: string;
     variants: Variant[];
     labels: any[];
@@ -241,7 +240,6 @@ export function useProductFormHandlers({
       const { finalMedia, mainImage, processedVariants } = processImagesForSubmit({
         imageUrls: currentFormData.imageUrls,
         featuredImageIndex: currentFormData.featuredImageIndex,
-        customizeOverlayImageIndex: currentFormData.customizeOverlayImageIndex,
         mainProductImage: currentFormData.mainProductImage,
         variants: variants,
       });

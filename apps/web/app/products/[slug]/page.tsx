@@ -16,7 +16,6 @@ import { useProductPage } from './useProductPage';
 import { useProductCartActions } from './useProductCartActions';
 import { useProductSizeCatalogCollectionPrice } from './hooks/useProductSizeCatalogCollectionPrice';
 import { useCustomizeGoogleFontLinks } from './useCustomizeGoogleFontLinks';
-import { useCustomizeOverlayImage } from './hooks/useCustomizeOverlayImage';
 import type { ProductPageProps } from './types';
 import type { CustomOrderDraft } from './CustomizeSizeOrderFallback';
 import { PRODUCT_INFO_COLUMN_CLASS } from './productInfoTabContent.constants';
@@ -54,8 +53,6 @@ export default function ProductPage({ params }: ProductPageProps) {
     handleCatalogVariantSelect,
   } = useProductPage(params);
 
-  const customizeOverlayImageUrl = useCustomizeOverlayImage(product);
-
   const [selectedCatalogSize, setSelectedCatalogSize] = useState<SizeCatalogItemDto | null>(null);
   const [selectedCustomSizeRequest, setSelectedCustomSizeRequest] = useState<CustomOrderDraft | null>(null);
   const [customizeApplied, setCustomizeApplied] = useState<{
@@ -89,35 +86,30 @@ export default function ProductPage({ params }: ProductPageProps) {
     return buildCustomizePreviewHtml(customizeDraftText, customizeFormat);
   }, [customizeDraftText, customizeFormat]);
 
-  /** Live preview while on Customize tab; after Apply, keep showing applied HTML when user switches tabs. */
   const customizePreviewHtml = useMemo(() => {
-    const appliedHtml = customizeApplied?.html?.trim();
-    const appliedPlain = customizeApplied?.plain?.trim();
-
-    if (isCustomizeTabActive) {
-      if (liveOverlayHtml) {
-        return liveOverlayHtml;
-      }
-      if (appliedHtml) {
-        return appliedHtml;
-      }
-      if (appliedPlain) {
-        return buildCustomizePreviewHtml(appliedPlain, getDefaultCustomizeFormat());
-      }
-      return null;
+    if (liveOverlayHtml) {
+      return liveOverlayHtml;
     }
-
+    const appliedHtml = customizeApplied?.html?.trim();
     if (appliedHtml) {
       return appliedHtml;
     }
+    const appliedPlain = customizeApplied?.plain?.trim();
     if (appliedPlain) {
       return buildCustomizePreviewHtml(appliedPlain, getDefaultCustomizeFormat());
     }
     return null;
-  }, [isCustomizeTabActive, liveOverlayHtml, customizeApplied]);
+  }, [liveOverlayHtml, customizeApplied]);
+
+  const hasCustomizePreviewText = Boolean(
+    customizeDraftText.trim() || customizeApplied?.plain?.trim() || customizeApplied?.html?.trim()
+  );
+
+  const showCustomizeHeroPreview = isCustomizeTabActive && hasCustomizePreviewText;
 
   const shouldLoadCustomizeFonts =
     isCustomizeTabActive ||
+    Boolean(customizeDraftText.trim()) ||
     Boolean(customizeApplied?.plain?.trim()) ||
     Boolean(customizeApplied?.html?.trim());
 
@@ -196,6 +188,8 @@ export default function ProductPage({ params }: ProductPageProps) {
               thumbnailStartIndex={thumbnailStartIndex}
               onThumbnailStartIndexChange={setThumbnailStartIndex}
               customizeOverlayHtml={null}
+              showCustomizeHeroPreview={showCustomizeHeroPreview}
+              customizeHeroPreviewHtml={customizePreviewHtml}
             />
           </div>
 
@@ -228,7 +222,7 @@ export default function ProductPage({ params }: ProductPageProps) {
             onSelectedCatalogSizeChange={setSelectedCatalogSize}
             onSelectedCustomSizeRequestChange={setSelectedCustomSizeRequest}
             onCustomizeTabActiveChange={setIsCustomizeTabActive}
-            customizeOverlayImageUrl={customizeOverlayImageUrl}
+            showCustomizeHeroPreview={showCustomizeHeroPreview}
             customizePreviewHtml={customizePreviewHtml}
           />
           </div>

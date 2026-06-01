@@ -1,7 +1,6 @@
 interface ProcessImagesForSubmitProps {
   imageUrls: string[];
   featuredImageIndex: number;
-  customizeOverlayImageIndex: number | null;
   mainProductImage: string;
   variants: any[];
 }
@@ -9,13 +8,11 @@ interface ProcessImagesForSubmitProps {
 type ProductMediaSubmitItem = {
   url: string;
   isFeatured?: boolean;
-  isCustomizeOverlay?: boolean;
 };
 
 export function processImagesForSubmit({
   imageUrls,
   featuredImageIndex,
-  customizeOverlayImageIndex,
   mainProductImage,
   variants,
 }: ProcessImagesForSubmitProps): {
@@ -94,9 +91,6 @@ export function processImagesForSubmit({
     const item: ProductMediaSubmitItem = { url };
     if (originalIndex === featuredImageIndex) {
       item.isFeatured = true;
-    }
-    if (customizeOverlayImageIndex !== null && originalIndex === customizeOverlayImageIndex) {
-      item.isCustomizeOverlay = true;
     }
     return item;
   };

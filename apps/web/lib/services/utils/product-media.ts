@@ -6,7 +6,6 @@ import {
 export type ProductMediaItem = {
   url: string;
   isFeatured?: boolean;
-  isCustomizeOverlay?: boolean;
 };
 
 type MediaUrlInput = string | null | undefined | { url?: string; src?: string; value?: string };
@@ -16,7 +15,6 @@ type MediaRecord = {
   src?: string;
   value?: string;
   isFeatured?: boolean;
-  isCustomizeOverlay?: boolean;
 };
 
 function readMediaRecord(item: unknown): MediaRecord | null {
@@ -30,13 +28,13 @@ function readMediaRecord(item: unknown): MediaRecord | null {
 }
 
 /**
- * Re-applies featured / customize flags after URL-only cleanup steps.
+ * Re-applies featured flag after URL-only cleanup steps.
  */
 export function mergeProductMediaMetadata(
   cleanedUrls: string[],
   originalItems: Array<string | ProductMediaItem | MediaUrlInput>
 ): ProductMediaItem[] {
-  const flagsByUrl = new Map<string, Pick<ProductMediaItem, 'isFeatured' | 'isCustomizeOverlay'>>();
+  const flagsByUrl = new Map<string, Pick<ProductMediaItem, 'isFeatured'>>();
 
   for (const item of originalItems) {
     const record = readMediaRecord(item);
@@ -49,7 +47,6 @@ export function mergeProductMediaMetadata(
     }
     flagsByUrl.set(normalizeUrlForComparison(url), {
       isFeatured: record.isFeatured === true,
-      isCustomizeOverlay: record.isCustomizeOverlay === true,
     });
   }
 
@@ -59,15 +56,12 @@ export function mergeProductMediaMetadata(
     if (flags?.isFeatured) {
       mediaItem.isFeatured = true;
     }
-    if (flags?.isCustomizeOverlay) {
-      mediaItem.isCustomizeOverlay = true;
-    }
     return mediaItem;
   });
 }
 
 /**
- * Normalizes product media for DB storage while preserving featured / customize flags.
+ * Normalizes product media for DB storage while preserving featured flag.
  */
 export function normalizeProductMediaForStorage(
   items: Array<string | ProductMediaItem | MediaUrlInput>
@@ -96,50 +90,8 @@ export function normalizeProductMediaForStorage(
     if (record.isFeatured === true) {
       mediaItem.isFeatured = true;
     }
-    if (record.isCustomizeOverlay === true) {
-      mediaItem.isCustomizeOverlay = true;
-    }
     result.push(mediaItem);
   }
 
   return result;
-}
-
-/**
- * Returns the URL marked for customize text overlay, if any.
- */
-export function extractCustomizeOverlayImageUrl(media: unknown): string | null {
-  if (!Array.isArray(media)) {
-    return null;
-  }
-
-  for (const item of media) {
-    const record = readMediaRecord(item);
-    if (!record || record.isCustomizeOverlay !== true) {
-      continue;
-    }
-    const url = processImageUrl(record);
-    if (url) {
-      return url;
-    }
-  }
-
-  return null;
-}
-
-/**
- * Finds index in a URL list that matches the customize-overlay media item.
- */
-export function findCustomizeOverlayImageIndex(
-  media: unknown,
-  imageUrls: string[]
-): number | null {
-  const overlayUrl = extractCustomizeOverlayImageUrl(media);
-  if (!overlayUrl) {
-    return null;
-  }
-
-  const target = normalizeUrlForComparison(overlayUrl);
-  const index = imageUrls.findIndex((url) => normalizeUrlForComparison(url) === target);
-  return index >= 0 ? index : null;
 }

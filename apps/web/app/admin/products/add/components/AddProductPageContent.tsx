@@ -19,7 +19,6 @@ export function AddProductPageContent() {
     handleVariantAdd,
     removeImageUrl,
     setFeaturedImage,
-    setCustomizeOverlayImage,
     handleUploadImages,
     handleUploadImageFiles,
     handleUploadVariantImage,
@@ -88,7 +87,6 @@ export function AddProductPageContent() {
             onUploadImageFiles={handleUploadImageFiles}
             onRemoveImage={removeImageUrl}
             onSetFeaturedImage={setFeaturedImage}
-            onSetCustomizeOverlayImage={setCustomizeOverlayImage}
             onCategoriesExpandedChange={formState.setCategoriesExpanded}
             onUseNewCategoryChange={formState.setUseNewCategory}
             onNewCategoryNameChange={formState.setNewCategoryName}
