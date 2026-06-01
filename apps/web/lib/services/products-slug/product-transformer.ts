@@ -13,6 +13,7 @@ import {
   isDefaultPricingVariant,
 } from "@/lib/default-pricing-variant";
 import { catalogPriceForStorefront } from "@/lib/currency";
+import { sanitizeRichHtml } from "@/lib/security/sanitize-rich-html.server";
 
 /** Option item from variant.attributes JSON (no relation in current schema) */
 type VariantOptionFromAttributes = {
@@ -481,9 +482,9 @@ export async function transformProduct(
     slug: translation?.slug || "",
     title: translation?.title || "",
     subtitle: translation?.subtitle || null,
-    description: translation?.descriptionHtml || null,
-    productDetailsHtml: translation?.productDetailsHtml || null,
-    shippingHtml: translation?.shippingHtml || null,
+    description: sanitizeRichHtml(translation?.descriptionHtml),
+    productDetailsHtml: sanitizeRichHtml(translation?.productDetailsHtml),
+    shippingHtml: sanitizeRichHtml(translation?.shippingHtml),
     categories,
     media: transformMedia(product),
     labels: transformLabels(product, lang),

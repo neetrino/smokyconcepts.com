@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { sanitizeProductRichHtmlFields } from "@/lib/security/sanitize-product-html.server";
 import { logger } from "../../utils/logger";
 import { cleanImageUrls, separateMainAndVariantImages, smartSplitUrls } from "../../utils/image-utils";
 import { mergeProductMediaMetadata, type ProductMediaItem } from "../../utils/product-media";
@@ -147,6 +148,12 @@ export async function updateProductTranslation(
       ? await resolveUniqueSlug(tx, data.slug, productId)
       : undefined;
 
+    const sanitizedHtml = sanitizeProductRichHtmlFields({
+      descriptionHtml: data.descriptionHtml,
+      productDetailsHtml: data.productDetailsHtml,
+      shippingHtml: data.shippingHtml,
+    });
+
     await tx.productTranslation.upsert({
       where: {
         productId_locale: {
@@ -158,11 +165,13 @@ export async function updateProductTranslation(
         ...(data.title && { title: data.title }),
         ...(finalSlug && { slug: finalSlug }),
         ...(data.subtitle !== undefined && { subtitle: data.subtitle || null }),
-        ...(data.descriptionHtml !== undefined && { descriptionHtml: data.descriptionHtml || null }),
-        ...(data.productDetailsHtml !== undefined && {
-          productDetailsHtml: data.productDetailsHtml || null,
+        ...(data.descriptionHtml !== undefined && {
+          descriptionHtml: sanitizedHtml.descriptionHtml,
         }),
-        ...(data.shippingHtml !== undefined && { shippingHtml: data.shippingHtml || null }),
+        ...(data.productDetailsHtml !== undefined && {
+          productDetailsHtml: sanitizedHtml.productDetailsHtml,
+        }),
+        ...(data.shippingHtml !== undefined && { shippingHtml: sanitizedHtml.shippingHtml }),
       },
       create: {
         productId,
@@ -170,9 +179,9 @@ export async function updateProductTranslation(
         title: data.title || "",
         slug: finalSlug || data.slug || "",
         subtitle: data.subtitle || null,
-        descriptionHtml: data.descriptionHtml || null,
-        productDetailsHtml: data.productDetailsHtml || null,
-        shippingHtml: data.shippingHtml || null,
+        descriptionHtml: sanitizedHtml.descriptionHtml,
+        productDetailsHtml: sanitizedHtml.productDetailsHtml,
+        shippingHtml: sanitizedHtml.shippingHtml,
       },
     });
   }

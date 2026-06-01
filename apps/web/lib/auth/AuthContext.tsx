@@ -165,7 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (errorText.includes('409') || errorText.includes('already exists')) {
           errorMessage = 'User with this email or phone already exists';
         } else if (errorText.includes('password') || errorText.includes('Password')) {
-          errorMessage = 'Password must be at least 6 characters';
+          errorMessage = 'Password must be at least 8 characters';
         } else if (errorText) {
           errorMessage = errorText;
         }

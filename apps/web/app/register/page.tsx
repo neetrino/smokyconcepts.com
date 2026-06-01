@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { useTranslation } from '../../lib/i18n-client';
 import { Eye, EyeOff } from 'lucide-react';
+import { PASSWORD_MIN_LENGTH } from '@/lib/security/password.constants';
 
 export default function RegisterPage() {
   const { t } = useTranslation();
@@ -62,7 +63,7 @@ export default function RegisterPage() {
       return;
     }
 
-    if (password.length < 6) {
+    if (password.length < PASSWORD_MIN_LENGTH) {
       console.log('❌ [REGISTER PAGE] Validation failed: Password too short');
       setError(t('register.errors.passwordMinLength'));
       setIsSubmitting(false);

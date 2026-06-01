@@ -8,6 +8,7 @@ import {
 } from "../utils/image-utils";
 import { mergeProductMediaMetadata } from "../utils/product-media";
 import { resolveUniqueSlug } from "./admin-products-update/product-updater";
+import { sanitizeProductRichHtmlFields } from "@/lib/security/sanitize-product-html.server";
 
 class AdminProductsCreateService {
   /**
@@ -118,6 +119,12 @@ class AdminProductsCreateService {
   }) {
     try {
       console.log('🆕 [ADMIN PRODUCTS CREATE SERVICE] Creating product:', data.title);
+
+      const sanitizedHtml = sanitizeProductRichHtmlFields({
+        descriptionHtml: data.descriptionHtml,
+        productDetailsHtml: data.productDetailsHtml,
+        shippingHtml: data.shippingHtml,
+      });
 
       const result = await db.$transaction(async (tx: any) => {
         // Resolve slug uniqueness before creating the product
@@ -235,9 +242,9 @@ class AdminProductsCreateService {
                 title: data.title,
                 slug: uniqueSlug,
                 subtitle: data.subtitle || undefined,
-                descriptionHtml: data.descriptionHtml || undefined,
-                productDetailsHtml: data.productDetailsHtml || undefined,
-                shippingHtml: data.shippingHtml || undefined,
+                descriptionHtml: sanitizedHtml.descriptionHtml || undefined,
+                productDetailsHtml: sanitizedHtml.productDetailsHtml || undefined,
+                shippingHtml: sanitizedHtml.shippingHtml || undefined,
               },
             },
             variants: {
