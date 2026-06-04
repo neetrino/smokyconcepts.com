@@ -6,9 +6,7 @@ import {
 } from '../../app/products/components/catalogStripScroll';
 import { UPCOMING_SCROLL_TARGET_TOLERANCE_PX } from './upcomingProducts.constants';
 
-/**
- * Mobile/sm+ pagination tabs — always one tab per page; dot widths flex to fit one row on narrow viewports.
- */
+/** Pagination tab indices — one tab per page (desktop / hover-capable viewports only). */
 export function getUpcomingVisiblePageNumbers(totalPages: number): number[] {
   return Array.from({ length: totalPages }, (_, i) => i + 1);
 }

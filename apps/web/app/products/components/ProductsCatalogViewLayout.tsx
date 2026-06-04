@@ -8,7 +8,8 @@ import { CatalogForProductLineRow } from './CatalogForProductLineRow';
 import { ProductsCatalogMobileFilterSheet } from './ProductsCatalogMobileFilterSheet';
 import { ProductsCatalogCard } from './ProductsCatalogCard';
 import {
-  CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME,
+  CATALOG_STRIP_PAGINATION_DOT_CLASS_NAME,
+  CATALOG_STRIP_PAGINATION_ROW_CLASS_NAME,
   CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME,
@@ -286,9 +287,7 @@ export function ProductsCatalogViewLayout({
                               }
                               registerSectionPageStartRef(section.title, mobileStripPageIndex, element);
                             }}
-                            className={`${CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME}${
-                              isMobileStripPageStart ? ' max-sm:snap-start max-sm:snap-always' : ''
-                            }`}
+                            className={CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME}
                           >
                             <ProductsCatalogCard
                               product={product}
@@ -324,7 +323,7 @@ export function ProductsCatalogViewLayout({
                   {section.totalPages > 1 ? (
                     <div className={CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME}>
                       <div
-                        className={`${CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME} sm:max-w-none sm:justify-center sm:gap-4`}
+                        className={CATALOG_STRIP_PAGINATION_ROW_CLASS_NAME}
                         role="tablist"
                         aria-label={`${section.title} pages`}
                       >
@@ -335,7 +334,7 @@ export function ProductsCatalogViewLayout({
                             onClick={() => handleSectionPageChange(section.title, pageIndex)}
                             role="tab"
                             aria-selected={section.currentPage === pageIndex}
-                            className={`h-2 min-w-[1.25rem] shrink rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#122a26] focus-visible:ring-offset-2 max-sm:h-1.5 max-sm:flex-1 max-sm:active:bg-[#c9c9c9] sm:w-[6.25rem] sm:flex-none ${
+                            className={`${CATALOG_STRIP_PAGINATION_DOT_CLASS_NAME} ${
                               section.currentPage === pageIndex
                                 ? 'bg-[#122a26]'
                                 : 'bg-[#d9d9d9] [@media(hover:hover)]:hover:bg-[#c9c9c9]'

@@ -74,9 +74,7 @@ export function UpcomingProductStrip({
                 pageStartRefs.current[pageIndex] = el;
               }
             }}
-            className={`flex min-h-0 shrink-0 flex-col self-stretch ${
-              isPageStart ? 'max-sm:snap-start max-sm:snap-always' : ''
-            } ${HOME_UPCOMING_MOBILE_ITEM_WRAPPER_CLASS_NAME}`}
+            className={`flex min-h-0 shrink-0 flex-col self-stretch ${HOME_UPCOMING_MOBILE_ITEM_WRAPPER_CLASS_NAME}`}
           >
             <ProductsCatalogCard
               product={catalogProduct}

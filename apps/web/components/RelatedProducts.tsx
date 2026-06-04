@@ -22,7 +22,8 @@ import {
   toCatalogProduct,
 } from '../app/products/components/catalogProductLabels';
 import {
-  CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME,
+  CATALOG_STRIP_PAGINATION_DOT_CLASS_NAME,
+  CATALOG_STRIP_PAGINATION_ROW_CLASS_NAME,
   CATALOG_MOBILE_STRIP_PROGRAMMATIC_SCROLL_RELEASE_MS,
   CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME,
@@ -58,7 +59,7 @@ interface RelatedProductsProps {
 }
 
 /**
- * Related products on the PDP — horizontal strip with scroll + pagination (catalog parity).
+ * Related products on the PDP — horizontal strip; mobile scroll-only, pagination on hover-capable `sm+`.
  */
 export function RelatedProducts({ categorySlug, currentProductId }: RelatedProductsProps) {
   const [language, setLanguage] = useState<LanguageCode>('en');
@@ -307,9 +308,7 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
                     }
                     pageStartRefs.current[mobileStripPageIndex] = element;
                   }}
-                  className={`${CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME}${
-                    isMobileStripPageStart ? ' max-sm:snap-start max-sm:snap-always' : ''
-                  }`}
+                  className={CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME}
                 >
                   <ProductsCatalogCard
                     product={catalogProduct}
@@ -347,7 +346,7 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
       {!loading && products.length > 0 && totalPages > 1 ? (
         <div className={CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME}>
           <div
-            className={`${CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME} sm:max-w-none sm:justify-center sm:gap-4`}
+            className={CATALOG_STRIP_PAGINATION_ROW_CLASS_NAME}
             role="tablist"
             aria-label="Related products pages"
           >
@@ -358,7 +357,7 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
                 role="tab"
                 aria-selected={currentPage === pageIndex}
                 onClick={() => handleSectionPageChange(pageIndex)}
-                className={`h-2 min-w-[1.25rem] shrink rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#122a26] focus-visible:ring-offset-2 max-sm:h-1.5 max-sm:flex-1 max-sm:active:bg-[#c9c9c9] sm:w-[6.25rem] sm:flex-none ${
+                className={`${CATALOG_STRIP_PAGINATION_DOT_CLASS_NAME} ${
                   currentPage === pageIndex
                     ? 'bg-[#122a26]'
                     : 'bg-[#d9d9d9] [@media(hover:hover)]:hover:bg-[#c9c9c9]'
