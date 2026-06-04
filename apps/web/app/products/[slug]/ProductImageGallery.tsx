@@ -59,18 +59,11 @@ const HERO_IMAGE_BOX_SIZE_CLASSES = `${MOBILE_HERO_IMAGE_HEIGHT_CLASS} w-full ma
 /** Compact thumbnail frame — fixed square, does not stretch with flex. */
 const THUMBNAIL_IMAGE_BOX_SIZE_CLASSES = 'size-[36px] shrink-0 sm:size-[40px]';
 
-/** Thumbnail strip nav control — desktop/tablet; mobile uses in-hero arrows. */
+/** Thumbnail strip nav control — flanks the thumbnail row on all breakpoints. */
 const THUMBNAIL_NAV_BUTTON_CLASSES =
-  'hidden size-9 shrink-0 items-center justify-center rounded-full text-[#122a26] transition-opacity disabled:cursor-not-allowed disabled:opacity-30 max-sm:hidden sm:flex sm:size-10';
+  'flex size-9 shrink-0 items-center justify-center rounded-full text-[#122a26] transition-opacity disabled:cursor-not-allowed disabled:opacity-30 sm:size-10';
 
 const THUMBNAIL_NAV_ICON_CLASSES = 'size-5 sm:size-6';
-
-/** Mobile hero overlay — kept inside the white card via inset from the hero frame edges. */
-const HERO_NAV_BUTTON_CLASSES =
-  'absolute top-1/2 z-30 flex size-9 -translate-y-1/2 items-center justify-center rounded-full text-[#122a26]/80 transition-opacity disabled:cursor-not-allowed disabled:opacity-30 sm:hidden';
-
-const HERO_NAV_PREVIOUS_BUTTON_CLASSES = `${HERO_NAV_BUTTON_CLASSES} left-2`;
-const HERO_NAV_NEXT_BUTTON_CLASSES = `${HERO_NAV_BUTTON_CLASSES} right-2`;
 
 /** Fills the frame: upscales small assets, downscales large ones, keeps aspect ratio. */
 const GALLERY_IMAGE_FIT_CLASSES = 'size-full object-contain object-center';
@@ -78,7 +71,7 @@ const GALLERY_IMAGE_FIT_CLASSES = 'size-full object-contain object-center';
 /** Vertical rhythm between hero and thumbnail strip inside the card. */
 const GALLERY_SECTION_GAP_CLASSES = 'gap-3 sm:gap-4';
 
-/** Thumbnail underline — desktop only; mobile uses in-hero arrows. */
+/** Thumbnail underline — desktop/tablet only. */
 const THUMBNAIL_ACTIVE_INDICATOR_CLASSES =
   'hidden h-0.5 rounded-[1px] sm:block';
 
@@ -97,7 +90,7 @@ const CUSTOMIZE_GALLERY_CARD_ASPECT_CLASS = 'aspect-[760/625]';
 const THUMBNAIL_STRIP_COMPACT_ROW_CLASSES = 'relative z-20 w-full min-w-0 shrink-0';
 
 const THUMBNAIL_STRIP_COMPACT_THUMBS_CLASSES =
-  'flex w-full items-center justify-center gap-3 max-sm:gap-2 sm:px-11';
+  'flex w-full items-center justify-center gap-3 px-9 max-sm:gap-2 sm:px-11';
 
 const THUMBNAIL_STRIP_COMPACT_NAV_BUTTON_CLASSES =
   `${THUMBNAIL_NAV_BUTTON_CLASSES} absolute top-1/2 z-10 -translate-y-1/2`;
@@ -319,30 +312,6 @@ export function ProductImageGallery({
                   />
                   {customizeOverlayHtml ? (
                     <CustomizeProductOverlay html={customizeOverlayHtml} position={customizeOverlayPosition} />
-                  ) : null}
-                  {canNavigateImages ? (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => navigateImageByArrow('previous')}
-                        aria-label={t(language, 'common.ariaLabels.previousThumbnail')}
-                        className={HERO_NAV_PREVIOUS_BUTTON_CLASSES}
-                      >
-                        <svg className={THUMBNAIL_NAV_ICON_CLASSES} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 18l-6-6 6-6" />
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => navigateImageByArrow('next')}
-                        aria-label={t(language, 'common.ariaLabels.nextThumbnail')}
-                        className={HERO_NAV_NEXT_BUTTON_CLASSES}
-                      >
-                        <svg className={THUMBNAIL_NAV_ICON_CLASSES} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 18l6-6-6-6" />
-                        </svg>
-                      </button>
-                    </>
                   ) : null}
                 </div>
               ) : (
