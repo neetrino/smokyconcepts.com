@@ -77,6 +77,7 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
 
   useEffect(() => {
     if (!mobileFilterOpen) {
+      setCatalogSizeFromMobileFilter(false);
       return;
     }
     setMobilePendingSize(selectedSize);
@@ -161,9 +162,8 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
 
   const openCatalogSizeModalFromMobileFilter = useCallback(() => {
     setCatalogSizeFromMobileFilter(true);
-    setMobileFilterOpen(false);
-    void preloadSizeCatalogCategories(sizeCatalogForModal);
     setCatalogSizeModalOpen(true);
+    void preloadSizeCatalogCategories(sizeCatalogForModal);
   }, [sizeCatalogForModal]);
 
   const sizeForCatalogModal = catalogSizeFromMobileFilter || mobileFilterOpen
