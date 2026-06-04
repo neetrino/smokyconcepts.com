@@ -56,7 +56,10 @@ export interface ProductsCatalogViewLayoutProps {
   updateQuery: (updates: Record<string, string>) => void;
   clearFilters: () => void;
   openCatalogSizeModal: () => void;
+  openCatalogSizeModalFromMobileFilter: () => void;
+  commitMobileFilterApply: () => void;
   setCatalogSizeModalOpen: (open: boolean) => void;
+  mobilePendingSize: string;
   sections: CatalogSectionViewModel[];
   isSmUp: boolean;
   cardsPerPage: number;
@@ -70,7 +73,7 @@ export interface ProductsCatalogViewLayoutProps {
   language: LanguageCode;
   sizeCatalogForModal: SizeCatalogCategoryDto[];
   selectedCatalogItemId: string | null;
-  applyCatalogSizeFilter: (item: SizeCatalogItemDto) => void;
+  handleCatalogSizeItemSelect: (item: SizeCatalogItemDto) => void;
 }
 
 export function ProductsCatalogViewLayout({
@@ -90,7 +93,10 @@ export function ProductsCatalogViewLayout({
   updateQuery,
   clearFilters,
   openCatalogSizeModal,
+  openCatalogSizeModalFromMobileFilter,
+  commitMobileFilterApply,
   setCatalogSizeModalOpen,
+  mobilePendingSize,
   sections,
   isSmUp,
   cardsPerPage,
@@ -104,27 +110,25 @@ export function ProductsCatalogViewLayout({
   language,
   sizeCatalogForModal,
   selectedCatalogItemId,
-  applyCatalogSizeFilter,
+  handleCatalogSizeItemSelect,
 }: ProductsCatalogViewLayoutProps) {
   return (
     <div className="min-h-full overflow-x-hidden bg-[#f5f4f1]">
       <ProductsCatalogMobileFilterSheet
         open={mobileFilterOpen}
         onClose={() => setMobileFilterOpen(false)}
+        onApply={commitMobileFilterApply}
         selectedCollection={selectedCollection}
         selectedColor={selectedColor}
         selectedSort={selectedSort}
-        selectedSize={selectedSize}
+        selectedSize={mobilePendingSize}
         collectionOptions={collectionOptions}
         colorOptions={colorOptions}
         sortOptions={SORT_OPTIONS}
         onCollectionChange={(value) => updateQuery({ category: value })}
         onColorChange={(value) => updateQuery({ color: value })}
         onSortChange={(value) => updateQuery({ sort: value })}
-        onOpenSizeCatalog={() => {
-          setMobileFilterOpen(false);
-          openCatalogSizeModal();
-        }}
+        onOpenSizeCatalog={openCatalogSizeModalFromMobileFilter}
         onClearAll={clearFilters}
       />
 
@@ -363,7 +367,7 @@ export function ProductsCatalogViewLayout({
         language={language}
         sizeCategories={sizeCatalogForModal}
         selectedSizeItemId={selectedCatalogItemId}
-        onSelectSizeCatalogItem={applyCatalogSizeFilter}
+        onSelectSizeCatalogItem={handleCatalogSizeItemSelect}
         onSelectCustomSizeRequest={(_draft: CustomOrderDraft) => {
           setCatalogSizeModalOpen(false);
         }}

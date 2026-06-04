@@ -103,6 +103,7 @@ export interface ProductsCatalogMobileFilterSheetProps {
   onColorChange: (value: string) => void;
   onSortChange: (value: string) => void;
   onOpenSizeCatalog: () => void;
+  onApply: () => void;
   onClearAll: () => void;
 }
 
@@ -120,6 +121,7 @@ export function ProductsCatalogMobileFilterSheet({
   onColorChange,
   onSortChange,
   onOpenSizeCatalog,
+  onApply,
   onClearAll,
 }: ProductsCatalogMobileFilterSheetProps) {
   const { t } = useTranslation();
@@ -259,7 +261,7 @@ export function ProductsCatalogMobileFilterSheet({
       </div>
 
       <div className="shrink-0 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
-        <button type="button" onClick={onClose} className={MOBILE_FILTER_APPLY_BUTTON_CLASS}>
+        <button type="button" onClick={onApply} className={MOBILE_FILTER_APPLY_BUTTON_CLASS}>
           {t('products.mobileFilters.apply')}
         </button>
       </div>
