@@ -52,6 +52,7 @@ import {
   resolveMobileStripPageFromScroll,
   scrollMobileStripToPageAnchor,
 } from '../app/products/components/catalogStripScroll';
+import { HomeActionButton } from './home/HomeActionButton';
 
 interface RelatedProductsProps {
   categorySlug?: string;
@@ -368,6 +369,15 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
           </div>
         </div>
       ) : null}
+
+      <div className="mt-8 flex justify-center sm:hidden">
+        <HomeActionButton
+          href="/products"
+          label={t(language, 'common.buttons.shop')}
+          variant="outline"
+          className="min-w-[8.75rem]"
+        />
+      </div>
     </section>
   );
 }
