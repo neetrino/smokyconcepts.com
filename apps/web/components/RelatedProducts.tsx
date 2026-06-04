@@ -12,23 +12,16 @@ import {
 import { getStoredLanguage, type LanguageCode } from '../lib/language';
 import { t } from '../lib/i18n';
 import { useRelatedProducts } from './hooks/useRelatedProducts';
-import { ProductsCatalogCard } from '../app/products/components/ProductsCatalogCard';
+import { CatalogStripProductCard } from '../app/products/components/CatalogStripProductCard';
 import {
   CATALOG_SECTION_PAGE_SIZE,
-  getCategoryLabel,
   getSectionLabel,
-  getSizeLabel,
-  shouldNudgeCatalogProductImage,
   toCatalogProduct,
 } from '../app/products/components/catalogProductLabels';
 import {
   CATALOG_STRIP_PAGINATION_DOT_CLASS_NAME,
   CATALOG_STRIP_PAGINATION_ROW_CLASS_NAME,
   CATALOG_MOBILE_STRIP_PROGRAMMATIC_SCROLL_RELEASE_MS,
-  CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_LEADING_INSET_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE,
   CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
@@ -36,12 +29,8 @@ import {
   CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME,
   CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS,
-  PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
-  getCatalogProductCardImageScaleBoost,
   getCatalogProductsPageMobileNonFirstPageScrollClassName,
   getCatalogProductsSmViewportSnapshot,
-  getCatalogStripMobileImageFrameClassName,
-  getCatalogStripMobileImageScaleMultiplier,
   getServerCatalogProductsSmViewportSnapshot,
   subscribeCatalogProductsSmViewport,
 } from '../app/products/components/catalogProductCardMobilePresentation';
@@ -311,30 +300,12 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
                   }}
                   className={CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME}
                 >
-                  <ProductsCatalogCard
+                  <CatalogStripProductCard
                     product={catalogProduct}
                     sectionLabel={section}
-                    sizeLabel={getSizeLabel(catalogProduct)}
-                    categoryLabel={getCategoryLabel(catalogProduct, section)}
-                    productsCatalogPageScaleMultiplier={getCatalogStripMobileImageScaleMultiplier(
-                      index,
-                      isSmUp
-                    )}
-                    imageNudgeDown={shouldNudgeCatalogProductImage(index)}
-                    imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
-                    imageFrameClassName={getCatalogStripMobileImageFrameClassName(index)}
-                    catalogHeroPullUpClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME}
-                    catalogCardTopPaddingClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME}
-                    catalogDetailsOffsetClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME}
-                    catalogImageBottomMarginClassName={
-                      PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME
-                    }
-                    className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} max-sm:!w-full max-sm:!min-w-0 max-sm:!max-w-none`}
-                    catalogStripMobilePeek={isSmUp}
-                    compactLayout
-                    productsCatalogPage
-                    catalogBuyOnlyCta
-                    eagerProductImage
+                    index={index}
+                    isSmUp={isSmUp}
+                    ctaPreset="related-products"
                   />
                 </div>
               );

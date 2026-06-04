@@ -6,30 +6,17 @@ import type { LanguageCode } from '../../../lib/language';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
 import { CatalogForProductLineRow } from './CatalogForProductLineRow';
 import { ProductsCatalogMobileFilterSheet } from './ProductsCatalogMobileFilterSheet';
-import { ProductsCatalogCard } from './ProductsCatalogCard';
+import { CatalogStripProductCard } from './CatalogStripProductCard';
 import {
   CATALOG_STRIP_PAGINATION_DOT_CLASS_NAME,
   CATALOG_STRIP_PAGINATION_ROW_CLASS_NAME,
-  CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_LEADING_INSET_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
-  PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME,
-  getCatalogProductCardImageScaleBoost,
   getCatalogMobileStripScrollGutterClassName,
-  getCatalogStripMobileImageFrameClassName,
-  getCatalogStripMobileImageScaleMultiplier,
 } from './catalogProductCardMobilePresentation';
-import {
-  getCategoryLabel,
-  getSizeLabel,
-  shouldNudgeCatalogProductImage,
-} from './catalogProductLabels';
 import { CatalogChevronIcon } from './CatalogChevronIcon';
 import {
   FILTER_CONTROL_ACTIVE,
@@ -293,30 +280,12 @@ export function ProductsCatalogViewLayout({
                             }}
                             className={CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME}
                           >
-                            <ProductsCatalogCard
+                            <CatalogStripProductCard
                               product={product}
                               sectionLabel={section.title}
-                              sizeLabel={getSizeLabel(product)}
-                              categoryLabel={getCategoryLabel(product, section.title)}
-                              productsCatalogPageScaleMultiplier={getCatalogStripMobileImageScaleMultiplier(
-                                index,
-                                isSmUp
-                              )}
-                              imageNudgeDown={shouldNudgeCatalogProductImage(index)}
-                              imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
-                              imageFrameClassName={getCatalogStripMobileImageFrameClassName(index)}
-                              catalogHeroPullUpClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME}
-                              catalogCardTopPaddingClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME}
-                              catalogDetailsOffsetClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME}
-                              catalogImageBottomMarginClassName={
-                                PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME
-                              }
-                              className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} max-sm:!w-full max-sm:!min-w-0 max-sm:!max-w-none`}
-                              catalogStripMobilePeek={isSmUp}
-                              compactLayout
-                              productsCatalogPage
-                              catalogBuyOnlyCta
-                              eagerProductImage
+                              index={index}
+                              isSmUp={isSmUp}
+                              ctaPreset="products-catalog"
                             />
                           </div>
                         );
