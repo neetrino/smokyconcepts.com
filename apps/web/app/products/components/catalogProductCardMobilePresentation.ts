@@ -45,10 +45,10 @@ export const CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_TOP_PADDING_CLASS_NAME = 'max-sm
 export const CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME = 'max-sm:mt-0';
 
 /**
- * `/products` horizontal strip — peek card width below `sm` (`px-4` gutters, same `/1.72` ratio as home upcoming).
+ * `/products` horizontal strip — peek card width below `sm` (matches home Upcoming: `pl-5` inset + `/1.72`).
  */
 export const CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_CARD_WIDTH_CLASS_NAME =
-  'max-sm:w-[calc((100vw-2rem)/1.72)] max-sm:min-w-[calc((100vw-2rem)/1.72)] max-sm:max-w-none';
+  'max-sm:w-[calc((100vw-2.25rem)/1.72)] max-sm:min-w-[calc((100vw-2.25rem)/1.72)] max-sm:max-w-none';
 
 /**
  * Home page (`px-5` gutters): two cards per row with `gap-4` — trending / upcoming on home.
@@ -108,10 +108,10 @@ export const CATALOG_PRODUCT_CARD_MOBILE_ITEM_WRAPPER_CLASS_NAME =
  * `/products` landing strip cell — mobile layout matches home Upcoming wrapper.
  */
 export const CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME =
-  `flex min-h-0 max-sm:shrink-0 max-sm:flex-col max-sm:self-stretch max-sm:justify-center ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_CARD_WIDTH_CLASS_NAME}`;
+  HOME_UPCOMING_MOBILE_ITEM_WRAPPER_CLASS_NAME;
 
-/** `/products` — full-bleed horizontal scroll on mobile (`px-4` page gutters). */
-export const CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_SCROLL_BLEED_CLASS_NAME = 'max-sm:-mx-4 max-sm:px-4';
+/** `/products` — desktop bleed only; mobile gutter uses `.products-catalog-mobile-strip-scroll`. */
+export const CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_SCROLL_BLEED_CLASS_NAME = '';
 
 /** Desktop: counteract `/products` page `lg:pl-[7.5rem]` for edge-to-edge strip scroll. */
 export const CATALOG_PRODUCTS_PAGE_SCROLL_CONTAINER_LEFT_BLEED_CLASS_NAME =
@@ -130,9 +130,17 @@ export const CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_LEADING_INSET_CLASS_NAME =
 /** Extra scroll room so scaled heroes stay visible at the strip’s left edge while scrolling. */
 export const CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_HERO_HORIZONTAL_BLEED_CLASS_NAME = 'lg:-ml-10 lg:pl-10';
 
-/** Mobile-only bleed removal after page 1; desktop inset is handled by the leading spacer. */
-export function getCatalogProductsPageMobileNonFirstPageScrollClassName(isFirstPage: boolean): string {
-  return isFirstPage ? '' : 'max-sm:mx-0 max-sm:px-0';
+/** Mobile horizontal strip — left gutter (`globals.css`). Shared by `/products` and home Upcoming. */
+export const CATALOG_MOBILE_STRIP_SCROLL_GUTTER_CLASS_NAME = 'products-catalog-mobile-strip-scroll';
+
+/** Mobile strip gutter — always on below `sm` (left inset + right full-bleed). */
+export function getCatalogMobileStripScrollGutterClassName(): string {
+  return CATALOG_MOBILE_STRIP_SCROLL_GUTTER_CLASS_NAME;
+}
+
+/** @deprecated Use {@link getCatalogMobileStripScrollGutterClassName} — gutter is no longer page-dependent. */
+export function getCatalogProductsPageMobileNonFirstPageScrollClassName(_isFirstPage: boolean): string {
+  return getCatalogMobileStripScrollGutterClassName();
 }
 
 /** `/products` strip — slightly smaller hero/copy spacing from `lg` (desktop). */
@@ -194,7 +202,7 @@ export const CATALOG_PRODUCTS_PAGE_CARD_DETAILS_OFFSET_CLASS_NAME =
 
 /** Mobile pagination row — all segments on one line; width shrinks as page count grows. */
 export const CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME =
-  'flex w-full max-w-[calc(100vw-2rem)] flex-nowrap items-center gap-1.5';
+  'flex w-full max-w-[calc(100vw-2.5rem)] flex-nowrap items-center gap-1.5';
 
 /** `/products` horizontal strip — scroll container (legacy / full-page strip). */
 export const CATALOG_PRODUCTS_PAGE_STRIP_SCROLL_CLASS_NAME = `scrollbar-hide mt-4 overflow-x-auto overflow-y-visible overscroll-x-contain max-sm:snap-x max-sm:snap-mandatory max-sm:pb-14 pb-10 pt-[8rem] sm:pb-12 sm:pt-[8.5rem] lg:pb-14 lg:pt-[9rem] ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_MARGIN_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_MOBILE_STRIP_TOP_PADDING_CLASS_NAME}`;
@@ -204,7 +212,7 @@ export const CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME = `scrollbar-
 
 /** Pagination row spacing below catalog / related strips. */
 export const CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME =
-  'relative z-20 mt-4 flex justify-center px-4 max-sm:mt-2 sm:mt-6 sm:mt-8';
+  'relative z-20 mt-4 flex justify-center px-5 max-sm:mt-2 sm:mt-6 sm:mt-8';
 
 /** `/products` horizontal strip — card flex row. */
 export const CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME = `flex min-w-max items-stretch max-sm:pr-5 max-lg:pr-4 lg:pr-[7.5rem] ${CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_HERO_HORIZONTAL_BLEED_CLASS_NAME}`;

@@ -20,7 +20,7 @@ import {
   CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME,
   getCatalogProductCardImageScaleBoost,
-  getCatalogProductsPageMobileNonFirstPageScrollClassName,
+  getCatalogMobileStripScrollGutterClassName,
   getCatalogStripMobileImageFrameClassName,
   getCatalogStripMobileImageScaleMultiplier,
 } from './catalogProductCardMobilePresentation';
@@ -106,7 +106,7 @@ export function ProductsCatalogViewLayout({
   applyCatalogSizeFilter,
 }: ProductsCatalogViewLayoutProps) {
   return (
-    <div className="min-h-full overflow-x-clip bg-[#f5f4f1]">
+    <div className="min-h-full overflow-x-hidden bg-[#f5f4f1]">
       <ProductsCatalogMobileFilterSheet
         open={mobileFilterOpen}
         onClose={() => setMobileFilterOpen(false)}
@@ -127,7 +127,7 @@ export function ProductsCatalogViewLayout({
         onClearAll={clearFilters}
       />
 
-      <div className="mx-auto max-w-[120rem] px-4 pb-20 pt-12 sm:px-8 lg:pl-[7.5rem] lg:pr-0 lg:pt-[5.25rem]">
+      <div className="mx-auto max-w-[120rem] px-5 pb-20 pt-12 sm:px-8 lg:pl-[7.5rem] lg:pr-0 lg:pt-[5.25rem]">
         <div className="font-montserrat">
           <div className="flex flex-col gap-8">
             <div className="flex items-start justify-between gap-4">
@@ -246,9 +246,7 @@ export function ProductsCatalogViewLayout({
           <div className="mt-10 space-y-16 lg:mt-10 lg:space-y-20">
             {sections.length > 0 ? (
               sections.map((section) => {
-                const isFirstPage = section.currentPage === 0;
-                const mobileNonFirstPageScrollClassName =
-                  getCatalogProductsPageMobileNonFirstPageScrollClassName(isFirstPage);
+                const mobileStripScrollGutterClassName = getCatalogMobileStripScrollGutterClassName();
 
                 return (
                 <section
@@ -269,7 +267,7 @@ export function ProductsCatalogViewLayout({
                     onScroll={() => {
                       handleSectionScroll(section.title);
                     }}
-                    className={`${CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME} ${mobileNonFirstPageScrollClassName}`}
+                    className={`${CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME} ${mobileStripScrollGutterClassName}`}
                   >
                     <div className={CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME}>
                       <div

@@ -39,8 +39,8 @@ export const UPCOMING_SCROLL_SETTLE_MAX_WAIT_MS = 1500;
 /** Tolerance (px) when matching live scrollLeft to the target page anchor. */
 export const UPCOMING_SCROLL_TARGET_TOLERANCE_PX = 2;
 
-/** Mobile: full-bleed horizontal scroll so the next card clips at the screen edge. */
-export const UPCOMING_MOBILE_SCROLL_BLEED_CLASS = 'max-sm:-mx-5 max-sm:px-5';
+/** Mobile: gutter via `.products-catalog-mobile-strip-scroll` on page 1 (see `globals.css`). */
+export const UPCOMING_MOBILE_SCROLL_BLEED_CLASS = '';
 
 /** Desktop: kept for `/products` parity; home upcoming uses {@link UPCOMING_SECTION_BLEED_WRAPPER_CLASS_NAME} instead. */
 export const UPCOMING_SCROLL_CONTAINER_LEFT_BLEED_CLASS_NAME =

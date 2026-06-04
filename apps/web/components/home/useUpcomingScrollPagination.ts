@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { scrollMobileStripToPageAnchor } from '../../app/products/components/catalogStripScroll';
-import { CATALOG_MOBILE_STRIP_PROGRAMMATIC_SCROLL_RELEASE_MS } from '../../app/products/components/catalogProductCardMobilePresentation';
+import {
+  CATALOG_MOBILE_STRIP_PROGRAMMATIC_SCROLL_RELEASE_MS,
+  getCatalogMobileStripScrollGutterClassName,
+} from '../../app/products/components/catalogProductCardMobilePresentation';
 import {
   UPCOMING_SCROLL_IDLE_UPDATE_DELAY_MS,
   UPCOMING_SCROLL_SETTLE_MAX_WAIT_MS,
@@ -40,7 +43,7 @@ export function useUpcomingScrollPagination({
   const totalPages = Math.max(1, Math.ceil(itemCount / cardsPerPage));
   const safePage = Math.min(currentPage, totalPages);
   const visiblePaginationPages = getUpcomingVisiblePageNumbers(totalPages);
-  const stripScrollOffsetClassName = safePage === 1 ? '' : 'max-sm:mx-0 max-sm:px-0';
+  const stripScrollOffsetClassName = getCatalogMobileStripScrollGutterClassName();
 
   useEffect(() => {
     pageStartRefs.current = [];
