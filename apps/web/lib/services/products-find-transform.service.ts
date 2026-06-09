@@ -490,11 +490,16 @@ class ProductsFindTransformService {
         selectableVariants as Array<{ id: string; imageUrl?: string | null; attributes?: unknown }>,
         lang
       );
-      const displayVariantImage =
+      const displayVariantGalleryImages =
         displayVariant && typeof displayVariant.imageUrl === 'string' && displayVariant.imageUrl.trim() !== ''
-          ? displayVariant.imageUrl.trim().split(',')[0]?.trim() || null
-          : null;
-      const catalogImages = productImages.length > 0 ? productImages : displayVariantImage ? [displayVariantImage] : [];
+          ? cleanImageUrls(
+              smartSplitUrls(displayVariant.imageUrl)
+                .map((url) => processImageUrl(url) ?? url)
+                .filter((url) => url.trim().length > 0)
+            )
+          : [];
+      const catalogImages =
+        productImages.length > 0 ? productImages : displayVariantGalleryImages;
 
       return {
         id: product.id,

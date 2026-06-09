@@ -18,10 +18,28 @@ function normalizeCatalogText(value: string | null | undefined): string {
   return (value ?? '').trim().toLowerCase();
 }
 
+/** Admin "display" variant gallery — shown on catalog cards before a size is picked. */
+function resolveDefaultVariantImages(product: ProductsCatalogCardProps['product']): string[] {
+  const variants = product.variantImages ?? [];
+  if (variants.length === 0) {
+    return [];
+  }
+
+  const defaultVariantId = (product.defaultVariantId ?? '').trim();
+  if (defaultVariantId) {
+    const defaultMatch = variants.find((variant) => variant.variantId === defaultVariantId);
+    if (defaultMatch && defaultMatch.images.length > 0) {
+      return defaultMatch.images;
+    }
+  }
+
+  return variants.find((variant) => variant.images.length > 0)?.images ?? [];
+}
+
 function resolveActiveVariantImages(props: ProductsCatalogCardProps): string[] {
   const selectedSize = normalizeCatalogText(props.selectedSize);
   if (!selectedSize || selectedSize === 'all') {
-    return [];
+    return resolveDefaultVariantImages(props.product);
   }
   const selectedCategoryId = (props.selectedSizeCatalogCategoryId ?? '').trim();
   const selectedCategoryTitle = normalizeCatalogText(props.selectedSizeCatalogCategoryTitle);
@@ -94,6 +112,7 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
       (image, index, images): image is string => Boolean(image) && images.indexOf(image) === index
     );
   }, [
+    product.defaultVariantId,
     product.image,
     product.images,
     product.variantImages,
