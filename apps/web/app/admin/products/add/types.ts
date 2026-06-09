@@ -86,6 +86,8 @@ export interface GeneratedVariant {
   stock: string;
   sku: string;
   image: string | null;
+  images?: string[];
+  mainImageIndex?: number;
 }
 
 

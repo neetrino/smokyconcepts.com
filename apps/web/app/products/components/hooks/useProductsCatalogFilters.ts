@@ -306,6 +306,8 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
     mobilePendingSize,
     commitMobileFilterApply,
     selectedSize,
+    selectedSizeCatalogCategoryId,
+    selectedSizeCatalogCategoryTitle,
     selectedCollection,
     selectedColor,
     selectedSort,

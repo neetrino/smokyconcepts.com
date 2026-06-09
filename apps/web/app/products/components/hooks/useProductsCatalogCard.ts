@@ -14,6 +14,37 @@ import { buildCatalogCardPresentation } from '../productsCatalogCardPresentation
 import { MAX_IMAGE_DOT_COUNT, resolveOpaqueCompensationScale } from '../productsCatalogCardImage.utils';
 import type { ProductsCatalogCardProps } from '../productsCatalogCard.types';
 
+function normalizeCatalogText(value: string | null | undefined): string {
+  return (value ?? '').trim().toLowerCase();
+}
+
+function resolveActiveVariantImages(props: ProductsCatalogCardProps): string[] {
+  const selectedSize = normalizeCatalogText(props.selectedSize);
+  if (!selectedSize || selectedSize === 'all') {
+    return [];
+  }
+  const selectedCategoryId = (props.selectedSizeCatalogCategoryId ?? '').trim();
+  const selectedCategoryTitle = normalizeCatalogText(props.selectedSizeCatalogCategoryTitle);
+  const variants = props.product.variantImages ?? [];
+  const hasCategoryMetadata = variants.some(
+    (variant) => Boolean(variant.sizeCatalogCategoryId) || Boolean(variant.sizeCatalogCategoryTitle)
+  );
+  const categoryMatcher = (variant: { sizeCatalogCategoryId: string | null; sizeCatalogCategoryTitle: string | null }) =>
+    !hasCategoryMetadata ||
+    !selectedCategoryId ||
+    variant.sizeCatalogCategoryId === selectedCategoryId ||
+    normalizeCatalogText(variant.sizeCatalogCategoryTitle) === selectedCategoryTitle;
+  const matchedVariant = variants.find((variant) => {
+    const sizeMatches =
+      variant.sizeLabels.some((label) => normalizeCatalogText(label) === selectedSize) ||
+      normalizeCatalogText(variant.sizeCatalogCategoryTitle) === selectedSize;
+    const categoryMatches =
+      categoryMatcher(variant);
+    return sizeMatches && categoryMatches && variant.images.length > 0;
+  }) ?? variants.find((variant) => categoryMatcher(variant) && variant.images.length > 0);
+  return matchedVariant?.images ?? [];
+}
+
 export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
   const {
     product,
@@ -53,11 +84,23 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
   });
 
   const productImages = useMemo(() => {
-    const rawImages = product.images && product.images.length > 0 ? product.images : [product.image];
+    const variantImages = resolveActiveVariantImages(props);
+    const rawImages = variantImages.length > 0
+      ? variantImages
+      : product.images && product.images.length > 0
+        ? product.images
+        : [product.image];
     return rawImages.filter(
       (image, index, images): image is string => Boolean(image) && images.indexOf(image) === index
     );
-  }, [product.image, product.images]);
+  }, [
+    product.image,
+    product.images,
+    product.variantImages,
+    props.selectedSize,
+    props.selectedSizeCatalogCategoryId,
+    props.selectedSizeCatalogCategoryTitle,
+  ]);
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [imageError, setImageError] = useState(false);
@@ -67,7 +110,12 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
 
   useEffect(() => {
     setActiveImageIndex(0);
-  }, [product.id]);
+  }, [
+    product.id,
+    props.selectedSize,
+    props.selectedSizeCatalogCategoryId,
+    props.selectedSizeCatalogCategoryTitle,
+  ]);
 
   useEffect(() => {
     setActiveImageIndex((previous) => {

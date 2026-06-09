@@ -140,6 +140,8 @@ export function useProductFormCallbacks({
         stock: '0',
         sku: buildAutoSkuForVariantIndex(slug, nextIndex),
         image: null,
+        images: [],
+        mainImageIndex: 0,
       };
       return [...prev, newVariant];
     });

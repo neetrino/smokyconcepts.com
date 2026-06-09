@@ -11,11 +11,11 @@ import { useAttributeGroups } from './useAttributeGroups';
 import type { ProductVariant } from './types';
 import { getOptionValue, getOptionValues, normalizeVersionToken, variantHasColor, variantHasOptionValue } from './utils/variant-helpers';
 import { findVariantByAllAttributes } from './utils/variant-finders';
-import { switchToVariantImage } from './utils/image-switching';
+import { resolveVariantGalleryUrls } from './utils/image-switching';
 
 export function useProductPage(params: Promise<{ slug?: string }>) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [variantHeroImageUrl, setVariantHeroImageUrl] = useState<string | null>(null);
+  const [variantImages, setVariantImages] = useState<string[]>([]);
   const [language, setLanguage] = useState<LanguageCode>('en');
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [showMessage, setShowMessage] = useState<string | null>(null);
@@ -39,10 +39,10 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
   });
 
   const images = useProductImages(product);
+  const galleryImages = variantImages.length > 0 ? variantImages : images;
   const heroImageSrc =
-    variantHeroImageUrl ??
-    (images.length > 0 ? images[currentImageIndex] : '');
-  const activeThumbnailIndex = variantHeroImageUrl ? null : currentImageIndex;
+    galleryImages.length > 0 ? galleryImages[currentImageIndex] ?? galleryImages[0] ?? '' : '';
+  const activeThumbnailIndex = currentImageIndex;
   const selectedAttributeValues = useMemo(() => {
     const map = new Map<string, string>();
     if (selectedSizeVersion) {
@@ -117,10 +117,10 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
   }, []);
 
   useEffect(() => {
-    if (images.length > 0 && currentImageIndex >= images.length) {
+    if (galleryImages.length > 0 && currentImageIndex >= galleryImages.length) {
       setCurrentImageIndex(0);
     }
-  }, [images.length, currentImageIndex]);
+  }, [galleryImages.length, currentImageIndex]);
 
   useEffect(() => {
     if (product && product.variants && product.variants.length > 0 && variantIdFromUrl) {
@@ -133,7 +133,7 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
       setSelectedSizeVersion(getOptionValue(initialVariant.options, 'size_version'));
       setCurrentImageIndex(0);
       setThumbnailStartIndex(0);
-      switchToVariantImage(initialVariant, product, setVariantHeroImageUrl);
+      setVariantImages(resolveVariantGalleryUrls(initialVariant, product));
       return;
     }
 
@@ -144,7 +144,7 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
         setSelectedColor(null);
         setSelectedSize(null);
         setSelectedSizeVersion(null);
-        setVariantHeroImageUrl(null);
+        setVariantImages([]);
         return;
       }
       const fallbackVariant = product.variants[0];
@@ -152,8 +152,11 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
       setSelectedColor(getOptionValue(fallbackVariant.options, 'color'));
       setSelectedSize(getOptionValue(fallbackVariant.options, 'size'));
       setSelectedSizeVersion(getOptionValue(fallbackVariant.options, 'size_version'));
-      switchToVariantImage(fallbackVariant, product, setVariantHeroImageUrl);
+      setVariantImages(resolveVariantGalleryUrls(fallbackVariant, product));
+      return;
     }
+
+    setVariantImages([]);
   }, [product, product?.id, product?.variants, variantIdFromUrl, setSelectedVariant]);
 
   useEffect(() => {
@@ -182,7 +185,9 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     }
 
     setSelectedVariant(nextVariant);
-    switchToVariantImage(nextVariant, product, setVariantHeroImageUrl);
+    setCurrentImageIndex(0);
+    setThumbnailStartIndex(0);
+    setVariantImages(resolveVariantGalleryUrls(nextVariant, product));
     /**
      * Use images.length (not `images` reference) so a stable gallery index is not reset when
      * useMemo returns a new array reference for the same product. Thumbnail clicks only change
@@ -295,18 +300,19 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     setSelectedSizeVersion(nextVariantVersion ?? normalizedVersion);
     const nextColor = getOptionValue(nextVariant.options, 'color');
     setSelectedColor(nextColor);
-    switchToVariantImage(nextVariant, product, setVariantHeroImageUrl);
+    setCurrentImageIndex(0);
+    setThumbnailStartIndex(0);
+    setVariantImages(resolveVariantGalleryUrls(nextVariant, product));
   };
 
   const handleImageIndexChange = (index: number) => {
-    setVariantHeroImageUrl(null);
     setCurrentImageIndex(index);
   };
 
   return {
     product,
     loading,
-    images,
+    images: galleryImages,
     heroImageSrc,
     activeThumbnailIndex,
     currentImageIndex,

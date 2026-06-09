@@ -27,6 +27,9 @@ export type CatalogStripProductCardCtaPreset =
 export interface CatalogStripProductCardProps {
   product: CatalogProduct;
   sectionLabel: string;
+  selectedSize?: string;
+  selectedSizeCatalogCategoryId?: string | null;
+  selectedSizeCatalogCategoryTitle?: string | null;
   index: number;
   isSmUp: boolean;
   ctaPreset: CatalogStripProductCardCtaPreset;
@@ -60,6 +63,9 @@ function resolveStripBuyButtonLabel(
 export function CatalogStripProductCard({
   product,
   sectionLabel,
+  selectedSize,
+  selectedSizeCatalogCategoryId,
+  selectedSizeCatalogCategoryTitle,
   index,
   isSmUp,
   ctaPreset,
@@ -74,6 +80,9 @@ export function CatalogStripProductCard({
       product={product}
       sectionLabel={sectionLabel}
       sizeLabel={getSizeLabel(product)}
+      selectedSize={selectedSize}
+      selectedSizeCatalogCategoryId={selectedSizeCatalogCategoryId}
+      selectedSizeCatalogCategoryTitle={selectedSizeCatalogCategoryTitle}
       categoryLabel={getCategoryLabel(product, sectionLabel)}
       buyButtonLabel={resolveStripBuyButtonLabel(ctaPreset, t)}
       catalogBuyOnlyCta

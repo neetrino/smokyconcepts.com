@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
-import { cleanImageUrls } from '@/lib/services/utils/image-utils';
+import { cleanImageUrls, smartSplitUrls } from '@/lib/services/utils/image-utils';
 import {
   extractSizeCatalogSelectionFromAttributes,
   isDefaultPricingVariant,
@@ -149,6 +149,10 @@ export function useProductEditMode({
               const compareAmd = compareNum > 0 ? compareNum : 0;
               const stockNum = typeof v.stock === 'number' ? v.stock : parseInt(String(v.stock), 10) || 0;
               const apiSku = typeof v.sku === 'string' ? v.sku.trim() : '';
+              const images =
+                typeof v.imageUrl === 'string' && v.imageUrl.trim() !== ''
+                  ? smartSplitUrls(v.imageUrl)
+                  : [];
               return {
                 id: v.id || `variant-${Date.now()}-${Math.random().toString(36).slice(2)}`,
                 selectedValueIds: Array.isArray(v.selectedValueIds) ? v.selectedValueIds : [],
@@ -156,7 +160,9 @@ export function useProductEditMode({
                 compareAtPrice: compareAmd ? String(compareAmd) : '',
                 stock: String(stockNum),
                 sku: apiSku !== '' ? apiSku : buildAutoSkuForVariantIndex(slugForSku, idx),
-                image: v.imageUrl ?? null,
+                image: images[0] ?? null,
+                images,
+                mainImageIndex: 0,
               };
             });
 

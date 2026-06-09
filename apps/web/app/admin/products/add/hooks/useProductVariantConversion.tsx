@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import type { GeneratedVariant } from '../types';
+import { smartSplitUrls } from '@/lib/services/utils/image-utils';
 
 interface UseProductVariantConversionProps {
   productId: string | null;
@@ -84,6 +85,8 @@ export function useProductVariantConversion({
         stock: number;
         sku: string;
         image: string | null;
+        images: string[];
+        mainImageIndex: number;
         originalVariantIds: string[];
       }
       
@@ -178,17 +181,14 @@ export function useProductVariantConversion({
           });
         }
         
-        let variantImage: string | null = null;
+        let variantImages: string[] = [];
         if (variant.imageUrl) {
           if (typeof variant.imageUrl === 'string' && variant.imageUrl.startsWith('data:')) {
-            variantImage = variant.imageUrl;
-            console.log(`🖼️ [ADMIN] Variant ${variantIndex} base64 image length:`, variantImage?.length || 0);
+            variantImages = [variant.imageUrl];
+            console.log(`🖼️ [ADMIN] Variant ${variantIndex} base64 image length:`, variant.imageUrl.length);
           } else {
-            const imageUrls = typeof variant.imageUrl === 'string' 
-              ? variant.imageUrl.split(',').map((url: string) => url.trim()).filter(Boolean)
-              : [];
-            variantImage = imageUrls.length > 0 ? imageUrls[0] : null;
-            console.log(`🖼️ [ADMIN] Variant ${variantIndex} imageUrl length:`, variant.imageUrl?.length || 0, '→ extracted image length:', variantImage?.length || 0);
+            variantImages = typeof variant.imageUrl === 'string' ? smartSplitUrls(variant.imageUrl) : [];
+            console.log(`🖼️ [ADMIN] Variant ${variantIndex} images count:`, variantImages.length);
           }
         } else {
           console.log(`🖼️ [ADMIN] Variant ${variantIndex} has no imageUrl`);
@@ -214,7 +214,9 @@ export function useProductVariantConversion({
           compareAtPrice: compareAtUsd,
           stock: variant.stock !== undefined && variant.stock !== null ? variant.stock : 0,
           sku: variant.sku || '',
-          image: variantImage,
+          image: variantImages[0] ?? null,
+          images: variantImages,
+          mainImageIndex: 0,
           originalVariantIds: [variant.id || `variant-${variantIndex}`],
         });
       });
@@ -242,6 +244,8 @@ export function useProductVariantConversion({
         stock: string;
         sku: string;
         image: string | null;
+        images: string[];
+        mainImageIndex: number;
       }> = [];
       
       variantGroups.forEach((group, groupKey) => {
@@ -260,7 +264,9 @@ export function useProductVariantConversion({
           ? firstVariant.sku 
           : group.map(v => v.sku).filter(Boolean).join(', ');
         
-        const combinedImage = firstVariant.image;
+        const combinedImages = group.flatMap((variantData) => variantData.images);
+        const uniqueCombinedImages = [...new Set(combinedImages)];
+        const combinedImage = uniqueCombinedImages[0] ?? null;
         
         convertedVariants.push({
           id: `variant-group-${Date.now()}-${Math.random()}`,
@@ -270,6 +276,8 @@ export function useProductVariantConversion({
           stock: stockValue.toString(),
           sku: combinedSku,
           image: combinedImage,
+          images: uniqueCombinedImages,
+          mainImageIndex: 0,
         });
         
         console.log(`✅ [ADMIN] Grouped ${group.length} variants into 1 row:`, {

@@ -1,7 +1,7 @@
 import { sortSizeCatalogCategoriesByDisplayOrder } from '@/lib/constants/size-catalog-display-order.constants';
 import type { SizeCatalogCategoryDto } from '@/lib/types/size-catalog';
 
-import type { CatalogProductCardItem } from './productsCatalogCard.types';
+import type { CatalogProductCardItem, CatalogProductVariantImages } from './productsCatalogCard.types';
 
 /** Section pill colors — same tokens as {@link ProductsCatalogCard} PDP/catalog. */
 export const PRODUCT_SECTION_BADGE_CLASS_NAMES: Record<string, string> = {
@@ -58,6 +58,7 @@ export function toCatalogProduct(input: {
   price: number;
   image: string | null;
   images?: string[];
+  variantImages?: CatalogProductVariantImages[];
   inStock?: boolean;
   originalPrice?: number | null;
   defaultVariantId?: string | null;
@@ -78,6 +79,7 @@ export function toCatalogProduct(input: {
     price: input.price ?? 0,
     image: input.image ?? null,
     images: Array.isArray(input.images) ? input.images : [],
+    variantImages: Array.isArray(input.variantImages) ? input.variantImages : [],
     inStock: input.inStock ?? true,
     originalPrice: input.originalPrice ?? null,
     defaultVariantId: input.defaultVariantId ?? null,
@@ -261,6 +263,13 @@ export function productAllowsSizeCatalogCategory(
   return false;
 }
 
+function productHasSizeCatalogMetadata(product: CatalogProduct): boolean {
+  return Boolean(
+    (product.sizeCatalogCategoryIds?.length ?? 0) > 0 ||
+      (product.sizeCatalogCategoryTitles?.length ?? 0) > 0
+  );
+}
+
 /**
  * Published size-catalog categories/items relevant to the given products (size title + template category).
  */
@@ -311,20 +320,19 @@ export function productMatchesSizeFilter(
   }
   const categoryKey = selectedSizeCatalogCategoryId?.trim() ?? '';
   const categoryTitleNorm = (selectedSizeCatalogCategoryTitle ?? '').trim().toLowerCase();
+  const labels = getVariantSizeLabelsForCatalogFilter(product);
+  const hasMatchingSizeLabel = labels.some((s) => s.trim().toLowerCase() === needle);
+
+  if (hasMatchingSizeLabel) {
+    return true;
+  }
 
   /** URL `size` stores the size-catalog band title (e.g. Slims), not each pack template name. */
   if (categoryKey && categoryTitleNorm && needle === categoryTitleNorm) {
     return productAllowsSizeCatalogCategory(product, categoryKey, selectedSizeCatalogCategoryTitle);
   }
 
-  const labels = getVariantSizeLabelsForCatalogFilter(product);
-  if (!labels.some((s) => s.trim().toLowerCase() === needle)) {
-    return false;
-  }
-  if (!categoryKey) {
-    return true;
-  }
-  return productAllowsSizeCatalogCategory(product, categoryKey, selectedSizeCatalogCategoryTitle);
+  return false;
 }
 
 export function catalogItemTitleMatchesAnySizeLabel(

@@ -2,6 +2,7 @@ import { db } from "@white-shop/db";
 import { buildCatalogGalleryImages } from "./products-list-gallery-images";
 import { t } from "../i18n";
 import { ProductWithRelations } from "./products-find-query.service";
+import { cleanImageUrls, processImageUrl, smartSplitUrls } from "./utils/image-utils";
 import {
   extractSizeCatalogSelectionFromAttributes,
   isDefaultPricingVariant,
@@ -40,6 +41,70 @@ function extractFirstSizeOptionLabelFromVariant(variant: { attributes?: unknown 
     sizeOption.attributeValue?.translations?.[0]?.label || sizeOption.attributeValue?.value;
   const normalizedSize = (sizeFromAttributeValue || sizeOption.value || "").trim();
   return normalizedSize || null;
+}
+
+function extractSizeOptionLabelsFromVariant(
+  variant: { attributes?: unknown },
+  lang: string
+): string[] {
+  const labels = new Set<string>();
+  const options = getVariantOptions(variant.attributes);
+  options.forEach((option) => {
+    const isSize =
+      option.attributeValue?.attribute?.key === "size" || option.attributeKey === "size";
+    if (!isSize) {
+      return;
+    }
+    const translations = option.attributeValue?.translations;
+    const tr =
+      Array.isArray(translations) && translations.length > 0
+        ? translations.find((item: { locale: string }) => item.locale === lang) ?? translations[0]
+        : undefined;
+    const label = (
+      (typeof tr?.label === "string" ? tr.label : "") ||
+      option.attributeValue?.value ||
+      option.value ||
+      ""
+    ).trim();
+    if (label) {
+      labels.add(label);
+    }
+    const valueOnly = (option.attributeValue?.value || "").trim();
+    if (valueOnly) {
+      labels.add(valueOnly);
+    }
+  });
+  return Array.from(labels);
+}
+
+function buildVariantImageDtos(
+  variants: Array<{ id: string; imageUrl?: string | null; attributes?: unknown }>,
+  lang: string
+): Array<{
+  variantId: string;
+  images: string[];
+  sizeLabels: string[];
+  sizeCatalogCategoryId: string | null;
+  sizeCatalogCategoryTitle: string | null;
+}> {
+  return variants.flatMap((variant) => {
+    const images = cleanImageUrls(
+      smartSplitUrls(variant.imageUrl)
+        .map((url) => processImageUrl(url) ?? url)
+        .filter((url) => url.trim().length > 0)
+    );
+    if (images.length === 0) {
+      return [];
+    }
+    const { categoryId, categoryTitle } = extractSizeCatalogSelectionFromAttributes(variant.attributes);
+    return [{
+      variantId: variant.id,
+      images,
+      sizeLabels: extractSizeOptionLabelsFromVariant(variant, lang),
+      sizeCatalogCategoryId: categoryId,
+      sizeCatalogCategoryTitle: categoryTitle,
+    }];
+  });
 }
 
 function extractSizeCatalogCategoryTitleFromDefaultVariant(
@@ -416,6 +481,10 @@ class ProductsFindTransformService {
       const categories = [...relationCategories, ...missingCategories];
 
       const productImages = buildCatalogGalleryImages(product.media);
+      const variantImages = buildVariantImageDtos(
+        selectableVariants as Array<{ id: string; imageUrl?: string | null; attributes?: unknown }>,
+        lang
+      );
 
       return {
         id: product.id,
@@ -440,6 +509,7 @@ class ProductsFindTransformService {
         discountPercent: appliedDiscount > 0 ? appliedDiscount : null,
         image: productImages[0] || null,
         images: productImages,
+        variantImages,
         inStock: stockSourceVariants.some((item) => (item.stock || 0) > 0),
         labels: (() => {
           // Map existing labels

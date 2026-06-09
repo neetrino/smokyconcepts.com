@@ -33,6 +33,8 @@ export interface ProductsCatalogViewLayoutProps {
   selectedColor: string;
   selectedSort: SortOption;
   selectedSize: string;
+  selectedSizeCatalogCategoryId: string;
+  selectedSizeCatalogCategoryTitle: string | null;
   collectionOptions: string[];
   colorOptions: string[];
   isCollectionFilterActive: boolean;
@@ -70,6 +72,8 @@ export function ProductsCatalogViewLayout({
   selectedColor,
   selectedSort,
   selectedSize,
+  selectedSizeCatalogCategoryId,
+  selectedSizeCatalogCategoryTitle,
   collectionOptions,
   colorOptions,
   isCollectionFilterActive,
@@ -283,6 +287,9 @@ export function ProductsCatalogViewLayout({
                             <CatalogStripProductCard
                               product={product}
                               sectionLabel={section.title}
+                              selectedSize={selectedSize}
+                              selectedSizeCatalogCategoryId={selectedSizeCatalogCategoryId}
+                              selectedSizeCatalogCategoryTitle={selectedSizeCatalogCategoryTitle}
                               index={index}
                               isSmUp={isSmUp}
                               ctaPreset="products-catalog"

@@ -10,6 +10,7 @@ import type { CategoryAttribute } from '@/lib/category-attributes';
 import { buildDefaultPricingAttributes } from '@/lib/default-pricing-variant';
 import { initializeCurrencyRates, normalizeAdminProductPriceInput } from '@/lib/currency';
 import type { ProductFormFieldId } from '../constants/productFormFieldIds.constants';
+import { orderGeneratedVariantImagesForSubmit } from '../utils/generatedVariantImages';
 
 interface UseProductFormHandlersProps {
   formData: {
@@ -170,12 +171,14 @@ export function useProductFormHandlers({
           skuCounter++;
         }
         variantSkuSet.add(uniqueSku);
+        const variantImages = orderGeneratedVariantImagesForSubmit(genVariant);
+
         variants.push({
           price: variantPriceStored,
           compareAtPrice: variantCompareAtPriceStored,
           stock: parseInt(genVariant.stock || '0') || 0,
           sku: uniqueSku,
-          imageUrl: genVariant.image || undefined,
+          imageUrl: variantImages.length > 0 ? variantImages.join(',') : undefined,
           attributes:
             genVariant.selectedValueIds.length > 0
               ? buildVariantAttributePayload(genVariant.selectedValueIds, categoryAttributes)

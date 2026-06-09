@@ -12,7 +12,7 @@ export function catalogSizeQueryFromItem(item: SizeCatalogItemDto): CatalogSizeQ
   const sizeQueryValue = bandTitle || packTitle;
   const categoryId = item.categoryId.trim();
   return {
-    size: sizeQueryValue ? sizeQueryValue : 'all',
+    size: sizeQueryValue || 'all',
     sizeCat: categoryId,
   };
 }

@@ -9,6 +9,10 @@ import type { CategoryAttribute } from '@/lib/category-attributes';
 import { ADMIN_RASTER_IMAGE_FILE_ACCEPT } from '@/lib/services/utils/heic-browser-convert';
 import { VariantRowAttributeSelectors } from './VariantRowAttributeSelectors';
 import { SHOW_COMPARE_AT_PRICE_FIELD } from '../constants/compareAtPriceVisibility.constants';
+import {
+  getGeneratedVariantImages,
+  getGeneratedVariantMainImageIndex,
+} from '../utils/generatedVariantImages';
 
 export interface VariantBuilderVariantsTableProps {
   generatedVariants: GeneratedVariant[];
@@ -46,6 +50,51 @@ export function VariantBuilderVariantsTable({
   generateSlug,
 }: VariantBuilderVariantsTableProps) {
   const { t } = useTranslation();
+
+  const removeVariantImage = (variant: GeneratedVariant, imageIndex: number) => {
+    onVariantUpdate((prev) =>
+      prev.map((v) => {
+        if (v.id !== variant.id) {
+          return v;
+        }
+        const nextImages = getGeneratedVariantImages(v).filter((_, index) => index !== imageIndex);
+        const previousMainIndex = getGeneratedVariantMainImageIndex(v);
+        const nextMainImageIndex =
+          nextImages.length === 0
+            ? 0
+            : imageIndex < previousMainIndex
+              ? previousMainIndex - 1
+              : Math.min(previousMainIndex, nextImages.length - 1);
+        return {
+          ...v,
+          images: nextImages,
+          mainImageIndex: nextMainImageIndex,
+          image: nextImages[nextMainImageIndex] ?? null,
+        };
+      })
+    );
+    if (variantImageInputRefs.current?.[variant.id]) {
+      variantImageInputRefs.current[variant.id]!.value = '';
+    }
+  };
+
+  const setVariantMainImage = (variantId: string, imageIndex: number) => {
+    onVariantUpdate((prev) =>
+      prev.map((v) => {
+        if (v.id !== variantId) {
+          return v;
+        }
+        const images = getGeneratedVariantImages(v);
+        const mainImage = images[imageIndex] ?? null;
+        return {
+          ...v,
+          images,
+          mainImageIndex: imageIndex,
+          image: mainImage,
+        };
+      })
+    );
+  };
 
   return (
     <div>
@@ -239,46 +288,59 @@ export function VariantBuilderVariantsTable({
                     className="w-24 text-xs"
                   />
                 </td>
-                <td className="px-2 py-2 whitespace-nowrap">
-                  <div className="flex items-center gap-2">
-                    {variant.image ? (
-                      <div className="relative inline-block">
-                        <img
-                          src={variant.image}
-                          alt="Variant"
-                          className="w-12 h-12 object-cover border border-gray-300 rounded-md"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onVariantUpdate((prev) =>
-                              prev.map((v) => (v.id === variant.id ? { ...v, image: null } : v))
-                            );
-                            if (variantImageInputRefs.current?.[variant.id]) {
-                              variantImageInputRefs.current[variant.id]!.value = '';
-                            }
-                          }}
-                          className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
-                          title={t('admin.products.add.removeImage')}
-                        >
-                          <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => variantImageInputRefs.current?.[variant.id]?.click()}
-                        disabled={imageUploadLoading}
-                        className="px-2 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 flex items-center gap-1"
-                      >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                        {imageUploadLoading ? t('admin.products.add.uploading') : t('admin.products.add.uploadImage')}
-                      </button>
-                    )}
+                <td className="px-2 py-2">
+                  <div className="flex max-w-[220px] flex-col gap-2">
+                    <div className="flex flex-wrap gap-2">
+                      {getGeneratedVariantImages(variant).map((image, imageIndex) => {
+                        const isMain = imageIndex === getGeneratedVariantMainImageIndex(variant);
+                        return (
+                          <div key={`${image}-${imageIndex}`} className="relative inline-block">
+                            <img
+                              src={image}
+                              alt="Variant"
+                              className={`h-12 w-12 rounded-md border object-cover ${
+                                isMain ? 'border-[#122a26] ring-2 ring-[#dcc090]' : 'border-gray-300'
+                              }`}
+                            />
+                            <label className="absolute left-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded bg-white/90 shadow-sm">
+                              <input
+                                type="checkbox"
+                                checked={isMain}
+                                onChange={() => setVariantMainImage(variant.id, imageIndex)}
+                                className="h-3 w-3 rounded border-gray-300 text-[#122a26] focus:ring-[#dcc090]"
+                                aria-label="Set as main variant image"
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => removeVariantImage(variant, imageIndex)}
+                              className="absolute -right-1 -top-1 rounded-full bg-red-500 p-0.5 text-white hover:bg-red-600"
+                              title={t('admin.products.add.removeImage')}
+                            >
+                              <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => variantImageInputRefs.current?.[variant.id]?.click()}
+                      disabled={imageUploadLoading}
+                      className="flex w-fit items-center gap-1 rounded-md border border-gray-300 bg-white px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      {imageUploadLoading ? t('admin.products.add.uploading') : t('admin.products.add.uploadImage')}
+                    </button>
                     <input
                       ref={(el) => {
                         if (variantImageInputRefs.current) {
@@ -286,6 +348,7 @@ export function VariantBuilderVariantsTable({
                         }
                       }}
                       type="file"
+                      multiple
                       accept={ADMIN_RASTER_IMAGE_FILE_ACCEPT}
                       onChange={(e) => onVariantImageUpload(variant.id, e)}
                       className="hidden"

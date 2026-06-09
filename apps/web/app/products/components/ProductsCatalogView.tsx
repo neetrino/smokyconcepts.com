@@ -46,6 +46,8 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
       selectedColor={filters.selectedColor}
       selectedSort={filters.selectedSort}
       selectedSize={filters.selectedSize}
+      selectedSizeCatalogCategoryId={filters.selectedSizeCatalogCategoryId}
+      selectedSizeCatalogCategoryTitle={filters.selectedSizeCatalogCategoryTitle}
       mobilePendingSize={filters.mobilePendingSize}
       collectionOptions={filters.collectionOptions}
       colorOptions={filters.colorOptions}
