@@ -3,20 +3,6 @@
 import { AdminShell } from '../../../components/AdminShell';
 import { AddProductFormContent } from './AddProductFormContent';
 import { useAddProductPage } from '../hooks/useAddProductPage';
-import { PRODUCT_FORM_FIELD, type ProductFormFieldId } from '../constants/productFormFieldIds.constants';
-
-function clearPricingFieldError(
-  fieldId: ProductFormFieldId,
-  submitErrorFieldId: ProductFormFieldId | null,
-  setSubmitErrorKey: (key: string | null) => void,
-  setSubmitErrorFieldId: (fieldId: ProductFormFieldId | null) => void
-): void {
-  if (submitErrorFieldId !== fieldId) {
-    return;
-  }
-  setSubmitErrorKey(null);
-  setSubmitErrorFieldId(null);
-}
 
 export function AddProductPageContent() {
   const {
@@ -31,10 +17,6 @@ export function AddProductPageContent() {
     handleSlugBlur,
     isClothingCategory,
     handleVariantAdd,
-    removeImageUrl,
-    setFeaturedImage,
-    handleUploadImages,
-    handleUploadImageFiles,
     handleUploadVariantImage,
     addLabel,
     removeLabel,
@@ -68,12 +50,10 @@ export function AddProductPageContent() {
         <AdminShell>
           <AddProductFormContent
             formData={formState.formData}
-            simpleProductData={formState.simpleProductData}
             categories={formState.categories}
             isEditMode={isEditMode}
             loading={formState.loading}
             imageUploadLoading={formState.imageUploadLoading}
-            imageUploadError={formState.imageUploadError}
             categoriesExpanded={formState.categoriesExpanded}
             useNewCategory={formState.useNewCategory}
             newCategoryName={formState.newCategoryName}
@@ -83,7 +63,6 @@ export function AddProductPageContent() {
             enabledAttributeIds={formState.enabledAttributeIds}
             onEnabledAttributeIdsChange={formState.setEnabledAttributeIds}
             hasVariantsToLoad={formState.hasVariantsToLoad}
-            fileInputRef={formState.fileInputRef}
             variantImageInputRefs={formState.variantImageInputRefs}
             onTitleChange={handleTitleChange}
             onSlugChange={handleSlugChange}
@@ -93,36 +72,12 @@ export function AddProductPageContent() {
               formState.setFormData((prev) => ({ ...prev, productDetailsHtml: e.target.value }))
             }
             onShippingChange={(e) => formState.setFormData((prev) => ({ ...prev, shippingHtml: e.target.value }))}
-            onUploadImages={handleUploadImages}
-            onUploadImageFiles={handleUploadImageFiles}
-            onRemoveImage={removeImageUrl}
-            onSetFeaturedImage={setFeaturedImage}
             onCategoriesExpandedChange={formState.setCategoriesExpanded}
             onUseNewCategoryChange={formState.setUseNewCategory}
             onNewCategoryNameChange={formState.setNewCategoryName}
             onCategoryIdsChange={(ids) => formState.setFormData((prev) => ({ ...prev, categoryIds: ids }))}
             onPrimaryCategoryIdChange={(id) => formState.setFormData((prev) => ({ ...prev, primaryCategoryId: id }))}
             onCreateCategory={handleCreateCategory}
-            onPriceChange={(value) => {
-              formState.setSimpleProductData((prev) => ({ ...prev, price: value }));
-              clearPricingFieldError(
-                PRODUCT_FORM_FIELD.PRICE,
-                formState.submitErrorFieldId,
-                formState.setSubmitErrorKey,
-                formState.setSubmitErrorFieldId
-              );
-            }}
-            onCompareAtPriceChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, compareAtPrice: value }))}
-            onSkuChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, sku: value }))}
-            onQuantityChange={(value) => {
-              formState.setSimpleProductData((prev) => ({ ...prev, quantity: value }));
-              clearPricingFieldError(
-                PRODUCT_FORM_FIELD.QUANTITY,
-                formState.submitErrorFieldId,
-                formState.setSubmitErrorKey,
-                formState.setSubmitErrorFieldId
-              );
-            }}
             onVariantUpdate={formState.setGeneratedVariants}
             onVariantAdd={handleVariantAdd}
             onSelectedAttributeValueIdsChange={formState.setSelectedAttributeValueIds}

@@ -1,21 +1,13 @@
 import type { Variant, GeneratedVariant } from '../types';
 import { buildAutoSkuForVariantIndex } from '../utils/autoSku';
 import type { ProductFormFieldId } from '../constants/productFormFieldIds.constants';
-import { getProductPricingValidationFailure } from '../utils/validateProductPricingFields';
 
 interface UseVariantValidationProps {
   variants: Variant[];
   generatedVariants?: GeneratedVariant[];
-  simpleProductData: {
-    price: string;
-    sku: string;
-    quantity: string;
-  };
-  /** Used to resolve empty SKUs the same way as submit (slug-based). */
   productSlug: string;
   isClothingCategory: () => boolean;
   setLoading: (loading: boolean) => void;
-  /** Key suffix under admin.products.add (e.g. variableSubmitNeedVariants). */
   setSubmitErrorKey: (key: string | null) => void;
   setSubmitErrorFieldId: (fieldId: ProductFormFieldId | null) => void;
 }
@@ -36,32 +28,23 @@ function failValidation(
 export function useVariantValidation({
   variants,
   generatedVariants = [],
-  simpleProductData,
   productSlug,
   isClothingCategory,
   setLoading,
   setSubmitErrorKey,
   setSubmitErrorFieldId,
 }: UseVariantValidationProps) {
+  void isClothingCategory;
+
   const validateVariants = (): boolean => {
     if (variants.length === 0) {
       if (generatedVariants.length === 0) {
         return failValidation(setLoading, setSubmitErrorKey, setSubmitErrorFieldId, 'variableSubmitNeedVariants');
       }
 
-      const defaultPricingFailure = getProductPricingValidationFailure(
-        simpleProductData.price,
-        simpleProductData.quantity,
-        'variableDefault'
-      );
-      if (defaultPricingFailure) {
-        return failValidation(
-          setLoading,
-          setSubmitErrorKey,
-          setSubmitErrorFieldId,
-          defaultPricingFailure.errorKey,
-          defaultPricingFailure.fieldId
-        );
+      const displayCount = generatedVariants.filter((variant) => variant.isDisplayVariant).length;
+      if (displayCount !== 1) {
+        return failValidation(setLoading, setSubmitErrorKey, setSubmitErrorFieldId, 'variableSubmitDisplayVariantRequired');
       }
 
       const skuSet = new Set<string>();
@@ -92,60 +75,60 @@ export function useVariantValidation({
 
     const skuSet = new Set<string>();
     for (const variant of variants) {
-        const variantSku = variant.sku ? variant.sku.trim() : '';
-        if (!variantSku || variantSku === '') {
-          setLoading(false);
-          return false;
-        }
+      const variantSku = variant.sku ? variant.sku.trim() : '';
+      if (!variantSku || variantSku === '') {
+        setLoading(false);
+        return false;
+      }
 
-        if (skuSet.has(variantSku)) {
-          setLoading(false);
-          return false;
-        }
-        skuSet.add(variantSku);
+      if (skuSet.has(variantSku)) {
+        setLoading(false);
+        return false;
+      }
+      skuSet.add(variantSku);
 
-        const colorData = variant.colors && variant.colors.length > 0 ? variant.colors : [];
+      const colorData = variant.colors && variant.colors.length > 0 ? variant.colors : [];
 
-        if (colorData.length > 0) {
-          for (const colorDataItem of colorData) {
-            const colorSizes = colorDataItem.sizes || [];
-            const colorSizeStocks = colorDataItem.sizeStocks || {};
-            const hasColor = colorDataItem.colorValue && colorDataItem.colorValue.trim() !== '';
+      if (colorData.length > 0) {
+        for (const colorDataItem of colorData) {
+          const colorSizes = colorDataItem.sizes || [];
+          const colorSizeStocks = colorDataItem.sizeStocks || {};
+          const hasColor = colorDataItem.colorValue && colorDataItem.colorValue.trim() !== '';
 
-            if (hasColor) {
-              const colorPriceValue = parseFloat(colorDataItem.price || '0');
-              if (!colorDataItem.price || isNaN(colorPriceValue) || colorPriceValue <= 0) {
-                setLoading(false);
-                return false;
-              }
-            } else if (colorData.indexOf(colorDataItem) === 0) {
-              const variantPriceValue = parseFloat(variant.price || '0');
-              if (!variant.price || isNaN(variantPriceValue) || variantPriceValue <= 0) {
-                setLoading(false);
-                return false;
-              }
+          if (hasColor) {
+            const colorPriceValue = parseFloat(colorDataItem.price || '0');
+            if (!colorDataItem.price || isNaN(colorPriceValue) || colorPriceValue <= 0) {
+              setLoading(false);
+              return false;
             }
-
-            if (colorSizes.length > 0) {
-              for (const size of colorSizes) {
-                const stock = colorSizeStocks[size];
-                if (!stock || typeof stock !== 'string' || stock.trim() === '' || parseInt(stock) < 0) {
-                  setLoading(false);
-                  return false;
-                }
-              }
-            } else if (
-              !colorDataItem.stock ||
-              typeof colorDataItem.stock !== 'string' ||
-              colorDataItem.stock.trim() === '' ||
-              parseInt(colorDataItem.stock) < 0
-            ) {
+          } else if (colorData.indexOf(colorDataItem) === 0) {
+            const variantPriceValue = parseFloat(variant.price || '0');
+            if (!variant.price || isNaN(variantPriceValue) || variantPriceValue <= 0) {
               setLoading(false);
               return false;
             }
           }
+
+          if (colorSizes.length > 0) {
+            for (const size of colorSizes) {
+              const stock = colorSizeStocks[size];
+              if (!stock || typeof stock !== 'string' || stock.trim() === '' || parseInt(stock, 10) < 0) {
+                setLoading(false);
+                return false;
+              }
+            }
+          } else if (
+            !colorDataItem.stock ||
+            typeof colorDataItem.stock !== 'string' ||
+            colorDataItem.stock.trim() === '' ||
+            parseInt(colorDataItem.stock, 10) < 0
+          ) {
+            setLoading(false);
+            return false;
+          }
         }
       }
+    }
 
     return true;
   };

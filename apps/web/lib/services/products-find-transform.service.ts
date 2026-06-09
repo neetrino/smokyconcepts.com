@@ -6,6 +6,7 @@ import { cleanImageUrls, processImageUrl, smartSplitUrls } from "./utils/image-u
 import {
   extractSizeCatalogSelectionFromAttributes,
   isDefaultPricingVariant,
+  isDisplayVariant,
 } from "@/lib/default-pricing-variant";
 import { catalogPriceForStorefront } from "@/lib/currency";
 
@@ -309,7 +310,11 @@ class ProductsFindTransformService {
       const selectableVariants = variants.filter(
         (item) => !isDefaultPricingVariant(item as { attributes?: unknown })
       );
-      const defaultVariant = defaultPricingVariant || variants[0] || null;
+      const displayVariant =
+        selectableVariants.find((item) => isDisplayVariant(item as { attributes?: unknown })) ??
+        selectableVariants[0] ??
+        null;
+      const defaultVariant = displayVariant ?? defaultPricingVariant ?? variants[0] ?? null;
       const selectableForSize = selectableVariants as Array<{ attributes?: unknown }>;
       const sizeLabel = extractSizeLabelFromProductVariants({
         defaultPricingVariant: defaultPricingVariant as { attributes?: unknown } | null,
@@ -485,6 +490,11 @@ class ProductsFindTransformService {
         selectableVariants as Array<{ id: string; imageUrl?: string | null; attributes?: unknown }>,
         lang
       );
+      const displayVariantImage =
+        displayVariant && typeof displayVariant.imageUrl === 'string' && displayVariant.imageUrl.trim() !== ''
+          ? displayVariant.imageUrl.trim().split(',')[0]?.trim() || null
+          : null;
+      const catalogImages = productImages.length > 0 ? productImages : displayVariantImage ? [displayVariantImage] : [];
 
       return {
         id: product.id,
@@ -507,8 +517,8 @@ class ProductsFindTransformService {
         originalPrice: appliedDiscount > 0 ? originalPrice : compareAtPriceAmd,
         compareAtPrice: compareAtPriceAmd,
         discountPercent: appliedDiscount > 0 ? appliedDiscount : null,
-        image: productImages[0] || null,
-        images: productImages,
+        image: catalogImages[0] || null,
+        images: catalogImages,
         variantImages,
         inStock: stockSourceVariants.some((item) => (item.stock || 0) > 0),
         labels: (() => {

@@ -18,7 +18,6 @@ interface UseProductFormCallbacksProps {
   generatedVariants: GeneratedVariant[];
   setFormData: (updater: (prev: unknown) => unknown) => void;
   setGeneratedVariants: (value: GeneratedVariant[] | ((prev: GeneratedVariant[]) => GeneratedVariant[])) => void;
-  setSimpleProductData: (value: unknown | ((prev: unknown) => unknown)) => void;
   checkIsClothingCategory: (categoryId: string, categories: Category[]) => boolean;
   /** Product id when in edit mode — used to exclude the current product from duplicate check. */
   productId?: string | null;
@@ -32,7 +31,6 @@ export function useProductFormCallbacks({
   categories,
   setFormData,
   setGeneratedVariants,
-  setSimpleProductData,
   checkIsClothingCategory,
   productId,
   isEditMode,
@@ -142,6 +140,7 @@ export function useProductFormCallbacks({
         image: null,
         images: [],
         mainImageIndex: 0,
+        isDisplayVariant: prev.length === 0,
       };
       return [...prev, newVariant];
     });

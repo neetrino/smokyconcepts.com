@@ -147,7 +147,8 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
         setVariantImages([]);
         return;
       }
-      const fallbackVariant = product.variants[0];
+      const fallbackVariant =
+        product.variants.find((variant) => variant.isDisplayVariant) ?? product.variants[0];
       setSelectedVariant(fallbackVariant);
       setSelectedColor(getOptionValue(fallbackVariant.options, 'color'));
       setSelectedSize(getOptionValue(fallbackVariant.options, 'size'));

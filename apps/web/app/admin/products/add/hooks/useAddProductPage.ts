@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState, type SetStateAction } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { useTranslation } from '@/lib/i18n-client';
@@ -13,7 +13,6 @@ import { useImageHandling } from './useImageHandling';
 import { useLabelManagement } from './useLabelManagement';
 import { useProductFormHandlers } from './useProductFormHandlers';
 import { useProductFormCallbacks } from './useProductFormCallbacks';
-import { useAutoSkuSyncForNewProduct } from './useAutoSkuSyncForNewProduct';
 import { useAddProductPageEffects } from './useAddProductPageEffects';
 import { isClothingCategory as checkIsClothingCategory, generateSlug } from '../utils/productUtils';
 import { buildCategoryAttributesWithSizeCatalog } from '../utils/buildCategoryAttributesWithSizeCatalog';
@@ -44,14 +43,6 @@ export function useAddProductPage() {
     setCategoriesExpanded: formState.setCategoriesExpanded,
   });
 
-  useAutoSkuSyncForNewProduct({
-    isEditMode,
-    loadingProduct: formState.loadingProduct,
-    slug: formState.formData.slug,
-    simpleProductSku: formState.simpleProductData.sku,
-    setSimpleProductData: formState.setSimpleProductData,
-  });
-
   useProductEditMode({
     productId,
     isLoggedIn,
@@ -61,7 +52,6 @@ export function useAddProductPage() {
     setUseNewCategory: formState.setUseNewCategory,
     setNewCategoryName: formState.setNewCategoryName,
     setHasVariantsToLoad: formState.setHasVariantsToLoad,
-    setSimpleProductData: (value) => formState.setSimpleProductData(value as SetStateAction<typeof formState.simpleProductData>),
     setGeneratedVariants: formState.setGeneratedVariants,
   });
 
@@ -93,19 +83,12 @@ export function useAddProductPage() {
     generatedVariants: formState.generatedVariants,
     setFormData: (updater) => formState.setFormData((prev) => updater(prev) as typeof formState.formData),
     setGeneratedVariants: formState.setGeneratedVariants,
-    setSimpleProductData: (value) => formState.setSimpleProductData(value as SetStateAction<typeof formState.simpleProductData>),
     checkIsClothingCategory,
     productId,
     isEditMode,
   });
 
-  const {
-    removeImageUrl,
-    setFeaturedImage,
-    handleUploadImageFiles,
-    handleUploadImages,
-    handleUploadVariantImage,
-  } = useImageHandling({
+  const { handleUploadVariantImage } = useImageHandling({
     imageUrls: formState.formData.imageUrls,
     featuredImageIndex: formState.formData.featuredImageIndex,
     variants: formState.formData.variants,
@@ -168,7 +151,6 @@ export function useAddProductPage() {
     setFormData: (updater) => formState.setFormData((prev) => updater(prev) as typeof formState.formData),
     setLoading: formState.setLoading,
     setCategories: formState.setCategories,
-    simpleProductData: formState.simpleProductData,
     generatedVariants: formState.generatedVariants,
     useNewCategory: formState.useNewCategory,
     newCategoryName: formState.newCategoryName,
@@ -195,10 +177,6 @@ export function useAddProductPage() {
     handleSlugBlur,
     isClothingCategory,
     handleVariantAdd,
-    removeImageUrl,
-    setFeaturedImage,
-    handleUploadImageFiles,
-    handleUploadImages,
     handleUploadVariantImage,
     addLabel,
     removeLabel,

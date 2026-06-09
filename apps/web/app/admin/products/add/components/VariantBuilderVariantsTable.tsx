@@ -174,6 +174,9 @@ export function VariantBuilderVariantsTable({
                 {t('admin.products.add.sku')}
               </th>
               <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {t('admin.products.add.displayVariant')}
+              </th>
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {t('admin.products.add.image')}
               </th>
               <th className="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -185,7 +188,7 @@ export function VariantBuilderVariantsTable({
             {generatedVariants.length === 0 ? (
               <tr>
                 <td
-                  colSpan={SHOW_COMPARE_AT_PRICE_FIELD ? 7 : 6}
+                  colSpan={SHOW_COMPARE_AT_PRICE_FIELD ? 8 : 7}
                   className="px-4 py-8 text-center text-sm text-gray-500"
                 >
                   {t('admin.products.add.noVariants')}
@@ -288,6 +291,25 @@ export function VariantBuilderVariantsTable({
                     className="w-24 text-xs"
                   />
                 </td>
+                <td className="px-2 py-2 whitespace-nowrap align-middle">
+                  <label className="inline-flex cursor-pointer items-center gap-1.5">
+                    <input
+                      type="checkbox"
+                      checked={variant.isDisplayVariant}
+                      onChange={() => {
+                        onVariantUpdate((prev) =>
+                          prev.map((v) => ({
+                            ...v,
+                            isDisplayVariant: v.id === variant.id,
+                          }))
+                        );
+                      }}
+                      className="h-4 w-4 rounded border-[#dcc090]/40 text-[#122a26] focus:ring-[#dcc090]"
+                      aria-label={t('admin.products.add.displayVariant')}
+                    />
+                    <span className="text-xs text-gray-600">{t('admin.products.add.displayVariantShort')}</span>
+                  </label>
+                </td>
                 <td className="px-2 py-2">
                   <div className="flex max-w-[220px] flex-col gap-2">
                     <div className="flex flex-wrap gap-2">
@@ -359,7 +381,17 @@ export function VariantBuilderVariantsTable({
                   <button
                     type="button"
                     onClick={() => {
-                      onVariantUpdate((prev) => prev.filter((v) => v.id !== variant.id));
+                      const wasDisplay = variant.isDisplayVariant;
+                      onVariantUpdate((prev) => {
+                        const next = prev.filter((v) => v.id !== variant.id);
+                        if (wasDisplay && next.length > 0) {
+                          return next.map((v, index) => ({
+                            ...v,
+                            isDisplayVariant: index === 0,
+                          }));
+                        }
+                        return next;
+                      });
                       if (variantImageInputRefs.current) {
                         delete variantImageInputRefs.current[variant.id];
                       }

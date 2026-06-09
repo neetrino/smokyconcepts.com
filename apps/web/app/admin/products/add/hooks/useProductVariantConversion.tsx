@@ -246,8 +246,10 @@ export function useProductVariantConversion({
         image: string | null;
         images: string[];
         mainImageIndex: number;
+        isDisplayVariant: boolean;
       }> = [];
       
+      let convertedIndex = 0;
       variantGroups.forEach((group, groupKey) => {
         const allValueIds = new Set<string>();
         group.forEach(variantData => {
@@ -278,7 +280,9 @@ export function useProductVariantConversion({
           image: combinedImage,
           images: uniqueCombinedImages,
           mainImageIndex: 0,
+          isDisplayVariant: convertedIndex === 0,
         });
+        convertedIndex += 1;
         
         console.log(`✅ [ADMIN] Grouped ${group.length} variants into 1 row:`, {
           groupKey,

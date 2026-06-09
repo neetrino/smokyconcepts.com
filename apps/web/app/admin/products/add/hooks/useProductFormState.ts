@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
 import type { Category, Variant, ProductLabel, GeneratedVariant } from '../types';
 import type { CategoryAttribute } from '@/lib/category-attributes';
-import { DEFAULT_SIMPLE_PRODUCT_DATA } from '../constants/defaultSimpleProductData.constants';
 import type { ProductFormFieldId } from '../constants/productFormFieldIds.constants';
 
 export function useProductFormState() {
@@ -35,12 +34,6 @@ export function useProductFormState() {
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [useNewCategory, setUseNewCategory] = useState(false);
-  const [simpleProductData, setSimpleProductData] = useState({
-    price: DEFAULT_SIMPLE_PRODUCT_DATA.price,
-    compareAtPrice: DEFAULT_SIMPLE_PRODUCT_DATA.compareAtPrice,
-    sku: DEFAULT_SIMPLE_PRODUCT_DATA.sku,
-    quantity: DEFAULT_SIMPLE_PRODUCT_DATA.quantity,
-  });
   const [generatedVariants, setGeneratedVariants] = useState<GeneratedVariant[]>([]);
   const [hasVariantsToLoad, setHasVariantsToLoad] = useState(false);
   const [categoryAttributes, setCategoryAttributes] = useState<CategoryAttribute[]>([]);
@@ -75,8 +68,6 @@ export function useProductFormState() {
     setNewCategoryName,
     useNewCategory,
     setUseNewCategory,
-    simpleProductData,
-    setSimpleProductData,
     generatedVariants,
     setGeneratedVariants,
     hasVariantsToLoad,
