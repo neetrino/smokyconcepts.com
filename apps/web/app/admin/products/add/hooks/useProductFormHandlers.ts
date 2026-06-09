@@ -9,7 +9,6 @@ import { buildVariantAttributePayload } from '@/lib/category-attributes';
 import type { CategoryAttribute } from '@/lib/category-attributes';
 import { buildDefaultPricingAttributes } from '@/lib/default-pricing-variant';
 import { initializeCurrencyRates, normalizeAdminProductPriceInput } from '@/lib/currency';
-import { buildAutoSkuBaseFromSlug } from '../utils/autoSku';
 import type { ProductFormFieldId } from '../constants/productFormFieldIds.constants';
 
 interface UseProductFormHandlersProps {
@@ -35,7 +34,6 @@ interface UseProductFormHandlersProps {
   setFormData: (updater: (prev: unknown) => unknown) => void;
   setLoading: (loading: boolean) => void;
   setCategories: (updater: (prev: Category[]) => Category[]) => void;
-  productType: 'simple' | 'variable';
   simpleProductData: {
     price: string;
     compareAtPrice: string;
@@ -58,7 +56,6 @@ export function useProductFormHandlers({
   setFormData,
   setLoading,
   setCategories,
-  productType,
   simpleProductData,
   generatedVariants,
   useNewCategory,
@@ -81,7 +78,6 @@ export function useProductFormHandlers({
   });
 
   const { validateVariants } = useVariantValidation({
-    productType,
     variants: formData.variants,
     generatedVariants,
     simpleProductData,
@@ -118,105 +114,75 @@ export function useProductFormHandlers({
       const variants: any[] = [];
       const variantSkuSet = new Set<string>();
 
-      if (productType === 'simple') {
-        const priceAmd = parseFloat(simpleProductData.price);
-        const compareAtPriceAmd = simpleProductData.compareAtPrice && simpleProductData.compareAtPrice.trim() !== ''
-          ? parseFloat(simpleProductData.compareAtPrice)
+      const defaultVariantPriceText = String(simpleProductData.price || '').trim();
+      const defaultVariantPrice = defaultVariantPriceText !== '' ? parseFloat(defaultVariantPriceText) : NaN;
+      const defaultVariantCompareAtPriceText = String(simpleProductData.compareAtPrice || '').trim();
+      const defaultVariantCompareAtPrice =
+        defaultVariantCompareAtPriceText !== '' ? parseFloat(defaultVariantCompareAtPriceText) : NaN;
+
+      const defaultVariantCompareAtPriceStored = Number.isFinite(defaultVariantCompareAtPrice)
+        ? normalizeAdminProductPriceInput(defaultVariantCompareAtPrice)
+        : undefined;
+      const defaultSkuInput = String(simpleProductData.sku || '').trim();
+      const defaultVariantSku =
+        defaultSkuInput !== ''
+          ? defaultSkuInput
+          : `${(currentFormData.slug || 'PROD').toUpperCase()}-DEFAULT`;
+      const defaultStockRaw = parseInt(String(simpleProductData.quantity || '0'), 10);
+      const defaultVariantStock =
+        Number.isFinite(defaultStockRaw) && defaultStockRaw >= 0 ? defaultStockRaw : 0;
+
+      variants.push({
+        price: Number.isFinite(defaultVariantPrice) ? normalizeAdminProductPriceInput(defaultVariantPrice) : 0,
+        compareAtPrice: defaultVariantCompareAtPriceStored,
+        stock: defaultVariantStock,
+        sku: defaultVariantSku,
+        attributes: buildDefaultPricingAttributes({
+          categoryId: currentFormData.sizeCatalogCategoryId,
+          categoryTitle: currentFormData.sizeCatalogCategoryTitle,
+        }),
+        published: true,
+      });
+      variantSkuSet.add(defaultVariantSku);
+
+      generatedVariants.forEach((genVariant, variantIndex) => {
+        const variantPriceText = String(genVariant.price || '').trim();
+        const variantPriceRaw = variantPriceText !== '' ? parseFloat(variantPriceText) : NaN;
+        const variantPriceStored = Number.isFinite(variantPriceRaw)
+          ? normalizeAdminProductPriceInput(variantPriceRaw)
+          : 0;
+
+        const variantCompareAtPriceText = String(genVariant.compareAtPrice || '').trim();
+        const variantCompareAtPriceRaw =
+          variantCompareAtPriceText !== ''
+            ? parseFloat(variantCompareAtPriceText)
+            : NaN;
+        const variantCompareAtPriceStored = Number.isFinite(variantCompareAtPriceRaw)
+          ? normalizeAdminProductPriceInput(variantCompareAtPriceRaw)
           : undefined;
-        const priceStored = Number.isFinite(priceAmd) ? normalizeAdminProductPriceInput(priceAmd) : 0;
-        const compareAtPriceStored =
-          compareAtPriceAmd !== undefined && Number.isFinite(compareAtPriceAmd)
-            ? normalizeAdminProductPriceInput(compareAtPriceAmd)
-            : undefined;
-        const resolvedSimpleSku =
-          simpleProductData.sku.trim() || buildAutoSkuBaseFromSlug(currentFormData.slug);
-        const simpleVariant: any = {
-          price: priceStored,
-          stock: parseInt(simpleProductData.quantity) || 0,
-          sku: resolvedSimpleSku,
-          attributes: buildDefaultPricingAttributes({
-            categoryId: currentFormData.sizeCatalogCategoryId,
-            categoryTitle: currentFormData.sizeCatalogCategoryTitle,
-          }),
-          published: true,
-        };
-        if (compareAtPriceStored && compareAtPriceStored > 0) {
-          simpleVariant.compareAtPrice = compareAtPriceStored;
+        const finalSku = (genVariant.sku && genVariant.sku.trim() !== '')
+          ? genVariant.sku.trim()
+          : `${currentFormData.slug || 'PROD'}-${Date.now()}-${variantIndex + 1}`;
+        let uniqueSku = finalSku;
+        let skuCounter = 1;
+        while (variantSkuSet.has(uniqueSku)) {
+          uniqueSku = `${finalSku}-${skuCounter}`;
+          skuCounter++;
         }
-        variants.push(simpleVariant);
-        variantSkuSet.add(resolvedSimpleSku);
-      } else {
-        // Variable: one API variant per generatedVariant (no attributes/options)
-        const defaultVariantPriceText = String(simpleProductData.price || '').trim();
-        const defaultVariantPrice = defaultVariantPriceText !== '' ? parseFloat(defaultVariantPriceText) : NaN;
-        const defaultVariantCompareAtPriceText = String(simpleProductData.compareAtPrice || '').trim();
-        const defaultVariantCompareAtPrice =
-          defaultVariantCompareAtPriceText !== '' ? parseFloat(defaultVariantCompareAtPriceText) : NaN;
-
-        const defaultVariantCompareAtPriceStored = Number.isFinite(defaultVariantCompareAtPrice)
-          ? normalizeAdminProductPriceInput(defaultVariantCompareAtPrice)
-          : undefined;
-        const defaultSkuInput = String(simpleProductData.sku || '').trim();
-        const defaultVariantSku =
-          defaultSkuInput !== ''
-            ? defaultSkuInput
-            : `${(currentFormData.slug || 'PROD').toUpperCase()}-DEFAULT`;
-        const defaultStockRaw = parseInt(String(simpleProductData.quantity || '0'), 10);
-        const defaultVariantStock =
-          Number.isFinite(defaultStockRaw) && defaultStockRaw >= 0 ? defaultStockRaw : 0;
-
+        variantSkuSet.add(uniqueSku);
         variants.push({
-          price: Number.isFinite(defaultVariantPrice) ? normalizeAdminProductPriceInput(defaultVariantPrice) : 0,
-          compareAtPrice: defaultVariantCompareAtPriceStored,
-          stock: defaultVariantStock,
-          sku: defaultVariantSku,
-          attributes: buildDefaultPricingAttributes({
-            categoryId: currentFormData.sizeCatalogCategoryId,
-            categoryTitle: currentFormData.sizeCatalogCategoryTitle,
-          }),
+          price: variantPriceStored,
+          compareAtPrice: variantCompareAtPriceStored,
+          stock: parseInt(genVariant.stock || '0') || 0,
+          sku: uniqueSku,
+          imageUrl: genVariant.image || undefined,
+          attributes:
+            genVariant.selectedValueIds.length > 0
+              ? buildVariantAttributePayload(genVariant.selectedValueIds, categoryAttributes)
+              : undefined,
           published: true,
         });
-        variantSkuSet.add(defaultVariantSku);
-
-        generatedVariants.forEach((genVariant, variantIndex) => {
-          const variantPriceText = String(genVariant.price || '').trim();
-          const variantPriceRaw = variantPriceText !== '' ? parseFloat(variantPriceText) : NaN;
-          const variantPriceStored = Number.isFinite(variantPriceRaw)
-            ? normalizeAdminProductPriceInput(variantPriceRaw)
-            : 0;
-
-          const variantCompareAtPriceText = String(genVariant.compareAtPrice || '').trim();
-          const variantCompareAtPriceRaw =
-            variantCompareAtPriceText !== ''
-              ? parseFloat(variantCompareAtPriceText)
-              : NaN;
-          const variantCompareAtPriceStored = Number.isFinite(variantCompareAtPriceRaw)
-            ? normalizeAdminProductPriceInput(variantCompareAtPriceRaw)
-            : undefined;
-          const finalSku = (genVariant.sku && genVariant.sku.trim() !== '')
-            ? genVariant.sku.trim()
-            : `${currentFormData.slug || 'PROD'}-${Date.now()}-${variantIndex + 1}`;
-          let uniqueSku = finalSku;
-          let skuCounter = 1;
-          while (variantSkuSet.has(uniqueSku)) {
-            uniqueSku = `${finalSku}-${skuCounter}`;
-            skuCounter++;
-          }
-          variantSkuSet.add(uniqueSku);
-          variants.push({
-            price: variantPriceStored,
-            compareAtPrice: variantCompareAtPriceStored,
-            stock: parseInt(genVariant.stock || '0') || 0,
-            sku: uniqueSku,
-            imageUrl: genVariant.image || undefined,
-            attributes:
-              genVariant.selectedValueIds.length > 0
-                ? buildVariantAttributePayload(genVariant.selectedValueIds, categoryAttributes)
-                : undefined,
-            published: true,
-          });
-        });
-      }
+      });
 
       // Final SKU validation
       const finalSkuSet = new Set<string>();

@@ -41,7 +41,6 @@ export function AddProductPageContent() {
     updateLabel,
     handleCreateCategory,
     handleSubmit,
-    handleProductTypeChange,
     applyToAllVariants,
     generateSlug,
   } = useAddProductPage();
@@ -69,7 +68,6 @@ export function AddProductPageContent() {
         <AdminShell>
           <AddProductFormContent
             formData={formState.formData}
-            productType={formState.productType}
             simpleProductData={formState.simpleProductData}
             categories={formState.categories}
             isEditMode={isEditMode}
@@ -95,8 +93,6 @@ export function AddProductPageContent() {
               formState.setFormData((prev) => ({ ...prev, productDetailsHtml: e.target.value }))
             }
             onShippingChange={(e) => formState.setFormData((prev) => ({ ...prev, shippingHtml: e.target.value }))}
-            variableProductTypeAllowed={formState.variableProductTypeAllowed}
-            onProductTypeChange={handleProductTypeChange}
             onUploadImages={handleUploadImages}
             onUploadImageFiles={handleUploadImageFiles}
             onRemoveImage={removeImageUrl}

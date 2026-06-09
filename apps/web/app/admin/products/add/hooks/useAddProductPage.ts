@@ -27,7 +27,6 @@ export function useAddProductPage() {
   const productId = searchParams.get('id');
   const isEditMode = !!productId;
   const attributePoolSeededForProductRef = useRef<string | null>(null);
-  const variableChosenWithEmptyRowsRef = useRef(!isEditMode);
 
   const formState = useProductFormState();
   const [sizeCatalogCategories, setSizeCatalogCategories] = useState<SizeCatalogCategoryDto[]>([]);
@@ -62,10 +61,8 @@ export function useAddProductPage() {
     setUseNewCategory: formState.setUseNewCategory,
     setNewCategoryName: formState.setNewCategoryName,
     setHasVariantsToLoad: formState.setHasVariantsToLoad,
-    setProductType: formState.setProductType,
     setSimpleProductData: (value) => formState.setSimpleProductData(value as SetStateAction<typeof formState.simpleProductData>),
     setGeneratedVariants: formState.setGeneratedVariants,
-    setVariableProductTypeAllowed: formState.setVariableProductTypeAllowed,
   });
 
   useAddProductPageEffects({
@@ -77,7 +74,6 @@ export function useAddProductPage() {
     categoryAttributesForVariants,
     setSizeCatalogCategories,
     attributePoolSeededForProductRef,
-    variableChosenWithEmptyRowsRef,
   });
 
   const { applyToAllVariants } = useVariantGeneration({
@@ -172,7 +168,6 @@ export function useAddProductPage() {
     setFormData: (updater) => formState.setFormData((prev) => updater(prev) as typeof formState.formData),
     setLoading: formState.setLoading,
     setCategories: formState.setCategories,
-    productType: formState.productType,
     simpleProductData: formState.simpleProductData,
     generatedVariants: formState.generatedVariants,
     useNewCategory: formState.useNewCategory,
@@ -184,20 +179,6 @@ export function useAddProductPage() {
     setSubmitErrorKey: formState.setSubmitErrorKey,
     setSubmitErrorFieldId: formState.setSubmitErrorFieldId,
   });
-
-  const handleProductTypeChange = (type: 'simple' | 'variable') => {
-    if (!formState.variableProductTypeAllowed && type === 'variable') {
-      return;
-    }
-    formState.setSubmitErrorKey(null);
-    formState.setSubmitErrorFieldId(null);
-    if (type === 'variable') {
-      variableChosenWithEmptyRowsRef.current = true;
-    } else {
-      variableChosenWithEmptyRowsRef.current = false;
-    }
-    formState.setProductType(type);
-  };
 
   const showPageLoading = isLoading || formState.loadingProduct;
   const canRenderForm = isLoggedIn && isAdmin;
@@ -224,7 +205,6 @@ export function useAddProductPage() {
     updateLabel,
     handleCreateCategory,
     handleSubmit,
-    handleProductTypeChange,
     applyToAllVariants,
     generateSlug,
   };

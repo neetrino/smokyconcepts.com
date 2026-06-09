@@ -9,7 +9,6 @@ import type { CategoryAttribute } from '@/lib/category-attributes';
 import { BasicInformation } from './BasicInformation';
 import { ProductImages } from './ProductImages';
 import { CategoriesBrands } from './CategoriesBrands';
-import { SimpleProductFields } from './SimpleProductFields';
 import { VariantBuilder } from './VariantBuilder';
 import { ProductLabels } from './ProductLabels';
 import { Publishing } from './Publishing';
@@ -36,9 +35,6 @@ interface AddProductFormContentProps {
     upcoming: boolean;
     variants: Variant[];
   };
-  productType: 'simple' | 'variable';
-  /** When false, Variable type is hidden (edit: product has no selectable variants). */
-  variableProductTypeAllowed: boolean;
   simpleProductData: {
     price: string;
     compareAtPrice: string;
@@ -67,7 +63,6 @@ interface AddProductFormContentProps {
   onDescriptionChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
   onProductDetailsChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
   onShippingChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
-  onProductTypeChange: (type: 'simple' | 'variable') => void;
   onUploadImages: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
   onUploadImageFiles: (files: File[]) => Promise<void>;
   onRemoveImage: (index: number) => void;
@@ -103,8 +98,6 @@ interface AddProductFormContentProps {
 
 export function AddProductFormContent({
   formData,
-  productType,
-  variableProductTypeAllowed,
   simpleProductData,
   categories,
   isEditMode,
@@ -128,7 +121,6 @@ export function AddProductFormContent({
   onDescriptionChange,
   onProductDetailsChange,
   onShippingChange,
-  onProductTypeChange,
   onUploadImages,
   onUploadImageFiles,
   onRemoveImage,
@@ -166,9 +158,6 @@ export function AddProductFormContent({
     <Card className="p-6 pb-24 sm:pb-24">
       <form onSubmit={handleSubmit} className="space-y-14">
         <BasicInformation
-          productType={productType}
-          variableProductTypeAllowed={variableProductTypeAllowed}
-          setProductType={onProductTypeChange}
           title={formData.title}
           slug={formData.slug}
           descriptionHtml={formData.descriptionHtml}
@@ -194,8 +183,7 @@ export function AddProductFormContent({
           onSetFeaturedImage={onSetFeaturedImage}
         />
 
-        {productType === 'variable' && (
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
             <p className="mb-3 text-sm font-semibold text-gray-700">
               {t('admin.products.add.defaultPricing') || 'Default Pricing'}
             </p>
@@ -283,7 +271,6 @@ export function AddProductFormContent({
               </div>
             </div>
           </div>
-        )}
 
         <CategoriesBrands
           categories={categories}
@@ -301,22 +288,7 @@ export function AddProductFormContent({
           onVariantsUpdate={onVariantsUpdate}
         />
 
-        {productType === 'simple' && (
-          <SimpleProductFields
-            price={simpleProductData.price}
-            compareAtPrice={simpleProductData.compareAtPrice}
-            sku={simpleProductData.sku}
-            quantity={simpleProductData.quantity}
-            invalidFieldId={submitErrorFieldId}
-            onPriceChange={onPriceChange}
-            onCompareAtPriceChange={onCompareAtPriceChange}
-            onSkuChange={onSkuChange}
-            onQuantityChange={onQuantityChange}
-          />
-        )}
-
-        {productType === 'variable' && (
-          <VariantBuilder
+        <VariantBuilder
             generatedVariants={generatedVariants}
             categoryAttributes={categoryAttributes}
             selectedAttributeValueIds={selectedAttributeValueIds}
@@ -334,8 +306,7 @@ export function AddProductFormContent({
             onApplyToAll={onApplyToAllVariants}
             onVariantImageUpload={onVariantImageUpload}
             generateSlug={generateSlug}
-          />
-        )}
+        />
 
         <ProductLabels
           labels={formData.labels}

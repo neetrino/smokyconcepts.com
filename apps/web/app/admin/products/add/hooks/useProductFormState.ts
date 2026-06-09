@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
 import type { Category, Variant, ProductLabel, GeneratedVariant } from '../types';
 import type { CategoryAttribute } from '@/lib/category-attributes';
-import { DEFAULT_NEW_PRODUCT_TYPE } from '../constants/defaultProductType.constants';
 import { DEFAULT_SIMPLE_PRODUCT_DATA } from '../constants/defaultSimpleProductData.constants';
 import type { ProductFormFieldId } from '../constants/productFormFieldIds.constants';
 
@@ -36,7 +35,6 @@ export function useProductFormState() {
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [useNewCategory, setUseNewCategory] = useState(false);
-  const [productType, setProductType] = useState<'simple' | 'variable'>(DEFAULT_NEW_PRODUCT_TYPE);
   const [simpleProductData, setSimpleProductData] = useState({
     price: DEFAULT_SIMPLE_PRODUCT_DATA.price,
     compareAtPrice: DEFAULT_SIMPLE_PRODUCT_DATA.compareAtPrice,
@@ -49,8 +47,6 @@ export function useProductFormState() {
   const [selectedAttributeValueIds, setSelectedAttributeValueIds] = useState<Record<string, string[]>>({});
   /** Which global attributes participate in this product (checkbox in Select attributes). */
   const [enabledAttributeIds, setEnabledAttributeIds] = useState<Record<string, boolean>>({});
-  /** When false (edit: product has no selectable variants), only Simple type is shown. */
-  const [variableProductTypeAllowed, setVariableProductTypeAllowed] = useState(true);
   /** i18n key under admin.products.add.* — client validation message above submit. */
   const [submitErrorKey, setSubmitErrorKey] = useState<string | null>(null);
   /** DOM field id to scroll to and highlight when validation fails. */
@@ -79,8 +75,6 @@ export function useProductFormState() {
     setNewCategoryName,
     useNewCategory,
     setUseNewCategory,
-    productType,
-    setProductType,
     simpleProductData,
     setSimpleProductData,
     generatedVariants,
@@ -93,8 +87,6 @@ export function useProductFormState() {
     setSelectedAttributeValueIds,
     enabledAttributeIds,
     setEnabledAttributeIds,
-    variableProductTypeAllowed,
-    setVariableProductTypeAllowed,
     submitErrorKey,
     setSubmitErrorKey,
     submitErrorFieldId,

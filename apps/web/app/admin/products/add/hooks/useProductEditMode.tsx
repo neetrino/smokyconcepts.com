@@ -21,10 +21,8 @@ interface UseProductEditModeProps {
   setUseNewCategory: (use: boolean) => void;
   setNewCategoryName: (name: string) => void;
   setHasVariantsToLoad: (has: boolean) => void;
-  setProductType: (type: 'simple' | 'variable') => void;
   setSimpleProductData: (data: unknown) => void;
   setGeneratedVariants: (variants: GeneratedVariant[]) => void;
-  setVariableProductTypeAllowed: (allowed: boolean) => void;
 }
 
 export function useProductEditMode({
@@ -36,10 +34,8 @@ export function useProductEditMode({
   setUseNewCategory,
   setNewCategoryName,
   setHasVariantsToLoad,
-  setProductType,
   setSimpleProductData,
   setGeneratedVariants,
-  setVariableProductTypeAllowed,
 }: UseProductEditModeProps) {
   const router = useRouter();
 
@@ -103,14 +99,12 @@ export function useProductEditMode({
 
         if (variants.length === 0) {
           setGeneratedVariants([]);
-          setProductType('simple');
           setSimpleProductData({
             price: DEFAULT_SIMPLE_PRODUCT_DATA.price,
             compareAtPrice: DEFAULT_SIMPLE_PRODUCT_DATA.compareAtPrice,
             sku: buildAutoSkuBaseFromSlug(product.slug || ''),
             quantity: DEFAULT_SIMPLE_PRODUCT_DATA.quantity,
           });
-          setVariableProductTypeAllowed(true);
         } else {
           const defaultPricingVariant = variants.find((variant) => isDefaultPricingVariant(variant));
           const selectableVariants = variants.filter((variant) => !isDefaultPricingVariant(variant));
@@ -139,14 +133,12 @@ export function useProductEditMode({
                 ? source.sku.trim()
                 : buildAutoSkuBaseFromSlug(product.slug || '');
             setGeneratedVariants([]);
-            setProductType('simple');
             setSimpleProductData({
               price: String(priceAmd || DEFAULT_SIMPLE_PRODUCT_DATA.price),
               compareAtPrice: compareAmd > 0 ? String(compareAmd) : '',
               sku: skuFromApi,
               quantity: String(stockNum),
             });
-            setVariableProductTypeAllowed(true);
           } else {
             const slugForSku = product.slug || '';
             const generated: GeneratedVariant[] = selectableVariants.map((v: VariantItem, idx: number) => {
@@ -180,8 +172,6 @@ export function useProductEditMode({
                 sku: sole.sku,
                 quantity: sole.stock,
               });
-              setProductType('simple');
-              setVariableProductTypeAllowed(true);
             } else {
               setGeneratedVariants(generated);
               const defaultPriceNum =
@@ -221,8 +211,6 @@ export function useProductEditMode({
                 sku: defaultSkuFromApi,
                 quantity: String(defaultStockNum),
               });
-              setProductType('variable');
-              setVariableProductTypeAllowed(true);
             }
           }
         }

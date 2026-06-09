@@ -1,10 +1,9 @@
 import type { Variant, GeneratedVariant } from '../types';
-import { buildAutoSkuBaseFromSlug, buildAutoSkuForVariantIndex } from '../utils/autoSku';
+import { buildAutoSkuForVariantIndex } from '../utils/autoSku';
 import type { ProductFormFieldId } from '../constants/productFormFieldIds.constants';
 import { getProductPricingValidationFailure } from '../utils/validateProductPricingFields';
 
 interface UseVariantValidationProps {
-  productType: 'simple' | 'variable';
   variants: Variant[];
   generatedVariants?: GeneratedVariant[];
   simpleProductData: {
@@ -35,7 +34,6 @@ function failValidation(
 }
 
 export function useVariantValidation({
-  productType,
   variants,
   generatedVariants = [],
   simpleProductData,
@@ -46,7 +44,7 @@ export function useVariantValidation({
   setSubmitErrorFieldId,
 }: UseVariantValidationProps) {
   const validateVariants = (): boolean => {
-    if (productType === 'variable' && variants.length === 0) {
+    if (variants.length === 0) {
       if (generatedVariants.length === 0) {
         return failValidation(setLoading, setSubmitErrorKey, setSubmitErrorFieldId, 'variableSubmitNeedVariants');
       }
@@ -92,9 +90,8 @@ export function useVariantValidation({
       return true;
     }
 
-    if (productType === 'variable') {
-      const skuSet = new Set<string>();
-      for (const variant of variants) {
+    const skuSet = new Set<string>();
+    for (const variant of variants) {
         const variantSku = variant.sku ? variant.sku.trim() : '';
         if (!variantSku || variantSku === '') {
           setLoading(false);
@@ -149,31 +146,6 @@ export function useVariantValidation({
           }
         }
       }
-    }
-
-    if (productType === 'simple') {
-      const pricingFailure = getProductPricingValidationFailure(
-        simpleProductData.price,
-        simpleProductData.quantity,
-        'simple'
-      );
-      if (pricingFailure) {
-        return failValidation(
-          setLoading,
-          setSubmitErrorKey,
-          setSubmitErrorFieldId,
-          pricingFailure.errorKey,
-          pricingFailure.fieldId
-        );
-      }
-
-      const simpleSkuEffective =
-        simpleProductData.sku.trim() || buildAutoSkuBaseFromSlug(productSlug);
-      if (!simpleSkuEffective) {
-        setLoading(false);
-        return false;
-      }
-    }
 
     return true;
   };
