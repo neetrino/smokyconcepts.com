@@ -229,6 +229,39 @@ export function getSizeLabel(product: CatalogProduct): string {
   return 'King Size';
 }
 
+/** Catalog card size badge — prefers the active variant label, then the selected filter size. */
+export function resolveCatalogCardSizeLabelFromVariant(
+  variant: CatalogProductVariantImages | null | undefined,
+  selectedSize: string | undefined,
+  fallback: string
+): string {
+  if (!variant) {
+    return fallback;
+  }
+
+  const sizeLabels = variant.sizeLabels
+    .map((label) => label.trim())
+    .filter((label) => label.length > 0);
+  if (sizeLabels.length === 0) {
+    return fallback;
+  }
+
+  const normalizedSelected = (selectedSize ?? '').trim().toLowerCase();
+  if (normalizedSelected && normalizedSelected !== 'all') {
+    const matchedBySize = sizeLabels.find((label) => label.toLowerCase() === normalizedSelected);
+    if (matchedBySize) {
+      return matchedBySize;
+    }
+
+    const variantCategoryTitle = (variant.sizeCatalogCategoryTitle ?? '').trim().toLowerCase();
+    if (variantCategoryTitle && variantCategoryTitle === normalizedSelected) {
+      return sizeLabels[0] ?? fallback;
+    }
+  }
+
+  return sizeLabels[0] ?? fallback;
+}
+
 /** Variant size strings used for catalog size-picker and filters (not collection titles). */
 export function getVariantSizeLabelsForCatalogFilter(product: CatalogProduct): string[] {
   const fromApi = product.sizeLabels?.filter((s) => typeof s === 'string' && s.trim().length > 0);

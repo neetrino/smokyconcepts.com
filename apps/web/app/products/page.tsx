@@ -31,6 +31,10 @@ interface Product {
     sizeLabels: string[];
     sizeCatalogCategoryId: string | null;
     sizeCatalogCategoryTitle: string | null;
+    price: number;
+    originalPrice: number | null;
+    stock: number;
+    sku: string;
   }>;
   inStock: boolean;
   categories: Array<{

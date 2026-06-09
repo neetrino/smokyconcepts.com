@@ -20,6 +20,10 @@ export interface CatalogProductVariantImages {
   sizeLabels: string[];
   sizeCatalogCategoryId: string | null;
   sizeCatalogCategoryTitle: string | null;
+  price: number;
+  originalPrice: number | null;
+  stock: number;
+  sku: string;
 }
 
 export interface ProductsCatalogCardProps {

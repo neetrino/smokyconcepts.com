@@ -79,32 +79,54 @@ function extractSizeOptionLabelsFromVariant(
 }
 
 function buildVariantImageDtos(
-  variants: Array<{ id: string; imageUrl?: string | null; attributes?: unknown }>,
-  lang: string
+  variants: Array<{
+    id: string;
+    imageUrl?: string | null;
+    attributes?: unknown;
+    price: number;
+    compareAtPrice?: number | null;
+    stock: number;
+    sku?: string | null;
+  }>,
+  lang: string,
+  appliedDiscount: number
 ): Array<{
   variantId: string;
   images: string[];
   sizeLabels: string[];
   sizeCatalogCategoryId: string | null;
   sizeCatalogCategoryTitle: string | null;
+  price: number;
+  originalPrice: number | null;
+  stock: number;
+  sku: string;
 }> {
-  return variants.flatMap((variant) => {
+  return variants.map((variant) => {
     const images = cleanImageUrls(
       smartSplitUrls(variant.imageUrl)
         .map((url) => processImageUrl(url) ?? url)
         .filter((url) => url.trim().length > 0)
     );
-    if (images.length === 0) {
-      return [];
+    const variantOriginalPrice = catalogPriceForStorefront(variant.price || 0);
+    const compareAtPriceAmd =
+      variant.compareAtPrice != null ? catalogPriceForStorefront(variant.compareAtPrice) : null;
+    let finalPrice = variantOriginalPrice;
+    if (appliedDiscount > 0 && variantOriginalPrice > 0) {
+      finalPrice = variantOriginalPrice * (1 - appliedDiscount / 100);
     }
+    const originalPrice = appliedDiscount > 0 ? variantOriginalPrice : compareAtPriceAmd;
     const { categoryId, categoryTitle } = extractSizeCatalogSelectionFromAttributes(variant.attributes);
-    return [{
+    return {
       variantId: variant.id,
       images,
       sizeLabels: extractSizeOptionLabelsFromVariant(variant, lang),
       sizeCatalogCategoryId: categoryId,
       sizeCatalogCategoryTitle: categoryTitle,
-    }];
+      price: finalPrice,
+      originalPrice,
+      stock: variant.stock || 0,
+      sku: variant.sku?.trim() ?? '',
+    };
   });
 }
 
@@ -487,8 +509,17 @@ class ProductsFindTransformService {
 
       const productImages = buildCatalogGalleryImages(product.media);
       const variantImages = buildVariantImageDtos(
-        selectableVariants as Array<{ id: string; imageUrl?: string | null; attributes?: unknown }>,
-        lang
+        selectableVariants as Array<{
+          id: string;
+          imageUrl?: string | null;
+          attributes?: unknown;
+          price: number;
+          compareAtPrice?: number | null;
+          stock: number;
+          sku?: string | null;
+        }>,
+        lang,
+        appliedDiscount
       );
       const displayVariantGalleryImages =
         displayVariant && typeof displayVariant.imageUrl === 'string' && displayVariant.imageUrl.trim() !== ''
