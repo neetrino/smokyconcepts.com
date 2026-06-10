@@ -31,6 +31,7 @@ export interface ProductVariant {
   productDiscount?: number | null;
   globalDiscount?: number | null;
   imageUrl?: string;
+  isDisplayVariant?: boolean;
 }
 
 export interface ProductLabel {

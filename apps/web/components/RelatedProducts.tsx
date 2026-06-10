@@ -12,22 +12,16 @@ import {
 import { getStoredLanguage, type LanguageCode } from '../lib/language';
 import { t } from '../lib/i18n';
 import { useRelatedProducts } from './hooks/useRelatedProducts';
-import { ProductsCatalogCard } from '../app/products/components/ProductsCatalogCard';
+import { CatalogStripProductCard } from '../app/products/components/CatalogStripProductCard';
 import {
   CATALOG_SECTION_PAGE_SIZE,
-  getCategoryLabel,
   getSectionLabel,
-  getSizeLabel,
-  shouldNudgeCatalogProductImage,
   toCatalogProduct,
 } from '../app/products/components/catalogProductLabels';
 import {
-  CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME,
+  CATALOG_STRIP_PAGINATION_DOT_CLASS_NAME,
+  CATALOG_STRIP_PAGINATION_ROW_CLASS_NAME,
   CATALOG_MOBILE_STRIP_PROGRAMMATIC_SCROLL_RELEASE_MS,
-  CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_LEADING_INSET_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE,
   CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
@@ -35,12 +29,8 @@ import {
   CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME,
   CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS,
-  PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
-  getCatalogProductCardImageScaleBoost,
   getCatalogProductsPageMobileNonFirstPageScrollClassName,
   getCatalogProductsSmViewportSnapshot,
-  getCatalogStripMobileImageFrameClassName,
-  getCatalogStripMobileImageScaleMultiplier,
   getServerCatalogProductsSmViewportSnapshot,
   subscribeCatalogProductsSmViewport,
 } from '../app/products/components/catalogProductCardMobilePresentation';
@@ -51,6 +41,7 @@ import {
   resolveMobileStripPageFromScroll,
   scrollMobileStripToPageAnchor,
 } from '../app/products/components/catalogStripScroll';
+import { HomeActionButton } from './home/HomeActionButton';
 
 interface RelatedProductsProps {
   categorySlug?: string;
@@ -58,7 +49,7 @@ interface RelatedProductsProps {
 }
 
 /**
- * Related products on the PDP — horizontal strip with scroll + pagination (catalog parity).
+ * Related products on the PDP — horizontal strip; mobile scroll-only, pagination on hover-capable `sm+`.
  */
 export function RelatedProducts({ categorySlug, currentProductId }: RelatedProductsProps) {
   const [language, setLanguage] = useState<LanguageCode>('en');
@@ -307,34 +298,14 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
                     }
                     pageStartRefs.current[mobileStripPageIndex] = element;
                   }}
-                  className={`${CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME}${
-                    isMobileStripPageStart ? ' max-sm:snap-start max-sm:snap-always' : ''
-                  }`}
+                  className={CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME}
                 >
-                  <ProductsCatalogCard
+                  <CatalogStripProductCard
                     product={catalogProduct}
                     sectionLabel={section}
-                    sizeLabel={getSizeLabel(catalogProduct)}
-                    categoryLabel={getCategoryLabel(catalogProduct, section)}
-                    productsCatalogPageScaleMultiplier={getCatalogStripMobileImageScaleMultiplier(
-                      index,
-                      isSmUp
-                    )}
-                    imageNudgeDown={shouldNudgeCatalogProductImage(index)}
-                    imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
-                    imageFrameClassName={getCatalogStripMobileImageFrameClassName(index)}
-                    catalogHeroPullUpClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME}
-                    catalogCardTopPaddingClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME}
-                    catalogDetailsOffsetClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME}
-                    catalogImageBottomMarginClassName={
-                      PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME
-                    }
-                    className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} max-sm:!w-full max-sm:!min-w-0 max-sm:!max-w-none`}
-                    catalogStripMobilePeek={isSmUp}
-                    compactLayout
-                    productsCatalogPage
-                    catalogBuyOnlyCta
-                    eagerProductImage
+                    index={index}
+                    isSmUp={isSmUp}
+                    ctaPreset="related-products"
                   />
                 </div>
               );
@@ -347,7 +318,7 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
       {!loading && products.length > 0 && totalPages > 1 ? (
         <div className={CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME}>
           <div
-            className={`${CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME} sm:max-w-none sm:justify-center sm:gap-4`}
+            className={CATALOG_STRIP_PAGINATION_ROW_CLASS_NAME}
             role="tablist"
             aria-label="Related products pages"
           >
@@ -358,7 +329,7 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
                 role="tab"
                 aria-selected={currentPage === pageIndex}
                 onClick={() => handleSectionPageChange(pageIndex)}
-                className={`h-2 min-w-[1.25rem] shrink rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#122a26] focus-visible:ring-offset-2 max-sm:h-1.5 max-sm:flex-1 max-sm:active:bg-[#c9c9c9] sm:w-[6.25rem] sm:flex-none ${
+                className={`${CATALOG_STRIP_PAGINATION_DOT_CLASS_NAME} ${
                   currentPage === pageIndex
                     ? 'bg-[#122a26]'
                     : 'bg-[#d9d9d9] [@media(hover:hover)]:hover:bg-[#c9c9c9]'
@@ -369,6 +340,15 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
           </div>
         </div>
       ) : null}
+
+      <div className="mt-8 flex justify-center sm:hidden">
+        <HomeActionButton
+          href="/products"
+          label={t(language, 'common.buttons.shop')}
+          variant="outline"
+          className="min-w-[8.75rem]"
+        />
+      </div>
     </section>
   );
 }

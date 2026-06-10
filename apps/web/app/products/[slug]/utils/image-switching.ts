@@ -42,15 +42,17 @@ function isAttributeValueImage(url: string, product: Product): boolean {
   return false;
 }
 
-function resolveFirstVariantGalleryUrl(
+function resolveVariantGalleryUrlsFromVariant(
   variant: ProductVariant,
   product: Product
-): string | null {
+): string[] {
   if (!variant.imageUrl) {
-    return null;
+    return [];
   }
 
   const splitUrls = smartSplitUrls(variant.imageUrl);
+  const urls: string[] = [];
+  const seen = new Set<string>();
   for (const url of splitUrls) {
     if (!url || url.trim() === '') {
       continue;
@@ -61,31 +63,35 @@ function resolveFirstVariantGalleryUrl(
       continue;
     }
 
-    return url;
+    const normalized = normalizeUrl(processedUrl);
+    if (!seen.has(normalized)) {
+      urls.push(url);
+      seen.add(normalized);
+    }
   }
 
-  return null;
+  return urls;
 }
 
 /**
- * Resolves the hero image URL for a selected variant (not part of the main thumbnail strip).
+ * Resolves gallery image URLs for a selected variant.
  */
-export function resolveVariantHeroImageUrl(
+export function resolveVariantGalleryUrls(
   variant: ProductVariant | null,
   product: Product | null
-): string | null {
+): string[] {
   if (!variant || !product) {
-    return null;
+    return [];
   }
 
-  const directUrl = resolveFirstVariantGalleryUrl(variant, product);
-  if (directUrl) {
-    return directUrl;
+  const directUrls = resolveVariantGalleryUrlsFromVariant(variant, product);
+  if (directUrls.length > 0) {
+    return directUrls;
   }
 
   const variantColor = getOptionValue(variant.options, 'color');
   if (!variantColor || !product.variants) {
-    return null;
+    return [];
   }
 
   const colorVariants = product.variants.filter(
@@ -93,13 +99,23 @@ export function resolveVariantHeroImageUrl(
   );
 
   for (const colorVariant of colorVariants) {
-    const colorUrl = resolveFirstVariantGalleryUrl(colorVariant, product);
-    if (colorUrl) {
-      return colorUrl;
+    const colorUrls = resolveVariantGalleryUrlsFromVariant(colorVariant, product);
+    if (colorUrls.length > 0) {
+      return colorUrls;
     }
   }
 
-  return null;
+  return [];
+}
+
+/**
+ * Resolves the hero image URL for a selected variant.
+ */
+export function resolveVariantHeroImageUrl(
+  variant: ProductVariant | null,
+  product: Product | null
+): string | null {
+  return resolveVariantGalleryUrls(variant, product)[0] ?? null;
 }
 
 /**

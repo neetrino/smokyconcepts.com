@@ -2,10 +2,13 @@
 
 export const TRENDING_ITEMS_PER_PAGE = 3;
 
-/** Desktop card width — matches products catalog `xl:w-[13rem]`. */
-export const TRENDING_CARD_WIDTH_REM = 13;
+/** Desktop card width — matches catalog strip card `xl:w-[11.5rem]`. */
+export const TRENDING_CARD_WIDTH_REM = 11.5;
 
-export const TRENDING_CARD_GAP_REM = 0.75;
+export const TRENDING_CARD_GAP_REM = 1.25;
+
+/** Extra width per track slot so adjacent (faded) clusters do not crowd the focal row. */
+export const TRENDING_PAGE_FRAME_EXTRA_REM = 2;
 
 /** Exact width of one trio on the desktop track (translate distance per step). */
 export const TRENDING_PAGE_SHIFT_REM =

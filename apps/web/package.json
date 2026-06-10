@@ -22,6 +22,7 @@
     "@shop/design-tokens": "*",
     "@shop/ui": "*",
     "@white-shop/db": "*",
+    "argon2": "^0.41.1",
     "bcryptjs": "^2.4.3",
     "browser-image-compression": "^2.0.2",
     "heic2any": "^0.0.4",

@@ -19,7 +19,6 @@ interface UseAddProductPageEffectsParams {
   categoryAttributesForVariants: CategoryAttribute[];
   setSizeCatalogCategories: (categories: SizeCatalogCategoryDto[]) => void;
   attributePoolSeededForProductRef: MutableRefObject<string | null>;
-  variableChosenWithEmptyRowsRef: MutableRefObject<boolean>;
 }
 
 export function useAddProductPageEffects({
@@ -31,50 +30,7 @@ export function useAddProductPageEffects({
   categoryAttributesForVariants,
   setSizeCatalogCategories,
   attributePoolSeededForProductRef,
-  variableChosenWithEmptyRowsRef,
 }: UseAddProductPageEffectsParams): void {
-  useEffect(() => {
-    if (!isEditMode) {
-      formState.setVariableProductTypeAllowed(true);
-    }
-  }, [isEditMode, formState.setVariableProductTypeAllowed]);
-
-  useEffect(() => {
-    variableChosenWithEmptyRowsRef.current = false;
-  }, [productId, variableChosenWithEmptyRowsRef]);
-
-  useEffect(() => {
-    if (formState.generatedVariants.length > 0) {
-      variableChosenWithEmptyRowsRef.current = false;
-    }
-  }, [formState.generatedVariants.length, variableChosenWithEmptyRowsRef]);
-
-  useEffect(() => {
-    if (!isEditMode || !productId || formState.loadingProduct) {
-      return;
-    }
-    if (formState.productType !== 'variable') {
-      return;
-    }
-    if (formState.generatedVariants.length > 0) {
-      return;
-    }
-    if (variableChosenWithEmptyRowsRef.current) {
-      return;
-    }
-    formState.setProductType('simple');
-    formState.setVariableProductTypeAllowed(true);
-  }, [
-    isEditMode,
-    productId,
-    formState.loadingProduct,
-    formState.productType,
-    formState.generatedVariants.length,
-    formState.setProductType,
-    formState.setVariableProductTypeAllowed,
-    variableChosenWithEmptyRowsRef,
-  ]);
-
   useEffect(() => {
     if (formState.submitErrorKey !== 'variableSubmitNeedVariants') {
       return;

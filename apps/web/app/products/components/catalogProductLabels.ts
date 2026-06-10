@@ -1,7 +1,7 @@
 import { sortSizeCatalogCategoriesByDisplayOrder } from '@/lib/constants/size-catalog-display-order.constants';
 import type { SizeCatalogCategoryDto } from '@/lib/types/size-catalog';
 
-import type { CatalogProductCardItem } from './productsCatalogCard.types';
+import type { CatalogProductCardItem, CatalogProductVariantImages } from './productsCatalogCard.types';
 
 /** Section pill colors — same tokens as {@link ProductsCatalogCard} PDP/catalog. */
 export const PRODUCT_SECTION_BADGE_CLASS_NAMES: Record<string, string> = {
@@ -58,6 +58,7 @@ export function toCatalogProduct(input: {
   price: number;
   image: string | null;
   images?: string[];
+  variantImages?: CatalogProductVariantImages[];
   inStock?: boolean;
   originalPrice?: number | null;
   defaultVariantId?: string | null;
@@ -78,6 +79,7 @@ export function toCatalogProduct(input: {
     price: input.price ?? 0,
     image: input.image ?? null,
     images: Array.isArray(input.images) ? input.images : [],
+    variantImages: Array.isArray(input.variantImages) ? input.variantImages : [],
     inStock: input.inStock ?? true,
     originalPrice: input.originalPrice ?? null,
     defaultVariantId: input.defaultVariantId ?? null,
@@ -227,6 +229,39 @@ export function getSizeLabel(product: CatalogProduct): string {
   return 'King Size';
 }
 
+/** Catalog card size badge — prefers the active variant label, then the selected filter size. */
+export function resolveCatalogCardSizeLabelFromVariant(
+  variant: CatalogProductVariantImages | null | undefined,
+  selectedSize: string | undefined,
+  fallback: string
+): string {
+  if (!variant) {
+    return fallback;
+  }
+
+  const sizeLabels = variant.sizeLabels
+    .map((label) => label.trim())
+    .filter((label) => label.length > 0);
+  if (sizeLabels.length === 0) {
+    return fallback;
+  }
+
+  const normalizedSelected = (selectedSize ?? '').trim().toLowerCase();
+  if (normalizedSelected && normalizedSelected !== 'all') {
+    const matchedBySize = sizeLabels.find((label) => label.toLowerCase() === normalizedSelected);
+    if (matchedBySize) {
+      return matchedBySize;
+    }
+
+    const variantCategoryTitle = (variant.sizeCatalogCategoryTitle ?? '').trim().toLowerCase();
+    if (variantCategoryTitle && variantCategoryTitle === normalizedSelected) {
+      return sizeLabels[0] ?? fallback;
+    }
+  }
+
+  return sizeLabels[0] ?? fallback;
+}
+
 /** Variant size strings used for catalog size-picker and filters (not collection titles). */
 export function getVariantSizeLabelsForCatalogFilter(product: CatalogProduct): string[] {
   const fromApi = product.sizeLabels?.filter((s) => typeof s === 'string' && s.trim().length > 0);
@@ -259,6 +294,13 @@ export function productAllowsSizeCatalogCategory(
   }
   /** Require explicit admin assignment on variants; do not treat “unset” as “all collections”. */
   return false;
+}
+
+function productHasSizeCatalogMetadata(product: CatalogProduct): boolean {
+  return Boolean(
+    (product.sizeCatalogCategoryIds?.length ?? 0) > 0 ||
+      (product.sizeCatalogCategoryTitles?.length ?? 0) > 0
+  );
 }
 
 /**
@@ -311,20 +353,19 @@ export function productMatchesSizeFilter(
   }
   const categoryKey = selectedSizeCatalogCategoryId?.trim() ?? '';
   const categoryTitleNorm = (selectedSizeCatalogCategoryTitle ?? '').trim().toLowerCase();
+  const labels = getVariantSizeLabelsForCatalogFilter(product);
+  const hasMatchingSizeLabel = labels.some((s) => s.trim().toLowerCase() === needle);
+
+  if (hasMatchingSizeLabel) {
+    return true;
+  }
 
   /** URL `size` stores the size-catalog band title (e.g. Slims), not each pack template name. */
   if (categoryKey && categoryTitleNorm && needle === categoryTitleNorm) {
     return productAllowsSizeCatalogCategory(product, categoryKey, selectedSizeCatalogCategoryTitle);
   }
 
-  const labels = getVariantSizeLabelsForCatalogFilter(product);
-  if (!labels.some((s) => s.trim().toLowerCase() === needle)) {
-    return false;
-  }
-  if (!categoryKey) {
-    return true;
-  }
-  return productAllowsSizeCatalogCategory(product, categoryKey, selectedSizeCatalogCategoryTitle);
+  return false;
 }
 
 export function catalogItemTitleMatchesAnySizeLabel(

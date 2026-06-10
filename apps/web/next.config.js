@@ -22,8 +22,18 @@ function loadRootEnv() {
 
 loadRootEnv();
 
+const { securityHeaders } = require('./lib/security/security-headers.config.cjs');
+
 const nextConfig = {
   reactStrictMode: true,
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: securityHeaders,
+      },
+    ];
+  },
   transpilePackages: ['@shop/ui', '@shop/design-tokens'],
   async rewrites() {
     return [

@@ -11,8 +11,10 @@ import type { ProductWithFullRelations, ProductVariantWithOptions } from "./type
 import {
   extractSizeCatalogSelectionFromAttributes,
   isDefaultPricingVariant,
+  isDisplayVariant,
 } from "@/lib/default-pricing-variant";
 import { catalogPriceForStorefront } from "@/lib/currency";
+import { sanitizeRichHtml } from "@/lib/security/sanitize-rich-html.server";
 
 /** Option item from variant.attributes JSON (no relation in current schema) */
 type VariantOptionFromAttributes = {
@@ -266,6 +268,7 @@ function transformVariants(
         productDiscount: productDiscount > 0 ? productDiscount : null,
         stock: variant.stock,
         imageUrl: variantImageUrl,
+        isDisplayVariant: isDisplayVariant(variant as { attributes?: unknown }),
         options: getVariantOptions(variant).map((opt: VariantOptionFromAttributes) => {
           // Support both new format (AttributeValue) and old format (attributeKey/value)
           if (opt.attributeValue) {
@@ -456,7 +459,11 @@ export async function transformProduct(
   const selectableVariants = allVariants.filter(
     (variant) => !isDefaultPricingVariant(variant as { attributes?: unknown })
   );
-  const defaultVariant = defaultPricingVariant || allVariants[0] || null;
+  const displayVariant =
+    selectableVariants.find((variant) => isDisplayVariant(variant as { attributes?: unknown })) ??
+    selectableVariants[0] ??
+    null;
+  const defaultVariant = displayVariant ?? defaultPricingVariant ?? allVariants[0] ?? null;
   const defaultVariantOriginalPrice = catalogPriceForStorefront(defaultVariant?.price || 0);
   const defaultVariantCompareAmd =
     defaultVariant?.compareAtPrice != null
@@ -473,7 +480,9 @@ export async function transformProduct(
   const sizeCatalogCategoryIds = collectSizeCatalogCategoryIdsFromVariants(allVariants);
   const sizeCatalogCategoryTitles = collectSizeCatalogCategoryTitlesFromVariants(allVariants);
   const defaultSizeCatalogSelection = extractSizeCatalogSelectionFromAttributes(
-    defaultPricingVariant ? (defaultPricingVariant as { attributes?: unknown }).attributes : null
+    (displayVariant ?? defaultPricingVariant)
+      ? ((displayVariant ?? defaultPricingVariant) as { attributes?: unknown }).attributes
+      : null
   );
 
   return {
@@ -481,9 +490,9 @@ export async function transformProduct(
     slug: translation?.slug || "",
     title: translation?.title || "",
     subtitle: translation?.subtitle || null,
-    description: translation?.descriptionHtml || null,
-    productDetailsHtml: translation?.productDetailsHtml || null,
-    shippingHtml: translation?.shippingHtml || null,
+    description: sanitizeRichHtml(translation?.descriptionHtml),
+    productDetailsHtml: sanitizeRichHtml(translation?.productDetailsHtml),
+    shippingHtml: sanitizeRichHtml(translation?.shippingHtml),
     categories,
     media: transformMedia(product),
     labels: transformLabels(product, lang),

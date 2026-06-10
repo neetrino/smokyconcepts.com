@@ -2,9 +2,11 @@ import { db } from "@white-shop/db";
 import { buildCatalogGalleryImages } from "./products-list-gallery-images";
 import { t } from "../i18n";
 import { ProductWithRelations } from "./products-find-query.service";
+import { cleanImageUrls, processImageUrl, smartSplitUrls } from "./utils/image-utils";
 import {
   extractSizeCatalogSelectionFromAttributes,
   isDefaultPricingVariant,
+  isDisplayVariant,
 } from "@/lib/default-pricing-variant";
 import { catalogPriceForStorefront } from "@/lib/currency";
 
@@ -40,6 +42,92 @@ function extractFirstSizeOptionLabelFromVariant(variant: { attributes?: unknown 
     sizeOption.attributeValue?.translations?.[0]?.label || sizeOption.attributeValue?.value;
   const normalizedSize = (sizeFromAttributeValue || sizeOption.value || "").trim();
   return normalizedSize || null;
+}
+
+function extractSizeOptionLabelsFromVariant(
+  variant: { attributes?: unknown },
+  lang: string
+): string[] {
+  const labels = new Set<string>();
+  const options = getVariantOptions(variant.attributes);
+  options.forEach((option) => {
+    const isSize =
+      option.attributeValue?.attribute?.key === "size" || option.attributeKey === "size";
+    if (!isSize) {
+      return;
+    }
+    const translations = option.attributeValue?.translations;
+    const tr =
+      Array.isArray(translations) && translations.length > 0
+        ? translations.find((item: { locale: string }) => item.locale === lang) ?? translations[0]
+        : undefined;
+    const label = (
+      (typeof tr?.label === "string" ? tr.label : "") ||
+      option.attributeValue?.value ||
+      option.value ||
+      ""
+    ).trim();
+    if (label) {
+      labels.add(label);
+    }
+    const valueOnly = (option.attributeValue?.value || "").trim();
+    if (valueOnly) {
+      labels.add(valueOnly);
+    }
+  });
+  return Array.from(labels);
+}
+
+function buildVariantImageDtos(
+  variants: Array<{
+    id: string;
+    imageUrl?: string | null;
+    attributes?: unknown;
+    price: number;
+    compareAtPrice?: number | null;
+    stock: number;
+    sku?: string | null;
+  }>,
+  lang: string,
+  appliedDiscount: number
+): Array<{
+  variantId: string;
+  images: string[];
+  sizeLabels: string[];
+  sizeCatalogCategoryId: string | null;
+  sizeCatalogCategoryTitle: string | null;
+  price: number;
+  originalPrice: number | null;
+  stock: number;
+  sku: string;
+}> {
+  return variants.map((variant) => {
+    const images = cleanImageUrls(
+      smartSplitUrls(variant.imageUrl)
+        .map((url) => processImageUrl(url) ?? url)
+        .filter((url) => url.trim().length > 0)
+    );
+    const variantOriginalPrice = catalogPriceForStorefront(variant.price || 0);
+    const compareAtPriceAmd =
+      variant.compareAtPrice != null ? catalogPriceForStorefront(variant.compareAtPrice) : null;
+    let finalPrice = variantOriginalPrice;
+    if (appliedDiscount > 0 && variantOriginalPrice > 0) {
+      finalPrice = variantOriginalPrice * (1 - appliedDiscount / 100);
+    }
+    const originalPrice = appliedDiscount > 0 ? variantOriginalPrice : compareAtPriceAmd;
+    const { categoryId, categoryTitle } = extractSizeCatalogSelectionFromAttributes(variant.attributes);
+    return {
+      variantId: variant.id,
+      images,
+      sizeLabels: extractSizeOptionLabelsFromVariant(variant, lang),
+      sizeCatalogCategoryId: categoryId,
+      sizeCatalogCategoryTitle: categoryTitle,
+      price: finalPrice,
+      originalPrice,
+      stock: variant.stock || 0,
+      sku: variant.sku?.trim() ?? '',
+    };
+  });
 }
 
 function extractSizeCatalogCategoryTitleFromDefaultVariant(
@@ -244,7 +332,11 @@ class ProductsFindTransformService {
       const selectableVariants = variants.filter(
         (item) => !isDefaultPricingVariant(item as { attributes?: unknown })
       );
-      const defaultVariant = defaultPricingVariant || variants[0] || null;
+      const displayVariant =
+        selectableVariants.find((item) => isDisplayVariant(item as { attributes?: unknown })) ??
+        selectableVariants[0] ??
+        null;
+      const defaultVariant = displayVariant ?? defaultPricingVariant ?? variants[0] ?? null;
       const selectableForSize = selectableVariants as Array<{ attributes?: unknown }>;
       const sizeLabel = extractSizeLabelFromProductVariants({
         defaultPricingVariant: defaultPricingVariant as { attributes?: unknown } | null,
@@ -416,6 +508,29 @@ class ProductsFindTransformService {
       const categories = [...relationCategories, ...missingCategories];
 
       const productImages = buildCatalogGalleryImages(product.media);
+      const variantImages = buildVariantImageDtos(
+        selectableVariants as Array<{
+          id: string;
+          imageUrl?: string | null;
+          attributes?: unknown;
+          price: number;
+          compareAtPrice?: number | null;
+          stock: number;
+          sku?: string | null;
+        }>,
+        lang,
+        appliedDiscount
+      );
+      const displayVariantGalleryImages =
+        displayVariant && typeof displayVariant.imageUrl === 'string' && displayVariant.imageUrl.trim() !== ''
+          ? cleanImageUrls(
+              smartSplitUrls(displayVariant.imageUrl)
+                .map((url) => processImageUrl(url) ?? url)
+                .filter((url) => url.trim().length > 0)
+            )
+          : [];
+      const catalogImages =
+        productImages.length > 0 ? productImages : displayVariantGalleryImages;
 
       return {
         id: product.id,
@@ -438,8 +553,9 @@ class ProductsFindTransformService {
         originalPrice: appliedDiscount > 0 ? originalPrice : compareAtPriceAmd,
         compareAtPrice: compareAtPriceAmd,
         discountPercent: appliedDiscount > 0 ? appliedDiscount : null,
-        image: productImages[0] || null,
-        images: productImages,
+        image: catalogImages[0] || null,
+        images: catalogImages,
+        variantImages,
         inStock: stockSourceVariants.some((item) => (item.stock || 0) > 0),
         labels: (() => {
           // Map existing labels

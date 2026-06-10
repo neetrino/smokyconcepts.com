@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
+import { PASSWORD_MIN_LENGTH } from '@/lib/security/password.constants';
 
 interface PasswordForm {
   currentPassword: string;
@@ -35,7 +36,7 @@ export function usePassword({ onError, onSuccess }: UsePasswordProps) {
       return;
     }
 
-    if (passwordForm.newPassword.length < 6) {
+    if (passwordForm.newPassword.length < PASSWORD_MIN_LENGTH) {
       onError(t('profile.password.passwordMinLength'));
       setSavingPassword(false);
       return;

@@ -5,6 +5,7 @@ export interface CatalogProductCardItem {
   price: number;
   image: string | null;
   images?: string[];
+  variantImages?: CatalogProductVariantImages[];
   inStock: boolean;
   originalPrice?: number | null;
   /** From list API — required for local-only cart lines */
@@ -13,10 +14,25 @@ export interface CatalogProductCardItem {
   defaultSku?: string;
 }
 
+export interface CatalogProductVariantImages {
+  variantId: string;
+  images: string[];
+  sizeLabels: string[];
+  sizeCatalogCategoryId: string | null;
+  sizeCatalogCategoryTitle: string | null;
+  price: number;
+  originalPrice: number | null;
+  stock: number;
+  sku: string;
+}
+
 export interface ProductsCatalogCardProps {
   product: CatalogProductCardItem;
   sectionLabel: string;
   sizeLabel: string;
+  selectedSize?: string;
+  selectedSizeCatalogCategoryId?: string | null;
+  selectedSizeCatalogCategoryTitle?: string | null;
   categoryLabel: string;
   className?: string;
   tightenDetailsUnderImage?: boolean;

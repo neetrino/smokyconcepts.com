@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@white-shop/db";
 import { logger } from "@/lib/utils/logger";
 import { isContactPhoneAllowedCharacterSet } from "@/lib/utils/contact-phone-input";
+import { enforceRateLimit } from "@/lib/security/rate-limit";
+import {
+  CONTACT_MAX_ATTEMPTS,
+  CONTACT_RATE_LIMIT_WINDOW_SECONDS,
+} from "@/lib/security/rate-limit.constants";
 
 /** Stored in DB `subject` column (schema); form field is the visitor's phone. */
 const CONTACT_PHONE_MIN_LENGTH = 3;
@@ -12,6 +17,15 @@ const CONTACT_PHONE_MAX_LENGTH = 40;
  * Submit contact form
  */
 export async function POST(req: NextRequest) {
+  const rateLimited = await enforceRateLimit(req, {
+    scope: 'contact:submit',
+    limit: CONTACT_MAX_ATTEMPTS,
+    windowSeconds: CONTACT_RATE_LIMIT_WINDOW_SECONDS,
+  });
+  if (rateLimited) {
+    return rateLimited;
+  }
+
   try {
     const body = await req.json();
     const { name, email, message } = body;
@@ -130,14 +144,13 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error("Contact form error", { error });
     return NextResponse.json(
       {
         type: "https://api.shop.am/problems/internal-error",
         title: "Internal Server Error",
         status: 500,
-        detail: errorMessage || "An error occurred while submitting the contact form",
+        detail: "An error occurred while submitting the contact form",
         instance: req.url,
       },
       { status: 500 }

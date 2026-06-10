@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { useSizeModalExitAnimation } from '@/hooks/useSizeModalExitAnimation';
@@ -259,7 +260,7 @@ export function CustomizeSizeModal({
     onClose();
   };
 
-  return (
+  return createPortal(
     <div
       className={`fixed inset-0 z-[110] ${isExiting ? 'pointer-events-none' : ''}`}
       role="presentation"
@@ -353,6 +354,7 @@ export function CustomizeSizeModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

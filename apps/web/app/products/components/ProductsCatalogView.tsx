@@ -46,6 +46,9 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
       selectedColor={filters.selectedColor}
       selectedSort={filters.selectedSort}
       selectedSize={filters.selectedSize}
+      selectedSizeCatalogCategoryId={filters.selectedSizeCatalogCategoryId}
+      selectedSizeCatalogCategoryTitle={filters.selectedSizeCatalogCategoryTitle}
+      mobilePendingSize={filters.mobilePendingSize}
       collectionOptions={filters.collectionOptions}
       colorOptions={filters.colorOptions}
       isCollectionFilterActive={filters.isCollectionFilterActive}
@@ -56,6 +59,8 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
       updateQuery={filters.updateQuery}
       clearFilters={filters.clearFilters}
       openCatalogSizeModal={filters.openCatalogSizeModal}
+      openCatalogSizeModalFromMobileFilter={filters.openCatalogSizeModalFromMobileFilter}
+      commitMobileFilterApply={filters.commitMobileFilterApply}
       setCatalogSizeModalOpen={filters.setCatalogSizeModalOpen}
       sections={scroll.sections}
       isSmUp={isSmUp}
@@ -70,7 +75,7 @@ export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
       language={filters.language}
       sizeCatalogForModal={filters.sizeCatalogForModal}
       selectedCatalogItemId={filters.selectedCatalogItemId}
-      applyCatalogSizeFilter={filters.applyCatalogSizeFilter}
+      handleCatalogSizeItemSelect={filters.handleCatalogSizeItemSelect}
     />
   );
 }

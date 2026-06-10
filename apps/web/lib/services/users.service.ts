@@ -5,7 +5,8 @@ import {
   buildOrderSummaryLinesFromPersistedItems,
   resolveOrderShippingPriceAmd,
 } from "@/lib/orders/order-summary-display";
-import * as bcrypt from "bcryptjs";
+import { hashPassword, validateNewPasswordPolicy, verifyPassword } from "@/lib/security/password";
+import { logger } from "@/lib/utils/logger";
 
 function normalizeSizeCatalogTitleLookup(value: string | null | undefined): string {
   return value?.trim().toLocaleLowerCase() ?? "";
@@ -104,6 +105,16 @@ class UsersService {
       };
     }
 
+    const passwordPolicyError = validateNewPasswordPolicy(newPassword.trim());
+    if (passwordPolicyError) {
+      throw {
+        status: 400,
+        type: "https://api.shop.am/problems/validation-error",
+        title: "Validation Error",
+        detail: passwordPolicyError,
+      };
+    }
+
     const user = await db.user.findUnique({
       where: { id: userId },
       select: {
@@ -131,35 +142,18 @@ class UsersService {
       };
     }
 
-    try {
-      const isValid = await bcrypt.compare(oldPassword.trim(), user.passwordHash);
-      if (!isValid) {
-        throw {
-          status: 401,
-          type: "https://api.shop.am/problems/unauthorized",
-          title: "Invalid password",
-          detail: "The old password is incorrect",
-        };
-      }
-    } catch (bcryptError: any) {
-      // Handle bcrypt errors
-      console.error("❌ [USERS SERVICE] bcrypt.compare error:", {
-        error: bcryptError,
-        message: bcryptError?.message,
-        userId,
-        hasOldPassword: !!oldPassword,
-        hasPasswordHash: !!user.passwordHash,
-      });
+    const isValid = await verifyPassword(oldPassword.trim(), user.passwordHash);
+    if (!isValid) {
       throw {
-        status: 500,
-        type: "https://api.shop.am/problems/internal-error",
-        title: "Internal Server Error",
-        detail: "Failed to verify password",
+        status: 401,
+        type: "https://api.shop.am/problems/unauthorized",
+        title: "Invalid password",
+        detail: "The old password is incorrect",
       };
     }
 
     try {
-      const newPasswordHash = await bcrypt.hash(newPassword.trim(), 10);
+      const newPasswordHash = await hashPassword(newPassword.trim());
       await db.user.update({
         where: { id: userId },
         data: { passwordHash: newPasswordHash },
@@ -167,17 +161,13 @@ class UsersService {
       });
 
       return { success: true };
-    } catch (hashError: any) {
-      console.error("❌ [USERS SERVICE] bcrypt.hash error:", {
-        error: hashError,
-        message: hashError?.message,
-        userId,
-      });
+    } catch (hashError: unknown) {
+      logger.error("Password hash error on change", { userId, error: hashError });
       throw {
         status: 500,
         type: "https://api.shop.am/problems/internal-error",
         title: "Internal Server Error",
-        detail: "Failed to hash new password",
+        detail: "Failed to update password",
       };
     }
   }
