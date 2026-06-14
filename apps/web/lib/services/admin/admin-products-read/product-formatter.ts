@@ -1,9 +1,19 @@
 import { catalogPriceForStorefront } from '@/lib/currency';
+import { isDefaultPricingVariant } from '@/lib/default-pricing-variant';
+import { processImageUrl, smartSplitUrls } from '../../utils/image-utils';
 
 interface ProductListCategory {
   translations?: Array<{
     title: string;
   }>;
+}
+
+interface ProductListVariant {
+  price: number;
+  stock: number;
+  compareAtPrice: number | null;
+  imageUrl?: string | null;
+  attributes?: unknown;
 }
 
 interface ProductListItem {
@@ -20,11 +30,7 @@ interface ProductListItem {
     title: string;
   }>;
   categories?: ProductListCategory[];
-  variants?: Array<{
-    price: number;
-    stock: number;
-    compareAtPrice: number | null;
-  }>;
+  variants?: ProductListVariant[];
   media?: unknown[];
 }
 
@@ -40,12 +46,11 @@ export function formatProductForList(
     ? product.translations[0]
     : null;
   
-  // Безопасное получение variant с проверкой на существование массива
-  const variant = Array.isArray(product.variants) && product.variants.length > 0
-    ? product.variants[0]
-    : null;
-  
-  const image = extractImageFromMedia(product.media);
+  const variants = Array.isArray(product.variants) ? product.variants : [];
+  const defaultPricingVariant = variants.find((item) => isDefaultPricingVariant(item));
+  const variant = defaultPricingVariant ?? variants[0] ?? null;
+
+  const image = resolveProductListImage(product.media, variants);
   const relationCategories = Array.isArray(product.categories)
     ? product.categories
         .map((category) => category.translations?.[0]?.title?.trim() || "")
@@ -82,6 +87,56 @@ export function formatProductForList(
 /**
  * Extract image from media array
  */
+function extractFirstVariantImage(
+  variant: { imageUrl?: string | null } | null | undefined
+): string | null {
+  if (!variant?.imageUrl) {
+    return null;
+  }
+
+  for (const url of smartSplitUrls(variant.imageUrl)) {
+    const processed = processImageUrl(url);
+    if (processed) {
+      return processed;
+    }
+  }
+
+  return null;
+}
+
+function resolveProductListImage(
+  media: unknown[] | undefined,
+  variants: ProductListVariant[]
+): string | null {
+  const mediaImage = extractImageFromMedia(media);
+  if (mediaImage) {
+    return mediaImage;
+  }
+
+  const defaultPricingVariant = variants.find((item) => isDefaultPricingVariant(item));
+  const defaultPricingImage = extractFirstVariantImage(defaultPricingVariant);
+  if (defaultPricingImage) {
+    return defaultPricingImage;
+  }
+
+  const selectableVariants = variants.filter((item) => !isDefaultPricingVariant(item));
+  for (const selectableVariant of selectableVariants) {
+    const image = extractFirstVariantImage(selectableVariant);
+    if (image) {
+      return image;
+    }
+  }
+
+  for (const item of variants) {
+    const image = extractFirstVariantImage(item);
+    if (image) {
+      return image;
+    }
+  }
+
+  return null;
+}
+
 function extractImageFromMedia(media: unknown[] | undefined): string | null {
   if (!Array.isArray(media) || media.length === 0) {
     return null;
