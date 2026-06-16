@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import { THUMBNAILS_PER_VIEW } from './constants';
@@ -14,6 +14,9 @@ import {
   CUSTOMIZE_HERO_THUMBNAIL_TOP_RATIO,
 } from './customize-tab-preview.constants';
 import { CustomizeProductOverlay, type CustomizeOverlayPosition } from './CustomizeProductOverlay';
+import { MobileGalleryHeroSlider } from './gallery/MobileGalleryHeroSlider';
+import { MobileGalleryThumbnailTrack } from './gallery/MobileGalleryThumbnailTrack';
+import { useMobileGalleryViewport } from './gallery/useMobileGalleryViewport';
 
 interface ProductImageGalleryProps {
   /** Main product images for the thumbnail strip (admin media only). */
@@ -77,7 +80,21 @@ const THUMBNAIL_ACTIVE_INDICATOR_CLASSES =
 
 /** Thumbnail strip scroll — hide native scrollbar (avoids grey line on mobile). */
 const THUMBNAIL_STRIP_SCROLL_BASE_CLASSES =
-  'scrollbar-hide min-h-0 min-w-0 flex-1 overflow-y-visible overscroll-x-contain max-sm:w-full max-sm:flex-none';
+  'scrollbar-hide min-h-0 min-w-0 flex-1 overflow-y-visible overscroll-x-contain';
+
+const THUMBNAIL_STRIP_SCROLL_CLIP_CLASSES = 'max-sm:overflow-x-hidden sm:overflow-x-auto';
+
+/** Mobile edge mask width — matches nav button size (`size-9`). */
+const THUMBNAIL_STRIP_MOBILE_EDGE_BLOCK_WIDTH_PX = 36;
+
+const THUMBNAIL_STRIP_MOBILE_EDGE_BLOCK_BASE_CLASSES =
+  'pointer-events-none absolute inset-y-0 z-[5] w-9 bg-white max-sm:block sm:hidden';
+
+const THUMBNAIL_STRIP_MOBILE_EDGE_BLOCK_PREVIOUS_CLASSES =
+  `${THUMBNAIL_STRIP_MOBILE_EDGE_BLOCK_BASE_CLASSES} left-0`;
+
+const THUMBNAIL_STRIP_MOBILE_EDGE_BLOCK_NEXT_CLASSES =
+  `${THUMBNAIL_STRIP_MOBILE_EDGE_BLOCK_BASE_CLASSES} right-0`;
 
 /** Invisible slot — fills the scroll window when the trailing edge has fewer than {@link THUMBNAILS_PER_VIEW} images. */
 const THUMBNAIL_EMPTY_SLOT_CLASS =
@@ -86,17 +103,88 @@ const THUMBNAIL_EMPTY_SLOT_CLASS =
 /** Figma card aspect when customize preview is active (760×625). */
 const CUSTOMIZE_GALLERY_CARD_ASPECT_CLASS = 'aspect-[760/625]';
 
-/** Compact strip (≤ {@link THUMBNAILS_PER_VIEW} images): thumbs centered under hero; arrows overlay the row on sm+. */
+/** Compact strip (≤ {@link THUMBNAILS_PER_VIEW} images): nav arrows overlay thumbnail row edges. */
 const THUMBNAIL_STRIP_COMPACT_ROW_CLASSES = 'relative z-20 w-full min-w-0 shrink-0';
 
 const THUMBNAIL_STRIP_COMPACT_THUMBS_CLASSES =
-  'flex w-full items-center justify-center gap-3 px-9 max-sm:gap-2 sm:px-11';
+  'flex w-full min-w-0 items-center justify-center gap-3 overflow-x-hidden max-sm:gap-2 sm:px-11';
+
+/** Windowed strip — thumbs align from the start when the row overflows and slides. */
+const THUMBNAIL_STRIP_WINDOWED_THUMBS_CLASSES =
+  'flex w-full min-w-0 items-center justify-start overflow-x-hidden max-sm:gap-2 sm:gap-3';
 
 const THUMBNAIL_STRIP_COMPACT_NAV_BUTTON_CLASSES =
-  `${THUMBNAIL_NAV_BUTTON_CLASSES} absolute top-1/2 z-10 -translate-y-1/2`;
+  `${THUMBNAIL_NAV_BUTTON_CLASSES} absolute top-1/2 z-10 -translate-y-1/2 max-sm:bg-transparent sm:bg-white/85`;
 
 const THUMBNAIL_STRIP_COMPACT_PREVIOUS_CLASSES = `${THUMBNAIL_STRIP_COMPACT_NAV_BUTTON_CLASSES} left-0`;
 const THUMBNAIL_STRIP_COMPACT_NEXT_CLASSES = `${THUMBNAIL_STRIP_COMPACT_NAV_BUTTON_CLASSES} right-0`;
+
+const THUMBNAIL_STRIP_WINDOWED_INNER_ROW_CLASSES =
+  'flex min-h-0 w-full min-w-0 flex-nowrap items-center justify-start gap-2 sm:gap-3';
+
+const THUMBNAIL_STRIP_CENTERED_INNER_ROW_CLASSES =
+  'flex min-h-0 w-full flex-nowrap items-center justify-center gap-3 max-sm:gap-2';
+
+const THUMBNAIL_SIZE_MOBILE_PX = 36;
+const THUMBNAIL_SIZE_DESKTOP_PX = 40;
+const THUMBNAIL_GAP_MOBILE_PX = 8;
+const THUMBNAIL_GAP_DESKTOP_PX = 12;
+const MOBILE_BREAKPOINT_PX = 640;
+
+/** Inner content width of the thumbnail viewport (excludes padding and mobile edge masks). */
+function getThumbsViewportContentWidth(node: HTMLElement, isMobile: boolean): number {
+  const style = window.getComputedStyle(node);
+  const paddingX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+  const mobileEdgeInset = isMobile ? THUMBNAIL_STRIP_MOBILE_EDGE_BLOCK_WIDTH_PX * 2 : 0;
+
+  return Math.max(0, node.clientWidth - paddingX - mobileEdgeInset);
+}
+
+/** Total width of a thumbnail row with gaps between items. */
+function thumbnailsStripContentWidth(imageCount: number, isMobile: boolean): number {
+  if (imageCount <= 0) {
+    return 0;
+  }
+
+  const thumbSize = isMobile ? THUMBNAIL_SIZE_MOBILE_PX : THUMBNAIL_SIZE_DESKTOP_PX;
+  const gap = isMobile ? THUMBNAIL_GAP_MOBILE_PX : THUMBNAIL_GAP_DESKTOP_PX;
+
+  return imageCount * thumbSize + (imageCount - 1) * gap;
+}
+
+/** How many thumbnail slots fit in the measured viewport. */
+function countVisibleThumbnailSlots(containerWidth: number, isMobile: boolean): number {
+  const thumbSize = isMobile ? THUMBNAIL_SIZE_MOBILE_PX : THUMBNAIL_SIZE_DESKTOP_PX;
+  const gap = isMobile ? THUMBNAIL_GAP_MOBILE_PX : THUMBNAIL_GAP_DESKTOP_PX;
+
+  if (containerWidth <= 0) {
+    return THUMBNAILS_PER_VIEW;
+  }
+
+  return Math.max(1, Math.floor((containerWidth + gap) / (thumbSize + gap)));
+}
+
+/** Slides the thumbnail window so the active image stays visible when navigating. */
+function resolveThumbnailStartIndex(
+  imageIndex: number,
+  startIndex: number,
+  slotsPerView: number,
+  totalImages: number,
+): number | null {
+  if (totalImages <= slotsPerView) {
+    return null;
+  }
+
+  if (imageIndex < startIndex) {
+    return imageIndex;
+  }
+
+  if (imageIndex >= startIndex + slotsPerView) {
+    return imageIndex - slotsPerView + 1;
+  }
+
+  return null;
+}
 
 export function ProductImageGallery({
   images,
@@ -115,24 +203,89 @@ export function ProductImageGallery({
   showCustomizePackPreview = false,
   customizePackPreviewHtml = null,
 }: ProductImageGalleryProps) {
-  useEffect(() => {
-    if (images.length > THUMBNAILS_PER_VIEW) {
-      if (currentImageIndex < thumbnailStartIndex) {
-        onThumbnailStartIndexChange(currentImageIndex);
-      } else if (currentImageIndex >= thumbnailStartIndex + THUMBNAILS_PER_VIEW) {
-        onThumbnailStartIndexChange(currentImageIndex - THUMBNAILS_PER_VIEW + 1);
-      }
+  const thumbsViewportRef = useRef<HTMLDivElement>(null);
+  const [measuredVisibleSlots, setMeasuredVisibleSlots] = useState(THUMBNAILS_PER_VIEW);
+  const [thumbnailsStripOverflows, setThumbnailsStripOverflows] = useState(false);
+  const [galleryThumbnailStepPx, setGalleryThumbnailStepPx] = useState(
+    THUMBNAIL_SIZE_MOBILE_PX + THUMBNAIL_GAP_MOBILE_PX,
+  );
+  const isMobileGallery = useMobileGalleryViewport();
+
+  const slotsPerView = Math.min(THUMBNAILS_PER_VIEW, measuredVisibleSlots);
+  const usesThumbnailWindow = images.length > slotsPerView;
+  const usesCompactThumbnailStrip = images.length <= THUMBNAILS_PER_VIEW;
+  const usesVisibleThumbnailWindow =
+    usesThumbnailWindow && (!isMobileGallery || thumbnailsStripOverflows);
+  const usesWindowedThumbnailLayout = isMobileGallery && usesVisibleThumbnailWindow;
+  const compactThumbsViewportClassName = usesWindowedThumbnailLayout
+    ? THUMBNAIL_STRIP_WINDOWED_THUMBS_CLASSES
+    : THUMBNAIL_STRIP_COMPACT_THUMBS_CLASSES;
+  const compactThumbsInnerRowClassName = usesWindowedThumbnailLayout
+    ? THUMBNAIL_STRIP_WINDOWED_INNER_ROW_CLASSES
+    : THUMBNAIL_STRIP_CENTERED_INNER_ROW_CLASSES;
+
+  useLayoutEffect(() => {
+    const node = thumbsViewportRef.current;
+    if (!node) {
+      return;
     }
-  }, [currentImageIndex, images.length, thumbnailStartIndex, onThumbnailStartIndexChange]);
+
+    const updateVisibleSlots = () => {
+      const isMobile = window.innerWidth < MOBILE_BREAKPOINT_PX;
+      const contentWidth = getThumbsViewportContentWidth(node, isMobile);
+      const visibleSlots = countVisibleThumbnailSlots(contentWidth, isMobile);
+      setMeasuredVisibleSlots(Math.min(visibleSlots, THUMBNAILS_PER_VIEW));
+      setGalleryThumbnailStepPx(
+        isMobile
+          ? THUMBNAIL_SIZE_MOBILE_PX + THUMBNAIL_GAP_MOBILE_PX
+          : THUMBNAIL_SIZE_DESKTOP_PX + THUMBNAIL_GAP_DESKTOP_PX,
+      );
+      setThumbnailsStripOverflows(
+        thumbnailsStripContentWidth(images.length, isMobile) > contentWidth,
+      );
+    };
+
+    updateVisibleSlots();
+    const observer = new ResizeObserver(updateVisibleSlots);
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, [usesCompactThumbnailStrip, images.length]);
+
+  useEffect(() => {
+    const nextStart = resolveThumbnailStartIndex(
+      currentImageIndex,
+      thumbnailStartIndex,
+      slotsPerView,
+      images.length,
+    );
+
+    if (nextStart !== null && nextStart !== thumbnailStartIndex) {
+      onThumbnailStartIndexChange(nextStart);
+    }
+  }, [
+    currentImageIndex,
+    images.length,
+    onThumbnailStartIndexChange,
+    slotsPerView,
+    thumbnailStartIndex,
+  ]);
+
+  useEffect(() => {
+    const maxStart = Math.max(0, images.length - slotsPerView);
+    if (thumbnailStartIndex > maxStart) {
+      onThumbnailStartIndexChange(maxStart);
+    }
+  }, [images.length, onThumbnailStartIndexChange, slotsPerView, thumbnailStartIndex]);
 
   const hasHeroImage = heroImageSrc.length > 0;
   const resolvedHeroPreviewHtml = customizeHeroPreviewHtml ?? customizePackPreviewHtml;
   const showHeroPreviewInGallery = showCustomizeHeroPreview ?? showCustomizePackPreview;
   const hasHeroContent = showHeroPreviewInGallery || hasHeroImage;
   const canNavigateImages = images.length > 1;
-  const usesCompactThumbnailStrip = images.length <= THUMBNAILS_PER_VIEW;
 
-  const thumbnailStripScrollClassName = `${THUMBNAIL_STRIP_SCROLL_BASE_CLASSES} overflow-x-auto`;
+  const thumbnailStripScrollClassName =
+    `${THUMBNAIL_STRIP_SCROLL_BASE_CLASSES} ${THUMBNAIL_STRIP_SCROLL_CLIP_CLASSES}`;
 
   const navigateImageByArrow = (direction: 'previous' | 'next') => {
     if (!canNavigateImages) {
@@ -151,15 +304,36 @@ export function ProductImageGallery({
       return;
     }
     onImageIndexChange(index);
-    if (images.length <= THUMBNAILS_PER_VIEW) {
-      return;
-    }
-    if (index < thumbnailStartIndex) {
-      onThumbnailStartIndexChange(index);
-    } else if (index >= thumbnailStartIndex + THUMBNAILS_PER_VIEW) {
-      onThumbnailStartIndexChange(index - THUMBNAILS_PER_VIEW + 1);
+    const nextStart = resolveThumbnailStartIndex(index, thumbnailStartIndex, slotsPerView, images.length);
+    if (nextStart !== null) {
+      onThumbnailStartIndexChange(nextStart);
     }
   };
+
+  const renderThumbnailNavButton = (
+    direction: 'previous' | 'next',
+    className: string,
+  ) => (
+    <button
+      type="button"
+      onClick={() => navigateImageByArrow(direction)}
+      aria-label={t(
+        language,
+        direction === 'previous' ? 'common.ariaLabels.previousThumbnail' : 'common.ariaLabels.nextThumbnail',
+      )}
+      disabled={!canNavigateImages}
+      className={className}
+    >
+      <svg className={THUMBNAIL_NAV_ICON_CLASSES} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2.2}
+          d={direction === 'previous' ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6'}
+        />
+      </svg>
+    </button>
+  );
 
   const renderGalleryThumbnail = (image: string, imageIndex: number) => {
     const isActive = activeThumbnailIndex !== null && imageIndex === activeThumbnailIndex;
@@ -186,81 +360,80 @@ export function ProductImageGallery({
     );
   };
 
+  const renderWindowedThumbnailSlots = () =>
+    Array.from({ length: slotsPerView }, (_, slotIndex) => {
+      const imageIndex = thumbnailStartIndex + slotIndex;
+
+      if (imageIndex >= images.length) {
+        return (
+          <div key={`thumb-slot-empty-${slotIndex}`} aria-hidden className={THUMBNAIL_EMPTY_SLOT_CLASS}>
+            <div className={THUMBNAIL_IMAGE_BOX_SIZE_CLASSES} />
+            <span className={`${THUMBNAIL_ACTIVE_INDICATOR_CLASSES} w-full opacity-0`} />
+          </div>
+        );
+      }
+
+      return renderGalleryThumbnail(images[imageIndex], imageIndex);
+    });
+
+  const renderThumbnailStripItems = () => {
+    if (usesWindowedThumbnailLayout) {
+      return (
+        <MobileGalleryThumbnailTrack
+          startIndex={thumbnailStartIndex}
+          thumbStepPx={galleryThumbnailStepPx}
+        >
+          {images.map((image, imageIndex) => renderGalleryThumbnail(image, imageIndex))}
+        </MobileGalleryThumbnailTrack>
+      );
+    }
+
+    return usesVisibleThumbnailWindow
+      ? renderWindowedThumbnailSlots()
+      : images.map((image, imageIndex) => renderGalleryThumbnail(image, imageIndex));
+  };
+
+  const renderMobileThumbnailEdgeBlocks = () => (
+    <>
+      <span aria-hidden className={THUMBNAIL_STRIP_MOBILE_EDGE_BLOCK_PREVIOUS_CLASSES} />
+      <span aria-hidden className={THUMBNAIL_STRIP_MOBILE_EDGE_BLOCK_NEXT_CLASSES} />
+    </>
+  );
+
   const renderDefaultThumbnailStrip = () =>
     usesCompactThumbnailStrip ? (
       <div className={THUMBNAIL_STRIP_COMPACT_ROW_CLASSES}>
+        {renderMobileThumbnailEdgeBlocks()}
         {canNavigateImages ? (
           <>
-            <button
-              type="button"
-              onClick={() => navigateImageByArrow('previous')}
-              aria-label={t(language, 'common.ariaLabels.previousThumbnail')}
-              className={THUMBNAIL_STRIP_COMPACT_PREVIOUS_CLASSES}
-            >
-              <svg className={THUMBNAIL_NAV_ICON_CLASSES} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 18l-6-6 6-6" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              onClick={() => navigateImageByArrow('next')}
-              aria-label={t(language, 'common.ariaLabels.nextThumbnail')}
-              className={THUMBNAIL_STRIP_COMPACT_NEXT_CLASSES}
-            >
-              <svg className={THUMBNAIL_NAV_ICON_CLASSES} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 18l6-6-6-6" />
-              </svg>
-            </button>
+            {renderThumbnailNavButton('previous', THUMBNAIL_STRIP_COMPACT_PREVIOUS_CLASSES)}
+            {renderThumbnailNavButton('next', THUMBNAIL_STRIP_COMPACT_NEXT_CLASSES)}
           </>
         ) : null}
-        <div className={THUMBNAIL_STRIP_COMPACT_THUMBS_CLASSES}>
-          {images.map((image, imageIndex) => renderGalleryThumbnail(image, imageIndex))}
+        <div ref={thumbsViewportRef} className={compactThumbsViewportClassName}>
+          <div className={compactThumbsInnerRowClassName}>{renderThumbnailStripItems()}</div>
         </div>
       </div>
     ) : (
-      <div className="relative z-20 flex w-full min-w-0 shrink-0 items-center justify-center gap-3 max-sm:gap-2">
-        <button
-          type="button"
-          onClick={() => navigateImageByArrow('previous')}
-          aria-label={t(language, 'common.ariaLabels.previousThumbnail')}
-          disabled={!canNavigateImages}
-          className={THUMBNAIL_NAV_BUTTON_CLASSES}
-        >
-          <svg className={THUMBNAIL_NAV_ICON_CLASSES} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 18l-6-6 6-6" />
-          </svg>
-        </button>
-
-        <div className={thumbnailStripScrollClassName}>
-          <div className="flex min-h-0 flex-nowrap items-center gap-3">
-            {Array.from({ length: THUMBNAILS_PER_VIEW }, (_, slotIndex) => {
-              const imageIndex = thumbnailStartIndex + slotIndex;
-
-              if (imageIndex >= images.length) {
-                return (
-                  <div key={`thumb-slot-empty-${slotIndex}`} aria-hidden className={THUMBNAIL_EMPTY_SLOT_CLASS}>
-                    <div className={THUMBNAIL_IMAGE_BOX_SIZE_CLASSES} />
-                    <span className={`${THUMBNAIL_ACTIVE_INDICATOR_CLASSES} w-full opacity-0`} />
-                  </div>
-                );
-              }
-
-              return renderGalleryThumbnail(images[imageIndex], imageIndex);
-            })}
+      <div className="relative z-20 w-full min-w-0 shrink-0">
+        {renderMobileThumbnailEdgeBlocks()}
+        {canNavigateImages ? (
+          <>
+            {renderThumbnailNavButton('previous', THUMBNAIL_STRIP_COMPACT_PREVIOUS_CLASSES)}
+            {renderThumbnailNavButton('next', THUMBNAIL_STRIP_COMPACT_NEXT_CLASSES)}
+          </>
+        ) : null}
+        <div ref={thumbsViewportRef} className={thumbnailStripScrollClassName}>
+          <div
+            className={
+              usesWindowedThumbnailLayout
+                ? THUMBNAIL_STRIP_WINDOWED_INNER_ROW_CLASSES
+                : 'flex min-h-0 w-full flex-nowrap items-center justify-center gap-3 max-sm:gap-2'
+            }
+          >
+            {renderThumbnailStripItems()}
           </div>
         </div>
-
-        <button
-          type="button"
-          onClick={() => navigateImageByArrow('next')}
-          aria-label={t(language, 'common.ariaLabels.nextThumbnail')}
-          disabled={!canNavigateImages}
-          className={THUMBNAIL_NAV_BUTTON_CLASSES}
-        >
-          <svg className={THUMBNAIL_NAV_ICON_CLASSES} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 18l6-6-6-6" />
-          </svg>
-        </button>
       </div>
     );
 
@@ -300,20 +473,39 @@ export function ProductImageGallery({
               }`}
             >
               {hasHeroImage ? (
-                <div
-                  className={`relative mx-auto flex w-full max-w-full items-center justify-center ${HERO_IMAGE_BOX_SIZE_CLASSES}`}
-                >
-                  <img
-                    src={heroImageSrc}
+                isMobileGallery && images.length > 1 ? (
+                  <MobileGalleryHeroSlider
+                    images={images}
+                    currentIndex={currentImageIndex}
                     alt={product.title}
-                    decoding="async"
-                    draggable={false}
-                    className={`block transition-transform duration-300 ease-out max-sm:group-hover:scale-100 sm:group-hover:scale-[1.03] ${GALLERY_IMAGE_FIT_CLASSES}`}
+                    boxSizeClasses={HERO_IMAGE_BOX_SIZE_CLASSES}
+                    fitClasses={GALLERY_IMAGE_FIT_CLASSES}
+                    onNavigate={navigateImageByArrow}
+                    overlay={
+                      customizeOverlayHtml ? (
+                        <CustomizeProductOverlay
+                          html={customizeOverlayHtml}
+                          position={customizeOverlayPosition}
+                        />
+                      ) : undefined
+                    }
                   />
-                  {customizeOverlayHtml ? (
-                    <CustomizeProductOverlay html={customizeOverlayHtml} position={customizeOverlayPosition} />
-                  ) : null}
-                </div>
+                ) : (
+                  <div
+                    className={`relative mx-auto flex w-full max-w-full items-center justify-center ${HERO_IMAGE_BOX_SIZE_CLASSES}`}
+                  >
+                    <img
+                      src={heroImageSrc}
+                      alt={product.title}
+                      decoding="async"
+                      draggable={false}
+                      className={`block transition-transform duration-300 ease-out max-sm:group-hover:scale-100 sm:group-hover:scale-[1.03] ${GALLERY_IMAGE_FIT_CLASSES}`}
+                    />
+                    {customizeOverlayHtml ? (
+                      <CustomizeProductOverlay html={customizeOverlayHtml} position={customizeOverlayPosition} />
+                    ) : null}
+                  </div>
+                )
               ) : (
                 <div className="flex w-full items-center justify-center text-[#9d9d9d]">
                   {t(language, 'common.messages.noImage')}
