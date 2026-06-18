@@ -19,7 +19,10 @@ function resolveOrderNumber(query: URLSearchParams): string | undefined {
 }
 
 export async function GET(req: NextRequest) {
-  const targetUrl = buildIdramFailureRedirect(resolveOrderNumber(req.nextUrl.searchParams));
+  const targetUrl = buildIdramFailureRedirect(
+    resolveOrderNumber(req.nextUrl.searchParams),
+    req.nextUrl.origin,
+  );
   return new NextResponse(buildTopLevelRedirectHtml(targetUrl), {
     status: 200,
     headers: {
