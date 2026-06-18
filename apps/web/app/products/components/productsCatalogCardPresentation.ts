@@ -212,8 +212,8 @@ export function buildCatalogCardPresentation({
     ? `rounded-[0.3125rem] px-[0.3125rem] py-px text-[0.5625rem] font-medium leading-tight sm:rounded-[0.375rem] sm:px-[0.375rem] sm:py-[0.125rem] sm:text-[0.625rem] ${badgeClassName}`
     : `rounded-[0.375rem] px-[0.375rem] py-[0.125rem] text-[0.6875rem] font-medium leading-tight sm:px-[0.4375rem] sm:py-[0.1875rem] sm:text-[0.75rem] ${badgeClassName}`;
   const priceClassName = compactLayout
-    ? 'text-[0.75rem] sm:text-[0.98rem]'
-    : 'text-[0.875rem] sm:text-[1.05rem]';
+    ? 'whitespace-nowrap text-[0.75rem] sm:text-[0.98rem]'
+    : 'whitespace-nowrap text-[0.875rem] sm:text-[1.05rem]';
   const buyButtonClassName = compactLayout
     ? 'inline-flex h-[1.375rem] min-w-[2.75rem] items-center justify-center rounded-[0.4375rem] border-2 border-[#dcc090] px-1.5 text-[0.6875rem] font-extrabold leading-tight text-[#dcc090] transition-colors hover:bg-[#dcc090]/10 sm:h-6 sm:min-w-[3.25rem] sm:rounded-[0.5rem] sm:px-2 sm:text-[0.75rem]'
     : 'inline-flex h-[1.375rem] min-w-[3.25rem] items-center justify-center rounded-[0.5rem] border-2 border-[#dcc090] px-2 text-[0.8125rem] font-extrabold leading-tight text-[#dcc090] transition-colors hover:bg-[#dcc090]/10 sm:h-[1.625rem] sm:min-w-[3.75rem] sm:px-3 sm:text-[0.875rem]';
