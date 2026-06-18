@@ -4,6 +4,16 @@ import type { OrderFilters } from "./types";
 import { buildOrderWhereClause, buildOrderByClause } from "./query-builder";
 import { formatOrderForList, formatOrderForDetail } from "./order-formatter";
 
+type OrderListItem = Parameters<typeof formatOrderForList>[0]["items"][number] & {
+  variant?: (NonNullable<Parameters<typeof formatOrderForList>[0]["items"][number]["variant"]> & {
+    stock?: number | null;
+  }) | null;
+};
+
+type OrderForList = Omit<Parameters<typeof formatOrderForList>[0], "items"> & {
+  items: OrderListItem[];
+};
+
 /**
  * Get orders with filters and pagination
  */
@@ -52,7 +62,7 @@ export async function getOrders(filters: OrderFilters = {}) {
 
   const ordersForList =
     filters.orderType === 'out_of_stock'
-      ? orders.map((order) => ({
+      ? (orders as OrderForList[]).map((order) => ({
           ...order,
           items: order.items.filter((item) => (item.variant?.stock ?? 1) <= 0),
         }))
