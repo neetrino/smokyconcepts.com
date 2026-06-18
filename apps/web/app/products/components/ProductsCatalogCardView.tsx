@@ -111,7 +111,7 @@ export function ProductsCatalogCardView({
                   sizes={IMAGE_SIZES}
                   unoptimized
                   loading={eagerProductImage ? 'eager' : undefined}
-                  onLoadingComplete={handleImageLoadComplete}
+                  onLoad={(event) => handleImageLoadComplete(event.currentTarget)}
                   onError={() => setImageError(true)}
                 />
               </span>

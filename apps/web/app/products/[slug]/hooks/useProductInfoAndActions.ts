@@ -14,6 +14,12 @@ import {
   isOutOfStockProductLabel,
   matchVariantSizeFromCatalogTitle,
 } from '../utils/productInfoAndActions.helpers';
+import {
+  getOptionValues,
+  normalizeVersionToken,
+  variantHasColor,
+  variantHasOptionValue,
+} from '../utils/variant-helpers';
 import type { ProductInfoAndActionsProps, ProductTabKey } from '../productInfoAndActions.types';
 
 function normalizeCatalogSizeValue(value: string | null | undefined): string {
@@ -86,13 +92,49 @@ export function useProductInfoAndActions({
   }, [product.sizeCatalogCategoryTitles, sizeOptions]);
 
   const isCatalogSizeItemSelectable = useCallback(
-    (categoryTitle: string) => {
-      if (selectableCatalogSizeValues.size === 0) {
+    (item: SizeCatalogItemDto) => {
+      const normalizedCategoryTitle = normalizeCatalogSizeValue(item.categoryTitle);
+      if (!normalizedCategoryTitle) {
+        return false;
+      }
+      if (
+        selectableCatalogSizeValues.size > 0 &&
+        !selectableCatalogSizeValues.has(normalizedCategoryTitle)
+      ) {
+        return false;
+      }
+
+      const sizeMatchedVariants = product.variants.filter((variant) =>
+        variantHasOptionValue(variant, 'size', normalizedCategoryTitle)
+      );
+      if (sizeMatchedVariants.length === 0) {
+        return selectableCatalogSizeValues.size === 0;
+      }
+
+      const colorMatchedVariants =
+        selectedColor !== null
+          ? sizeMatchedVariants.filter((variant) => variantHasColor(variant, selectedColor))
+          : [];
+      const candidateVariants =
+        colorMatchedVariants.length > 0 ? colorMatchedVariants : sizeMatchedVariants;
+
+      const normalizedVersion = normalizeVersionToken(item.version);
+      if (!normalizedVersion) {
         return true;
       }
-      return selectableCatalogSizeValues.has(normalizeCatalogSizeValue(categoryTitle));
+
+      const hasAnyVersionInCandidates = candidateVariants.some(
+        (variant) => getOptionValues(variant.options, 'size_version').length > 0
+      );
+      if (!hasAnyVersionInCandidates) {
+        return true;
+      }
+
+      return candidateVariants.some((variant) =>
+        variantHasOptionValue(variant, 'size_version', normalizedVersion)
+      );
     },
-    [selectableCatalogSizeValues]
+    [product.variants, selectableCatalogSizeValues, selectedColor]
   );
 
   useEffect(() => {

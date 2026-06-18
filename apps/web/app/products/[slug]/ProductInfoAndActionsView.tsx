@@ -107,7 +107,7 @@ export function ProductInfoAndActionsView({
 
   const addToCartLabel = isAddingToCart
     ? t(language, 'product.adding')
-    : isOutOfStock
+    : !canAddToCart && isOutOfStock
       ? t(language, 'product.outOfStock')
       : t(language, 'product.addToCart');
   const showSizeAsterisk = showSizeSection && (!isSizeSelected || showSizeRequired);
@@ -294,7 +294,7 @@ export function ProductInfoAndActionsView({
         selectedSizeItemId={selectedCatalogSize?.id ?? null}
         onSelectSizeCatalogItem={handleSelectCatalogSizeItem}
         onSelectCustomSizeRequest={handleSelectCustomSizeRequest}
-        isSizeItemSelectable={(item) => isCatalogSizeItemSelectable(item.categoryTitle)}
+        isSizeItemSelectable={isCatalogSizeItemSelectable}
       />
     </>
   );

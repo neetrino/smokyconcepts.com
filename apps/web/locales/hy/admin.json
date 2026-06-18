@@ -811,6 +811,7 @@
     "ordersOnly": "Պատվերներ",
     "newOrders": "New",
     "earlyAccessOrders": "Early",
+    "outOfStockOrders": "Out of stock",
     "ordersTotalCount": "{total} պատվեր",
     "allStatuses": "Բոլոր կարգավիճակները",
     "allPaymentStatuses": "Բոլոր վճարման կարգավիճակները",

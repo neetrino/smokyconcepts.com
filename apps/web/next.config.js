@@ -23,6 +23,42 @@ function loadRootEnv() {
 loadRootEnv();
 
 const { securityHeaders } = require('./lib/security/security-headers.config.cjs');
+const { URL } = require('url');
+
+function normalizePublicUrl(url) {
+  if (!url) return null;
+
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+
+  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  return withProtocol.replace(/\/+$/, '');
+}
+
+function getHostnameFromUrl(url) {
+  if (!url) return null;
+
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return null;
+  }
+}
+
+function getProtocolFromUrl(url) {
+  if (!url) return null;
+
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' ? 'http' : 'https';
+  } catch {
+    return null;
+  }
+}
+
+const r2PublicBaseUrl = normalizePublicUrl(process.env.R2_PUBLIC_URL);
+const r2PublicHostname = getHostnameFromUrl(r2PublicBaseUrl);
+const r2PublicProtocol = getProtocolFromUrl(r2PublicBaseUrl);
 
 const nextConfig = {
   reactStrictMode: true,
@@ -36,7 +72,7 @@ const nextConfig = {
   },
   transpilePackages: ['@shop/ui', '@shop/design-tokens'],
   async rewrites() {
-    return [
+    const rewrites = [
       {
         source: '/supersudo',
         destination: '/admin',
@@ -46,6 +82,22 @@ const nextConfig = {
         destination: '/admin/:path*',
       },
     ];
+
+    if (r2PublicBaseUrl) {
+      // Keep existing UI src paths while serving static images from R2/CDN.
+      rewrites.push(
+        {
+          source: '/assets/:path*',
+          destination: `${r2PublicBaseUrl}/assets/:path*`,
+        },
+        {
+          source: '/voting-item-placeholder.svg',
+          destination: `${r2PublicBaseUrl}/voting-item-placeholder.svg`,
+        }
+      );
+    }
+
+    return rewrites;
   },
   // Standalone output - prevents prerendering of 404 page
   output: 'standalone',
@@ -93,6 +145,15 @@ const nextConfig = {
         hostname: 'cdn-icons-png.flaticon.com',
         pathname: '/**',
       },
+      ...(r2PublicHostname
+        ? [
+            {
+              protocol: r2PublicProtocol || 'https',
+              hostname: r2PublicHostname,
+              pathname: '/**',
+            },
+          ]
+        : []),
     ],
     // Allow unoptimized images for development (images will use unoptimized prop)
     // Ensure image optimization is enabled for production

@@ -47,35 +47,39 @@ function CatalogSizeCard({
   playEnterAnimation: boolean;
 }) {
   return (
-    <button
-      type="button"
-      disabled={!selectable}
-      onClick={onSelect}
+    <div
       style={playEnterAnimation ? { animationDelay: `${enterDelayMs}ms` } : undefined}
-      className={`flex h-[98px] w-[94px] shrink-0 flex-col items-center rounded-[10px] bg-white pt-1 transition-shadow ${
+      className={`shrink-0 ${
         playEnterAnimation ? 'animate-size-catalog-card-in' : ''
-      } ${
-        selected
-          ? 'border-[2px] border-solid border-[#dcc090] shadow-none'
-          : 'border border-transparent shadow-[0px_2px_8px_rgba(0,0,0,0.06)]'
-      } ${
-        selectable ? '' : 'cursor-not-allowed opacity-70'
       }`}
-      aria-disabled={!selectable}
     >
-      <div className="relative h-[54px] w-[40px] shrink-0 overflow-hidden">
-        <img
-          src={item.imageUrl}
-          alt=""
-          loading="eager"
-          decoding="async"
-          className="h-full w-full object-contain"
-        />
-      </div>
-      <p className="mt-1 line-clamp-2 px-0.5 text-center font-montserrat text-[12px] font-medium leading-tight text-[#414141]">
-        {item.title}
-      </p>
-    </button>
+      <button
+        type="button"
+        disabled={!selectable}
+        onClick={onSelect}
+        className={`flex h-[92px] w-[82px] flex-col items-center rounded-[10px] bg-white pt-1 transition-shadow sm:h-[96px] sm:w-[88px] ${
+          selected
+            ? 'border-[2px] border-solid border-[#dcc090] shadow-none'
+            : 'border border-transparent shadow-[0px_2px_8px_rgba(0,0,0,0.06)]'
+        } ${
+          selectable ? '' : 'cursor-not-allowed opacity-70'
+        }`}
+        aria-disabled={!selectable}
+      >
+        <div className="relative h-[50px] w-[36px] shrink-0 overflow-hidden sm:h-[52px] sm:w-[38px]">
+          <img
+            src={item.imageUrl}
+            alt=""
+            loading="eager"
+            decoding="async"
+            className="h-full w-full object-contain"
+          />
+        </div>
+        <p className="mt-1 line-clamp-2 px-0.5 text-center font-montserrat text-[11px] font-medium leading-tight text-[#414141] sm:text-[12px]">
+          {item.title}
+        </p>
+      </button>
+    </div>
   );
 }
 
@@ -143,7 +147,7 @@ function CatalogSizePagePanel({
   return (
     <div ref={pageRef} style={slideStyle} className="box-border snap-start">
       <div
-        className={`grid grid-cols-3 justify-items-center gap-x-2 gap-y-5 sm:gap-x-4 sm:gap-y-6 md:grid-cols-4 lg:grid-cols-7 ${
+        className={`grid grid-cols-3 justify-items-center gap-x-2 gap-y-5 sm:gap-x-4 sm:gap-y-6 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 ${
           itemsPerRow > 0 && chunk.length > itemsPerRow ? 'grid-rows-2' : 'grid-rows-1'
         }`}
       >

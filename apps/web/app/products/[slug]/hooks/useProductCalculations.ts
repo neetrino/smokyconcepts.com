@@ -21,7 +21,8 @@ export function useProductCalculations({
    * The CTA remains disabled via canAddToCart until we have a concrete variant.
    */
   const isOutOfStock = currentVariant ? (currentVariant.stock ?? 0) <= 0 : false;
-  const canAddToCart = !!currentVariant && !isOutOfStock;
+  // Allow out-of-stock variants to be added for backorder flow.
+  const canAddToCart = !!currentVariant;
 
   return {
     price,

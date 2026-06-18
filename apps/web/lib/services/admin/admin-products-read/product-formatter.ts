@@ -1,5 +1,5 @@
 import { catalogPriceForStorefront } from '@/lib/currency';
-import { isDefaultPricingVariant } from '@/lib/default-pricing-variant';
+import { isDefaultPricingVariant, isDisplayVariant } from '@/lib/default-pricing-variant';
 import { processImageUrl, smartSplitUrls } from '../../utils/image-utils';
 
 interface ProductListCategory {
@@ -48,7 +48,7 @@ export function formatProductForList(
   
   const variants = Array.isArray(product.variants) ? product.variants : [];
   const defaultPricingVariant = variants.find((item) => isDefaultPricingVariant(item));
-  const variant = defaultPricingVariant ?? variants[0] ?? null;
+  const pricingVariant = defaultPricingVariant ?? variants[0] ?? null;
 
   const image = resolveProductListImage(product.media, variants);
   const relationCategories = Array.isArray(product.categories)
@@ -72,11 +72,11 @@ export function formatProductForList(
     published: product.published,
     featured: product.featured || false,
     upcoming: product.upcoming || false,
-    price: catalogPriceForStorefront(variant?.price || 0),
-    stock: variant?.stock || 0,
+    price: catalogPriceForStorefront(pricingVariant?.price || 0),
+    stock: pricingVariant?.stock || 0,
     discountPercent: product.discountPercent || 0,
     compareAtPrice:
-      variant?.compareAtPrice != null ? catalogPriceForStorefront(variant.compareAtPrice) : null,
+      pricingVariant?.compareAtPrice != null ? catalogPriceForStorefront(pricingVariant.compareAtPrice) : null,
     categories,
     colorStocks: [], // Can be enhanced later
     image,
@@ -90,36 +90,33 @@ export function formatProductForList(
 function extractFirstVariantImage(
   variant: { imageUrl?: string | null } | null | undefined
 ): string | null {
-  if (!variant?.imageUrl) {
-    return null;
-  }
+  return resolveFirstImageUrl(variant?.imageUrl);
+}
 
-  for (const url of smartSplitUrls(variant.imageUrl)) {
+function resolveFirstImageUrl(source: string | null | undefined): string | null {
+  for (const url of smartSplitUrls(source)) {
     const processed = processImageUrl(url);
-    if (processed) {
-      return processed;
-    }
+    if (processed) return processed;
   }
 
   return null;
 }
 
-function resolveProductListImage(
-  media: unknown[] | undefined,
-  variants: ProductListVariant[]
-): string | null {
-  const mediaImage = extractImageFromMedia(media);
-  if (mediaImage) {
-    return mediaImage;
-  }
+function resolveProductListImage(media: unknown[] | undefined, variants: ProductListVariant[]): string | null {
+  const displayVariant = variants.find((item) => isDisplayVariant(item));
+  const displayImage = extractFirstVariantImage(displayVariant);
+  if (displayImage) return displayImage;
 
   const defaultPricingVariant = variants.find((item) => isDefaultPricingVariant(item));
   const defaultPricingImage = extractFirstVariantImage(defaultPricingVariant);
-  if (defaultPricingImage) {
-    return defaultPricingImage;
-  }
+  if (defaultPricingImage) return defaultPricingImage;
 
-  const selectableVariants = variants.filter((item) => !isDefaultPricingVariant(item));
+  const mediaImage = extractImageFromMedia(media);
+  if (mediaImage) return mediaImage;
+
+  const selectableVariants = variants.filter(
+    (item) => !isDefaultPricingVariant(item) && !isDisplayVariant(item)
+  );
   for (const selectableVariant of selectableVariants) {
     const image = extractFirstVariantImage(selectableVariant);
     if (image) {
@@ -145,17 +142,13 @@ function extractImageFromMedia(media: unknown[] | undefined): string | null {
   const firstMedia = media[0];
   
   if (typeof firstMedia === "string") {
-    return firstMedia;
+    return resolveFirstImageUrl(firstMedia);
   }
   
   if (firstMedia && typeof firstMedia === "object" && "url" in firstMedia) {
     const mediaObj = firstMedia as { url?: string };
-    return mediaObj.url || null;
+    return resolveFirstImageUrl(mediaObj.url);
   }
 
   return null;
 }
-
-
-
-
