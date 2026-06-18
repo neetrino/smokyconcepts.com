@@ -29,7 +29,15 @@ import {
   getCartLineTotalUsd,
 } from '../app/cart/cart-line-pricing';
 import { handleRemoveItem, handleUpdateQuantity } from '../app/cart/cart-handlers';
-import type { Cart } from '../app/cart/types';
+import type { Cart, CartItem } from '../app/cart/types';
+
+function resolveCartItemImage(item: CartItem): string | null {
+  return (
+    item.variant.product.image?.trim() ||
+    item.variant.sizeCatalogImageUrl?.trim() ||
+    null
+  );
+}
 
 function CloseIcon() {
   return (
@@ -227,16 +235,18 @@ export function CartDrawer() {
           <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-1">
             {cart && cart.items.length > 0 ? (
               <div className="space-y-8">
-                {cart.items.map((item) => (
+                {cart.items.map((item) => {
+                  const itemImage = resolveCartItemImage(item);
+                  return (
                   <div key={item.id} className="flex gap-5 rounded-[1rem] px-2 py-2 transition-all">
                     <Link
                       href={`/products/${item.variant.product.slug}`}
                       onClick={handleClose}
                       className="relative mt-1 block h-[6.5rem] w-[6.25rem] shrink-0 rounded-[0.875rem] bg-white"
                     >
-                      {item.variant.product.image ? (
+                      {itemImage ? (
                         <Image
-                          src={item.variant.product.image}
+                          src={itemImage}
                           alt={item.variant.product.title}
                           fill
                           className="object-contain p-1"
@@ -305,7 +315,8 @@ export function CartDrawer() {
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="pt-6 text-center text-[#414141]">

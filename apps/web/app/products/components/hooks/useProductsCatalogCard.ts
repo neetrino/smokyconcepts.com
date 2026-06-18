@@ -111,21 +111,6 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
     [activeVariantEntry, props.selectedSize, sizeLabel]
   );
 
-  const { isAddingToCart, addToCart } = useAddToCart({
-    productId: product.id,
-    productSlug: product.slug,
-    title: product.title,
-    price: displayPrice,
-    image: product.image,
-    originalPrice: displayOriginalPrice,
-    inStock: product.inStock,
-    defaultVariantId: displayVariantId,
-    defaultVariantStock: displayVariantStock,
-    defaultSku: displaySku,
-    sizeLabel: displaySizeLabel,
-    categoryLabel,
-  });
-
   const productImages = useMemo(() => {
     const variantImages = resolveActiveVariantImages(props);
     const rawImages = variantImages.length > 0
@@ -180,6 +165,20 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
   }, [activeImageIndex, product.id, product.image, productImages.length]);
 
   const activeImage = productImages[activeImageIndex] ?? product.image;
+  const { isAddingToCart, addToCart } = useAddToCart({
+    productId: product.id,
+    productSlug: product.slug,
+    title: product.title,
+    price: displayPrice,
+    image: activeImage,
+    originalPrice: displayOriginalPrice,
+    inStock: product.inStock,
+    defaultVariantId: displayVariantId,
+    defaultVariantStock: displayVariantStock,
+    defaultSku: displaySku,
+    sizeLabel: displaySizeLabel,
+    categoryLabel,
+  });
   const activeImageMeasureKey = `${product.id}-${activeImageIndex}-${activeImage ?? ''}`;
   const activeImageMeasureKeyRef = useRef(activeImageMeasureKey);
   useEffect(() => {

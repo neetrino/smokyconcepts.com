@@ -1,4 +1,5 @@
 import { CART_KEY } from '@/app/cart/constants';
+import { processImageUrl, smartSplitUrls } from '@/lib/services/utils/image-utils';
 import type { GuestCartItem } from '@/app/cart/types';
 import type { Product, ProductVariant } from './types';
 
@@ -57,17 +58,23 @@ export function canAddVariantToGuestCart(variant: ProductVariant, quantityToAdd:
 }
 
 function resolvePrimaryImage(product: Product, variant: ProductVariant): string | null {
-  if (variant.imageUrl) {
-    return variant.imageUrl;
+  const variantImage = resolveFirstImageUrl(variant.imageUrl);
+  if (variantImage) {
+    return variantImage;
   }
   const first = product.media?.[0];
   if (!first) {
     return null;
   }
   if (typeof first === 'string') {
-    return first;
+    return resolveFirstImageUrl(first);
   }
-  return first.url ?? null;
+  return resolveFirstImageUrl(first.url);
+}
+
+function resolveFirstImageUrl(source: string | null | undefined): string | null {
+  const first = smartSplitUrls(source)[0] ?? null;
+  return processImageUrl(first);
 }
 
 function resolveSizeLabel(variant: ProductVariant): string | null {
@@ -102,7 +109,7 @@ export function buildCatalogGuestCartSnapshot(params: {
     variantId: params.variantId,
     quantity: params.quantity,
     title: params.title,
-    image: params.image,
+    image: resolveFirstImageUrl(params.image),
     price: params.price,
     originalPrice: params.originalPrice,
     stock: params.stock,
