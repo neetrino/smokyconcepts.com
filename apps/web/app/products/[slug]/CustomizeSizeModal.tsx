@@ -67,6 +67,7 @@ interface CustomizeSizeModalProps {
   selectedSizeItemId: string | null;
   onSelectSizeCatalogItem: (item: SizeCatalogItemDto) => void;
   onSelectCustomSizeRequest: (draft: CustomOrderDraft) => void;
+  isSizeItemSelectable?: (item: SizeCatalogItemDto) => boolean;
 }
 
 export function CustomizeSizeModal({
@@ -77,6 +78,7 @@ export function CustomizeSizeModal({
   selectedSizeItemId,
   onSelectSizeCatalogItem,
   onSelectCustomSizeRequest,
+  isSizeItemSelectable,
 }: CustomizeSizeModalProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const exitDurationMs = prefersReducedMotion
@@ -256,6 +258,9 @@ export function CustomizeSizeModal({
     customOrderDraft.imageDataUrl.trim().length > 0;
 
   const handlePickSizeItem = (item: SizeCatalogItemDto) => {
+    if (isSizeItemSelectable && !isSizeItemSelectable(item)) {
+      return;
+    }
     onSelectSizeCatalogItem(item);
     onClose();
   };
@@ -349,6 +354,7 @@ export function CustomizeSizeModal({
                 modalMotion={modalMotion}
                 suppressEnterAnimation={isExiting}
                 onSelectItem={handlePickSizeItem}
+                isItemSelectable={isSizeItemSelectable}
               />
             )}
           </div>

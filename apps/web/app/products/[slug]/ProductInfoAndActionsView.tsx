@@ -78,6 +78,7 @@ export function ProductInfoAndActionsView({
     isSizeShaking,
     triggerSizeValidation,
     handleSizeShakeAnimationEnd,
+    isCatalogSizeItemSelectable,
   } = view;
 
   const sizeSectionRef = useRef<HTMLDivElement>(null);
@@ -293,6 +294,7 @@ export function ProductInfoAndActionsView({
         selectedSizeItemId={selectedCatalogSize?.id ?? null}
         onSelectSizeCatalogItem={handleSelectCatalogSizeItem}
         onSelectCustomSizeRequest={handleSelectCustomSizeRequest}
+        isSizeItemSelectable={(item) => isCatalogSizeItemSelectable(item.categoryTitle)}
       />
     </>
   );

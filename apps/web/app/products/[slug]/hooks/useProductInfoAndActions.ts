@@ -16,6 +16,10 @@ import {
 } from '../utils/productInfoAndActions.helpers';
 import type { ProductInfoAndActionsProps, ProductTabKey } from '../productInfoAndActions.types';
 
+function normalizeCatalogSizeValue(value: string | null | undefined): string {
+  return value?.trim().toLowerCase() ?? '';
+}
+
 export function useProductInfoAndActions({
   product,
   language,
@@ -67,6 +71,29 @@ export function useProductInfoAndActions({
   );
 
   const showSizeSection = sizeOptions.length > 0 || hasSizeCatalogItems;
+
+  const selectableCatalogSizeValues = useMemo(() => {
+    const values = new Set<string>();
+    sizeOptions.forEach((option) => {
+      values.add(normalizeCatalogSizeValue(option.label));
+      values.add(normalizeCatalogSizeValue(option.value));
+    });
+    product.sizeCatalogCategoryTitles?.forEach((title) => {
+      values.add(normalizeCatalogSizeValue(title));
+    });
+    values.delete('');
+    return values;
+  }, [product.sizeCatalogCategoryTitles, sizeOptions]);
+
+  const isCatalogSizeItemSelectable = useCallback(
+    (categoryTitle: string) => {
+      if (selectableCatalogSizeValues.size === 0) {
+        return true;
+      }
+      return selectableCatalogSizeValues.has(normalizeCatalogSizeValue(categoryTitle));
+    },
+    [selectableCatalogSizeValues]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -249,5 +276,6 @@ export function useProductInfoAndActions({
     isSizeShaking,
     triggerSizeValidation,
     handleSizeShakeAnimationEnd,
+    isCatalogSizeItemSelectable,
   };
 }

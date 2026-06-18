@@ -19,6 +19,7 @@ interface SizeCatalogPickerContentProps {
   modalMotion: SizeModalMotionState;
   suppressEnterAnimation?: boolean;
   onSelectItem: (item: SizeCatalogItemDto) => void;
+  isItemSelectable?: (item: SizeCatalogItemDto) => boolean;
 }
 
 export function SizeCatalogPickerContent({
@@ -28,6 +29,7 @@ export function SizeCatalogPickerContent({
   modalMotion,
   suppressEnterAnimation = false,
   onSelectItem,
+  isItemSelectable,
 }: SizeCatalogPickerContentProps) {
   const hasAny = categories.some((c) => c.items.length > 0);
 
@@ -64,6 +66,7 @@ export function SizeCatalogPickerContent({
             modalMotion={modalMotion}
             suppressEnterAnimation={suppressEnterAnimation}
             onSelectItem={onSelectItem}
+            isItemSelectable={isItemSelectable}
             sectionHeadingDelayMs={sectionHeadingDelayMs}
           />
         );
