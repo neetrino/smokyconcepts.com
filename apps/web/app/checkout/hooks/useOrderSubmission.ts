@@ -19,6 +19,24 @@ interface UseOrderSubmissionProps {
   appliedCouponCode: string | null;
 }
 
+function submitExternalPaymentForm(action: string, fields: Record<string, string>): void {
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = action;
+  form.style.display = 'none';
+
+  Object.entries(fields).forEach(([name, value]) => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+  });
+
+  document.body.appendChild(form);
+  form.submit();
+}
+
 function regionLabelForOrder(value: string, locations: DeliveryLocationOption[]): string {
   const trimmed = value.trim();
   if (!trimmed) {
@@ -175,6 +193,22 @@ export function useOrderSubmission({
           initToken,
         });
         window.location.href = arcaInit.redirectUrl;
+        return;
+      }
+
+      if (resolvedProvider === 'idram') {
+        const initToken = response.payment?.initToken;
+        if (!initToken) {
+          throw new Error(t('checkout.errors.failedToCreateOrder'));
+        }
+        const idramInit = await apiClient.post<{
+          formAction: string;
+          formData: Record<string, string>;
+        }>('/api/v1/payments/idram/init', {
+          orderNumber: response.order.number,
+          initToken,
+        });
+        submitExternalPaymentForm(idramInit.formAction, idramInit.formData);
         return;
       }
 

@@ -780,11 +780,11 @@ class OrdersService {
       }
 
       const paymentInitToken =
-        paymentMethod === 'arca'
+        paymentMethod === 'arca' || paymentMethod === 'idram'
           ? signPaymentInitToken({
               orderId: order.order.id,
               orderNumber: order.order.number,
-              paymentMethod: 'arca',
+              paymentMethod,
               userId: userId ?? null,
             })
           : null;

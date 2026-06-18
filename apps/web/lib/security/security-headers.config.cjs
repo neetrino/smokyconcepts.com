@@ -13,7 +13,7 @@ const CONTENT_SECURITY_POLICY = [
   "media-src 'self' blob: https:",
   "object-src 'none'",
   "base-uri 'self'",
-  "form-action 'self'",
+  "form-action 'self' https://banking.idram.am https://web.idram.am",
   "frame-ancestors 'none'",
 ].join('; ');
 
