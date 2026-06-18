@@ -34,12 +34,14 @@ function chunkItemsIntoPages<T>(items: T[], pageSize: number): T[][] {
 function CatalogSizeCard({
   item,
   selected,
+  selectable,
   onSelect,
   enterDelayMs,
   playEnterAnimation,
 }: {
   item: SizeCatalogItemDto;
   selected: boolean;
+  selectable: boolean;
   onSelect: () => void;
   enterDelayMs: number;
   playEnterAnimation: boolean;
@@ -47,6 +49,7 @@ function CatalogSizeCard({
   return (
     <button
       type="button"
+      disabled={!selectable}
       onClick={onSelect}
       style={playEnterAnimation ? { animationDelay: `${enterDelayMs}ms` } : undefined}
       className={`flex h-[98px] w-[94px] shrink-0 flex-col items-center rounded-[10px] bg-white pt-1 transition-shadow ${
@@ -55,7 +58,10 @@ function CatalogSizeCard({
         selected
           ? 'border-[2px] border-solid border-[#dcc090] shadow-none'
           : 'border border-transparent shadow-[0px_2px_8px_rgba(0,0,0,0.06)]'
+      } ${
+        selectable ? '' : 'cursor-not-allowed opacity-70'
       }`}
+      aria-disabled={!selectable}
     >
       <div className="relative h-[54px] w-[40px] shrink-0 overflow-hidden">
         <img
@@ -111,6 +117,7 @@ function CatalogSizePagePanel({
   itemsPerRow,
   selectedItemId,
   suppressEnterAnimation,
+  isItemSelectable,
   onSelectItem,
 }: {
   chunk: SizeCatalogItemDto[];
@@ -119,6 +126,7 @@ function CatalogSizePagePanel({
   itemsPerRow: number;
   selectedItemId: string | null;
   suppressEnterAnimation: boolean;
+  isItemSelectable?: (item: SizeCatalogItemDto) => boolean;
   onSelectItem: (item: SizeCatalogItemDto) => void;
 }) {
   const useScrollReveal = pageIdx > 0;
@@ -140,6 +148,7 @@ function CatalogSizePagePanel({
         }`}
       >
         {chunk.map((item) => {
+          const selectable = isItemSelectable ? isItemSelectable(item) : true;
           const enterDelayMs = useScrollReveal
             ? SIZE_CATALOG_PAGE_CARD_STAGGER_BASE_MS
             : SIZE_CARD_STAGGER_BASE_MS;
@@ -149,9 +158,15 @@ function CatalogSizePagePanel({
               key={cardKey}
               item={item}
               selected={selectedItemId === item.id}
+              selectable={selectable}
               enterDelayMs={enterDelayMs}
               playEnterAnimation={playEnterAnimation}
-              onSelect={() => onSelectItem(item)}
+              onSelect={() => {
+                if (!selectable) {
+                  return;
+                }
+                onSelectItem(item);
+              }}
             />
           );
         })}
@@ -166,6 +181,7 @@ function CategorySizeCatalogPages({
   pageWidthPx,
   selectedItemId,
   suppressEnterAnimation,
+  isItemSelectable,
   onSelectItem,
 }: {
   items: SizeCatalogItemDto[];
@@ -173,6 +189,7 @@ function CategorySizeCatalogPages({
   pageWidthPx: number;
   selectedItemId: string | null;
   suppressEnterAnimation: boolean;
+  isItemSelectable?: (item: SizeCatalogItemDto) => boolean;
   onSelectItem: (item: SizeCatalogItemDto) => void;
 }) {
   const pageSize = itemsPerRow * 2;
@@ -189,6 +206,7 @@ function CategorySizeCatalogPages({
           itemsPerRow={itemsPerRow}
           selectedItemId={selectedItemId}
           suppressEnterAnimation={suppressEnterAnimation}
+          isItemSelectable={isItemSelectable}
           onSelectItem={onSelectItem}
         />
       ))}
@@ -211,6 +229,7 @@ function CatalogCategorySizeBandView({
   scrollByDirection,
   modalMotion,
   suppressEnterAnimation,
+  isItemSelectable,
 }: {
   category: SizeCatalogCategoryDto;
   selectedItemId: string | null;
@@ -219,6 +238,7 @@ function CatalogCategorySizeBandView({
   sectionHeadingDelayMs: number;
   modalMotion: SizeModalMotionState;
   suppressEnterAnimation: boolean;
+  isItemSelectable?: (item: SizeCatalogItemDto) => boolean;
   itemsPerRow: number;
   scrollerRef: RefObject<HTMLDivElement>;
   pageWidthPx: number;
@@ -266,6 +286,7 @@ function CatalogCategorySizeBandView({
             pageWidthPx={pageWidthPx}
             selectedItemId={selectedItemId}
             suppressEnterAnimation={suppressEnterAnimation}
+            isItemSelectable={isItemSelectable}
             onSelectItem={onSelectItem}
           />
         </div>
@@ -282,6 +303,7 @@ export function CatalogCategorySizeBand({
   sectionHeadingDelayMs,
   modalMotion,
   suppressEnterAnimation = false,
+  isItemSelectable,
 }: {
   category: SizeCatalogCategoryDto;
   selectedItemId: string | null;
@@ -290,6 +312,7 @@ export function CatalogCategorySizeBand({
   sectionHeadingDelayMs: number;
   modalMotion: SizeModalMotionState;
   suppressEnterAnimation?: boolean;
+  isItemSelectable?: (item: SizeCatalogItemDto) => boolean;
 }) {
   const itemsPerRow = useSizeCatalogItemsPerRow();
   const resyncToken = `${category.id}:${category.items.length}:${itemsPerRow}`;
@@ -320,6 +343,7 @@ export function CatalogCategorySizeBand({
       scrollByDirection={scrollByDirection}
       modalMotion={modalMotion}
       suppressEnterAnimation={suppressEnterAnimation}
+      isItemSelectable={isItemSelectable}
     />
   );
 }

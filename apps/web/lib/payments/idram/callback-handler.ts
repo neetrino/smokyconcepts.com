@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@white-shop/db';
 import { Prisma } from '@prisma/client';
-import { amountsMatchOrderTotal } from './amount';
+import { amountsMatchOrderTotal, resolveOrderAmountForIdramAmd } from './amount';
 import { computeIdramChecksum, isIdramChecksumValid } from './checksum';
 import {
   IDRAM_CALLBACK_OK_RESPONSE,
@@ -77,7 +77,11 @@ async function handleIdramPrecheck(
     return plainTextResponse('Order is not pending payment', 400);
   }
 
-  if (!amountsMatchOrderTotal(Number(order.total), params.amount)) {
+  const expectedAmountAmd = resolveOrderAmountForIdramAmd(
+    Number(order.total),
+    String(order.currency ?? 'USD'),
+  );
+  if (!amountsMatchOrderTotal(expectedAmountAmd, params.amount)) {
     return plainTextResponse('EDP_AMOUNT mismatch', 400);
   }
 
@@ -174,7 +178,11 @@ async function handleIdramPaymentConfirmation(
     return plainTextResponse(IDRAM_CALLBACK_OK_RESPONSE);
   }
 
-  if (!amountsMatchOrderTotal(Number(order.total), params.amount)) {
+  const expectedAmountAmd = resolveOrderAmountForIdramAmd(
+    Number(order.total),
+    String(order.currency ?? 'USD'),
+  );
+  if (!amountsMatchOrderTotal(expectedAmountAmd, params.amount)) {
     return plainTextResponse('EDP_AMOUNT mismatch', 400);
   }
 

@@ -67,7 +67,7 @@ export const CUSTOMIZE_HERO_THUMBNAIL_TOP_RATIO = 525 / CUSTOMIZE_FIGMA_CARD.hei
 
 /** Outer dashed frame — Figma 1:8813. Radius applied inline (6.667cqw). */
 export const CUSTOMIZE_HERO_PREVIEW_FRAME_CLASS =
-  'pointer-events-none absolute inset-0 border-[5px] border-dashed border-black';
+  'pointer-events-none absolute inset-0 border-dashed border-black';
 
 /** Inner black body — Figma 1:8811. */
 export const CUSTOMIZE_HERO_PREVIEW_BODY_CLASS =
@@ -91,6 +91,7 @@ export const CUSTOMIZE_HERO_PREVIEW_INNER_STYLE = {
 
 export const CUSTOMIZE_HERO_PREVIEW_FRAME_STYLE = {
   borderRadius: `${(CUSTOMIZE_FIGMA_PREVIEW.outerRadiusPx / CUSTOMIZE_FIGMA_PREVIEW.width) * 100}cqw`,
+  borderWidth: `clamp(2.5px, ${(CUSTOMIZE_FIGMA_PREVIEW.borderWidthPx / CUSTOMIZE_FIGMA_PREVIEW.width) * 100}cqw, ${CUSTOMIZE_FIGMA_PREVIEW.borderWidthPx}px)`,
 } as const;
 
 export const CUSTOMIZE_HERO_PREVIEW_TEXT_STYLE = {

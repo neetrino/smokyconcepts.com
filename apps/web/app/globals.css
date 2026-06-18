@@ -3,8 +3,23 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
   body {
     @apply bg-white text-gray-900;
+  }
+
+  /* iOS Safari auto-zooms inputs below 16px — keep mobile form fields at 16px minimum. */
+  @media (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: 1rem;
+    }
   }
   
   /* Prevent text selection and caret on all text elements */
