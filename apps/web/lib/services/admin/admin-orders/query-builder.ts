@@ -123,6 +123,20 @@ export function buildOrderWhereClause(filters: OrderFilters): Prisma.OrderWhereI
     });
   }
 
+  if (filters.orderType === 'out_of_stock') {
+    andConditions.push({
+      items: {
+        some: {
+          variant: {
+            stock: {
+              lte: 0,
+            },
+          },
+        },
+      },
+    });
+  }
+
   // Return where clause
   if (andConditions.length > 0) {
     return { AND: andConditions };

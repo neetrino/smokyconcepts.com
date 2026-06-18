@@ -31,6 +31,7 @@ export async function getOrders(filters: OrderFilters = {}) {
               select: {
                 attributes: true,
                 price: true,
+                stock: true,
               },
             },
           },
@@ -49,8 +50,16 @@ export async function getOrders(filters: OrderFilters = {}) {
     db.order.count({ where }),
   ]);
 
+  const ordersForList =
+    filters.orderType === 'out_of_stock'
+      ? orders.map((order) => ({
+          ...order,
+          items: order.items.filter((item) => (item.variant?.stock ?? 1) <= 0),
+        }))
+      : orders;
+
   // Format orders for response
-  const formattedOrders = orders.map(formatOrderForList);
+  const formattedOrders = ordersForList.map(formatOrderForList);
 
   return {
     data: formattedOrders,

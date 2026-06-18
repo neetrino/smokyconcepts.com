@@ -1,4 +1,5 @@
 import { catalogPriceForStorefront } from '@/lib/currency';
+import { isDisplayVariant } from '@/lib/default-pricing-variant';
 
 interface ProductListCategory {
   translations?: Array<{
@@ -24,6 +25,8 @@ interface ProductListItem {
     price: number;
     stock: number;
     compareAtPrice: number | null;
+    imageUrl: string | null;
+    attributes?: unknown;
   }>;
   media?: unknown[];
 }
@@ -41,11 +44,12 @@ export function formatProductForList(
     : null;
   
   // Безопасное получение variant с проверкой на существование массива
-  const variant = Array.isArray(product.variants) && product.variants.length > 0
-    ? product.variants[0]
+  const variants = Array.isArray(product.variants) ? product.variants : [];
+  const pricingVariant = variants.length > 0
+    ? variants[0]
     : null;
-  
-  const image = extractImageFromMedia(product.media);
+  const displayVariant = variants.find((item) => isDisplayVariant(item));
+  const image = extractImageFromVariantOrMedia(displayVariant?.imageUrl, pricingVariant?.imageUrl, product.media);
   const relationCategories = Array.isArray(product.categories)
     ? product.categories
         .map((category) => category.translations?.[0]?.title?.trim() || "")
@@ -67,11 +71,11 @@ export function formatProductForList(
     published: product.published,
     featured: product.featured || false,
     upcoming: product.upcoming || false,
-    price: catalogPriceForStorefront(variant?.price || 0),
-    stock: variant?.stock || 0,
+    price: catalogPriceForStorefront(pricingVariant?.price || 0),
+    stock: pricingVariant?.stock || 0,
     discountPercent: product.discountPercent || 0,
     compareAtPrice:
-      variant?.compareAtPrice != null ? catalogPriceForStorefront(variant.compareAtPrice) : null,
+      pricingVariant?.compareAtPrice != null ? catalogPriceForStorefront(pricingVariant.compareAtPrice) : null,
     categories,
     colorStocks: [], // Can be enhanced later
     image,
@@ -99,6 +103,20 @@ function extractImageFromMedia(media: unknown[] | undefined): string | null {
   }
 
   return null;
+}
+
+function extractImageFromVariantOrMedia(
+  displayVariantImageUrl: string | null | undefined,
+  pricingVariantImageUrl: string | null | undefined,
+  media: unknown[] | undefined
+): string | null {
+  if (typeof displayVariantImageUrl === "string" && displayVariantImageUrl.trim().length > 0) {
+    return displayVariantImageUrl.trim();
+  }
+  if (typeof pricingVariantImageUrl === "string" && pricingVariantImageUrl.trim().length > 0) {
+    return pricingVariantImageUrl.trim();
+  }
+  return extractImageFromMedia(media);
 }
 
 

@@ -811,6 +811,7 @@
     "ordersOnly": "Orders",
     "newOrders": "New",
     "earlyAccessOrders": "Early",
+    "outOfStockOrders": "Out of Stock",
     "ordersTotalCount": "{total} orders",
     "allStatuses": "All Statuses",
     "allPaymentStatuses": "All Payment Statuses",

@@ -44,10 +44,15 @@ export function getGuestQuantityForVariant(variantId: string): number {
  * Returns false if adding `quantityToAdd` would exceed `variant.stock` given current guest lines.
  */
 export function canAddVariantToGuestCart(variant: ProductVariant, quantityToAdd: number): boolean {
-  if (variant.stock <= 0) {
+  if (quantityToAdd <= 0) {
     return false;
   }
-  const nextTotal = getGuestQuantityForVariant(variant.id) + quantityToAdd;
+  const currentGuestQuantity = getGuestQuantityForVariant(variant.id);
+  if (variant.stock <= 0) {
+    // Backorder flow: allow keeping one unit in guest cart for out-of-stock variants.
+    return currentGuestQuantity + quantityToAdd <= 1;
+  }
+  const nextTotal = currentGuestQuantity + quantityToAdd;
   return nextTotal <= variant.stock;
 }
 

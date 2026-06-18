@@ -807,6 +807,7 @@
     "ordersOnly": "Заказы",
     "newOrders": "New",
     "earlyAccessOrders": "Early",
+    "outOfStockOrders": "Out of stock",
     "ordersTotalCount": "{total} заказов",
     "allStatuses": "Все статусы",
     "allPaymentStatuses": "Все статусы оплаты",

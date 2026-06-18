@@ -322,14 +322,12 @@ class OrdersService {
               });
             }
 
-            // Check stock
             if (variant.stock < quantity) {
-              throw {
-                status: 422,
-                type: "https://api.shop.am/problems/validation-error",
-                title: "Insufficient stock",
-                detail: `Insufficient stock. Available: ${variant.stock}, Requested: ${quantity}`,
-              };
+              logger.info("Checkout backorder line accepted", {
+                variantId,
+                requestedQuantity: quantity,
+                availableStock: variant.stock,
+              });
             }
 
             const translation = variant.product.translations?.[0] || variant.product.translations?.[0];
