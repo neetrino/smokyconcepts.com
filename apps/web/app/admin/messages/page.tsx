@@ -7,7 +7,14 @@ import { apiClient } from '../../../lib/api-client';
 import { useAuth } from '../../../lib/auth/AuthContext';
 import { useTranslation } from '../../../lib/i18n-client';
 import { AdminShell } from '../components/AdminShell';
+import { AdminNewBadge } from '../components/AdminNewBadge';
 import { ADMIN_PAGE_SHELL_CLASS } from '../constants/adminShell.constants';
+import {
+  useAdminLastSeen,
+  useMarkAdminSectionSeenOnLeave,
+  useSeedAdminLastSeenBaseline,
+} from '../hooks/useAdminLastSeen';
+import { getAdminNewBadgeLabel } from '../utils/adminNewBadgeLabel';
 import { formatAdminDateTime } from '../utils/formatAdminDate';
 
 interface ContactMessage {
@@ -64,6 +71,16 @@ export default function AdminMessagesPage() {
   const nextLabel = getText(t('admin.common.next'), 'admin.common.next', 'Next');
   const loadingLabel = getText(t('admin.common.loading'), 'admin.common.loading', 'Loading...');
   const searchLabel = getText(t('admin.users.search'), 'admin.users.search', 'Search');
+  const newBadgeLabel = getAdminNewBadgeLabel(t);
+
+  const { isNew: isMessageNew } = useAdminLastSeen('messages');
+  useMarkAdminSectionSeenOnLeave('messages');
+
+  useSeedAdminLastSeenBaseline(
+    'messages',
+    messages.map((contactMessage) => contactMessage.createdAt),
+    !loading && messages.length > 0
+  );
 
   useEffect(() => {
     if (!isLoading && (!isLoggedIn || !isAdmin)) {
@@ -165,7 +182,12 @@ export default function AdminMessagesPage() {
                     {messages.map((contactMessage) => (
                       <tr key={contactMessage.id} className="align-top hover:bg-[#dcc090]/10">
                         <td className="px-4 py-4">
-                          <div className="text-sm font-semibold text-[#122a26]">{contactMessage.name}</div>
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <div className="text-sm font-semibold text-[#122a26]">{contactMessage.name}</div>
+                            {isMessageNew(contactMessage.createdAt) ? (
+                              <AdminNewBadge label={newBadgeLabel} />
+                            ) : null}
+                          </div>
                           <div className="text-sm text-[#414141]/70">{contactMessage.email}</div>
                         </td>
                         <td className="px-4 py-4 text-sm text-[#122a26]">{contactMessage.subject}</td>

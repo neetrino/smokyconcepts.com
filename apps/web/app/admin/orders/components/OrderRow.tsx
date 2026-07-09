@@ -13,10 +13,13 @@ import {
   getColorValue,
 } from '../utils/orderUtils';
 import type { Order } from '../useOrders';
+import { AdminNewBadge } from '../../components/AdminNewBadge';
 import { formatAdminDate } from '../../utils/formatAdminDate';
 
 interface OrderRowProps {
   order: Order;
+  isNew?: boolean;
+  newBadgeLabel?: string;
   selected: boolean;
   updatingStatus: boolean;
   updatingPaymentStatus: boolean;
@@ -29,6 +32,8 @@ interface OrderRowProps {
 
 export function OrderRow({
   order,
+  isNew = false,
+  newBadgeLabel = 'New',
   selected,
   updatingStatus,
   updatingPaymentStatus,
@@ -72,8 +77,12 @@ export function OrderRow({
         onClick={onViewDetails}
         onPointerEnter={onPrefetchDetails}
       >
-        <div className="truncate text-sm font-bold text-[#122a26]">
-          {[order.customerFirstName, order.customerLastName].filter(Boolean).join(' ') || t('admin.orders.unknownCustomer')}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <div className="truncate text-sm font-bold text-[#122a26]">
+            {[order.customerFirstName, order.customerLastName].filter(Boolean).join(' ') ||
+              t('admin.orders.unknownCustomer')}
+          </div>
+          {isNew ? <AdminNewBadge label={newBadgeLabel} /> : null}
         </div>
         {order.customerPhone && (
           <div className="mt-0.5 truncate text-xs text-[#414141]/55">{order.customerPhone}</div>
