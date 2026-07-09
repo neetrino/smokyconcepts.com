@@ -3,6 +3,7 @@ import { db } from "@white-shop/db";
 import { logger } from "@/lib/utils/logger";
 import { isContactPhoneAllowedCharacterSet } from "@/lib/utils/contact-phone-input";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
+import { CONTACT_MESSAGE_MAX_LENGTH } from "@/lib/constants/contact-form.constants";
 import {
   CONTACT_MAX_ATTEMPTS,
   CONTACT_RATE_LIMIT_WINDOW_SECONDS,
@@ -96,6 +97,19 @@ export async function POST(req: NextRequest) {
           title: "Validation Error",
           status: 400,
           detail: "Field 'message' is required",
+          instance: req.url,
+        },
+        { status: 400 }
+      );
+    }
+
+    if (message.length > CONTACT_MESSAGE_MAX_LENGTH) {
+      return NextResponse.json(
+        {
+          type: "https://api.shop.am/problems/validation-error",
+          title: "Validation Error",
+          status: 400,
+          detail: `Field 'message' must be at most ${CONTACT_MESSAGE_MAX_LENGTH} characters`,
           instance: req.url,
         },
         { status: 400 }

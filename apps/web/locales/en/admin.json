@@ -887,6 +887,24 @@
     "previous": "Previous",
     "next": "Next"
   },
+  "messages": {
+    "searchPlaceholder": "Search by name, email or message...",
+    "sender": "Sender",
+    "phone": "Phone",
+    "message": "Message",
+    "date": "Date",
+    "empty": "No messages found",
+    "showingPage": "Page {page} of {totalPages} ({total} total)",
+    "selectAll": "Select all messages",
+    "selectMessage": "Select message from {name}",
+    "selectedMessages": "Selected {count} messages",
+    "deleteSelected": "Delete Selected",
+    "deleting": "Deleting...",
+    "deleteConfirm": "Delete {count} selected messages?",
+    "bulkDeleteFinished": "Bulk delete finished. Success: {success}/{total}",
+    "bulkDeleteFailed": "Bulk delete finished. Success: {success}/{total}\n\nFailed messages: {failed}",
+    "failedToDelete": "Failed to delete selected messages. Please try again."
+  },
   "homeHero": {
     "title": "Homepage hero",
     "subtitle": "Image and button link per slide; headline, description, and button text in Armenian, English, and Russian. Dots on the site switch slides.",

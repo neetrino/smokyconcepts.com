@@ -48,6 +48,8 @@
   "size_catalog_custom_order_upload_too_large": "Նկարը չափազանց մեծ է։ Առավելագույնը՝ 10ՄԲ։",
   "size_catalog_custom_order_upload_failed": "Չհաջողվեց մշակել նկարը։ Խնդրում ենք փորձել կրկին։",
   "size_catalog_custom_order_required_fields": "Լրացրեք բոլոր դաշտերը և վերբեռնեք նկար։",
+  "size_catalog_custom_order_invalid_phone": "Խնդրում ենք մուտքագրել վավեր հեռախոսահամար։",
+  "size_catalog_custom_order_invalid_email": "Խնդրում ենք մուտքագրել վավեր էլ․ հասցե։",
   "size_catalog_custom_order_submitting": "Ուղարկվում է...",
   "size_catalog_custom_order_success": "Ձեր անհատական չափի պատվերը հաջողությամբ ուղարկվեց։",
   "size_catalog_custom_order_submit_failed": "Չհաջողվեց ուղարկել անհատական չափի պատվերը։ Խնդրում ենք փորձել կրկին։",

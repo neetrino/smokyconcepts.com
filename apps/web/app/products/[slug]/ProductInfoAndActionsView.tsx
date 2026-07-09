@@ -292,6 +292,8 @@ export function ProductInfoAndActionsView({
         language={language}
         sizeCategories={sizeCatalogCategories}
         selectedSizeItemId={selectedCatalogSize?.id ?? null}
+        productId={product.id}
+        productTitle={productTitle}
         onSelectSizeCatalogItem={handleSelectCatalogSizeItem}
         onSelectCustomSizeRequest={handleSelectCustomSizeRequest}
         isSizeItemSelectable={isCatalogSizeItemSelectable}

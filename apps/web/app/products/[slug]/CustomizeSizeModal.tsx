@@ -30,6 +30,11 @@ import {
   EMPTY_CUSTOM_ORDER_DRAFT,
   type CustomOrderDraft,
 } from './CustomizeSizeOrderFallback';
+import { isCustomOrderDraftValid } from './utils/custom-order-validation';
+import {
+  getCustomSizeOrderSubmitErrorMessage,
+  submitCustomSizeOrder,
+} from './utils/submit-custom-size-order';
 
 function normalizeSearchQuery(value: string): string {
   return value
@@ -66,6 +71,8 @@ interface CustomizeSizeModalProps {
   language: LanguageCode;
   sizeCategories: SizeCatalogCategoryDto[];
   selectedSizeItemId: string | null;
+  productId?: string;
+  productTitle?: string;
   onSelectSizeCatalogItem: (item: SizeCatalogItemDto) => void;
   onSelectCustomSizeRequest: (draft: CustomOrderDraft) => void;
   isSizeItemSelectable?: (item: SizeCatalogItemDto) => boolean;
@@ -77,6 +84,8 @@ export function CustomizeSizeModal({
   language,
   sizeCategories,
   selectedSizeItemId,
+  productId,
+  productTitle,
   onSelectSizeCatalogItem,
   onSelectCustomSizeRequest,
   isSizeItemSelectable,
@@ -99,6 +108,8 @@ export function CustomizeSizeModal({
   const [sizeSearchQuery, setSizeSearchQuery] = useState('');
   const [customOrderDraft, setCustomOrderDraft] = useState<CustomOrderDraft>(EMPTY_CUSTOM_ORDER_DRAFT);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isSubmittingCustomOrder, setIsSubmittingCustomOrder] = useState(false);
+  const [customOrderSubmitSuccess, setCustomOrderSubmitSuccess] = useState(false);
   const [customOrderSubmitError, setCustomOrderSubmitError] = useState<string | null>(null);
 
   const filteredSizeCategories = useMemo(
@@ -126,6 +137,8 @@ export function CustomizeSizeModal({
     setSizeSearchQuery('');
     setCustomOrderDraft(EMPTY_CUSTOM_ORDER_DRAFT);
     setIsUploadingImage(false);
+    setIsSubmittingCustomOrder(false);
+    setCustomOrderSubmitSuccess(false);
     setCustomOrderSubmitError(null);
   }, [isMounted]);
 
@@ -213,20 +226,13 @@ export function CustomizeSizeModal({
     }
   }, [language]);
 
-  const handleCustomOrderSubmit = useCallback((draft: CustomOrderDraft) => {
-    const canSubmit =
-      draft.name.trim() &&
-      draft.phone.trim() &&
-      draft.email.trim() &&
-      draft.description.trim() &&
-      draft.imageDataUrl.trim();
-
-    if (!canSubmit) {
+  const handleCustomOrderSubmit = useCallback(async (draft: CustomOrderDraft) => {
+    if (!isCustomOrderDraftValid(draft)) {
       setCustomOrderSubmitError(t(language, 'product.size_catalog_custom_order_required_fields'));
       return;
     }
-    setCustomOrderSubmitError(null);
-    onSelectCustomSizeRequest({
+
+    const normalizedDraft: CustomOrderDraft = {
       ...draft,
       name: draft.name.trim(),
       phone: draft.phone.trim(),
@@ -234,20 +240,38 @@ export function CustomizeSizeModal({
       description: draft.description.trim(),
       imageDataUrl: draft.imageDataUrl.trim(),
       imageFileName: draft.imageFileName.trim(),
-    });
-    onClose();
-  }, [language, onClose, onSelectCustomSizeRequest]);
+    };
+
+    setCustomOrderSubmitError(null);
+    setCustomOrderSubmitSuccess(false);
+    setIsSubmittingCustomOrder(true);
+
+    try {
+      await submitCustomSizeOrder({
+        draft: normalizedDraft,
+        productId,
+        productTitle,
+      });
+      onSelectCustomSizeRequest(normalizedDraft);
+      setCustomOrderSubmitSuccess(true);
+      window.setTimeout(() => {
+        onClose();
+      }, 1500);
+    } catch (error: unknown) {
+      const apiMessage = getCustomSizeOrderSubmitErrorMessage(error);
+      setCustomOrderSubmitError(
+        apiMessage || t(language, 'product.size_catalog_custom_order_submit_failed')
+      );
+    } finally {
+      setIsSubmittingCustomOrder(false);
+    }
+  }, [language, onClose, onSelectCustomSizeRequest, productId, productTitle]);
 
   if (!isMounted) {
     return null;
   }
 
-  const canSubmitCustomOrder =
-    customOrderDraft.name.trim().length > 0 &&
-    customOrderDraft.phone.trim().length > 0 &&
-    customOrderDraft.email.trim().length > 0 &&
-    customOrderDraft.description.trim().length > 0 &&
-    customOrderDraft.imageDataUrl.trim().length > 0;
+  const canSubmitCustomOrder = isCustomOrderDraftValid(customOrderDraft);
 
   const handlePickSizeItem = (item: SizeCatalogItemDto) => {
     if (isSizeItemSelectable && !isSizeItemSelectable(item)) {
@@ -334,7 +358,8 @@ export function CustomizeSizeModal({
                   onUploadImage={handleCustomOrderImageUpload}
                   onSubmit={handleCustomOrderSubmit}
                   isUploadingImage={isUploadingImage}
-                  isSubmitting={false}
+                  isSubmitting={isSubmittingCustomOrder}
+                  submitSuccess={customOrderSubmitSuccess}
                   submitError={customOrderSubmitError}
                   canSubmit={canSubmitCustomOrder}
               />

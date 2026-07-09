@@ -13,4 +13,7 @@ export const CONTACT_RATE_LIMIT_WINDOW_SECONDS = 60 * 60;
 /** Max contact submissions per IP within {@link CONTACT_RATE_LIMIT_WINDOW_SECONDS}. */
 export const CONTACT_MAX_ATTEMPTS = 5;
 
+/** Max custom size order submissions per IP within {@link CONTACT_RATE_LIMIT_WINDOW_SECONDS}. */
+export const CUSTOM_SIZE_ORDER_MAX_ATTEMPTS = 10;
+
 export const RATE_LIMIT_HTTP_STATUS = 429;

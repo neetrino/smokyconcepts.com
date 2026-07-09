@@ -3,8 +3,13 @@ import { Prisma } from "@prisma/client";
 import { parseDataImageUrl } from "@/lib/services/utils/data-url-image";
 import { isR2Configured, uploadSizeCatalogImageToR2 } from "@/lib/services/r2.service";
 
+import { isContactPhoneAllowedCharacterSet } from "@/lib/utils/contact-phone-input";
+
 const ORDER_NUMBER_START = 100;
 const ORDER_NUMBER_RETRY_LIMIT = 5;
+const CUSTOM_ORDER_PHONE_MIN_LENGTH = 3;
+const CUSTOM_ORDER_PHONE_MAX_LENGTH = 40;
+const CUSTOM_ORDER_EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const CUSTOM_SIZE_ORDER_NOTE_MARKER = "CUSTOM_SIZE_REQUEST";
 const CUSTOM_SIZE_ORDER_SKU = "CUSTOM-SIZE";
@@ -79,6 +84,28 @@ function validateCustomSizeOrderInput(input: CreateCustomSizeOrderInput): Create
       type: "https://api.shop.am/problems/validation-error",
       title: "Validation Error",
       detail: "imageDataUrl must be a valid data:image/* base64 payload",
+    };
+  }
+
+  if (
+    phone.length < CUSTOM_ORDER_PHONE_MIN_LENGTH ||
+    phone.length > CUSTOM_ORDER_PHONE_MAX_LENGTH ||
+    !isContactPhoneAllowedCharacterSet(phone)
+  ) {
+    throw {
+      status: 400,
+      type: "https://api.shop.am/problems/validation-error",
+      title: "Validation Error",
+      detail: "phone must be a valid phone number",
+    };
+  }
+
+  if (!CUSTOM_ORDER_EMAIL_REGEX.test(email)) {
+    throw {
+      status: 400,
+      type: "https://api.shop.am/problems/validation-error",
+      title: "Validation Error",
+      detail: "email must be a valid email address",
     };
   }
 

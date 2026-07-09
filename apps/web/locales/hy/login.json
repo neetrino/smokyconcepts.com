@@ -2,8 +2,8 @@
   "title": "Green Pronto Welcome",
   "subtitle": "Մուտք գործեք ձեր հաշիվ՝ շարունակելու համար",
   "form": {
-    "emailOrPhone": "Էլ. փոստ կամ հեռախոս",
-    "emailOrPhonePlaceholder": "your@email.com կամ +374 XX XXX XXX",
+    "email": "Էլ. փոստ",
+    "emailPlaceholder": "your@email.com",
     "password": "Գաղտնաբառ",
     "passwordPlaceholder": "••••••••",
     "rememberMe": "Հիշել ինձ",
@@ -14,7 +14,7 @@
     "signUp": "Գրանցվել"
   },
   "errors": {
-    "emailOrPhoneRequired": "Խնդրում ենք մուտքագրել ձեր էլ. փոստը կամ հեռախոսահամարը",
+    "emailRequired": "Խնդրում ենք մուտքագրել ձեր էլ. փոստը",
     "passwordRequired": "Խնդրում ենք մուտքագրել ձեր գաղտնաբառը",
     "loginFailed": "Մուտքը ձախողվեց: Խնդրում ենք կրկին փորձել:"
   }
