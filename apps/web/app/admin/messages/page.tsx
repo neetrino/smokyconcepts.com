@@ -24,6 +24,7 @@ interface ContactMessage {
   email: string;
   subject: string;
   message: string;
+  source: 'CONTACT' | 'PERSONALIZE';
   createdAt: string;
 }
 
@@ -62,6 +63,17 @@ export default function AdminMessagesPage() {
   );
   const senderLabel = getText(t('admin.messages.sender'), 'admin.messages.sender', 'Sender');
   const phoneLabel = getText(t('admin.messages.phone'), 'admin.messages.phone', 'Phone');
+  const sourceLabel = getText(t('admin.messages.source'), 'admin.messages.source', 'Source');
+  const sourceContactLabel = getText(
+    t('admin.messages.sourceContact'),
+    'admin.messages.sourceContact',
+    'Contact',
+  );
+  const sourcePersonalizeLabel = getText(
+    t('admin.messages.sourcePersonalize'),
+    'admin.messages.sourcePersonalize',
+    'Personalize',
+  );
   const messageLabel = getText(t('admin.messages.message'), 'admin.messages.message', 'Message');
   const dateLabel = getText(t('admin.messages.date'), 'admin.messages.date', 'Date');
   const noMessagesLabel = getText(t('admin.messages.empty'), 'admin.messages.empty', 'No messages found');
@@ -288,6 +300,9 @@ export default function AdminMessagesPage() {
                         {senderLabel}
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#dcc090]">
+                        {sourceLabel}
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#dcc090]">
                         {phoneLabel}
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#dcc090]">
@@ -322,6 +337,19 @@ export default function AdminMessagesPage() {
                             ) : null}
                           </div>
                           <div className="text-sm text-[#414141]/70">{contactMessage.email}</div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <span
+                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide ${
+                              contactMessage.source === 'PERSONALIZE'
+                                ? 'bg-[#dcc090]/25 text-[#122a26]'
+                                : 'bg-[#122a26]/10 text-[#122a26]'
+                            }`}
+                          >
+                            {contactMessage.source === 'PERSONALIZE'
+                              ? sourcePersonalizeLabel
+                              : sourceContactLabel}
+                          </span>
                         </td>
                         <td className="px-4 py-4 text-sm text-[#122a26]">{contactMessage.subject}</td>
                         <td className="max-w-[420px] px-4 py-4 text-sm text-[#122a26]">

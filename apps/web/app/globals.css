@@ -9,7 +9,6 @@
     text-size-adjust: 100%;
     overflow-x: hidden;
     overscroll-behavior-x: none;
-    scrollbar-gutter: stable;
     background-color: #efefef;
     scrollbar-color: rgba(65, 65, 65, 0.38) #efefef;
   }
@@ -36,6 +35,16 @@
 
   html.scroll-locked body {
     overflow: hidden;
+  }
+
+  html.personalize-scrollbar-hidden,
+  html:has([data-personalize-page]) {
+    scrollbar-width: none;
+  }
+
+  html.personalize-scrollbar-hidden::-webkit-scrollbar,
+  html:has([data-personalize-page])::-webkit-scrollbar {
+    display: none;
   }
 
   body {

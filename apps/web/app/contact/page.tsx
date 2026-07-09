@@ -59,6 +59,7 @@ export default function ContactPage() {
         email: formData.email,
         phone: formData.phone,
         message: formData.message,
+        source: 'CONTACT',
       }, {
         skipAuth: true, // Contact form doesn't require authentication
       });

@@ -5,6 +5,10 @@ import { isContactPhoneAllowedCharacterSet } from "@/lib/utils/contact-phone-inp
 import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { CONTACT_MESSAGE_MAX_LENGTH } from "@/lib/constants/contact-form.constants";
 import {
+  CONTACT_MESSAGE_SOURCES,
+  normalizeContactMessageSource,
+} from "@/lib/constants/contact-message-source.constants";
+import {
   CONTACT_MAX_ATTEMPTS,
   CONTACT_RATE_LIMIT_WINDOW_SECONDS,
 } from "@/lib/security/rate-limit.constants";
@@ -30,6 +34,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { name, email, message } = body;
+    const source = normalizeContactMessageSource(body.source);
     const phoneRaw = body.phone ?? body.subject;
     const phone =
       typeof phoneRaw === "string" ? phoneRaw.trim() : "";
@@ -90,7 +95,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+    const messageText = typeof message === 'string' ? message.trim() : '';
+    const isMessageRequired = source === CONTACT_MESSAGE_SOURCES.CONTACT;
+
+    if (isMessageRequired && messageText.length === 0) {
       return NextResponse.json(
         {
           type: "https://api.shop.am/problems/validation-error",
@@ -103,7 +111,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (message.length > CONTACT_MESSAGE_MAX_LENGTH) {
+    if (messageText.length > CONTACT_MESSAGE_MAX_LENGTH) {
       return NextResponse.json(
         {
           type: "https://api.shop.am/problems/validation-error",
@@ -137,11 +145,12 @@ export async function POST(req: NextRequest) {
         name: name.trim(),
         email: email.trim(),
         subject: phone,
-        message: message.trim(),
+        message: messageText,
+        source,
       },
     });
 
-    logger.info("Contact message created", { id: contactMessage.id });
+    logger.info("Contact message created", { id: contactMessage.id, source });
 
     return NextResponse.json(
       {
@@ -152,6 +161,7 @@ export async function POST(req: NextRequest) {
           phone: contactMessage.subject,
           subject: contactMessage.subject,
           message: contactMessage.message,
+          source: contactMessage.source,
           createdAt: contactMessage.createdAt,
         },
       },

@@ -890,6 +890,9 @@
   "messages": {
     "searchPlaceholder": "Search by name, email or message...",
     "sender": "Sender",
+    "source": "Source",
+    "sourceContact": "Contact",
+    "sourcePersonalize": "Personalize",
     "phone": "Phone",
     "message": "Message",
     "date": "Date",

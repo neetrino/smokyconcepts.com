@@ -1,0 +1,24 @@
+{
+  "title": "Personalize",
+  "description": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of",
+  "gallery": {
+    "sketchesAlt": "Technical furniture sketches on a wooden desk",
+    "handshakeAlt": "Business partners shaking hands",
+    "leatherAlt": "Assorted leather hides in rich colors"
+  },
+  "form": {
+    "name": "Name*",
+    "namePlaceholder": "Your name",
+    "phone": "Phone Number*",
+    "phonePlaceholder": "+374 XX XXX XXX",
+    "email": "Email*",
+    "emailPlaceholder": "your@email.com",
+    "comment": "Comment",
+    "commentPlaceholder": "Write your comment",
+    "commentRequired": "Please enter a comment",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "submitSuccess": "Your message has been sent successfully",
+    "submitError": "Error: Failed to send message"
+  }
+}

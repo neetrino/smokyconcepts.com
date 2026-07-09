@@ -886,6 +886,9 @@
   "messages": {
     "searchPlaceholder": "Поиск по имени, email или сообщению...",
     "sender": "Отправитель",
+    "source": "Источник",
+    "sourceContact": "Контакт",
+    "sourcePersonalize": "Персонализация",
     "phone": "Телефон",
     "message": "Сообщение",
     "date": "Дата",
