@@ -111,6 +111,7 @@ export function CustomizeSizeModal({
   const [isSubmittingCustomOrder, setIsSubmittingCustomOrder] = useState(false);
   const [customOrderSubmitSuccess, setCustomOrderSubmitSuccess] = useState(false);
   const [customOrderSubmitError, setCustomOrderSubmitError] = useState<string | null>(null);
+  const [pendingSizeItem, setPendingSizeItem] = useState<SizeCatalogItemDto | null>(null);
 
   const filteredSizeCategories = useMemo(
     () =>
@@ -142,7 +143,31 @@ export function CustomizeSizeModal({
     setCustomOrderSubmitError(null);
   }, [isMounted]);
 
-  useBodyScrollLock(isMounted);
+  const hasPendingSizeSelection = pendingSizeItem !== null;
+
+  useBodyScrollLock(isMounted || hasPendingSizeSelection);
+
+  useEffect(() => {
+    if (isMounted || !pendingSizeItem) {
+      return;
+    }
+
+    const item = pendingSizeItem;
+    onSelectSizeCatalogItem(item);
+
+    let outerFrameId = 0;
+    let innerFrameId = 0;
+    outerFrameId = requestAnimationFrame(() => {
+      innerFrameId = requestAnimationFrame(() => {
+        setPendingSizeItem(null);
+      });
+    });
+
+    return () => {
+      cancelAnimationFrame(outerFrameId);
+      cancelAnimationFrame(innerFrameId);
+    };
+  }, [isMounted, pendingSizeItem, onSelectSizeCatalogItem]);
 
   useEffect(() => {
     if (!isMounted) {
@@ -267,19 +292,22 @@ export function CustomizeSizeModal({
     }
   }, [language, onClose, onSelectCustomSizeRequest, productId, productTitle]);
 
+  const handlePickSizeItem = useCallback(
+    (item: SizeCatalogItemDto) => {
+      if (isSizeItemSelectable && !isSizeItemSelectable(item)) {
+        return;
+      }
+      setPendingSizeItem(item);
+      onClose();
+    },
+    [isSizeItemSelectable, onClose]
+  );
+
   if (!isMounted) {
     return null;
   }
 
   const canSubmitCustomOrder = isCustomOrderDraftValid(customOrderDraft);
-
-  const handlePickSizeItem = (item: SizeCatalogItemDto) => {
-    if (isSizeItemSelectable && !isSizeItemSelectable(item)) {
-      return;
-    }
-    onSelectSizeCatalogItem(item);
-    onClose();
-  };
 
   return createPortal(
     <div

@@ -10,10 +10,36 @@
     overflow-x: hidden;
     overscroll-behavior-x: none;
     scrollbar-gutter: stable;
+    background-color: #efefef;
+    scrollbar-color: rgba(65, 65, 65, 0.38) #efefef;
+  }
+
+  html::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  html::-webkit-scrollbar-track {
+    background: #efefef;
+  }
+
+  html::-webkit-scrollbar-thumb {
+    background-color: rgba(65, 65, 65, 0.38);
+    border-radius: 9999px;
+    border: 2px solid #efefef;
+    background-clip: padding-box;
+  }
+
+  html.scroll-locked {
+    overflow: hidden;
+    background-color: #efefef;
+  }
+
+  html.scroll-locked body {
+    overflow: hidden;
   }
 
   body {
-    @apply bg-white text-gray-900;
+    @apply bg-[#efefef] text-gray-900;
     overflow-x: hidden;
     overscroll-behavior-x: none;
     max-width: 100%;

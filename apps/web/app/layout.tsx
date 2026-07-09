@@ -41,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body
-        className={`${inter.className} ${montserrat.variable} bg-gray-50 text-gray-900 antialiased min-h-full`}
+        className={`${inter.className} ${montserrat.variable} bg-[#efefef] text-gray-900 antialiased min-h-full`}
       >
         <Suspense fallback={null}>
           <ClientProviders>
