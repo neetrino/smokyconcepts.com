@@ -9,6 +9,7 @@
     text-size-adjust: 100%;
     overflow-x: hidden;
     overscroll-behavior-x: none;
+    scrollbar-gutter: stable;
   }
 
   body {

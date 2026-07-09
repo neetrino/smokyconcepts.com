@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { useSizeModalExitAnimation } from '@/hooks/useSizeModalExitAnimation';
 import {
@@ -128,16 +129,7 @@ export function CustomizeSizeModal({
     setCustomOrderSubmitError(null);
   }, [isMounted]);
 
-  useEffect(() => {
-    if (!isMounted) {
-      return;
-    }
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [isMounted]);
+  useBodyScrollLock(isMounted);
 
   useEffect(() => {
     if (!isMounted) {

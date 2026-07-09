@@ -13,6 +13,7 @@ interface HomeHeroSectionProps {
 }
 
 const HERO_AUTO_SLIDE_INTERVAL_MS = 3000;
+const HERO_AUTO_SLIDE_RESUME_DELAY_MS = 10_000;
 const HERO_SWIPE_THRESHOLD_PX = 40;
 const HERO_HORIZONTAL_SWIPE_LOCK_PX = 12;
 
@@ -39,7 +40,28 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
   const [isDragging, setIsDragging] = useState(false);
   const touchStateRef = useRef<HeroTouchState>(INITIAL_HERO_TOUCH_STATE);
   const heroRef = useRef<HTMLDivElement>(null);
+  const isAutoSlidePausedRef = useRef(false);
+  const autoSlideResumeTimeoutRef = useRef<number | null>(null);
   const safeSlides = slides.length > 0 ? slides : [];
+
+  const pauseAutoSlide = useCallback(() => {
+    isAutoSlidePausedRef.current = true;
+    if (autoSlideResumeTimeoutRef.current !== null) {
+      window.clearTimeout(autoSlideResumeTimeoutRef.current);
+      autoSlideResumeTimeoutRef.current = null;
+    }
+  }, []);
+
+  const scheduleAutoSlideResume = useCallback(() => {
+    if (autoSlideResumeTimeoutRef.current !== null) {
+      window.clearTimeout(autoSlideResumeTimeoutRef.current);
+    }
+
+    autoSlideResumeTimeoutRef.current = window.setTimeout(() => {
+      isAutoSlidePausedRef.current = false;
+      autoSlideResumeTimeoutRef.current = null;
+    }, HERO_AUTO_SLIDE_RESUME_DELAY_MS);
+  }, []);
 
   const goToPrevious = useCallback(() => {
     if (safeSlides.length <= 1) return;
@@ -61,11 +83,17 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
     }
 
     const intervalId = window.setInterval(() => {
-      goToNext();
+      if (!isAutoSlidePausedRef.current) {
+        goToNext();
+      }
     }, HERO_AUTO_SLIDE_INTERVAL_MS);
 
     return () => {
       window.clearInterval(intervalId);
+      if (autoSlideResumeTimeoutRef.current !== null) {
+        window.clearTimeout(autoSlideResumeTimeoutRef.current);
+        autoSlideResumeTimeoutRef.current = null;
+      }
     };
   }, [goToNext, safeSlides.length]);
 
@@ -124,6 +152,8 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
       return;
     }
 
+    pauseAutoSlide();
+
     touchStateRef.current = {
       startX,
       currentX: startX,
@@ -153,6 +183,7 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
     const { startX, currentX } = touchStateRef.current;
     if (startX === null || currentX === null) {
       resetTouchState();
+      scheduleAutoSlideResume();
       return;
     }
 
@@ -166,6 +197,13 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
     }
 
     resetTouchState();
+    scheduleAutoSlideResume();
+  };
+
+  const handleDotClick = (index: number) => {
+    pauseAutoSlide();
+    setActiveIndex(index);
+    scheduleAutoSlideResume();
   };
 
   return (
@@ -176,7 +214,10 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onTouchCancel={resetTouchState}
+        onTouchCancel={() => {
+          resetTouchState();
+          scheduleAutoSlideResume();
+        }}
       >
         <div className="h-full overflow-hidden">
           <div
@@ -239,7 +280,7 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
                 <button
                   key={index}
                   type="button"
-                  onClick={() => setActiveIndex(index)}
+                  onClick={() => handleDotClick(index)}
                   className={`rounded-full transition-all ${
                     isActive
                       ? 'h-1.5 w-4 bg-white'
