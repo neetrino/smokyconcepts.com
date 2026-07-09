@@ -211,7 +211,7 @@ export function ProductInfoAndActionsView({
 
         <div className={scrollBodyClass}>
         <div className={tabsSectionClass}>
-          <div className="w-full min-w-0 shrink-0 touch-pan-x overflow-x-auto overscroll-x-contain scroll-px-1 pb-2 scrollbar-hide [-webkit-overflow-scrolling:touch] sm:touch-auto sm:pb-0">
+          <div className="w-full min-w-0 shrink-0 overflow-x-auto overscroll-x-contain scroll-px-1 pb-2 scrollbar-hide [-webkit-overflow-scrolling:touch] sm:pb-0">
             <div
               className="flex w-max max-w-none snap-x snap-mandatory flex-nowrap items-end gap-5 pr-4 sm:snap-none sm:gap-7 sm:pr-5"
               role="tablist"
@@ -273,7 +273,7 @@ export function ProductInfoAndActionsView({
             type="button"
             disabled={isAddingToCart}
             onClick={handleAddToCartClick}
-            className="h-10 shrink-0 rounded-[8px] !bg-[#dcc090] px-4 text-[56px] font-bold capitalize tracking-normal !text-[#122a26] hover:!bg-[#d3b67f] disabled:cursor-wait disabled:!opacity-100 sm:px-5 sm:text-[20px]"
+            className="h-10 shrink-0 rounded-[8px] !bg-[#dcc090] px-4 text-[16px] font-bold capitalize tracking-normal !text-[#122a26] hover:!bg-[#d3b67f] disabled:cursor-wait disabled:!opacity-100 sm:px-5 sm:text-[20px]"
           >
             {addToCartLabel}
           </Button>

@@ -1,4 +1,5 @@
 import { ADMIN_PRICE_CURRENCY, formatStoredMoney } from '@/lib/currency';
+import { formatAdminDateTime } from './formatAdminDate';
 
 /**
  * Dashboard utility functions
@@ -15,13 +16,6 @@ export function formatCurrency(amount: number, currency: string = ADMIN_PRICE_CU
  * Formats date string
  */
 export function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('hy-AM', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date);
+  return formatAdminDateTime(dateString);
 }
 

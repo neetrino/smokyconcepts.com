@@ -45,9 +45,9 @@ export default function RootLayout({
       >
         <Suspense fallback={null}>
           <ClientProviders>
-            <div className="flex min-h-screen flex-col overflow-x-visible overflow-y-visible">
+            <div className="flex min-h-screen flex-col overflow-x-hidden overflow-y-visible">
               <Header />
-              <main className="flex-1 w-full overflow-x-visible overflow-y-visible">
+              <main className="flex-1 w-full max-w-full overflow-x-hidden overflow-y-visible">
                 {children}
               </main>
               <Footer />

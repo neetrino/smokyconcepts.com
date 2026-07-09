@@ -23,7 +23,24 @@ interface ActiveSlide {
   direction: 'next' | 'previous';
 }
 
+interface GalleryTouchState {
+  startX: number | null;
+  startY: number | null;
+  isHorizontalSwipe: boolean;
+}
+
+const INITIAL_GALLERY_TOUCH_STATE: GalleryTouchState = {
+  startX: null,
+  startY: null,
+  isHorizontalSwipe: false,
+};
+
+/** Movement before deciding horizontal gallery swipe vs vertical page scroll. */
+const HORIZONTAL_SWIPE_AXIS_LOCK_THRESHOLD_PX = 8;
+
 const HERO_SLIDE_LAYER_BASE_CLASSES = 'absolute inset-0 flex items-center justify-center';
+/** Vertical pans reach the page; horizontal swipes are handled in JS. */
+const HERO_SWIPE_CONTAINER_CLASSES = 'touch-pan-y overscroll-none';
 const HERO_SLIDE_TRANSITION_CLASSES = 'transition-transform duration-300 ease-out';
 
 /** Mobile hero — slides horizontally in sync with thumbnail strip navigation. */
@@ -37,7 +54,8 @@ export function MobileGalleryHeroSlider({
   overlay,
 }: MobileGalleryHeroSliderProps) {
   const previousIndexRef = useRef(currentIndex);
-  const touchStartXRef = useRef<number | null>(null);
+  const touchStateRef = useRef<GalleryTouchState>(INITIAL_GALLERY_TOUCH_STATE);
+  const sliderRef = useRef<HTMLDivElement>(null);
   const [activeSlide, setActiveSlide] = useState<ActiveSlide | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -75,14 +93,73 @@ export function MobileGalleryHeroSlider({
     };
   }, [activeSlide]);
 
+  useEffect(() => {
+    const sliderNode = sliderRef.current;
+    if (!sliderNode || images.length <= 1) {
+      return;
+    }
+
+    const lockPageScrollDuringGalleryTouch = (event: globalThis.TouchEvent) => {
+      const touch = event.touches[0];
+      const state = touchStateRef.current;
+      if (!touch || state.startX === null || state.startY === null) {
+        return;
+      }
+
+      const deltaX = touch.clientX - state.startX;
+      const deltaY = touch.clientY - state.startY;
+
+      if (!state.isHorizontalSwipe) {
+        if (
+          Math.abs(deltaX) < HORIZONTAL_SWIPE_AXIS_LOCK_THRESHOLD_PX &&
+          Math.abs(deltaY) < HORIZONTAL_SWIPE_AXIS_LOCK_THRESHOLD_PX
+        ) {
+          return;
+        }
+
+        if (Math.abs(deltaY) >= Math.abs(deltaX)) {
+          resetTouchState();
+          return;
+        }
+
+        state.isHorizontalSwipe = true;
+      }
+
+      event.preventDefault();
+    };
+
+    sliderNode.addEventListener('touchmove', lockPageScrollDuringGalleryTouch, {
+      passive: false,
+    });
+
+    return () => {
+      sliderNode.removeEventListener('touchmove', lockPageScrollDuringGalleryTouch);
+    };
+  }, [images.length]);
+
+  const resetTouchState = () => {
+    touchStateRef.current = INITIAL_GALLERY_TOUCH_STATE;
+  };
+
   const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
-    touchStartXRef.current = event.touches[0]?.clientX ?? null;
+    if (images.length <= 1) {
+      return;
+    }
+
+    const startX = event.touches[0]?.clientX ?? null;
+    const startY = event.touches[0]?.clientY ?? null;
+    if (startX === null || startY === null) {
+      return;
+    }
+
+    touchStateRef.current = { startX, startY, isHorizontalSwipe: false };
   };
 
   const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
-    const startX = touchStartXRef.current;
-    touchStartXRef.current = null;
-    if (startX === null || images.length <= 1) {
+    const { startX, isHorizontalSwipe } = touchStateRef.current;
+    resetTouchState();
+
+    if (startX === null || !isHorizontalSwipe || images.length <= 1) {
       return;
     }
 
@@ -125,9 +202,11 @@ export function MobileGalleryHeroSlider({
 
   return (
     <div
-      className={`relative mx-auto w-full max-w-full overflow-hidden ${boxSizeClasses}`}
+      ref={sliderRef}
+      className={`relative mx-auto w-full max-w-full overflow-hidden ${HERO_SWIPE_CONTAINER_CLASSES} ${boxSizeClasses}`}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      onTouchCancel={resetTouchState}
     >
       {activeSlide ? (
         <>

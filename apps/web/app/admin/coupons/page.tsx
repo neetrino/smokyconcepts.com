@@ -16,6 +16,7 @@ import {
 import { getAdminSidebarNavIndentClass } from '../utils/adminMenuIndent';
 import { CreateCouponModal } from './components/CreateCouponModal';
 import type { AdminCouponDetail, CouponFormSubmitPayload } from './types';
+import { formatAdminDateTime } from '../utils/formatAdminDate';
 
 interface CouponRow {
   id: string;
@@ -330,12 +331,7 @@ export default function AdminCouponsPage() {
                           <td className="py-2 pr-4">{row.discountValue}</td>
                           <td className="py-2 pr-4">{row.quantity ?? '∞'}</td>
                           <td className="py-2 pr-4 text-[#414141]/80">
-                            {row.expiresAt
-                              ? new Date(row.expiresAt).toLocaleString(undefined, {
-                                  dateStyle: 'short',
-                                  timeStyle: 'short',
-                                })
-                              : '—'}
+                            {row.expiresAt ? formatAdminDateTime(row.expiresAt) : '—'}
                           </td>
                           <td className="py-2">
                             <div className="flex flex-wrap items-center gap-3">

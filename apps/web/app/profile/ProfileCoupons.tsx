@@ -5,6 +5,7 @@ import { showToast } from '../../components/Toast';
 import { useCurrency } from '../../components/hooks/useCurrency';
 import { type CurrencyCode } from '../../lib/currency';
 import { formatProfileCouponDiscount, profileCouponStatusClass } from './coupon-display';
+import { formatDisplayDate } from '@/lib/format-display-date';
 import type { UserCoupon } from './types';
 
 interface ProfileCouponsProps {
@@ -92,7 +93,7 @@ export function ProfileCoupons({ coupons, couponsLoading, t }: ProfileCouponsPro
                 <p className="mt-1 text-sm text-gray-500">
                   {t('profile.coupons.expiresAt')}:{' '}
                   {coupon.expiresAt
-                    ? new Date(coupon.expiresAt).toLocaleDateString()
+                    ? formatDisplayDate(coupon.expiresAt)
                     : t('profile.coupons.noExpiry')}
                 </p>
               </div>

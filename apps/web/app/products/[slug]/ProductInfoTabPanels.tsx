@@ -4,7 +4,10 @@ import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import type { Product } from './types';
 import { CustomizeFormatToolbar } from './CustomizeFormatToolbar';
-import type { CustomizeFormatState } from './utils/build-customize-preview-html';
+import {
+  getCustomizeInputStyle,
+  type CustomizeFormatState,
+} from './utils/build-customize-preview-html';
 import {
   CUSTOMIZE_FORMAT_INPUT_WRAPPER_CLASS,
   CUSTOMIZE_FORMAT_ROW_CLASS,
@@ -99,7 +102,8 @@ export function ProductInfoTabPanels({
               onChange={(e) => {
                 onCustomizeDraftTextChange(e.target.value);
               }}
-              className="w-full min-w-0 border-0 border-b border-[#dcc090] bg-transparent pb-0.5 font-montserrat text-[16px] font-medium leading-[26px] text-[#414141] outline-none"
+              className="w-full min-w-0 border-0 border-b border-[#dcc090] bg-transparent pb-0.5 text-[16px] leading-[26px] text-[#414141] outline-none"
+              style={getCustomizeInputStyle(customizeFormat)}
               aria-label={t(language, 'product.customize_title')}
               autoComplete="off"
             />

@@ -13,6 +13,7 @@
   "customize_format_italic": "Italic",
   "customize_format_underline": "Underline",
   "customize_font_label": "Font",
+  "customize_font_clear": "Reset font",
   "customize_modal_title": "Select Size",
   "customize_modal_close_aria": "Close",
   "customize_search_default": "Marlboro",

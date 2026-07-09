@@ -46,6 +46,8 @@ export function CustomizeFormatToolbar({
     <div className={CUSTOMIZE_FORMAT_TOOLBAR_CLASS}>
       <CustomizeFontDropdown
         value={format.fontStack}
+        fontLabel={t(language, 'product.customize_font_label')}
+        clearLabel={t(language, 'product.customize_font_clear')}
         ariaLabel={t(language, 'product.customize_font_label')}
         onChange={(fontStack) => {
           onFormatChange({ ...format, fontStack });

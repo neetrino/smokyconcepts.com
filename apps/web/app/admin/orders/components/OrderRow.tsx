@@ -13,6 +13,7 @@ import {
   getColorValue,
 } from '../utils/orderUtils';
 import type { Order } from '../useOrders';
+import { formatAdminDate } from '../../utils/formatAdminDate';
 
 interface OrderRowProps {
   order: Order;
@@ -172,7 +173,7 @@ export function OrderRow({
         </div>
       </td>
       <td className="whitespace-nowrap rounded-r-xl border-y border-r border-[#dcc090]/25 bg-white/95 px-3 py-3 text-xs font-semibold text-[#414141]/60 transition-all duration-200 group-hover:border-[#dcc090] group-hover:bg-[#fffaf0] group-hover:shadow-[0_10px_22px_rgba(18,42,38,0.07)]">
-        {new Date(order.createdAt).toLocaleDateString()}
+        {formatAdminDate(order.createdAt)}
       </td>
     </tr>
   );

@@ -13,6 +13,7 @@ import {
   CUSTOMIZE_FONT_OPTIONS,
   type CustomizeFontOption,
 } from './constants/customize-google-fonts';
+import { CUSTOMIZE_INPUT_FONT_STACK } from './utils/build-customize-preview-html';
 
 const FONT_DROPDOWN_DIVIDER_CLASS = 'mx-0 h-px border-0 bg-[#e8e8e8]';
 
@@ -26,16 +27,24 @@ function findFontOptionByStack(stack: string): CustomizeFontOption {
 }
 
 export type CustomizeFontDropdownProps = {
-  value: string;
-  onChange: (fontStack: string) => void;
+  value: string | null;
+  onChange: (fontStack: string | null) => void;
+  fontLabel: string;
+  clearLabel: string;
   ariaLabel: string;
 };
 
-export function CustomizeFontDropdown({ value, onChange, ariaLabel }: CustomizeFontDropdownProps) {
+export function CustomizeFontDropdown({
+  value,
+  onChange,
+  fontLabel,
+  clearLabel,
+  ariaLabel,
+}: CustomizeFontDropdownProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const listboxId = useId();
-  const selected = findFontOptionByStack(value);
+  const selected = value ? findFontOptionByStack(value) : null;
 
   useEffect(() => {
     if (!open) {
@@ -64,30 +73,65 @@ export function CustomizeFontDropdown({ value, onChange, ariaLabel }: CustomizeF
     setOpen(false);
   };
 
+  const handleClear = () => {
+    onChange(null);
+    setOpen(false);
+  };
+
+  const toggleOpen = () => {
+    setOpen((previous) => !previous);
+  };
+
   return (
     <div ref={rootRef} className={`relative shrink-0 ${CUSTOMIZE_FONT_CONTROL_WIDTH_CLASS}`}>
-      <button
-        type="button"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-controls={listboxId}
-        onClick={() => {
-          setOpen((previous) => !previous);
-        }}
-        className={CUSTOMIZE_FORMAT_FONT_TRIGGER_CLASS}
-      >
-        <span className="font-montserrat text-[16px] font-medium leading-[26px] text-[#414141]">Font</span>
-        <img
-          src={CUSTOMIZE_FORMAT_ASSETS.chevronSrc}
-          alt=""
-          width={9}
-          height={16}
-          className={`block shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
-          decoding="async"
-          draggable={false}
-          aria-hidden
-        />
-      </button>
+      <div className={CUSTOMIZE_FORMAT_FONT_TRIGGER_CLASS}>
+        <button
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-controls={listboxId}
+          onClick={toggleOpen}
+          className="flex min-w-0 flex-1 items-center"
+        >
+          <span
+            className="min-w-0 flex-1 truncate text-left text-[16px] font-medium leading-[26px] text-[#414141]"
+            style={{ fontFamily: selected?.stack ?? CUSTOMIZE_INPUT_FONT_STACK }}
+          >
+            {selected?.label ?? fontLabel}
+          </span>
+        </button>
+        {selected ? (
+          <button
+            type="button"
+            aria-label={clearLabel}
+            className="ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded text-[#898989] hover:bg-[#122a26]/8 hover:text-[#414141]"
+            onClick={handleClear}
+          >
+            <span aria-hidden className="text-[14px] leading-none">
+              ×
+            </span>
+          </button>
+        ) : null}
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={listboxId}
+          aria-label={ariaLabel}
+          className="ml-1 flex shrink-0 items-center"
+          onClick={toggleOpen}
+        >
+          <img
+            src={CUSTOMIZE_FORMAT_ASSETS.chevronSrc}
+            alt=""
+            width={9}
+            height={16}
+            className={`block transition-transform ${open ? 'rotate-180' : ''}`}
+            decoding="async"
+            draggable={false}
+            aria-hidden
+          />
+        </button>
+      </div>
       {open ? (
         <ul
           id={listboxId}
@@ -100,12 +144,12 @@ export function CustomizeFontDropdown({ value, onChange, ariaLabel }: CustomizeF
               <button
                 type="button"
                 role="option"
-                aria-selected={option.id === selected.id}
+                aria-selected={option.id === selected?.id}
                 onClick={() => {
                   handleSelect(option);
                 }}
                 className={`${CUSTOMIZE_FONT_DROPDOWN_OPTION_CLASS} ${
-                  option.id === selected.id ? 'bg-[#faf8f4]' : 'bg-white hover:bg-[#faf8f4]/60'
+                  option.id === selected?.id ? 'bg-[#faf8f4]' : 'bg-white hover:bg-[#faf8f4]/60'
                 }`}
                 style={{ fontFamily: option.stack }}
               >

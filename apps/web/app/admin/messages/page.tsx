@@ -8,6 +8,7 @@ import { useAuth } from '../../../lib/auth/AuthContext';
 import { useTranslation } from '../../../lib/i18n-client';
 import { AdminShell } from '../components/AdminShell';
 import { ADMIN_PAGE_SHELL_CLASS } from '../constants/adminShell.constants';
+import { formatAdminDateTime } from '../utils/formatAdminDate';
 
 interface ContactMessage {
   id: string;
@@ -172,7 +173,7 @@ export default function AdminMessagesPage() {
                           <p className="whitespace-pre-wrap break-words">{contactMessage.message}</p>
                         </td>
                         <td className="whitespace-nowrap px-4 py-4 text-sm text-[#414141]/70">
-                          {new Date(contactMessage.createdAt).toLocaleString()}
+                          {formatAdminDateTime(contactMessage.createdAt)}
                         </td>
                       </tr>
                     ))}

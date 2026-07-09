@@ -75,7 +75,7 @@ export function getCustomizeCopy(language: LanguageCode): string {
     case 'ru':
       return 'Выберите цвет и размер на этой странице, чтобы персонализировать заказ. Для особых пожеланий свяжитесь с нами после оформления.';
     default:
-      return 'Pick color and size on this page to personalize your order. For special requests, contact us after checkout.';
+      return 'Personalize your cover with custom text.';
   }
 }
 
