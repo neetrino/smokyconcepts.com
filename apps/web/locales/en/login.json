@@ -17,11 +17,34 @@
     "emailRequired": "Please enter your email",
     "passwordRequired": "Please enter your password",
     "loginFailed": "Login failed. Please try again."
+  },
+  "forgot": {
+    "title": "Forgot password",
+    "subtitle": "Enter your email and we will send you a reset link.",
+    "submit": "Send reset link",
+    "submitting": "Sending...",
+    "success": "If an account exists for this email, a reset link has been sent. Check your inbox.",
+    "backToLogin": "Back to sign in",
+    "errors": {
+      "emailRequired": "Please enter your email",
+      "requestFailed": "Could not send reset link. Please try again."
+    }
+  },
+  "reset": {
+    "title": "Reset password",
+    "subtitle": "Choose a new password for your account.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "submit": "Change password",
+    "submitting": "Saving...",
+    "success": "Password updated successfully. You can now sign in.",
+    "requestNewLink": "Request a new reset link",
+    "errors": {
+      "invalidToken": "This reset link is invalid or missing. Request a new one.",
+      "passwordRequired": "Please enter a new password",
+      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "resetFailed": "Could not reset password. Please try again."
+    }
   }
 }
-
-
-
-
-
-

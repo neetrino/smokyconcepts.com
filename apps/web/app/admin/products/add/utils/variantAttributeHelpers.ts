@@ -2,25 +2,45 @@ import { getCombinationKey } from '@/lib/category-attributes';
 import type { CategoryAttribute } from '@/lib/category-attributes';
 import type { GeneratedVariant } from '../types';
 
-/** All value ids from this attribute present on the variant (multi-select). */
+/** All value ids from this attribute present on the variant (multi-select), in stored order. */
 export function getSelectedValueIdsForAttribute(
   variant: GeneratedVariant,
   attribute: CategoryAttribute
 ): string[] {
   const allowed = new Set(attribute.values.map((v) => v.id));
-  return variant.selectedValueIds.filter((id) => allowed.has(id)).sort();
+  return variant.selectedValueIds.filter((id) => allowed.has(id));
 }
 
-/** Replace this attribute's contribution in the flat selectedValueIds array. */
+/**
+ * Replace this attribute's contribution in the flat selectedValueIds array.
+ * Preserves inter-attribute order and the caller-provided value order for this attribute.
+ */
 export function mergeVariantAttributeValues(
   variant: GeneratedVariant,
   attribute: CategoryAttribute,
   valueIds: string[]
 ): string[] {
-  const without = variant.selectedValueIds.filter((id) => !attribute.values.some((v) => v.id === id));
-  const allowedSet = new Set(attribute.values.map((v) => v.id));
-  const next = valueIds.filter((id) => allowedSet.has(id));
-  return [...without, ...next].sort();
+  const attributeValueIdSet = new Set(attribute.values.map((v) => v.id));
+  const next = valueIds.filter((id) => attributeValueIdSet.has(id));
+  const result: string[] = [];
+  let replaced = false;
+
+  for (const id of variant.selectedValueIds) {
+    if (attributeValueIdSet.has(id)) {
+      if (!replaced) {
+        result.push(...next);
+        replaced = true;
+      }
+      continue;
+    }
+    result.push(id);
+  }
+
+  if (!replaced) {
+    result.push(...next);
+  }
+
+  return result;
 }
 
 export function removeAttributeValuesFromVariant(

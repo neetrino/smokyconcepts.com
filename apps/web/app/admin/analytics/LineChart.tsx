@@ -36,7 +36,8 @@ export function LineChart({ data }: LineChartProps) {
 
   // Smooth curve using quadratic bezier
   const getSmoothPath = (points: Array<{ x: number; y: number }>) => {
-    if (points.length < 2) return '';
+    if (points.length === 0) return '';
+    if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
     
     let path = `M ${points[0].x} ${points[0].y}`;
     

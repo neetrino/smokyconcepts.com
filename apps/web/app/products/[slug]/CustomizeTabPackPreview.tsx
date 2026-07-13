@@ -9,7 +9,6 @@ import {
   CUSTOMIZE_HERO_PREVIEW_INNER_STYLE,
   CUSTOMIZE_HERO_PREVIEW_TEXT_CLASS,
   CUSTOMIZE_HERO_PREVIEW_TEXT_STYLE,
-  CUSTOMIZE_HERO_PREVIEW_TOP_RATIO,
   CUSTOMIZE_HERO_PREVIEW_WIDTH_RATIO,
 } from './customize-tab-preview.constants';
 
@@ -24,6 +23,7 @@ const PREVIEW_CONTAINER_STYLE: CSSProperties = {
 
 /**
  * Live customize hero preview (Figma 1:8769 / 1:8810): dashed frame, #111 body, white text.
+ * Centered in the fixed gallery hero frame so the white card size stays stable.
  */
 export function CustomizeHeroPreview({ overlayHtml }: CustomizeHeroPreviewProps) {
   if (!overlayHtml.trim()) {
@@ -32,9 +32,8 @@ export function CustomizeHeroPreview({ overlayHtml }: CustomizeHeroPreviewProps)
 
   return (
     <div
-      className="absolute left-1/2 max-w-[450px] -translate-x-1/2"
+      className="absolute left-1/2 top-1/2 max-w-[450px] -translate-x-1/2 -translate-y-1/2"
       style={{
-        top: `${CUSTOMIZE_HERO_PREVIEW_TOP_RATIO * 100}%`,
         width: `${CUSTOMIZE_HERO_PREVIEW_WIDTH_RATIO * 100}%`,
       }}
       aria-live="polite"

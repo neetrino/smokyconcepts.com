@@ -30,6 +30,7 @@ function ProfilePageContent() {
     handleTabChange,
     personalInfo,
     setPersonalInfo,
+    phoneError,
     savingPersonal,
     handleSavePersonalInfo,
     showAddressForm,
@@ -186,6 +187,7 @@ function ProfilePageContent() {
               <ProfilePersonalInfo
                 personalInfo={personalInfo}
                 setPersonalInfo={setPersonalInfo}
+                phoneError={phoneError}
                 savingPersonal={savingPersonal}
                 onSave={handleSavePersonalInfo}
                 profile={profile}

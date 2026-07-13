@@ -6,6 +6,7 @@ import { buildSelectedAttributeValueIdsMap } from '@/lib/category-attributes';
 import type { CategoryAttribute } from '@/lib/category-attributes';
 import type { SizeCatalogCategoryDto } from '@/lib/types/size-catalog';
 import { scrollToProductFormField } from '../utils/scrollToProductFormField';
+import { deriveAttributeOrderFromVariants } from '../utils/attributeDisplayOrder';
 import type { useProductFormState } from './useProductFormState';
 
 type ProductFormState = ReturnType<typeof useProductFormState>;
@@ -122,6 +123,9 @@ export function useAddProductPageEffects({
       enabled[attribute.id] = Object.prototype.hasOwnProperty.call(derived, attribute.id);
     });
     formState.setEnabledAttributeIds(enabled);
+    formState.setEnabledAttributeOrder(
+      deriveAttributeOrderFromVariants(categoryAttributesForVariants, formState.generatedVariants)
+    );
     attributePoolSeededForProductRef.current = productId;
   }, [
     isEditMode,
@@ -131,6 +135,7 @@ export function useAddProductPageEffects({
     formState.generatedVariants,
     formState.setSelectedAttributeValueIds,
     formState.setEnabledAttributeIds,
+    formState.setEnabledAttributeOrder,
     attributePoolSeededForProductRef,
   ]);
 
@@ -147,12 +152,17 @@ export function useAddProductPageEffects({
     ) {
       formState.setEnabledAttributeIds({});
     }
+    if (categoryAttributesForVariants.length === 0 && formState.enabledAttributeOrder.length > 0) {
+      formState.setEnabledAttributeOrder([]);
+    }
   }, [
     categoryAttributesForVariants,
     formState.selectedAttributeValueIds,
     formState.enabledAttributeIds,
+    formState.enabledAttributeOrder,
     formState.setSelectedAttributeValueIds,
     formState.setEnabledAttributeIds,
+    formState.setEnabledAttributeOrder,
   ]);
 
   useEffect(() => {

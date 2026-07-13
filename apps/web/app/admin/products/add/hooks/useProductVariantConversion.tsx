@@ -209,7 +209,7 @@ export function useProductVariantConversion({
 
         variantDataList.push({
           id: variant.id || `variant-${Date.now()}-${variantIndex}-${Math.random()}`,
-          selectedValueIds: selectedValueIds.sort(),
+          selectedValueIds: selectedValueIds,
           price: priceUsd,
           compareAtPrice: compareAtUsd,
           stock: variant.stock !== undefined && variant.stock !== null ? variant.stock : 0,
@@ -272,7 +272,7 @@ export function useProductVariantConversion({
         
         convertedVariants.push({
           id: `variant-group-${Date.now()}-${Math.random()}`,
-          selectedValueIds: Array.from(allValueIds).sort(),
+          selectedValueIds: Array.from(allValueIds),
           price: firstVariant.price.toString(),
           compareAtPrice: firstVariant.compareAtPrice !== null ? firstVariant.compareAtPrice.toString() : '',
           stock: stockValue.toString(),

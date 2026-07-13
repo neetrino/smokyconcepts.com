@@ -59,6 +59,12 @@ export function handleUnauthorized(): void {
     return;
   }
 
+  const currentPath = window.location.pathname;
+  const publicAuthPaths = ['/login', '/forgot-password', '/reset-password', '/register'];
+  const isPublicAuthPath = publicAuthPaths.some(
+    (pathPrefix) => currentPath === pathPrefix || currentPath.startsWith(`${pathPrefix}/`),
+  );
+
   clearLegacyAuthStorage();
 
   void fetch('/api/v1/auth/logout', {
@@ -70,8 +76,8 @@ export function handleUnauthorized(): void {
 
   window.dispatchEvent(new Event('auth-updated'));
 
-  if (!window.location.pathname.includes('/login')) {
-    const currentPath = window.location.pathname + window.location.search;
-    window.location.href = '/login?redirect=' + encodeURIComponent(currentPath);
+  if (!isPublicAuthPath) {
+    const redirectPath = currentPath + window.location.search;
+    window.location.href = '/login?redirect=' + encodeURIComponent(redirectPath);
   }
 }

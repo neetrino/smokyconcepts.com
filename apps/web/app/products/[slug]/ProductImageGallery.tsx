@@ -11,7 +11,6 @@ import {
   CUSTOMIZE_HERO_PREVIEW_3D_TOP_RATIO,
   CUSTOMIZE_HERO_PREVIEW_3D_WIDTH_RATIO,
   CUSTOMIZE_HERO_PREVIEW_ASSETS,
-  CUSTOMIZE_HERO_THUMBNAIL_TOP_RATIO,
 } from './customize-tab-preview.constants';
 import { CustomizeProductOverlay, type CustomizeOverlayPosition } from './CustomizeProductOverlay';
 import { MobileGalleryHeroSlider } from './gallery/MobileGalleryHeroSlider';
@@ -99,9 +98,6 @@ const THUMBNAIL_STRIP_MOBILE_EDGE_BLOCK_NEXT_CLASSES =
 /** Invisible slot — fills the scroll window when the trailing edge has fewer than {@link THUMBNAILS_PER_VIEW} images. */
 const THUMBNAIL_EMPTY_SLOT_CLASS =
   'pointer-events-none invisible flex shrink-0 flex-col items-center justify-center gap-0.5';
-
-/** Figma card aspect when customize preview is active (760×625). */
-const CUSTOMIZE_GALLERY_CARD_ASPECT_CLASS = 'aspect-[760/625]';
 
 /** Compact strip (≤ {@link THUMBNAILS_PER_VIEW} images): nav arrows overlay thumbnail row edges. */
 const THUMBNAIL_STRIP_COMPACT_ROW_CLASSES = 'relative z-20 w-full min-w-0 shrink-0';
@@ -437,85 +433,91 @@ export function ProductImageGallery({
       </div>
     );
 
+  const renderCustomizeHeroPreview = () => (
+    <div
+      className={`relative mx-auto flex w-full max-w-full items-center justify-center overflow-visible ${HERO_IMAGE_BOX_SIZE_CLASSES}`}
+    >
+      <img
+        src={CUSTOMIZE_HERO_PREVIEW_ASSETS.productBadgeSrc}
+        alt=""
+        decoding="async"
+        draggable={false}
+        aria-hidden
+        className="pointer-events-none absolute z-20 h-auto max-w-[95px] object-contain"
+        style={{
+          top: `${CUSTOMIZE_HERO_PREVIEW_3D_TOP_RATIO * 100}%`,
+          right: `${CUSTOMIZE_HERO_PREVIEW_3D_RIGHT_RATIO * 100}%`,
+          width: `${CUSTOMIZE_HERO_PREVIEW_3D_WIDTH_RATIO * 100}%`,
+        }}
+      />
+      <CustomizeHeroPreview overlayHtml={resolvedHeroPreviewHtml ?? ''} />
+    </div>
+  );
+
+  const renderProductHeroImage = () => {
+    if (!hasHeroImage) {
+      return (
+        <div className="flex w-full items-center justify-center text-[#9d9d9d]">
+          {t(language, 'common.messages.noImage')}
+        </div>
+      );
+    }
+
+    if (isMobileGallery && images.length > 1) {
+      return (
+        <MobileGalleryHeroSlider
+          images={images}
+          currentIndex={currentImageIndex}
+          alt={product.title}
+          boxSizeClasses={HERO_IMAGE_BOX_SIZE_CLASSES}
+          fitClasses={GALLERY_IMAGE_FIT_CLASSES}
+          onNavigate={navigateImageByArrow}
+          overlay={
+            customizeOverlayHtml ? (
+              <CustomizeProductOverlay
+                html={customizeOverlayHtml}
+                position={customizeOverlayPosition}
+              />
+            ) : undefined
+          }
+        />
+      );
+    }
+
+    return (
+      <div
+        className={`relative mx-auto flex w-full max-w-full items-center justify-center ${HERO_IMAGE_BOX_SIZE_CLASSES}`}
+      >
+        <img
+          src={heroImageSrc}
+          alt={product.title}
+          decoding="async"
+          draggable={false}
+          className={`block transition-transform duration-300 ease-out max-sm:group-hover:scale-100 sm:group-hover:scale-[1.03] ${GALLERY_IMAGE_FIT_CLASSES}`}
+        />
+        {customizeOverlayHtml ? (
+          <CustomizeProductOverlay html={customizeOverlayHtml} position={customizeOverlayPosition} />
+        ) : null}
+      </div>
+    );
+  };
+
   return (
     <div className={`overflow-visible ${GALLERY_TOP_OFFSET_CLASSES}`}>
       <div className="relative z-0 mx-auto w-full max-w-[520px] overflow-visible rounded-[20px] bg-white px-3 pb-4 pt-3 shadow-none transition-shadow duration-200 has-[.product-hero:hover]:z-10 sm:max-w-[540px] sm:overflow-x-clip sm:overflow-y-visible sm:rounded-[24px] sm:px-5 sm:pb-5 sm:pt-4 sm:shadow-[0_1px_0_rgba(18,42,38,0.04)] sm:has-[.product-hero:hover]:shadow-[0_12px_32px_rgba(18,42,38,0.12)] lg:max-w-[580px]">
-        {showHeroPreviewInGallery ? (
-          <div className={`relative w-full ${CUSTOMIZE_GALLERY_CARD_ASPECT_CLASS}`}>
-            <img
-              src={CUSTOMIZE_HERO_PREVIEW_ASSETS.productBadgeSrc}
-              alt=""
-              decoding="async"
-              draggable={false}
-              aria-hidden
-              className="pointer-events-none absolute z-20 h-auto max-w-[95px] object-contain"
-              style={{
-                top: `${CUSTOMIZE_HERO_PREVIEW_3D_TOP_RATIO * 100}%`,
-                right: `${CUSTOMIZE_HERO_PREVIEW_3D_RIGHT_RATIO * 100}%`,
-                width: `${CUSTOMIZE_HERO_PREVIEW_3D_WIDTH_RATIO * 100}%`,
-              }}
-            />
-            <CustomizeHeroPreview overlayHtml={resolvedHeroPreviewHtml ?? ''} />
-            <div
-              className={`absolute inset-x-0 bottom-0 flex flex-col items-center overflow-visible ${GALLERY_SECTION_GAP_CLASSES}`}
-              style={{ top: `${CUSTOMIZE_HERO_THUMBNAIL_TOP_RATIO * 100}%` }}
-            >
-              {images.length > 0 ? renderDefaultThumbnailStrip() : null}
-            </div>
+        <div className={`flex flex-col items-center overflow-visible ${GALLERY_SECTION_GAP_CLASSES}`}>
+          <div
+            className={`flex w-full justify-center ${
+              hasHeroContent
+                ? `product-hero group relative z-10 ${HERO_PULL_ABOVE_CARD}`
+                : 'min-h-[240px] items-center sm:min-h-[260px]'
+            }`}
+          >
+            {showHeroPreviewInGallery ? renderCustomizeHeroPreview() : renderProductHeroImage()}
           </div>
-        ) : (
-          <div className={`flex flex-col items-center overflow-visible ${GALLERY_SECTION_GAP_CLASSES}`}>
-            <div
-              className={`flex w-full justify-center ${
-                hasHeroContent
-                  ? `product-hero group relative z-10 ${HERO_PULL_ABOVE_CARD}`
-                  : 'min-h-[240px] items-center sm:min-h-[260px]'
-              }`}
-            >
-              {hasHeroImage ? (
-                isMobileGallery && images.length > 1 ? (
-                  <MobileGalleryHeroSlider
-                    images={images}
-                    currentIndex={currentImageIndex}
-                    alt={product.title}
-                    boxSizeClasses={HERO_IMAGE_BOX_SIZE_CLASSES}
-                    fitClasses={GALLERY_IMAGE_FIT_CLASSES}
-                    onNavigate={navigateImageByArrow}
-                    overlay={
-                      customizeOverlayHtml ? (
-                        <CustomizeProductOverlay
-                          html={customizeOverlayHtml}
-                          position={customizeOverlayPosition}
-                        />
-                      ) : undefined
-                    }
-                  />
-                ) : (
-                  <div
-                    className={`relative mx-auto flex w-full max-w-full items-center justify-center ${HERO_IMAGE_BOX_SIZE_CLASSES}`}
-                  >
-                    <img
-                      src={heroImageSrc}
-                      alt={product.title}
-                      decoding="async"
-                      draggable={false}
-                      className={`block transition-transform duration-300 ease-out max-sm:group-hover:scale-100 sm:group-hover:scale-[1.03] ${GALLERY_IMAGE_FIT_CLASSES}`}
-                    />
-                    {customizeOverlayHtml ? (
-                      <CustomizeProductOverlay html={customizeOverlayHtml} position={customizeOverlayPosition} />
-                    ) : null}
-                  </div>
-                )
-              ) : (
-                <div className="flex w-full items-center justify-center text-[#9d9d9d]">
-                  {t(language, 'common.messages.noImage')}
-                </div>
-              )}
-            </div>
 
-            {images.length > 0 ? renderDefaultThumbnailStrip() : null}
-          </div>
-        )}
+          {images.length > 0 ? renderDefaultThumbnailStrip() : null}
+        </div>
       </div>
     </div>
   );

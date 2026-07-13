@@ -61,6 +61,7 @@ export function ProductInfoAndActionsView({
     shippingTabHtml,
     productDetails,
     showSizeSection,
+    attributeSectionOrder,
     sizeButtonLabel,
     openSizeCatalogModal,
     isCustomizeSizeModalOpen,
@@ -146,67 +147,83 @@ export function ProductInfoAndActionsView({
             </div>
           ) : null}
 
-          {colorOptions.length > 0 && (
-            <div className={hasTitleRowBadges ? 'mt-6' : 'mt-8'}>
-              <p className="font-montserrat text-[18px] font-extrabold leading-none text-[#414141]">
-                {t(language, 'product.color')}
-              </p>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                {colorOptions.map((option: ProductOptionValue) => {
-                  const isActive =
-                    option.value === selectedColor || option.label.toLowerCase() === selectedColor;
-                  const swatches = getSwatchColors(option);
+          {attributeSectionOrder.map((sectionKey, sectionIndex) => {
+            const sectionSpacingClass =
+              sectionIndex === 0 ? (hasTitleRowBadges ? 'mt-6' : 'mt-8') : 'mt-6';
 
-                  return (
-                    <button
-                      key={option.valueId || option.value}
-                      type="button"
-                      onClick={() => onColorSelect(option.value)}
-                      className={`relative transition-transform hover:scale-[1.02] ${
-                        isActive
-                          ? 'flex h-10 w-10 items-center justify-center rounded-[10px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.1)]'
-                          : 'h-[22px] w-[22px] rounded-[6px]'
-                      }`}
-                      aria-label={option.label}
-                    >
-                      <span
-                        className={`block ${isActive ? 'h-7 w-7 rounded-lg' : 'h-[22px] w-[22px] rounded-[5px]'}`}
-                        style={{
-                          background:
-                            swatches.length > 1
-                              ? `linear-gradient(135deg, ${swatches.join(', ')})`
-                              : swatches[0],
-                        }}
-                      />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+            if (sectionKey === 'color' && colorOptions.length > 0) {
+              return (
+                <div key="color" className={sectionSpacingClass}>
+                  <p className="font-montserrat text-[18px] font-extrabold leading-none text-[#414141]">
+                    {t(language, 'product.color')}
+                  </p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {colorOptions.map((option: ProductOptionValue) => {
+                      const isActive =
+                        option.value === selectedColor ||
+                        option.label.toLowerCase() === selectedColor;
+                      const swatches = getSwatchColors(option);
 
-          {showSizeSection && (
-            <div ref={sizeSectionRef} className="relative z-40 mt-6 overflow-visible px-1">
-              <p className="font-montserrat text-[18px] font-extrabold leading-none text-[#414141]">
-                {t(language, 'product.size')}
-                {showSizeAsterisk ? (
-                  <span className="relative z-10 ml-1 text-red-600" aria-hidden>
-                    *
-                  </span>
-                ) : null}
-              </p>
-              <button
-                type="button"
-                onClick={openSizeCatalogModal}
-                onAnimationEnd={handleSizeShakeAnimationEnd}
-                className={`relative z-40 mt-3 flex w-full min-h-9 items-center justify-center gap-2 overflow-visible rounded-[6px] bg-[#dcc090] px-3 py-2 text-center font-montserrat text-[16px] font-bold leading-normal tracking-normal text-neutral-700 sm:inline-flex sm:w-auto sm:min-w-[160px] ${
-                  isSizeShaking ? 'animate-size-shake' : ''
-                }`}
-              >
-                <span className="truncate">{sizeButtonLabel}</span>
-              </button>
-            </div>
-          )}
+                      return (
+                        <button
+                          key={option.valueId || option.value}
+                          type="button"
+                          onClick={() => onColorSelect(option.value)}
+                          className={`relative transition-transform hover:scale-[1.02] ${
+                            isActive
+                              ? 'flex h-10 w-10 items-center justify-center rounded-[10px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.1)]'
+                              : 'h-[22px] w-[22px] rounded-[6px]'
+                          }`}
+                          aria-label={option.label}
+                        >
+                          <span
+                            className={`block ${isActive ? 'h-7 w-7 rounded-lg' : 'h-[22px] w-[22px] rounded-[5px]'}`}
+                            style={{
+                              background:
+                                swatches.length > 1
+                                  ? `linear-gradient(135deg, ${swatches.join(', ')})`
+                                  : swatches[0],
+                            }}
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            }
+
+            if (sectionKey === 'size' && showSizeSection) {
+              return (
+                <div
+                  key="size"
+                  ref={sizeSectionRef}
+                  className={`relative z-40 overflow-visible px-1 ${sectionSpacingClass}`}
+                >
+                  <p className="font-montserrat text-[18px] font-extrabold leading-none text-[#414141]">
+                    {t(language, 'product.size')}
+                    {showSizeAsterisk ? (
+                      <span className="relative z-10 ml-1 text-red-600" aria-hidden>
+                        *
+                      </span>
+                    ) : null}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={openSizeCatalogModal}
+                    onAnimationEnd={handleSizeShakeAnimationEnd}
+                    className={`relative z-40 mt-3 flex w-full min-h-9 items-center justify-center gap-2 overflow-visible rounded-[6px] bg-[#dcc090] px-3 py-2 text-center font-montserrat text-[16px] font-bold leading-normal tracking-normal text-neutral-700 sm:inline-flex sm:w-auto sm:min-w-[160px] ${
+                      isSizeShaking ? 'animate-size-shake' : ''
+                    }`}
+                  >
+                    <span className="truncate">{sizeButtonLabel}</span>
+                  </button>
+                </div>
+              );
+            }
+
+            return null;
+          })}
         </div>
 
         <div className={scrollBodyClass}>

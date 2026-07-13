@@ -115,6 +115,7 @@ class AdminProductsCreateService {
       imageUrl?: string;
       attributes?: unknown;
       published?: boolean;
+      position?: number;
     }>;
   }) {
     try {
@@ -134,7 +135,7 @@ class AdminProductsCreateService {
         const usedSkus = new Set<string>();
         
         const variantsData = await Promise.all(
-          data.variants.map(async (variant: { price: string | number; compareAtPrice?: string | number; stock: string | number; sku?: string; imageUrl?: string; attributes?: unknown; published?: boolean }, variantIndex: number) => {
+          data.variants.map(async (variant: { price: string | number; compareAtPrice?: string | number; stock: string | number; sku?: string; imageUrl?: string; attributes?: unknown; published?: boolean; position?: number }, variantIndex: number) => {
             const price = typeof variant.price === 'number' ? variant.price : parseFloat(String(variant.price));
             const stock = typeof variant.stock === 'number' ? variant.stock : parseInt(String(variant.stock), 10);
             const compareAtPrice = variant.compareAtPrice !== undefined && variant.compareAtPrice !== null && String(variant.compareAtPrice).trim() !== ''
@@ -166,6 +167,7 @@ class AdminProductsCreateService {
               imageUrl: processedVariantImageUrl,
               attributes: variant.attributes,
               published: variant.published !== false,
+              position: typeof variant.position === 'number' ? variant.position : variantIndex,
             };
           })
         );

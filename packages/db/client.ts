@@ -23,7 +23,7 @@ if (isPostgresUrl(databaseUrl) && !databaseUrl.includes('client_encoding')) {
 export const db =
   globalForPrisma.prisma ??
   new PrismaClient({ 
-    log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
     errorFormat: "pretty",
   });
 

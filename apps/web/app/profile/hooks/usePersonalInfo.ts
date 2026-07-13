@@ -2,6 +2,10 @@ import { useState, useEffect, type FormEvent } from 'react';
 import { apiClient } from '../../../lib/api-client';
 import { useAuth } from '../../../lib/auth/AuthContext';
 import { useTranslation } from '../../../lib/i18n-client';
+import {
+  isValidPhoneNumber,
+  sanitizePhoneNumberInput,
+} from '../../../lib/utils/phone-validation';
 import type { UserProfile } from '../types';
 
 interface PersonalInfoForm {
@@ -26,16 +30,16 @@ export function usePersonalInfo({
 }: UsePersonalInfoProps) {
   const { t } = useTranslation();
   const { user: authUser } = useAuth();
-  
+
   const [personalInfo, setPersonalInfo] = useState<PersonalInfoForm>({
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
   });
+  const [phoneError, setPhoneError] = useState('');
   const [savingPersonal, setSavingPersonal] = useState(false);
 
-  // Initialize form from profile
   useEffect(() => {
     if (profile) {
       setPersonalInfo({
@@ -44,20 +48,41 @@ export function usePersonalInfo({
         email: profile.email || '',
         phone: profile.phone || '',
       });
+      setPhoneError('');
     }
   }, [profile]);
+
+  const updatePersonalInfo = (next: PersonalInfoForm) => {
+    const phone = sanitizePhoneNumberInput(next.phone);
+    setPersonalInfo({ ...next, phone });
+    if (phoneError) {
+      setPhoneError('');
+    }
+  };
 
   const handleSavePersonalInfo = async (e: FormEvent) => {
     e.preventDefault();
     setSavingPersonal(true);
     onError('');
     onSuccess('');
+    setPhoneError('');
+
+    const phone = personalInfo.phone.trim();
+    if (phone.length > 0 && !isValidPhoneNumber(phone)) {
+      setPhoneError(t('profile.personal.invalidPhone'));
+      setSavingPersonal(false);
+      return;
+    }
 
     try {
-      const updated = await apiClient.put<UserProfile>('/api/v1/users/profile', personalInfo);
+      const payload = {
+        ...personalInfo,
+        phone,
+      };
+      const updated = await apiClient.put<UserProfile>('/api/v1/users/profile', payload);
       onProfileUpdate(updated);
       onSuccess(t('profile.personal.updatedSuccess'));
-      
+
       if (authUser) {
         window.dispatchEvent(new Event('auth-updated'));
       }
@@ -71,9 +96,9 @@ export function usePersonalInfo({
 
   return {
     personalInfo,
-    setPersonalInfo,
+    setPersonalInfo: updatePersonalInfo,
+    phoneError,
     savingPersonal,
     handleSavePersonalInfo,
   };
 }
-

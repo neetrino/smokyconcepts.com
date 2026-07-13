@@ -40,6 +40,8 @@ export function useProductFormState() {
   const [selectedAttributeValueIds, setSelectedAttributeValueIds] = useState<Record<string, string[]>>({});
   /** Which global attributes participate in this product (checkbox in Select attributes). */
   const [enabledAttributeIds, setEnabledAttributeIds] = useState<Record<string, boolean>>({});
+  /** Enable / restore order for attribute columns in the variants table and PDP. */
+  const [enabledAttributeOrder, setEnabledAttributeOrder] = useState<string[]>([]);
   /** i18n key under admin.products.add.* — client validation message above submit. */
   const [submitErrorKey, setSubmitErrorKey] = useState<string | null>(null);
   /** DOM field id to scroll to and highlight when validation fails. */
@@ -78,6 +80,8 @@ export function useProductFormState() {
     setSelectedAttributeValueIds,
     enabledAttributeIds,
     setEnabledAttributeIds,
+    enabledAttributeOrder,
+    setEnabledAttributeOrder,
     submitErrorKey,
     setSubmitErrorKey,
     submitErrorFieldId,

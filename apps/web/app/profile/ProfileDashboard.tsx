@@ -1,7 +1,12 @@
 import Link from 'next/link';
 import { Button, Card } from '@shop/ui';
 import { useCurrency } from '../../components/hooks/useCurrency';
-import { convertPrice, formatPriceInCurrency, type CurrencyCode } from '../../lib/currency';
+import {
+  convertPrice,
+  formatCatalogPrice,
+  formatPriceInCurrency,
+  type CurrencyCode,
+} from '../../lib/currency';
 import {
   formatOrderListShippingDisplay,
   formatOrderListTotalDisplay,
@@ -18,6 +23,23 @@ interface ProfileDashboardProps {
   t: (key: string) => string;
 }
 
+function formatDashboardTotalSpent(
+  stats: DashboardData['stats'],
+  displayCurrency: CurrencyCode
+): string {
+  if (
+    displayCurrency === 'AMD' &&
+    typeof stats.totalSpentAmd === 'number' &&
+    Number.isFinite(stats.totalSpentAmd)
+  ) {
+    return formatCatalogPrice(stats.totalSpentAmd, 'AMD');
+  }
+  return formatPriceInCurrency(
+    convertPrice(stats.totalSpent, 'USD', displayCurrency),
+    displayCurrency
+  );
+}
+
 export function ProfileDashboard({
   dashboardData,
   dashboardLoading,
@@ -26,8 +48,6 @@ export function ProfileDashboard({
   t,
 }: ProfileDashboardProps) {
   const displayCurrency = useCurrency() as CurrencyCode;
-  const formatOrderMoneyUsd = (amountUsd: number) =>
-    formatPriceInCurrency(convertPrice(amountUsd, 'USD', displayCurrency), displayCurrency);
   const dashboardCardClassName =
     'border border-[#dcc090]/30 bg-white/90 p-6 shadow-[0_8px_30px_rgba(18,42,38,0.06)]';
   const statCardClassName =
@@ -59,7 +79,7 @@ export function ProfileDashboard({
   return (
     <div className="space-y-6">
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className={statCardClassName}>
           <div className="flex items-center justify-between">
             <div>
@@ -81,7 +101,7 @@ export function ProfileDashboard({
             <div className="min-w-0 flex-1 overflow-hidden">
               <p className={statLabelClassName}>{t('profile.dashboard.totalSpent')}</p>
               <p className="mt-1 break-words text-xl font-black text-[#122a26] sm:text-2xl overflow-wrap-anywhere">
-                {formatOrderMoneyUsd(dashboardData.stats.totalSpent)}
+                {formatDashboardTotalSpent(dashboardData.stats, displayCurrency)}
               </p>
             </div>
             <div className={`${statIconWrapClassName} flex-shrink-0`}>
@@ -103,23 +123,6 @@ export function ProfileDashboard({
             <div className={statIconWrapClassName}>
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          </div>
-        </Card>
-
-        <Card className={statCardClassName}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className={statLabelClassName}>{t('profile.dashboard.savedAddresses')}</p>
-              <p className={statValueClassName}>
-                {dashboardData.stats.addressesCount}
-              </p>
-            </div>
-            <div className={statIconWrapClassName}>
-              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
           </div>
