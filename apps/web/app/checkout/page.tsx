@@ -6,6 +6,7 @@ import { useTranslation } from '../../lib/i18n-client';
 import { CheckoutProductsStrip } from './components/CheckoutProductsStrip';
 import { CheckoutForm } from './CheckoutForm';
 import { CheckoutModals } from './CheckoutModals';
+import { PageLoadingCenter } from '../../components/loading/PageLoadingCenter';
 import { CheckoutPlacingOrderOverlay } from './components/CheckoutPlacingOrderOverlay';
 import { OrderSummary } from './OrderSummary';
 import { useCheckout } from './useCheckout';
@@ -59,19 +60,7 @@ export default function CheckoutPage() {
       : t('checkout.productsStrip.itemCountPlural').replace('{count}', String(cart?.itemsCount ?? 0));
 
   if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-4">
-              <div className="h-96 bg-gray-200 rounded"></div>
-            </div>
-            <div className="h-64 bg-gray-200 rounded"></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <PageLoadingCenter label={t('common.messages.loading')} />;
   }
 
   if (!cart || cart.items.length === 0) {
@@ -92,7 +81,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <CheckoutPlacingOrderOverlay visible={isPlacingOrder} />
+      <CheckoutPlacingOrderOverlay visible={isOrderInFlight} />
       <h1 className="text-3xl font-bold text-gray-900 mb-8">{t('checkout.title')}</h1>
       <form onSubmit={handlePlaceOrder}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

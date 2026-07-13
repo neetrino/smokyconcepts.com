@@ -8,6 +8,7 @@ import { useAuth } from '../../lib/auth/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../lib/i18n-client';
 import { Eye, EyeOff } from 'lucide-react';
+import { PageLoadingCenter } from '../../components/loading/PageLoadingCenter';
 
 function LoginPageContent() {
   const { t } = useTranslation();
@@ -164,21 +165,7 @@ function LoginPageContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <Card className="p-8 bg-[#DCC090]/20">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
-            <div className="space-y-4">
-              <div className="h-10 bg-gray-200 rounded"></div>
-              <div className="h-10 bg-gray-200 rounded"></div>
-              <div className="h-10 bg-gray-200 rounded"></div>
-            </div>
-          </div>
-        </Card>
-      </div>
-    }>
+    <Suspense fallback={<PageLoadingCenter />}>
       <LoginPageContent />
     </Suspense>
   );

@@ -55,7 +55,7 @@ export function HomeRitualSection() {
           ))}
         </div>
         <div className="mt-5 flex justify-start sm:mt-6 lg:justify-center">
-          <HomeActionButton href="/contact" label={t('home.homepage.ritual.cta')} className="font-semibold" />
+          <HomeActionButton href="/personalize" label={t('home.homepage.ritual.cta')} className="font-semibold" />
         </div>
       </div>
     </section>

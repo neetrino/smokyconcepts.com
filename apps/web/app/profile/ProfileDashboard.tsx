@@ -14,6 +14,7 @@ import {
 import { formatDisplayDate } from '@/lib/format-display-date';
 import { getStatusColor, getPaymentStatusColor } from './utils';
 import type { DashboardData, ProfileTab } from './types';
+import { PageLoadingCenter } from '../../components/loading/PageLoadingCenter';
 
 interface ProfileDashboardProps {
   dashboardData: DashboardData | null;
@@ -61,10 +62,10 @@ export function ProfileDashboard({
 
   if (dashboardLoading) {
     return (
-      <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-        <p className="text-gray-600">{t('profile.dashboard.loading')}</p>
-      </div>
+      <PageLoadingCenter
+        label={t('profile.dashboard.loading')}
+        className="flex items-center justify-center py-12"
+      />
     );
   }
 

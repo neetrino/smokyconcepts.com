@@ -19,6 +19,7 @@ import { useCustomizeGoogleFontLinks } from './useCustomizeGoogleFontLinks';
 import type { ProductPageProps } from './types';
 import type { CustomOrderDraft } from './CustomizeSizeOrderFallback';
 import { PRODUCT_INFO_COLUMN_CLASS } from './productInfoTabContent.constants';
+import { PageLoadingCenter } from '../../../components/loading/PageLoadingCenter';
 
 const CUSTOMIZE_TEXT_MAX_LENGTH = 18;
 
@@ -177,11 +178,7 @@ export default function ProductPage({ params }: ProductPageProps) {
   });
 
   if (loading || !product) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-        {t(language, 'common.messages.loading')}
-      </div>
-    );
+    return <PageLoadingCenter />;
   }
 
   return (

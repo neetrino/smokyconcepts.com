@@ -16,7 +16,7 @@ export const PERSONALIZE_GALLERY_IMAGES = [
 
 /** Page shell spacing keeps the gallery and form aligned across desktop widths. */
 export const PERSONALIZE_PAGE_SHELL_CLASS =
-  'mx-auto flex w-full max-w-[120rem] flex-col gap-10 px-6 pb-0 pt-10 sm:px-8 lg:flex-row lg:items-start lg:gap-[clamp(7.75rem,8.34vw,10rem)] lg:px-[clamp(3.75rem,6.25vw,7.5rem)] lg:pb-0 lg:pt-[clamp(1.5rem,3.125vw,3.75rem)]' as const;
+  'mx-auto flex w-full max-w-[120rem] flex-col gap-10 px-6 pb-16 pt-10 sm:px-8 sm:pb-20 lg:flex-row lg:items-start lg:gap-[clamp(7.75rem,8.34vw,10rem)] lg:px-[clamp(3.75rem,6.25vw,7.5rem)] lg:pb-24 lg:pt-[clamp(1.5rem,3.125vw,3.75rem)]' as const;
 
 /** Gallery wrapper — no w-full on desktop so the form stays in view. */
 export const PERSONALIZE_GALLERY_WRAPPER_CLASS =

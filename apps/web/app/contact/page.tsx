@@ -8,6 +8,7 @@ import { useTranslation } from '../../lib/i18n-client';
 import { apiClient, ApiError } from '../../lib/api-client';
 import { CONTACT_MESSAGE_MAX_LENGTH } from '../../lib/constants/contact-form.constants';
 import { sanitizeContactPhoneInput } from '../../lib/utils/contact-phone-input';
+import { usePrefillLoggedInContactFields } from '../../hooks/usePrefillLoggedInContactFields';
 import contactData from '../../../../json/contact.json';
 
 // Icons
@@ -42,6 +43,8 @@ export default function ContactPage() {
     message: '',
   });
   const [submitting, setSubmitting] = useState(false);
+
+  usePrefillLoggedInContactFields(setFormData);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

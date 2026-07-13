@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Card } from '@shop/ui';
 import { useTranslation } from '../../lib/i18n-client';
+import { PageLoadingCenter } from '../../components/loading/PageLoadingCenter';
 import { ResetPasswordForm } from './ResetPasswordForm';
 
 function ResetPasswordContent() {
@@ -30,18 +31,7 @@ function ResetPasswordContent() {
 export default function ResetPasswordPage() {
   return (
     <div className="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <Suspense
-        fallback={
-          <Card className="p-8 bg-[#DCC090]/20">
-            <div className="animate-pulse space-y-4">
-              <div className="h-8 bg-gray-200 rounded w-3/4" />
-              <div className="h-4 bg-gray-200 rounded w-1/2" />
-              <div className="h-10 bg-gray-200 rounded" />
-              <div className="h-10 bg-gray-200 rounded" />
-            </div>
-          </Card>
-        }
-      >
+      <Suspense fallback={<PageLoadingCenter className="flex min-h-[40vh] items-center justify-center" />}>
         <ResetPasswordContent />
       </Suspense>
     </div>

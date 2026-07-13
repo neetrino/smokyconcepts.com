@@ -9,6 +9,7 @@ import { apiClient } from '@/lib/api-client';
 import { CONTACT_MESSAGE_MAX_LENGTH } from '@/lib/constants/contact-form.constants';
 import { CONTACT_MESSAGE_SOURCES } from '@/lib/constants/contact-message-source.constants';
 import { sanitizeContactPhoneInput } from '@/lib/utils/contact-phone-input';
+import { usePrefillLoggedInContactFields } from '@/hooks/usePrefillLoggedInContactFields';
 import {
   PERSONALIZE_COMMENT_INPUT_CLASS,
   PERSONALIZE_CONTENT_COLUMN_CLASS,
@@ -46,6 +47,8 @@ export default function PersonalizePage() {
   const router = useRouter();
   const [formData, setFormData] = useState<PersonalizeFormData>(INITIAL_FORM_DATA);
   const [submitting, setSubmitting] = useState(false);
+
+  usePrefillLoggedInContactFields(setFormData);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
