@@ -26,10 +26,10 @@ type ProfileResponse = {
 
 function setContactFormValues(
   values: {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    phone?: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    email?: string | null;
+    phone?: string | null;
   },
   setValue: UseFormSetValue<CheckoutFormData>,
 ) {
