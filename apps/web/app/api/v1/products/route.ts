@@ -26,14 +26,7 @@ export async function GET(req: NextRequest) {
       lang: searchParams.get("lang") || "en",
     };
 
-    console.log('🔍 [PRODUCTS API] Filters received:', filters);
     const result = await productsService.findAll(filters);
-    console.log('✅ [PRODUCTS API] Result:', {
-      dataLength: result.data?.length || 0,
-      total: result.meta?.total || 0,
-      page: result.meta?.page || 0,
-      totalPages: result.meta?.totalPages || 0
-    });
     return NextResponse.json(result);
   } catch (error: any) {
     console.error("❌ [PRODUCTS] Error:", error);

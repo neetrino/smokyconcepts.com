@@ -13,9 +13,13 @@ import {
   getColorValue,
 } from '../utils/orderUtils';
 import type { Order } from '../useOrders';
+import { AdminNewBadge } from '../../components/AdminNewBadge';
+import { formatAdminDate } from '../../utils/formatAdminDate';
 
 interface OrderRowProps {
   order: Order;
+  isNew?: boolean;
+  newBadgeLabel?: string;
   selected: boolean;
   updatingStatus: boolean;
   updatingPaymentStatus: boolean;
@@ -28,6 +32,8 @@ interface OrderRowProps {
 
 export function OrderRow({
   order,
+  isNew = false,
+  newBadgeLabel = 'New',
   selected,
   updatingStatus,
   updatingPaymentStatus,
@@ -71,8 +77,12 @@ export function OrderRow({
         onClick={onViewDetails}
         onPointerEnter={onPrefetchDetails}
       >
-        <div className="truncate text-sm font-bold text-[#122a26]">
-          {[order.customerFirstName, order.customerLastName].filter(Boolean).join(' ') || t('admin.orders.unknownCustomer')}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <div className="truncate text-sm font-bold text-[#122a26]">
+            {[order.customerFirstName, order.customerLastName].filter(Boolean).join(' ') ||
+              t('admin.orders.unknownCustomer')}
+          </div>
+          {isNew ? <AdminNewBadge label={newBadgeLabel} /> : null}
         </div>
         {order.customerPhone && (
           <div className="mt-0.5 truncate text-xs text-[#414141]/55">{order.customerPhone}</div>
@@ -172,7 +182,7 @@ export function OrderRow({
         </div>
       </td>
       <td className="whitespace-nowrap rounded-r-xl border-y border-r border-[#dcc090]/25 bg-white/95 px-3 py-3 text-xs font-semibold text-[#414141]/60 transition-all duration-200 group-hover:border-[#dcc090] group-hover:bg-[#fffaf0] group-hover:shadow-[0_10px_22px_rgba(18,42,38,0.07)]">
-        {new Date(order.createdAt).toLocaleDateString()}
+        {formatAdminDate(order.createdAt)}
       </td>
     </tr>
   );

@@ -269,9 +269,11 @@ export function CartDrawer() {
                         </Link>
 
                         <div className="mt-1.5 flex items-center gap-2">
-                          <span className="text-[0.625rem] font-medium leading-none text-[#9d9d9d]">
-                            {item.variant.sizeLabel || 'King Size'}
-                          </span>
+                          {item.variant.sizeLabel?.trim() ? (
+                            <span className="text-[0.625rem] font-medium leading-none text-[#9d9d9d]">
+                              {item.variant.sizeLabel.trim()}
+                            </span>
+                          ) : null}
                           <span className="rounded-[0.375rem] bg-[#122a26] px-[0.375rem] py-[0.125rem] text-[0.625rem] font-medium leading-none text-white">
                             {item.variant.product.categoryLabel || 'Classic'}
                           </span>

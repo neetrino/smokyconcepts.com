@@ -20,6 +20,7 @@ import {
   variantHasColor,
   variantHasOptionValue,
 } from '../utils/variant-helpers';
+import { deriveProductAttributeSectionOrder } from '../utils/derive-product-attribute-section-order';
 import type { ProductInfoAndActionsProps, ProductTabKey } from '../productInfoAndActions.types';
 
 function normalizeCatalogSizeValue(value: string | null | undefined): string {
@@ -77,6 +78,11 @@ export function useProductInfoAndActions({
   );
 
   const showSizeSection = sizeOptions.length > 0 || hasSizeCatalogItems;
+
+  const attributeSectionOrder = useMemo(
+    () => deriveProductAttributeSectionOrder(product),
+    [product]
+  );
 
   const selectableCatalogSizeValues = useMemo(() => {
     const values = new Set<string>();
@@ -301,6 +307,7 @@ export function useProductInfoAndActions({
     shippingTabHtml,
     productDetails,
     showSizeSection,
+    attributeSectionOrder,
     sizeButtonLabel,
     openSizeCatalogModal,
     isCustomizeSizeModalOpen,

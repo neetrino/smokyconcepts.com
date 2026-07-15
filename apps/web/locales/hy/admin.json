@@ -887,6 +887,27 @@
       "noItemsFound": "Այս պատվերի համար ապրանքներ չեն գտնվել"
     }
   },
+  "messages": {
+    "searchPlaceholder": "Որոնել ըստ անունի, էլ. փոստի կամ հաղորդագրության...",
+    "sender": "Ուղարկող",
+    "source": "Աղբյուր",
+    "sourceContact": "Կոնտակտ",
+    "sourcePersonalize": "Անհատականացում",
+    "phone": "Հեռախոս",
+    "message": "Հաղորդագրություն",
+    "date": "Ամսաթիվ",
+    "empty": "Հաղորդագրություններ չեն գտնվել",
+    "showingPage": "Էջ {page} {totalPages}-ից ({total} ընդամենը)",
+    "selectAll": "Ընտրել բոլոր հաղորդագրությունները",
+    "selectMessage": "Ընտրել {name}-ի հաղորդագրությունը",
+    "selectedMessages": "Ընտրված է {count} հաղորդագրություն",
+    "deleteSelected": "Ջնջել ընտրվածները",
+    "deleting": "Ջնջվում է...",
+    "deleteConfirm": "Ջնջե՞լ {count} ընտրված հաղորդագրությունը",
+    "bulkDeleteFinished": "Զանգվածային ջնջումն ավարտված է։ Հաջող՝ {success}/{total}",
+    "bulkDeleteFailed": "Զանգվածային ջնջումն ավարտված է։ Հաջող՝ {success}/{total}\n\nՉջնջված՝ {failed}",
+    "failedToDelete": "Չհաջողվեց ջնջել ընտրված հաղորդագրությունները։"
+  },
   "homeHero": {
     "title": "Գլխավոր էջի hero",
     "subtitle": "Պատկեր և կոճակի հղում յուրաքանչյուր սլայդի համար․ վերնագիր, նկարագրություն և կոճակի տեքստ՝ հայերեն, անգլերեն և ռուսերեն։ Կայքում կետերը փոխում են սլայդը։",
@@ -938,6 +959,7 @@
     "back": "Վերադառնալ",
     "backToAdmin": "Վերադառնալ ադմինիստրատորի վահան",
     "themeSwitchToLight": "Թեթև ռեժիմ",
-    "themeSwitchToDark": "Մուգ ռեժիմ"
+    "themeSwitchToDark": "Մուգ ռեժիմ",
+    "newBadge": "Նոր"
   }
 }

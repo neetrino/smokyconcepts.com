@@ -62,6 +62,8 @@ export function AddProductPageContent() {
             selectedAttributeValueIds={formState.selectedAttributeValueIds}
             enabledAttributeIds={formState.enabledAttributeIds}
             onEnabledAttributeIdsChange={formState.setEnabledAttributeIds}
+            enabledAttributeOrder={formState.enabledAttributeOrder}
+            onEnabledAttributeOrderChange={formState.setEnabledAttributeOrder}
             hasVariantsToLoad={formState.hasVariantsToLoad}
             variantImageInputRefs={formState.variantImageInputRefs}
             onTitleChange={handleTitleChange}

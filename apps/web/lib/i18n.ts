@@ -16,6 +16,7 @@ import enAttributes from '../locales/en/attributes.json';
 import enDelivery from '../locales/en/delivery.json';
 import enAbout from '../locales/en/about.json';
 import enContact from '../locales/en/contact.json';
+import enPersonalize from '../locales/en/personalize.json';
 import enFaq from '../locales/en/faq.json';
 import enLogin from '../locales/en/login.json';
 import enCookies from '../locales/en/cookies.json';
@@ -41,6 +42,7 @@ import hyAttributes from '../locales/hy/attributes.json';
 import hyDelivery from '../locales/hy/delivery.json';
 import hyAbout from '../locales/hy/about.json';
 import hyContact from '../locales/hy/contact.json';
+import hyPersonalize from '../locales/hy/personalize.json';
 import hyFaq from '../locales/hy/faq.json';
 import hyLogin from '../locales/hy/login.json';
 import hyCookies from '../locales/hy/cookies.json';
@@ -66,6 +68,7 @@ import ruAttributes from '../locales/ru/attributes.json';
 import ruDelivery from '../locales/ru/delivery.json';
 import ruAbout from '../locales/ru/about.json';
 import ruContact from '../locales/ru/contact.json';
+import ruPersonalize from '../locales/ru/personalize.json';
 import ruFaq from '../locales/ru/faq.json';
 import ruLogin from '../locales/ru/login.json';
 import ruCookies from '../locales/ru/cookies.json';
@@ -84,7 +87,7 @@ import ruOrders from '../locales/ru/orders.json';
 import ruAdmin from '../locales/ru/admin.json';
 
 // Type definitions for better type safety
-export type Namespace = 'common' | 'home' | 'product' | 'products' | 'attributes' | 'delivery' | 'about' | 'contact' | 'faq' | 'login' | 'cookies' | 'delivery-terms' | 'terms' | 'privacy' | 'support' | 'stores' | 'returns' | 'refund-policy' | 'profile' | 'checkout' | 'register' | 'categories' | 'orders' | 'admin';
+export type Namespace = 'common' | 'home' | 'product' | 'products' | 'attributes' | 'delivery' | 'about' | 'contact' | 'personalize' | 'faq' | 'login' | 'cookies' | 'delivery-terms' | 'terms' | 'privacy' | 'support' | 'stores' | 'returns' | 'refund-policy' | 'profile' | 'checkout' | 'register' | 'categories' | 'orders' | 'admin';
 export type ProductField = 'title' | 'shortDescription' | 'longDescription';
 
 // Translation store - organized by language and namespace
@@ -99,6 +102,7 @@ const translations: Partial<Record<LanguageCode, Record<Namespace, any>>> = {
     delivery: enDelivery,
     about: enAbout,
     contact: enContact,
+    personalize: enPersonalize,
     faq: enFaq,
     login: enLogin,
     cookies: enCookies,
@@ -125,6 +129,7 @@ const translations: Partial<Record<LanguageCode, Record<Namespace, any>>> = {
     delivery: hyDelivery,
     about: hyAbout,
     contact: hyContact,
+    personalize: hyPersonalize,
     faq: hyFaq,
     login: hyLogin,
     cookies: hyCookies,
@@ -151,6 +156,7 @@ const translations: Partial<Record<LanguageCode, Record<Namespace, any>>> = {
     delivery: ruDelivery,
     about: ruAbout,
     contact: ruContact,
+    personalize: ruPersonalize,
     faq: ruFaq,
     login: ruLogin,
     cookies: ruCookies,
@@ -254,7 +260,7 @@ export function t(lang: LanguageCode | undefined, path: string): string {
   }
 
   // Validate namespace
-  const validNamespaces: Namespace[] = ['common', 'home', 'product', 'products', 'attributes', 'delivery', 'about', 'contact', 'faq', 'login', 'cookies', 'delivery-terms', 'terms', 'privacy', 'support', 'stores', 'returns', 'refund-policy', 'profile', 'checkout', 'register', 'categories', 'orders', 'admin'];
+  const validNamespaces: Namespace[] = ['common', 'home', 'product', 'products', 'attributes', 'delivery', 'about', 'contact', 'personalize', 'faq', 'login', 'cookies', 'delivery-terms', 'terms', 'privacy', 'support', 'stores', 'returns', 'refund-policy', 'profile', 'checkout', 'register', 'categories', 'orders', 'admin'];
   if (!validNamespaces.includes(namespace)) {
     if (process.env.NODE_ENV === 'development') {
       console.warn(`[i18n] Invalid namespace: "${namespace}". Valid namespaces: ${validNamespaces.join(', ')}`);

@@ -5,6 +5,7 @@ import { AuthProvider } from '../lib/auth/AuthContext';
 import { enableClientCurrencyStorageReads, initializeCurrencyRates } from '../lib/currency';
 import { ToastContainer } from './Toast';
 import { CartDrawer } from './CartDrawer';
+import { NavigationLoading } from './loading/NavigationLoading';
 
 /**
  * ClientProviders component
@@ -19,6 +20,7 @@ export function ClientProviders({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
       {children}
+      <NavigationLoading />
       <CartDrawer />
       <ToastContainer />
     </AuthProvider>

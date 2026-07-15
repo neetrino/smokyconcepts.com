@@ -17,6 +17,8 @@ import {
 } from '@/app/admin/constants/adminMenuThemeClasses';
 import { useAdminTheme } from '@/app/admin/context/AdminThemeContext';
 import { getAdminDrawerNavIndentClass } from '@/app/admin/utils/adminMenuIndent';
+import { AdminNavCountBadge } from '@/app/admin/components/AdminNavCountBadge';
+import { useAdminNewCounts } from '@/app/admin/hooks/useAdminNewCounts';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { useTranslation } from '@/lib/i18n-client';
 
@@ -39,6 +41,16 @@ interface AdminMenuDrawerProps {
   initialOpen?: boolean;
   /** Show logout below nav items (mobile admin menu). */
   showLogout?: boolean;
+}
+
+function getNavBadgeCount(tabId: string, counts: { orders: number; messages: number }): number {
+  if (tabId === 'orders') {
+    return counts.orders;
+  }
+  if (tabId === 'messages') {
+    return counts.messages;
+  }
+  return 0;
 }
 
 export function AdminMenuDrawer({
@@ -89,6 +101,7 @@ export function AdminMenuDrawer({
 
   const { logout } = useAuth();
   const { t } = useTranslation();
+  const newCounts = useAdminNewCounts();
 
   const handleLogout = () => {
     setOpen(false);
@@ -161,6 +174,7 @@ export function AdminMenuDrawer({
 
                 const isParent = parentIds.has(tab.id);
                 const isExpanded = expandedGroups.has(tab.id);
+                const navBadgeCount = getNavBadgeCount(tab.id, newCounts);
 
                 return (
                   <button
@@ -181,7 +195,9 @@ export function AdminMenuDrawer({
                       ) : null}
                       {tab.label}
                     </span>
-                    {isParent ? (
+                    <span className="flex items-center gap-2">
+                      {navBadgeCount > 0 ? <AdminNavCountBadge count={navBadgeCount} /> : null}
+                      {isParent ? (
                       <svg
                         className={`h-4 w-4 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''} ${adminDrawerChevronClass(isActive, theme)}`}
                         fill="none"
@@ -200,6 +216,7 @@ export function AdminMenuDrawer({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     )}
+                    </span>
                   </button>
                 );
               })}

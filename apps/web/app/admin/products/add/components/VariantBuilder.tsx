@@ -14,6 +14,11 @@ import {
   SIZE_ATTRIBUTE_KEY,
   SIZE_VERSION_ATTRIBUTE_KEY,
 } from '../utils/variantAttributeHelpers';
+import {
+  appendEnabledAttributeOrder,
+  orderAttributesByIds,
+  removeFromEnabledAttributeOrder,
+} from '../utils/attributeDisplayOrder';
 import { VariantBuilderVariantsTable } from './VariantBuilderVariantsTable';
 
 interface VariantBuilderProps {
@@ -22,6 +27,8 @@ interface VariantBuilderProps {
   selectedAttributeValueIds: Record<string, string[]>;
   enabledAttributeIds: Record<string, boolean>;
   onEnabledAttributeIdsChange: (next: Record<string, boolean>) => void;
+  enabledAttributeOrder: string[];
+  onEnabledAttributeOrderChange: (next: string[]) => void;
   isEditMode: boolean;
   hasVariantsToLoad: boolean;
   imageUploadLoading: boolean;
@@ -42,6 +49,8 @@ export function VariantBuilder({
   selectedAttributeValueIds,
   enabledAttributeIds,
   onEnabledAttributeIdsChange,
+  enabledAttributeOrder,
+  onEnabledAttributeOrderChange,
   isEditMode,
   hasVariantsToLoad,
   imageUploadLoading,
@@ -67,12 +76,15 @@ export function VariantBuilder({
     (attribute) => attribute.key !== SIZE_VERSION_ATTRIBUTE_KEY
   );
   const hasCatalogVersions = (sizeVersionAttribute?.values.length ?? 0) > 0;
-  const attributesInUse = categoryAttributes.filter((attribute) => {
-    if (attribute.key === SIZE_VERSION_ATTRIBUTE_KEY) {
-      return isSizeEnabled && hasCatalogVersions;
-    }
-    return enabledAttributeIds[attribute.id] === true;
-  });
+  const attributesInUse = orderAttributesByIds(
+    categoryAttributes.filter((attribute) => {
+      if (attribute.key === SIZE_VERSION_ATTRIBUTE_KEY) {
+        return isSizeEnabled && hasCatalogVersions;
+      }
+      return enabledAttributeIds[attribute.id] === true;
+    }),
+    enabledAttributeOrder
+  );
 
   const withCompatibleSizeVersions = (selectedValueIds: string[]) =>
     enforceSizeVersionCompatibility(selectedValueIds, sizeVersionAttribute);
@@ -84,13 +96,25 @@ export function VariantBuilder({
       [attributeId]: checked,
     };
 
+    const relatedIds: string[] = [];
     if (sizeAttribute && attributeId === sizeAttribute.id) {
       nextEnabledAttributeIds[sizeAttribute.id] = checked;
       if (sizeVersionAttribute) {
         nextEnabledAttributeIds[sizeVersionAttribute.id] = checked;
+        relatedIds.push(sizeVersionAttribute.id);
       }
     }
     onEnabledAttributeIdsChange(nextEnabledAttributeIds);
+
+    if (checked) {
+      onEnabledAttributeOrderChange(
+        appendEnabledAttributeOrder(enabledAttributeOrder, attributeId, relatedIds)
+      );
+    } else {
+      onEnabledAttributeOrderChange(
+        removeFromEnabledAttributeOrder(enabledAttributeOrder, [attributeId, ...relatedIds])
+      );
+    }
 
     if (!checked) {
       const attribute = categoryAttributes.find((a) => a.id === attributeId);
@@ -149,8 +173,7 @@ export function VariantBuilder({
   };
 
   const getVariantOptionLabel = (variant: GeneratedVariant) => {
-    return categoryAttributes
-      .filter((attribute) => enabledAttributeIds[attribute.id] === true)
+    return attributesInUse
       .map((attribute) => {
         const matchedValues = attribute.values.filter((value) =>
           variant.selectedValueIds.includes(value.id)
@@ -158,7 +181,12 @@ export function VariantBuilder({
         const labels =
           attribute.key === SIZE_VERSION_ATTRIBUTE_KEY
             ? [...new Set(matchedValues.map((value) => value.label))]
-            : matchedValues.map((value) => value.label);
+            : matchedValues
+                .sort(
+                  (a, b) =>
+                    variant.selectedValueIds.indexOf(a.id) - variant.selectedValueIds.indexOf(b.id)
+                )
+                .map((value) => value.label);
 
         if (labels.length === 0) {
           return null;

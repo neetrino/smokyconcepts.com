@@ -67,7 +67,8 @@
     "firstNamePlaceholder": "Հովհաննես",
     "lastNamePlaceholder": "Պետրոսյան",
     "emailPlaceholder": "your@email.com",
-    "phonePlaceholder": "+374 XX XXX XXX",
+    "phonePlaceholder": "+374XXXXXXXX",
+    "invalidPhone": "Անվավեր հեռախոսահամար",
     "cancel": "Չեղարկել"
   },
   "addresses": {
@@ -95,6 +96,9 @@
       "addressLine2": "Հասցե 2 (ընտրովի)",
       "city": "Քաղաք",
       "state": "Մարզ/Նահանգ (ընտրովի)",
+      "region": "Մարզ",
+      "selectRegion": "Ընտրել մարզը",
+      "loadingRegions": "Մարզերը բեռնվում են...",
       "postalCode": "Փոստային կոդ",
       "phone": "Հեռախոսահամար",
       "isDefault": "Սահմանել որպես լռելյայն հասցե",

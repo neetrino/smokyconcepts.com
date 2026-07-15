@@ -1,9 +1,5 @@
-import { CheckoutPlacingOrderGlassSpinner } from '../components/CheckoutPlacingOrderOverlay';
+import { PageLoadingCenter } from '../../../components/loading/PageLoadingCenter';
 
 export default function ThankYouLoading() {
-  return (
-    <div className="mx-auto flex min-h-[50vh] max-w-3xl items-center justify-center px-4 py-16">
-      <CheckoutPlacingOrderGlassSpinner />
-    </div>
-  );
+  return <PageLoadingCenter />;
 }

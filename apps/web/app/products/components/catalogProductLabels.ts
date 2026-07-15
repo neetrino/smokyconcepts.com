@@ -216,17 +216,13 @@ export function getColorLabel(product: CatalogProduct): string {
   return matchedPattern?.label ?? 'Signature';
 }
 
+/** Explicit size from the list API only — no title/slug heuristics or default "King Size". */
 export function getSizeLabel(product: CatalogProduct): string {
   if (typeof product.sizeLabel === 'string' && product.sizeLabel.trim().length > 0) {
     return product.sizeLabel.trim();
   }
 
-  const source = `${product.title} ${product.slug} ${product.skus.join(' ')}`;
-
-  if (/compact|mini|small/i.test(source)) return 'Compact';
-  if (/king|large|max/i.test(source)) return 'King Size';
-
-  return 'King Size';
+  return '';
 }
 
 /** Catalog card size badge — prefers the active variant label, then the selected filter size. */
@@ -247,19 +243,21 @@ export function resolveCatalogCardSizeLabelFromVariant(
   }
 
   const normalizedSelected = (selectedSize ?? '').trim().toLowerCase();
-  if (normalizedSelected && normalizedSelected !== 'all') {
-    const matchedBySize = sizeLabels.find((label) => label.toLowerCase() === normalizedSelected);
-    if (matchedBySize) {
-      return matchedBySize;
-    }
-
-    const variantCategoryTitle = (variant.sizeCatalogCategoryTitle ?? '').trim().toLowerCase();
-    if (variantCategoryTitle && variantCategoryTitle === normalizedSelected) {
-      return sizeLabels[0] ?? fallback;
-    }
+  if (!normalizedSelected || normalizedSelected === 'all') {
+    return fallback;
   }
 
-  return sizeLabels[0] ?? fallback;
+  const matchedBySize = sizeLabels.find((label) => label.toLowerCase() === normalizedSelected);
+  if (matchedBySize) {
+    return matchedBySize;
+  }
+
+  const variantCategoryTitle = (variant.sizeCatalogCategoryTitle ?? '').trim().toLowerCase();
+  if (variantCategoryTitle && variantCategoryTitle === normalizedSelected) {
+    return sizeLabels[0] ?? fallback;
+  }
+
+  return fallback;
 }
 
 /** Variant size strings used for catalog size-picker and filters (not collection titles). */

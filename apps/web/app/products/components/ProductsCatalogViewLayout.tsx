@@ -1,7 +1,6 @@
 'use client';
 
 import { CustomizeSizeModal } from '../[slug]/CustomizeSizeModal';
-import type { CustomOrderDraft } from '../[slug]/CustomizeSizeOrderFallback';
 import type { LanguageCode } from '../../../lib/language';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
 import { CatalogForProductLineRow } from './CatalogForProductLineRow';
@@ -344,8 +343,8 @@ export function ProductsCatalogViewLayout({
         sizeCategories={sizeCatalogForModal}
         selectedSizeItemId={selectedCatalogItemId}
         onSelectSizeCatalogItem={handleCatalogSizeItemSelect}
-        onSelectCustomSizeRequest={(_draft: CustomOrderDraft) => {
-          setCatalogSizeModalOpen(false);
+        onSelectCustomSizeRequest={() => {
+          // Order is created in CustomizeSizeModal; modal closes after success message.
         }}
       />
     </div>

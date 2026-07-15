@@ -110,6 +110,7 @@ export function useProfilePage() {
     // Personal info
     personalInfo: personalInfo.personalInfo,
     setPersonalInfo: personalInfo.setPersonalInfo,
+    phoneError: personalInfo.phoneError,
     savingPersonal: personalInfo.savingPersonal,
     handleSavePersonalInfo: personalInfo.handleSavePersonalInfo,
     

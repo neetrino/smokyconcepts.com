@@ -20,6 +20,7 @@ interface VariantSubmitPayload {
   imageUrl?: string;
   attributes?: Array<{ attributeKey: string; value: string }>;
   published: boolean;
+  position: number;
 }
 
 interface UseProductFormHandlersProps {
@@ -165,6 +166,7 @@ export function useProductFormHandlers({
           imageUrl: variantImages.length > 0 ? variantImages.join(',') : undefined,
           attributes: attributes.length > 0 ? attributes : undefined,
           published: true,
+          position: variantIndex,
         });
       });
 

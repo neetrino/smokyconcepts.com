@@ -90,6 +90,8 @@ export interface DashboardData {
     pendingOrders: number;
     completedOrders: number;
     totalSpent: number;
+    /** AMD snapshot sum when every paid order has checkout-parity totalAmd. */
+    totalSpentAmd?: number | null;
     addressesCount: number;
     ordersByStatus: Record<string, number>;
   };

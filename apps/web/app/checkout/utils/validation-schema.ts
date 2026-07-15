@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { useTranslation } from '../../../lib/i18n-client';
+import { PHONE_NUMBER_PATTERN } from '../../../lib/utils/phone-validation';
 import type { CheckoutFormData } from '../types';
 
 export function useCheckoutSchema() {
@@ -9,7 +10,10 @@ export function useCheckoutSchema() {
     firstName: z.string().min(1, t('checkout.errors.firstNameRequired')),
     lastName: z.string().min(1, t('checkout.errors.lastNameRequired')),
     email: z.string().email(t('checkout.errors.invalidEmail')).min(1, t('checkout.errors.emailRequired')),
-    phone: z.string().min(1, t('checkout.errors.phoneRequired')).regex(/^\+?[0-9]{8,15}$/, t('checkout.errors.invalidPhone')),
+    phone: z
+      .string()
+      .min(1, t('checkout.errors.phoneRequired'))
+      .regex(PHONE_NUMBER_PATTERN, t('checkout.errors.invalidPhone')),
     shippingMethod: z.enum(['pickup', 'delivery'], {
       message: t('checkout.errors.selectShippingMethod'),
     }),

@@ -291,11 +291,6 @@ export function CategoryGrid() {
     return null;
   }
 
-  console.log('🎨 [CategoryGrid] Rendering categories:', categories.length);
-  console.log('🎨 [CategoryGrid] Product counts:', productCounts);
-  console.log('🎨 [CategoryGrid] Category products:', Object.keys(categoryProducts).length);
-  console.log('🎨 [CategoryGrid] Categories to render:', categories.map(c => c.title));
-
   return (
     <section className="py-12 bg-white border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

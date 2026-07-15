@@ -41,6 +41,8 @@ interface AddProductFormContentProps {
   selectedAttributeValueIds: Record<string, string[]>;
   enabledAttributeIds: Record<string, boolean>;
   onEnabledAttributeIdsChange: (next: Record<string, boolean>) => void;
+  enabledAttributeOrder: string[];
+  onEnabledAttributeOrderChange: (next: string[]) => void;
   hasVariantsToLoad: boolean;
   variantImageInputRefs: React.MutableRefObject<Record<string, HTMLInputElement | null>>;
   onTitleChange: (e: ChangeEvent<HTMLInputElement>) => void;
@@ -87,6 +89,8 @@ export function AddProductFormContent({
   selectedAttributeValueIds,
   enabledAttributeIds,
   onEnabledAttributeIdsChange,
+  enabledAttributeOrder,
+  onEnabledAttributeOrderChange,
   hasVariantsToLoad,
   variantImageInputRefs,
   onTitleChange,
@@ -158,6 +162,8 @@ export function AddProductFormContent({
           selectedAttributeValueIds={selectedAttributeValueIds}
           enabledAttributeIds={enabledAttributeIds}
           onEnabledAttributeIdsChange={onEnabledAttributeIdsChange}
+          enabledAttributeOrder={enabledAttributeOrder}
+          onEnabledAttributeOrderChange={onEnabledAttributeOrderChange}
           isEditMode={isEditMode}
           hasVariantsToLoad={hasVariantsToLoad}
           imageUploadLoading={imageUploadLoading}

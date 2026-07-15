@@ -67,7 +67,8 @@
     "firstNamePlaceholder": "Иван",
     "lastNamePlaceholder": "Иванов",
     "emailPlaceholder": "your@email.com",
-    "phonePlaceholder": "+374 XX XXX XXX",
+    "phonePlaceholder": "+374XXXXXXXX",
+    "invalidPhone": "Неверный номер телефона",
     "cancel": "Отмена"
   },
   "addresses": {
@@ -95,6 +96,9 @@
       "addressLine2": "Адрес строка 2 (необязательно)",
       "city": "Город",
       "state": "Область/Провинция (необязательно)",
+      "region": "Область",
+      "selectRegion": "Выберите область",
+      "loadingRegions": "Загрузка областей...",
       "postalCode": "Почтовый индекс",
       "phone": "Номер телефона",
       "isDefault": "Установить как адрес по умолчанию",

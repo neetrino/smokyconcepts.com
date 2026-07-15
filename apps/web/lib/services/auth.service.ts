@@ -36,6 +36,46 @@ export interface AuthResponse {
 }
 
 class AuthService {
+  private async releaseSoftDeletedIdentifiers(data: RegisterData): Promise<void> {
+    const releaseTasks: Array<Promise<unknown>> = [];
+
+    if (data.email) {
+      releaseTasks.push(
+        db.user.updateMany({
+          where: {
+            email: data.email,
+            deletedAt: { not: null },
+          },
+          data: {
+            email: null,
+            emailVerified: false,
+          },
+        }),
+      );
+    }
+
+    if (data.phone) {
+      releaseTasks.push(
+        db.user.updateMany({
+          where: {
+            phone: data.phone,
+            deletedAt: { not: null },
+          },
+          data: {
+            phone: null,
+            phoneVerified: false,
+          },
+        }),
+      );
+    }
+
+    if (releaseTasks.length === 0) {
+      return;
+    }
+
+    await Promise.all(releaseTasks);
+  }
+
   private ensureJwtSecret(): string {
     const secret = process.env.JWT_SECRET?.trim();
     if (!secret) {
@@ -122,6 +162,8 @@ class AuthService {
       };
     }
 
+    await this.releaseSoftDeletedIdentifiers(data);
+
     const passwordHash = await hashPassword(data.password);
 
     let user;
@@ -192,10 +234,14 @@ class AuthService {
       };
     }
 
+    const normalizedEmail = data.email?.trim();
+
     const user = await db.user.findFirst({
       where: {
         OR: [
-          ...(data.email ? [{ email: data.email }] : []),
+          ...(normalizedEmail
+            ? [{ email: { equals: normalizedEmail, mode: "insensitive" as const } }]
+            : []),
           ...(data.phone ? [{ phone: data.phone }] : []),
         ],
         deletedAt: null,

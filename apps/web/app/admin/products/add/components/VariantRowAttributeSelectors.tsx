@@ -30,9 +30,9 @@ function selectionSummary(
   ) {
     return allBadge;
   }
-  return attribute.values
-    .filter((v) => selectedIds.includes(v.id))
-    .map((v) => v.label)
+  return selectedIds
+    .map((id) => attribute.values.find((v) => v.id === id)?.label)
+    .filter((label): label is string => Boolean(label))
     .join(', ');
 }
 

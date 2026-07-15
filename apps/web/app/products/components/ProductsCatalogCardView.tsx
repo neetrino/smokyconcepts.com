@@ -172,7 +172,7 @@ export function ProductsCatalogCardView({
           </Link>
 
           <div className={compactLayout ? 'mt-0.5 flex items-center gap-1' : 'mt-2 flex items-center gap-1.5'}>
-            <span className={sizeBadgeClassName}>{sizeLabel}</span>
+            {sizeLabel.trim() ? <span className={sizeBadgeClassName}>{sizeLabel}</span> : null}
             <span className={badgeClassNames}>{categoryLabel}</span>
           </div>
         </div>

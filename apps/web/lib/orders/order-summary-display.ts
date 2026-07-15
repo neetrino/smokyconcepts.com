@@ -474,11 +474,13 @@ export function formatOrderListShippingDisplay(
   return formatOrderShippingDisplay(shippingUsd, order.shippingPriceAmd, displayCurrency);
 }
 
-/** Order list / row total — uses persisted `total` when breakdown fields are missing. */
-export function formatOrderListTotalDisplay(
-  order: OrderListTotalsSource,
-  displayCurrency: CurrencyCode
-): string {
+/**
+ * Same totals as order list / profile rows — prefer AMD snapshot sum when available
+ * so Total Spent matches the amount shown on each order card.
+ */
+export function resolveOrderListTotalAmounts(
+  order: OrderListTotalsSource
+): Pick<OrderSummaryDisplayAmounts, 'totalUsd' | 'totalAmd'> {
   const hasBreakdown =
     order.subtotal !== undefined &&
     order.discountAmount !== undefined &&
@@ -487,10 +489,12 @@ export function formatOrderListTotalDisplay(
 
   if (!hasBreakdown) {
     const alreadyUsd = order.currency?.trim().toUpperCase() === 'USD';
-    return formatOrderSummaryUsd(
-      alreadyUsd ? order.total : persistedOrderMoneyToUsd(order.total, order.currency),
-      displayCurrency
-    );
+    return {
+      totalUsd: alreadyUsd
+        ? order.total
+        : persistedOrderMoneyToUsd(order.total, order.currency),
+      totalAmd: null,
+    };
   }
 
   const summary = computeOrderSummaryDisplay(
@@ -504,12 +508,24 @@ export function formatOrderListTotalDisplay(
       collectionPriceAmount: order.collectionPriceAmount,
     },
     order.collectionPriceAmount,
-    displayCurrency,
+    'AMD',
     order.summaryLines,
     {
       amountsAlreadyUsd: order.currency?.trim().toUpperCase() === 'USD',
       shippingPriceAmd: order.shippingPriceAmd,
     }
   );
-  return formatOrderTotalDisplay(summary, displayCurrency);
+  return {
+    totalUsd: summary.totalUsd,
+    totalAmd: summary.totalAmd,
+  };
+}
+
+/** Order list / row total — uses persisted `total` when breakdown fields are missing. */
+export function formatOrderListTotalDisplay(
+  order: OrderListTotalsSource,
+  displayCurrency: CurrencyCode
+): string {
+  const { totalUsd, totalAmd } = resolveOrderListTotalAmounts(order);
+  return formatOrderTotalDisplay({ totalUsd, totalAmd }, displayCurrency);
 }

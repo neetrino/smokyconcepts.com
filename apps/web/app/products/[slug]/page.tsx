@@ -19,6 +19,7 @@ import { useCustomizeGoogleFontLinks } from './useCustomizeGoogleFontLinks';
 import type { ProductPageProps } from './types';
 import type { CustomOrderDraft } from './CustomizeSizeOrderFallback';
 import { PRODUCT_INFO_COLUMN_CLASS } from './productInfoTabContent.constants';
+import { PageLoadingCenter } from '../../../components/loading/PageLoadingCenter';
 
 const CUSTOMIZE_TEXT_MAX_LENGTH = 18;
 
@@ -177,16 +178,12 @@ export default function ProductPage({ params }: ProductPageProps) {
   });
 
   if (loading || !product) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-        {t(language, 'common.messages.loading')}
-      </div>
-    );
+    return <PageLoadingCenter />;
   }
 
   return (
-    <div className="overflow-visible bg-[#efefef]">
-      <div className="mx-auto max-w-[1920px] overflow-visible px-4 pb-16 pt-2 sm:px-6 lg:px-[120px] lg:pb-24 lg:pt-5">
+    <div className="overflow-x-hidden overflow-y-visible bg-[#efefef]">
+      <div className="mx-auto max-w-[1920px] overflow-x-hidden overflow-y-visible px-4 pb-16 pt-2 sm:px-6 lg:px-[120px] lg:pb-24 lg:pt-5">
         <div className="grid min-h-0 items-start gap-8 overflow-visible xl:grid-cols-[minmax(0,640px)_minmax(0,1fr)] xl:items-stretch xl:gap-11">
           <div className="flex min-h-0 min-w-0 flex-col gap-5 overflow-visible sm:gap-6">
             <ProductImageGallery

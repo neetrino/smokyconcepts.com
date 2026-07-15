@@ -1,11 +1,14 @@
 'use client';
 
 import { Input } from '@shop/ui';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
 import { apiClient, ApiError } from '../../lib/api-client';
+import { CONTACT_MESSAGE_MAX_LENGTH } from '../../lib/constants/contact-form.constants';
 import { sanitizeContactPhoneInput } from '../../lib/utils/contact-phone-input';
+import { usePrefillLoggedInContactFields } from '../../hooks/usePrefillLoggedInContactFields';
 import contactData from '../../../../json/contact.json';
 
 // Icons
@@ -32,6 +35,7 @@ const OfficeHouseIcon = () => (
 
 export default function ContactPage() {
   const { t } = useTranslation();
+  const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -39,6 +43,8 @@ export default function ContactPage() {
     message: '',
   });
   const [submitting, setSubmitting] = useState(false);
+
+  usePrefillLoggedInContactFields(setFormData);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -56,6 +62,7 @@ export default function ContactPage() {
         email: formData.email,
         phone: formData.phone,
         message: formData.message,
+        source: 'CONTACT',
       }, {
         skipAuth: true, // Contact form doesn't require authentication
       });
@@ -69,6 +76,7 @@ export default function ContactPage() {
       });
       
       alert(t('contact.form.submitSuccess') || 'Ձեր հաղորդագրությունը հաջողությամբ ուղարկվեց');
+      router.push('/');
     } catch (error: unknown) {
       const isCommentRequiredError =
         error instanceof ApiError &&
@@ -90,9 +98,15 @@ export default function ContactPage() {
   };
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    const nextValue =
+      name === 'message'
+        ? value.slice(0, CONTACT_MESSAGE_MAX_LENGTH)
+        : value;
+
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: nextValue,
     });
   };
 
@@ -219,11 +233,18 @@ export default function ContactPage() {
                   name="message"
                   rows={6}
                   required
+                  maxLength={CONTACT_MESSAGE_MAX_LENGTH}
                   value={formData.message}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
                   placeholder={t('contact.form.commentPlaceholder') || 'Write your comment'}
                 />
+                <p
+                  className="mt-1 text-right text-xs text-gray-500"
+                  aria-live="polite"
+                >
+                  {formData.message.length}/{CONTACT_MESSAGE_MAX_LENGTH}
+                </p>
               </div>
               <button
                 type="submit"
