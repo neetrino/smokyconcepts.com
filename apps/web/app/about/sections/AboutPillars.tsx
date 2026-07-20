@@ -32,7 +32,7 @@ const PILLAR_BASE: readonly PillarBase[] = [
     localeId: 'first',
     bg: 'bg-[#dcc090]',
     image: {
-      src: '/assets/about/first-concept.png',
+      src: '/assets/about/first-concept.webp',
       hideWhiteBg: true,
     },
   },
@@ -41,7 +41,7 @@ const PILLAR_BASE: readonly PillarBase[] = [
     localeId: 'mission',
     bg: 'bg-[#95c48a]',
     image: {
-      src: '/assets/about/mission.png',
+      src: '/assets/about/mission.webp',
       hideWhiteBg: true,
     },
   },
