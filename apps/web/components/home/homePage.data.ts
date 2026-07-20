@@ -220,8 +220,8 @@ export const UPCOMING_LINES: HomeSimpleCardItem[] = [
   { title: 'Knives', imageSrc: '/assets/home/products/knife.webp' },
   { title: 'Phones', imageSrc: '/assets/home/products/phone.webp' },
   { title: 'Wallets', imageSrc: '/assets/home/products/wallet.webp' },
-  { title: 'Documents', imageSrc: '/assets/home/products/keys.webp' },
-  { title: 'Keys', imageSrc: '/assets/home/products/documents.webp' },
+  { title: 'Documents', imageSrc: '/assets/home/products/documents.webp' },
+  { title: 'Keys', imageSrc: '/assets/home/products/keys.webp' },
 ];
 
 export const FOOTER_LINKS = [

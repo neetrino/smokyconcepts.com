@@ -6,7 +6,7 @@ const CATALOG_FOR_CIGARETTE_PACK_IMAGE = '/assets/home/products/compact-figma.sv
 const CATALOG_FOR_CIGARETTE_MARK_IMAGE = '/assets/home/icons/pack-mark-figma.webp';
 /** `money-wallet.png` is not in repo; home wallet art matches “Money” intent (Figma blur/crop still applies). */
 const CATALOG_FOR_MONEY_IMAGE = '/assets/home/products/wallet.webp';
-const CATALOG_FOR_PHONE_CASE_IMAGE = '/assets/products/catalog-for/phone-case.png';
+const CATALOG_FOR_PHONE_CASE_IMAGE = '/assets/products/catalog-for/phone-case.webp';
 
 const CARD_SHELL =
   'flex h-[112px] min-w-0 flex-1 basis-0 max-w-[110px] flex-col items-center overflow-hidden lg:h-[129px] lg:w-[126px] lg:max-w-none lg:flex-none lg:shrink-0';
