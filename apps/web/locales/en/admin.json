@@ -299,11 +299,12 @@
     "titlePlaceholder": "Enter item title",
     "productSlugField": "Product slug (early access)",
     "productSlugPlaceholder": "e.g. smoky-cover-classic",
-    "productSlugHint": "Published product URL slug. When set, liked users can open checkout for this product from the home Culture section.",
+    "productSlugHint": "Product URL slug (published or draft). When set, liked users can open checkout for this product from the home Culture section.",
     "selectedProduct": "Selected product",
     "noProductSelected": "No product selected yet.",
     "chooseProductHint": "Choose one product from your catalog to use as the voting option. Title, image, and checkout link are taken from this product.",
     "allCategories": "All categories",
+    "allPublishStatuses": "All statuses",
     "productSearchPlaceholder": "Search products...",
     "productsLoadError": "Failed to load products.",
     "noProductsFound": "No products found for current filters.",
@@ -658,10 +659,16 @@
       "enterDefaultPrice": "Enter default price for all variants:",
       "enterDefaultStock": "Enter default stock for all variants:",
       "enterSkuPrefix": "Enter SKU prefix (will auto-add -color-size if applicable):",
-      "variableSubmitNeedVariants": "Variable product: add at least one variant (use “Add variant”), fill Default pricing with a valid price, then complete each variant row (price greater than zero, stock, SKU) before saving.",
+      "variableSubmitNeedVariants": "Add at least one variant (use “Add variant”), then complete each row (price greater than zero, stock, SKU) and choose one variant to display on the storefront before saving.",
+      "variableSubmitDisplayVariantRequired": "Select exactly one variant to display on catalog and product pages (checkbox in the variants table).",
+      "displayVariant": "Display on storefront",
+      "displayVariantShort": "Display",
       "variableSubmitDefaultPriceInvalid": "Variable product: enter a valid default price (greater than zero) in the Default pricing section.",
       "variableSubmitVariantRowInvalid": "Variable product: every variant row needs a valid price greater than zero and a SKU.",
-      "variableSubmitDuplicateVariantSku": "Variable product: each variant must have a unique SKU — remove or change duplicate SKUs."
+      "variableSubmitDuplicateVariantSku": "Variable product: each variant must have a unique SKU — remove or change duplicate SKUs.",
+      "simpleSubmitPriceRequired": "Enter a product price greater than zero.",
+      "simpleSubmitQuantityRequired": "Enter the product quantity (stock).",
+      "variableSubmitDefaultQuantityRequired": "Variable product: enter stock in the Default pricing section."
     }
   },
   "settings": {
@@ -804,6 +811,7 @@
     "ordersOnly": "Orders",
     "newOrders": "New",
     "earlyAccessOrders": "Early",
+    "outOfStockOrders": "Out of Stock",
     "ordersTotalCount": "{total} orders",
     "allStatuses": "All Statuses",
     "allPaymentStatuses": "All Payment Statuses",
@@ -879,6 +887,27 @@
     "previous": "Previous",
     "next": "Next"
   },
+  "messages": {
+    "searchPlaceholder": "Search by name, email or message...",
+    "sender": "Sender",
+    "source": "Source",
+    "sourceContact": "Contact",
+    "sourcePersonalize": "Personalize",
+    "phone": "Phone",
+    "message": "Message",
+    "date": "Date",
+    "empty": "No messages found",
+    "showingPage": "Page {page} of {totalPages} ({total} total)",
+    "selectAll": "Select all messages",
+    "selectMessage": "Select message from {name}",
+    "selectedMessages": "Selected {count} messages",
+    "deleteSelected": "Delete Selected",
+    "deleting": "Deleting...",
+    "deleteConfirm": "Delete {count} selected messages?",
+    "bulkDeleteFinished": "Bulk delete finished. Success: {success}/{total}",
+    "bulkDeleteFailed": "Bulk delete finished. Success: {success}/{total}\n\nFailed messages: {failed}",
+    "failedToDelete": "Failed to delete selected messages. Please try again."
+  },
   "homeHero": {
     "title": "Homepage hero",
     "subtitle": "Image and button link per slide; headline, description, and button text in Armenian, English, and Russian. Dots on the site switch slides.",
@@ -912,6 +941,9 @@
     "saveError": "Could not save. Check the fields and try again.",
     "uploadError": "Upload failed. Try another file."
   },
+  "mobileHub": {
+    "chooseSection": "Choose a section"
+  },
   "common": {
     "loading": "Loading...",
     "error": "Error",
@@ -927,7 +959,8 @@
     "back": "Back",
     "backToAdmin": "Back to Admin Dashboard",
     "themeSwitchToLight": "Switch to light mode",
-    "themeSwitchToDark": "Switch to dark mode"
+    "themeSwitchToDark": "Switch to dark mode",
+    "newBadge": "New"
   }
 }
 

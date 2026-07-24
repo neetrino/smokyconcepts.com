@@ -46,7 +46,9 @@
   },
   "mobileFilters": {
     "title": "Фильтры",
-    "close": "Закрыть фильтры"
+    "close": "Закрыть фильтры",
+    "clearAll": "Очистить все",
+    "apply": "Применить"
   },
   "discovery": {
     "searchTitle": "Найти товары по SKU",

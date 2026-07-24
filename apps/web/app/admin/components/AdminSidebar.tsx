@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { AdminMenuDrawer } from '../../../components/AdminMenuDrawer';
 import { getAdminMenuTABS } from '../admin-menu.config';
+import { AdminMobileNavigation } from './AdminMobileNavigation';
 import {
   adminNavContainerClass,
   adminNavIconClass,
@@ -16,6 +16,8 @@ import {
   ADMIN_FIXED_SIDEBAR_SPACER_CLASS,
 } from '../constants/adminShell.constants';
 import { useAdminTheme } from '../context/AdminThemeContext';
+import { AdminNavCountBadge } from './AdminNavCountBadge';
+import { useAdminNewCounts } from '../hooks/useAdminNewCounts';
 import { getAdminSidebarNavIndentClass } from '../utils/adminMenuIndent';
 
 interface AdminSidebarProps {
@@ -24,9 +26,20 @@ interface AdminSidebarProps {
   t: ReturnType<typeof import('../../../lib/i18n-client').useTranslation>['t'];
 }
 
+function getNavBadgeCount(tabId: string, counts: { orders: number; messages: number }): number {
+  if (tabId === 'orders') {
+    return counts.orders;
+  }
+  if (tabId === 'messages') {
+    return counts.messages;
+  }
+  return 0;
+}
+
 export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
   const { theme } = useAdminTheme();
   const adminTabs = getAdminMenuTABS(t);
+  const newCounts = useAdminNewCounts();
 
   // Compute which tab IDs have children
   const parentIds = new Set(adminTabs.filter((tab) => tab.parentId).map((tab) => tab.parentId!));
@@ -67,7 +80,7 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
   return (
     <>
       <div className="lg:hidden mb-6">
-        <AdminMenuDrawer tabs={adminTabs} currentPath={currentPath} />
+        <AdminMobileNavigation currentPath={currentPath} />
       </div>
       <aside className={ADMIN_FIXED_SIDEBAR_CLASS}>
         <nav className={adminNavContainerClass(theme)}>
@@ -94,6 +107,7 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
 
             const isParent = parentIds.has(tab.id);
             const isExpanded = expandedGroups.has(tab.id);
+            const navBadgeCount = getNavBadgeCount(tab.id, newCounts);
 
             return (
               <button
@@ -112,6 +126,7 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
                   <span className={adminNavIconClass(isActive, theme)}>{tab.icon}</span>
                 ) : null}
                 <span className="flex-1 text-left">{tab.label}</span>
+                {navBadgeCount > 0 ? <AdminNavCountBadge count={navBadgeCount} /> : null}
                 {isParent && (
                   <svg
                     className={`h-3.5 w-3.5 flex-shrink-0 transition-transform duration-200 ${

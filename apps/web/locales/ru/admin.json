@@ -299,11 +299,12 @@
     "titlePlaceholder": "Введите title item-а",
     "productSlugField": "Slug товара (ранний доступ)",
     "productSlugPlaceholder": "напр. smoky-cover-classic",
-    "productSlugHint": "Slug опубликованного товара в URL. Если указан, проголосовавшие могут перейти к оформлению этого товара из секции Culture на главной.",
+    "productSlugHint": "Slug товара в URL (опубликованный или черновик). Если указан, проголосовавшие могут перейти к оформлению этого товара из секции Culture на главной.",
     "selectedProduct": "Выбранный товар",
     "noProductSelected": "Товар пока не выбран.",
     "chooseProductHint": "Выберите товар из каталога для варианта голосования. Заголовок, изображение и ссылка на checkout будут взяты из этого товара.",
     "allCategories": "Все категории",
+    "allPublishStatuses": "Все статусы",
     "productSearchPlaceholder": "Поиск товаров...",
     "productsLoadError": "Не удалось загрузить товары.",
     "noProductsFound": "По текущим фильтрам товары не найдены.",
@@ -657,10 +658,16 @@
       "enterSkuPrefix": "Введите префикс SKU (будет добавлено -color-size, если применимо):",
       "actions": "Действия",
       "delete": "Удалить",
-      "variableSubmitNeedVariants": "Вариативный товар: добавьте хотя бы один вариант (кнопка «Добавить»), заполните цену по умолчанию, затем каждую строку (цена больше нуля, остаток, SKU) и сохраните.",
+      "variableSubmitNeedVariants": "Добавьте хотя бы один вариант, заполните каждую строку (цена, остаток, SKU) и отметьте один вариант для показа в магазине, затем сохраните.",
+      "variableSubmitDisplayVariantRequired": "Отметьте ровно один вариант для отображения в каталоге и на странице товара (флажок в таблице вариантов).",
+      "displayVariant": "Показывать в магазине",
+      "displayVariantShort": "Показ",
       "variableSubmitDefaultPriceInvalid": "Вариативный товар: укажите корректную цену по умолчанию (больше нуля).",
       "variableSubmitVariantRowInvalid": "Вариативный товар: в каждой строке варианта нужны корректная цена (больше нуля) и SKU.",
-      "variableSubmitDuplicateVariantSku": "Вариативный товар: SKU вариантов должны быть уникальными — исправьте дубликаты."
+      "variableSubmitDuplicateVariantSku": "Вариативный товар: SKU вариантов должны быть уникальными — исправьте дубликаты.",
+      "simpleSubmitPriceRequired": "Укажите цену товара (больше нуля).",
+      "simpleSubmitQuantityRequired": "Укажите количество товара (остаток).",
+      "variableSubmitDefaultQuantityRequired": "Вариативный товар: укажите остаток в разделе «Цена по умолчанию»."
     }
   },
   "settings": {
@@ -800,6 +807,7 @@
     "ordersOnly": "Заказы",
     "newOrders": "New",
     "earlyAccessOrders": "Early",
+    "outOfStockOrders": "Out of stock",
     "ordersTotalCount": "{total} заказов",
     "allStatuses": "Все статусы",
     "allPaymentStatuses": "Все статусы оплаты",
@@ -875,6 +883,27 @@
     "previous": "Предыдущая",
     "next": "Следующая"
   },
+  "messages": {
+    "searchPlaceholder": "Поиск по имени, email или сообщению...",
+    "sender": "Отправитель",
+    "source": "Источник",
+    "sourceContact": "Контакт",
+    "sourcePersonalize": "Персонализация",
+    "phone": "Телефон",
+    "message": "Сообщение",
+    "date": "Дата",
+    "empty": "Сообщения не найдены",
+    "showingPage": "Страница {page} из {totalPages} ({total} всего)",
+    "selectAll": "Выбрать все сообщения",
+    "selectMessage": "Выбрать сообщение от {name}",
+    "selectedMessages": "Выбрано сообщений: {count}",
+    "deleteSelected": "Удалить выбранные",
+    "deleting": "Удаление...",
+    "deleteConfirm": "Удалить {count} выбранных сообщений?",
+    "bulkDeleteFinished": "Массовое удаление завершено. Успешно: {success}/{total}",
+    "bulkDeleteFailed": "Массовое удаление завершено. Успешно: {success}/{total}\n\nНе удалось удалить: {failed}",
+    "failedToDelete": "Не удалось удалить выбранные сообщения. Попробуйте снова."
+  },
   "homeHero": {
     "title": "Баннер главной страницы",
     "subtitle": "Картинка и ссылка кнопки для каждого слайда; заголовок, текст и подпись кнопки на армянском, английском и русском. Точки на сайте переключают слайды.",
@@ -908,6 +937,9 @@
     "saveError": "Не удалось сохранить. Проверьте поля.",
     "uploadError": "Ошибка загрузки. Попробуйте другой файл."
   },
+  "mobileHub": {
+    "chooseSection": "Выберите раздел"
+  },
   "common": {
     "loading": "Загрузка...",
     "error": "Ошибка",
@@ -923,6 +955,7 @@
     "back": "Назад",
     "backToAdmin": "Вернуться в панель администратора",
     "themeSwitchToLight": "Светлая тема",
-    "themeSwitchToDark": "Тёмная тема"
+    "themeSwitchToDark": "Тёмная тема",
+    "newBadge": "Новое"
   }
 }

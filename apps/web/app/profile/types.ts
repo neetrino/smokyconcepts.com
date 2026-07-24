@@ -90,6 +90,8 @@ export interface DashboardData {
     pendingOrders: number;
     completedOrders: number;
     totalSpent: number;
+    /** AMD snapshot sum when every paid order has checkout-parity totalAmd. */
+    totalSpentAmd?: number | null;
     addressesCount: number;
     ordersByStatus: Record<string, number>;
   };
@@ -142,12 +144,29 @@ export interface OrderListItem {
   createdAt: string;
 }
 
-export type ProfileTab = 'dashboard' | 'personal' | 'addresses' | 'password' | 'orders';
+export type ProfileTab =
+  | 'dashboard'
+  | 'personal'
+  | 'addresses'
+  | 'password'
+  | 'orders'
+  | 'coupons';
 
 export interface ProfileTabConfig {
   id: ProfileTab;
   label: string;
   icon: React.ReactNode;
+}
+
+export type UserCouponStatus = 'active' | 'expired' | 'inactive' | 'exhausted';
+
+export interface UserCoupon {
+  id: string;
+  code: string;
+  discountType: string;
+  discountValue: number;
+  expiresAt: string | null;
+  status: UserCouponStatus;
 }
 
 

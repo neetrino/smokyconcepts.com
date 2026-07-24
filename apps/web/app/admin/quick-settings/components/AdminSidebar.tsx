@@ -1,8 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { AdminMenuDrawer } from '../../../../components/AdminMenuDrawer';
 import { getAdminMenuTABS } from '../../admin-menu.config';
+import { AdminMobileNavigation } from '../../components/AdminMobileNavigation';
 import {
   adminNavContainerClass,
   adminNavDividerClass,
@@ -31,7 +31,7 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
   return (
     <>
       <div className="lg:hidden mb-6">
-        <AdminMenuDrawer tabs={adminTabs} currentPath={currentPath} />
+        <AdminMobileNavigation currentPath={currentPath} />
       </div>
       <aside className={ADMIN_FIXED_SIDEBAR_CLASS}>
         <nav className={adminNavContainerClass(theme)}>

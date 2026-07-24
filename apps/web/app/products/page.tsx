@@ -25,6 +25,17 @@ interface Product {
   compareAtPrice: number | null;
   image: string | null;
   images?: string[];
+  variantImages?: Array<{
+    variantId: string;
+    images: string[];
+    sizeLabels: string[];
+    sizeCatalogCategoryId: string | null;
+    sizeCatalogCategoryTitle: string | null;
+    price: number;
+    originalPrice: number | null;
+    stock: number;
+    sku: string;
+  }>;
   inStock: boolean;
   categories: Array<{
     id: string;
@@ -145,6 +156,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     compareAtPrice: p.compareAtPrice ?? p.originalPrice ?? null,
     image: p.image ?? null,
     images: Array.isArray(p.images) ? p.images : [],
+    variantImages: Array.isArray(p.variantImages) ? p.variantImages : [],
     inStock: p.inStock ?? true,
     categories: Array.isArray(p.categories) ? p.categories : [],
     skus: Array.isArray(p.skus) ? p.skus : [],

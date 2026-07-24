@@ -12,11 +12,6 @@ export function useProductCalculations({
   product,
   currentVariant,
 }: UseProductCalculationsProps) {
-  const totalVariantStock =
-    product?.variants.reduce((sum, variant) => sum + Math.max(0, variant.stock ?? 0), 0) ?? 0;
-  const fallbackStock = Math.max(0, product?.defaultVariantStock ?? 0);
-  const hasAnyStock = totalVariantStock > 0 || fallbackStock > 0;
-
   const price = currentVariant?.price ?? product?.defaultPrice ?? 0;
   const originalPrice = currentVariant?.originalPrice ?? product?.defaultOriginalPrice ?? null;
   const compareAtPrice = currentVariant?.compareAtPrice ?? product?.defaultCompareAtPrice ?? null;
@@ -25,8 +20,9 @@ export function useProductCalculations({
    * Do not mark the whole PDP as out of stock before a variant is selected.
    * The CTA remains disabled via canAddToCart until we have a concrete variant.
    */
-  const isOutOfStock = currentVariant ? (currentVariant.stock ?? 0) <= 0 : !hasAnyStock;
-  const canAddToCart = !!currentVariant && !isOutOfStock;
+  const isOutOfStock = currentVariant ? (currentVariant.stock ?? 0) <= 0 : false;
+  // Allow out-of-stock variants to be added for backorder flow.
+  const canAddToCart = !!currentVariant;
 
   return {
     price,

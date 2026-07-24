@@ -1,6 +1,6 @@
 {
   "menu": {
-    "dashboard": "Վահանակ",
+    "dashboard": "վահանակ",
     "orders": "Պատվերներ",
     "products": "Ապրանքներ",
     "categories": "Կատեգորիաներ",
@@ -299,11 +299,12 @@
     "titlePlaceholder": "Մուտքագրեք item-ի title-ը",
     "productSlugField": "Ապրանքի slug (early access)",
     "productSlugPlaceholder": "օր․ smoky-cover-classic",
-    "productSlugHint": "Հրապարակված ապրանքի URL slug։ Լրացված լինելու դեպքում հավանած օգտատերերը կարող են բացել checkout-ը այդ ապրանքի համար Culture բաժնից։",
+    "productSlugHint": "Ապրանքի URL slug (հրապարակված կամ draft)։ Լրացված լինելու դեպքում հավանած օգտատերերը կարող են բացել checkout-ը այդ ապրանքի համար Culture բաժնից։",
     "selectedProduct": "Ընտրված ապրանք",
     "noProductSelected": "Դեռ ապրանք ընտրված չէ։",
     "chooseProductHint": "Ընտրեք մեկ ապրանք ձեր կատալոգից voting տարբերակի համար։ Վերնագիրը, պատկերը և checkout հղումը կվերցվեն հենց այդ ապրանքից։",
     "allCategories": "Բոլոր կատեգորիաները",
+    "allPublishStatuses": "Բոլոր կարգավիճակները",
     "productSearchPlaceholder": "Ապրանքի որոնում...",
     "productsLoadError": "Չհաջողվեց բեռնել ապրանքները։",
     "noProductsFound": "Ընթացիկ ֆիլտրերով ապրանք չի գտնվել։",
@@ -658,10 +659,16 @@
       "enterDefaultPrice": "Մուտքագրել լռելյայն գին բոլոր տարբերակների համար:",
       "enterDefaultStock": "Մուտքագրել լռելյայն պաշար բոլոր տարբերակների համար:",
       "enterSkuPrefix": "Մուտքագրել SKU նախածանց (կավտոմատ կավելացվի -color-size, եթե կիրառելի է):",
-      "variableSubmitNeedVariants": "Փոփոխական ապրանք․ ավելացրեք առնվազն մեկ տարբերակ («Ավելացնել» կոճակով), լրացրեք Լռելյայն գինը (վավեր գին), ապա յուրաքանչյուր տողում՝ գին (զրոյից մեծ), պաշար և SKU, հետո պահպանեք։",
+      "variableSubmitNeedVariants": "Փոփոխական ապրանք․ ավելացրեք առնվազն մեկ տարբերակ («Ավելացնել»), լրացրեք յուրաքանչյուր տողը (գին, պաշար, SKU) և նշեք, թե որ տարբերակն է ցուցադրվելու էջերում, ապա պահպանեք։",
+      "variableSubmitDisplayVariantRequired": "Նշեք հենց մեկ տարբերակ, որը ցուցադրվի կատալոգում և ապրանքի էջում (վարիանտների աղյուսակի checkbox)։",
+      "displayVariant": "Ցուցադրել էջերում",
+      "displayVariantShort": "Ցուցադրել",
       "variableSubmitDefaultPriceInvalid": "Փոփոխական ապրանք․ Լռելյայն գին բաժնում մուտքագրեք վավեր գին (զրոյից մեծ)։",
       "variableSubmitVariantRowInvalid": "Փոփոխական ապրանք․ յուրաքանչյուր տարբերակի տողում պետք է լինեն վավեր գին (զրոյից մեծ) և SKU։",
-      "variableSubmitDuplicateVariantSku": "Փոփոխական ապրանք․ յուրաքանչյուր տարբերակի SKU-ն պետք է եզակի լինի․ ուղղեք կրկնվող SKU-ները։"
+      "variableSubmitDuplicateVariantSku": "Փոփոխական ապրանք․ յուրաքանչյուր տարբերակի SKU-ն պետք է եզակի լինի․ ուղղեք կրկնվող SKU-ները։",
+      "simpleSubmitPriceRequired": "Մուտքագրեք ապրանքի գինը (զրոյից մեծ)։",
+      "simpleSubmitQuantityRequired": "Մուտքագրեք ապրանքի քանակը (պաշարը)։",
+      "variableSubmitDefaultQuantityRequired": "Փոփոխական ապրանք․ Լռելյայն գին բաժնում մուտքագրեք պաշարը։"
     }
   },
   "settings": {
@@ -804,6 +811,7 @@
     "ordersOnly": "Պատվերներ",
     "newOrders": "New",
     "earlyAccessOrders": "Early",
+    "outOfStockOrders": "Out of stock",
     "ordersTotalCount": "{total} պատվեր",
     "allStatuses": "Բոլոր կարգավիճակները",
     "allPaymentStatuses": "Բոլոր վճարման կարգավիճակները",
@@ -879,6 +887,27 @@
       "noItemsFound": "Այս պատվերի համար ապրանքներ չեն գտնվել"
     }
   },
+  "messages": {
+    "searchPlaceholder": "Որոնել ըստ անունի, էլ. փոստի կամ հաղորդագրության...",
+    "sender": "Ուղարկող",
+    "source": "Աղբյուր",
+    "sourceContact": "Կոնտակտ",
+    "sourcePersonalize": "Անհատականացում",
+    "phone": "Հեռախոս",
+    "message": "Հաղորդագրություն",
+    "date": "Ամսաթիվ",
+    "empty": "Հաղորդագրություններ չեն գտնվել",
+    "showingPage": "Էջ {page} {totalPages}-ից ({total} ընդամենը)",
+    "selectAll": "Ընտրել բոլոր հաղորդագրությունները",
+    "selectMessage": "Ընտրել {name}-ի հաղորդագրությունը",
+    "selectedMessages": "Ընտրված է {count} հաղորդագրություն",
+    "deleteSelected": "Ջնջել ընտրվածները",
+    "deleting": "Ջնջվում է...",
+    "deleteConfirm": "Ջնջե՞լ {count} ընտրված հաղորդագրությունը",
+    "bulkDeleteFinished": "Զանգվածային ջնջումն ավարտված է։ Հաջող՝ {success}/{total}",
+    "bulkDeleteFailed": "Զանգվածային ջնջումն ավարտված է։ Հաջող՝ {success}/{total}\n\nՉջնջված՝ {failed}",
+    "failedToDelete": "Չհաջողվեց ջնջել ընտրված հաղորդագրությունները։"
+  },
   "homeHero": {
     "title": "Գլխավոր էջի hero",
     "subtitle": "Պատկեր և կոճակի հղում յուրաքանչյուր սլայդի համար․ վերնագիր, նկարագրություն և կոճակի տեքստ՝ հայերեն, անգլերեն և ռուսերեն։ Կայքում կետերը փոխում են սլայդը։",
@@ -912,6 +941,9 @@
     "saveError": "Չհաջողվեց պահել։ Ստուգեք դաշտերը։",
     "uploadError": "Վերբեռնումը ձախողվեց։ Փորձեք այլ ֆայլ։"
   },
+  "mobileHub": {
+    "chooseSection": "Ընտրեք բաժին"
+  },
   "common": {
     "loading": "Բեռնվում է...",
     "error": "Սխալ",
@@ -927,6 +959,7 @@
     "back": "Վերադառնալ",
     "backToAdmin": "Վերադառնալ ադմինիստրատորի վահան",
     "themeSwitchToLight": "Թեթև ռեժիմ",
-    "themeSwitchToDark": "Մուգ ռեժիմ"
+    "themeSwitchToDark": "Մուգ ռեժիմ",
+    "newBadge": "Նոր"
   }
 }

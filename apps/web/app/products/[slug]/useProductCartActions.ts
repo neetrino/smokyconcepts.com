@@ -60,7 +60,8 @@ export function useProductCartActions({
       if (!canAddToCart || !product || !currentVariant) {
         return;
       }
-      if (!canAddVariantToGuestCart(currentVariant, quantity)) {
+      const quantityToAdd = Math.max(1, quantity);
+      if (!canAddVariantToGuestCart(currentVariant, quantityToAdd)) {
         setShowMessage(t(language, 'product.errorAddingToCart'));
         setTimeout(() => setShowMessage(null), 2000);
         return;
@@ -123,7 +124,7 @@ export function useProductCartActions({
         const snapshot = buildGuestCartLineSnapshot(
           product,
           currentVariant,
-          quantity,
+          quantityToAdd,
           price,
           originalPrice,
           productDisplayTitle,

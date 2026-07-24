@@ -12,7 +12,7 @@ export function useProfileTabs() {
   // Update tab from URL query parameter
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab && ['dashboard', 'personal', 'addresses', 'password', 'orders'].includes(tab)) {
+    if (tab && ['dashboard', 'personal', 'addresses', 'password', 'orders', 'coupons'].includes(tab)) {
       setActiveTab(tab as ProfileTab);
     }
   }, [searchParams]);

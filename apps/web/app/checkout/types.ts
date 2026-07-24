@@ -1,13 +1,11 @@
 export type { Cart, CartItem } from '../cart/types';
 
-/** Totals passed to checkout summary UI (USD display amounts) */
+import type { OrderSummaryDisplayAmounts } from '@/lib/orders/order-summary-display';
+
+/** Checkout summary — shared breakdown with order detail page (AMD component sum when in dram). */
 export type CheckoutOrderSummaryTotals = {
-  subtotalDisplay: number;
-  taxDisplay: number;
-  shippingDisplay: number;
-  collectionPriceDisplay: number;
-  couponDiscountDisplay: number;
-  totalDisplay: number;
+  summary: OrderSummaryDisplayAmounts;
+  shippingPriceAmd: number | null;
 };
 
 export type CheckoutFormData = {
@@ -26,4 +24,5 @@ export type CheckoutFormData = {
   cardExpiry?: string;
   cardCvv?: string;
   cardHolderName?: string;
+  acceptedPrivacyPolicy: boolean;
 };

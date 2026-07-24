@@ -9,6 +9,28 @@
     "password": "Փոխել գաղտնաբառը",
     "orders": "Պատվերներ"
   },
+  "menu": {
+    "coupons": "Կուպոններ",
+    "deleteAccount": "Ջնջել հաշիվը"
+  },
+  "coupons": {
+    "title": "Կուպոններ",
+    "empty": "Դուք դեռ կուպոններ չունեք։",
+    "loading": "Կուպոնները բեռնվում են...",
+    "loadError": "Չհաջողվեց բեռնել կուպոնները։",
+    "discount": "Զեղչ",
+    "expiresAt": "Վավեր է մինչև",
+    "noExpiry": "ժամկետ չկա",
+    "copyCode": "Պատճենել կուպոնի կոդը",
+    "copySuccess": "Կուպոնի կոդը պատճենվեց",
+    "copyError": "Չհաջողվեց պատճենել կուպոնի կոդը",
+    "status": {
+      "active": "Ակտիվ",
+      "expired": "Ժամկետանց",
+      "inactive": "Անակտիվ",
+      "exhausted": "Սպառված"
+    }
+  },
   "dashboard": {
     "loading": "Վահանակը բեռնվում է...",
     "totalOrders": "Ընդամենը պատվերներ",
@@ -45,7 +67,8 @@
     "firstNamePlaceholder": "Հովհաննես",
     "lastNamePlaceholder": "Պետրոսյան",
     "emailPlaceholder": "your@email.com",
-    "phonePlaceholder": "+374 XX XXX XXX",
+    "phonePlaceholder": "+374XXXXXXXX",
+    "invalidPhone": "Անվավեր հեռախոսահամար",
     "cancel": "Չեղարկել"
   },
   "addresses": {
@@ -73,6 +96,9 @@
       "addressLine2": "Հասցե 2 (ընտրովի)",
       "city": "Քաղաք",
       "state": "Մարզ/Նահանգ (ընտրովի)",
+      "region": "Մարզ",
+      "selectRegion": "Ընտրել մարզը",
+      "loadingRegions": "Մարզերը բեռնվում են...",
       "postalCode": "Փոստային կոդ",
       "phone": "Հեռախոսահամար",
       "isDefault": "Սահմանել որպես լռելյայն հասցե",
@@ -101,9 +127,9 @@
     "changedSuccess": "Գաղտնաբառը հաջողությամբ փոխվեց",
     "failedToChange": "Չհաջողվեց փոխել գաղտնաբառը",
     "passwordsDoNotMatch": "Նոր գաղտնաբառերը չեն համընկնում",
-    "passwordMinLength": "Գաղտնաբառը պետք է լինի առնվազն 6 նիշ",
+    "passwordMinLength": "Գաղտնաբառը պետք է լինի առնվազն 8 նիշ",
     "currentPasswordPlaceholder": "Մուտքագրեք ձեր ներկա գաղտնաբառը",
-    "newPasswordPlaceholder": "Մուտքագրեք նոր գաղտնաբառ (նվազագույն 6 նիշ)",
+    "newPasswordPlaceholder": "Մուտքագրեք նոր գաղտնաբառ (նվազագույն 8 նիշ)",
     "confirmPasswordPlaceholder": "Հաստատեք նոր գաղտնաբառը"
   },
   "deleteAccount": {

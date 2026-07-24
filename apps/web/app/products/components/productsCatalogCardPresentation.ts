@@ -42,8 +42,11 @@ export interface CatalogCardPresentation {
   badgeClassNames: string;
   priceClassName: string;
   buyButtonClassName: string;
+  unifiedShopButtonClassName: string;
+  catalogBuyOnlyButtonClassName: string;
   iconClassName: string;
   catalogBagIconClassName: string;
+  trendingShopBagIconClassName: string;
   detailsOffsetClassName: string;
   imageWrapperBottomMarginClassName: string;
   catalogDetailsLayoutClassName: string;
@@ -66,7 +69,9 @@ export function buildCatalogCardPresentation({
   catalogStripMobilePeek = false,
   slimCatalogGrid = false,
   productsCatalogPage = false,
+  catalogBuyOnlyCta = false,
   trendingSectionCard = false,
+  unifiedNavCta = false,
   productsCatalogPageScaleMultiplier = 1,
   catalogHeroPullUpClassName,
   catalogCardTopPaddingClassName,
@@ -105,11 +110,14 @@ export function buildCatalogCardPresentation({
   const compactArticleWidth =
     catalogStripMobilePeek && compactLayout
       ? `max-sm:w-full max-sm:max-w-full ${stripPeekMobileWidth} ${stripPeekMaxLg} ${stripPeekLgW} ${stripPeekXlW}`
-      : widerCompactCard
-        ? 'w-[12rem] max-sm:w-[10.75rem]'
-        : 'w-[11rem] max-sm:w-[10.25rem]';
+      : productsCatalogPage && compactLayout
+        ? `w-full max-w-none max-sm:w-full max-sm:max-w-none sm:w-[11rem] lg:w-[11rem] xl:w-[11.5rem]`
+        : widerCompactCard
+          ? 'w-[12rem] max-sm:w-[10.75rem]'
+          : 'w-[11rem] max-sm:w-[10.25rem]';
   const cardShadowClass = suppressShadow ? 'shadow-none' : CARD_SHADOW_TAILWIND;
   const articleStackClassName = 'z-0 hover:z-[8] focus-within:z-[8]';
+  const articleBackgroundClassName = trendingSectionCard ? 'bg-transparent' : 'bg-white';
   const compactArticlePaddingClassName = productsCatalogPage
     ? useCatalogStripGeometry
       ? `px-0 ${CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_BOTTOM_PADDING_CLASS_NAME} ${catalogCardTopPaddingClassName ?? CATALOG_PRODUCTS_PAGE_CARD_TOP_PADDING_CLASS_NAME}`
@@ -123,8 +131,8 @@ export function buildCatalogCardPresentation({
         : '';
   const catalogDetailsPaddingClassName = productsCatalogPage ? 'px-2.5 sm:px-3' : '';
   const articleClassName = compactLayout
-    ? `relative ${compactArticleWidth} ${articleStackClassName} flex h-full min-h-0 shrink-0 flex-col overflow-visible rounded-[1.125rem] bg-white ${compactArticlePaddingClassName} ${cardShadowClass}`
-    : `relative w-[14.25rem] max-sm:w-[12.5rem] ${articleStackClassName} shrink-0 overflow-visible rounded-[1.375rem] bg-white px-3 pb-3 pt-2.5 sm:px-3.5 sm:pb-3.5 sm:pt-3 ${cardShadowClass}`;
+    ? `relative ${compactArticleWidth} ${articleStackClassName} flex h-full min-h-0 shrink-0 flex-col overflow-visible rounded-[1.125rem] ${articleBackgroundClassName} ${compactArticlePaddingClassName} ${cardShadowClass}`
+    : `relative w-[14.25rem] max-sm:w-[12.5rem] ${articleStackClassName} shrink-0 overflow-visible rounded-[1.375rem] ${articleBackgroundClassName} px-3 pb-3 pt-2.5 sm:px-3.5 sm:pb-3.5 sm:pt-3 ${cardShadowClass}`;
 
   const imageWrapperClassName = compactLayout
     ? widerCompactCard
@@ -204,17 +212,29 @@ export function buildCatalogCardPresentation({
     ? `rounded-[0.3125rem] px-[0.3125rem] py-px text-[0.5625rem] font-medium leading-tight sm:rounded-[0.375rem] sm:px-[0.375rem] sm:py-[0.125rem] sm:text-[0.625rem] ${badgeClassName}`
     : `rounded-[0.375rem] px-[0.375rem] py-[0.125rem] text-[0.6875rem] font-medium leading-tight sm:px-[0.4375rem] sm:py-[0.1875rem] sm:text-[0.75rem] ${badgeClassName}`;
   const priceClassName = compactLayout
-    ? 'text-[0.75rem] sm:text-[0.98rem]'
-    : 'text-[0.875rem] sm:text-[1.05rem]';
+    ? 'whitespace-nowrap text-[0.75rem] sm:text-[0.98rem]'
+    : 'whitespace-nowrap text-[0.875rem] sm:text-[1.05rem]';
   const buyButtonClassName = compactLayout
     ? 'inline-flex h-[1.375rem] min-w-[2.75rem] items-center justify-center rounded-[0.4375rem] border-2 border-[#dcc090] px-1.5 text-[0.6875rem] font-extrabold leading-tight text-[#dcc090] transition-colors hover:bg-[#dcc090]/10 sm:h-6 sm:min-w-[3.25rem] sm:rounded-[0.5rem] sm:px-2 sm:text-[0.75rem]'
     : 'inline-flex h-[1.375rem] min-w-[3.25rem] items-center justify-center rounded-[0.5rem] border-2 border-[#dcc090] px-2 text-[0.8125rem] font-extrabold leading-tight text-[#dcc090] transition-colors hover:bg-[#dcc090]/10 sm:h-[1.625rem] sm:min-w-[3.75rem] sm:px-3 sm:text-[0.875rem]';
+  const showUnifiedNavCta = trendingSectionCard || unifiedNavCta;
+  const unifiedShopButtonClassName = showUnifiedNavCta
+    ? `${buyButtonClassName} gap-1 pr-1 sm:gap-1.5 sm:pr-1.5`
+    : buyButtonClassName;
+  const catalogBuyOnlyButtonClassName = catalogBuyOnlyCta
+    ? compactLayout
+      ? `${buyButtonClassName} ml-0.5 min-w-[3.125rem] sm:ml-1 sm:min-w-[3.625rem]`
+      : `${buyButtonClassName} ml-1 min-w-[3.5rem] sm:ml-1.5 sm:min-w-[4rem]`
+    : buyButtonClassName;
   const iconClassName = compactLayout
     ? 'h-3.5 w-3.5 object-contain sm:h-4 sm:w-4'
     : 'h-4 w-4 object-contain sm:h-5 sm:w-5';
   const catalogBagIconClassName = compactLayout
     ? 'h-5 w-6 object-contain sm:h-6 sm:w-[28px]'
     : 'h-6 w-8 object-contain sm:h-7 sm:w-9';
+  const trendingShopBagIconClassName = compactLayout
+    ? 'h-3.5 w-4 object-contain sm:h-4 sm:w-5'
+    : 'h-4 w-5 object-contain sm:h-[1.125rem] sm:w-[1.375rem]';
 
   const detailsOffsetClassName = compactLayout
     ? tightenDetailsUnderImage
@@ -249,7 +269,7 @@ export function buildCatalogCardPresentation({
         : 'mt-5 flex items-center justify-between gap-3';
   const dotsGapClassName = compactLayout ? 'gap-1' : 'gap-[0.3125rem]';
   const dotsMarginClassName = compactLayout ? (productsCatalogPage ? 'mb-0.5' : 'mb-1') : 'mb-3';
-  const dotsRowLayoutClassName = `flex min-h-3 items-center ${dotsGapClassName} ${dotsMarginClassName}`;
+  const dotsRowLayoutClassName = `flex min-h-3 items-center justify-center ${dotsGapClassName} ${dotsMarginClassName}`;
   const sizeBadgeClassName = compactLayout
     ? 'inline-flex items-center px-0 py-0 text-[0.5625rem] font-semibold leading-tight text-[#122a26] sm:text-[0.625rem]'
     : 'inline-flex items-center px-0 py-0 text-[0.6875rem] font-semibold leading-tight text-[#122a26] sm:text-[0.75rem]';
@@ -269,8 +289,11 @@ export function buildCatalogCardPresentation({
     badgeClassNames,
     priceClassName,
     buyButtonClassName,
+    unifiedShopButtonClassName,
+    catalogBuyOnlyButtonClassName,
     iconClassName,
     catalogBagIconClassName,
+    trendingShopBagIconClassName,
     detailsOffsetClassName,
     imageWrapperBottomMarginClassName,
     catalogDetailsLayoutClassName,

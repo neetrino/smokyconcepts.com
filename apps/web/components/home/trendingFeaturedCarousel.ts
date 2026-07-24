@@ -2,10 +2,13 @@
 
 export const TRENDING_ITEMS_PER_PAGE = 3;
 
-/** Desktop card width — matches products catalog `xl:w-[13rem]`. */
-export const TRENDING_CARD_WIDTH_REM = 13;
+/** Desktop card width — matches catalog strip card `xl:w-[11.5rem]`. */
+export const TRENDING_CARD_WIDTH_REM = 11.5;
 
-export const TRENDING_CARD_GAP_REM = 0.75;
+export const TRENDING_CARD_GAP_REM = 1.25;
+
+/** Extra width per track slot so adjacent (faded) clusters do not crowd the focal row. */
+export const TRENDING_PAGE_FRAME_EXTRA_REM = 2;
 
 /** Exact width of one trio on the desktop track (translate distance per step). */
 export const TRENDING_PAGE_SHIFT_REM =
@@ -14,6 +17,19 @@ export const TRENDING_PAGE_SHIFT_REM =
 
 /** Viewport clip: page width + small buffer so the right card is not clipped. */
 export const TRENDING_VIEWPORT_WIDTH_REM = TRENDING_PAGE_SHIFT_REM + 0.25;
+
+/**
+ * Cyclic window start index per slide — advances one product at a time for seamless looping.
+ */
+export function buildTrendingCyclicPageStarts(itemCount: number, itemsPerPage: number): number[] {
+  if (itemCount <= 0) {
+    return [];
+  }
+  if (itemCount <= itemsPerPage) {
+    return [0];
+  }
+  return Array.from({ length: itemCount }, (_, index) => index);
+}
 
 /**
  * Valid `startIndex` values for each carousel "page" when showing `itemsPerPage` products in a row.

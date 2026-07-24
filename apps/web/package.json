@@ -22,6 +22,7 @@
     "@shop/design-tokens": "*",
     "@shop/ui": "*",
     "@white-shop/db": "*",
+    "argon2": "^0.41.1",
     "bcryptjs": "^2.4.3",
     "browser-image-compression": "^2.0.2",
     "heic2any": "^0.0.4",
@@ -33,6 +34,7 @@
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-hook-form": "^7.66.0",
+    "resend": "^6.17.2",
     "zod": "^4.1.12"
   },
   "devDependencies": {

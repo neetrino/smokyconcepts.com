@@ -1,21 +1,6 @@
-import { ProductsCatalogCard } from '../../app/products/components/ProductsCatalogCard';
-import {
-  getCategoryLabel,
-  getSectionLabel,
-  getSizeLabel,
-  shouldNudgeCatalogProductImage,
-} from '../../app/products/components/catalogProductLabels';
-import {
-  CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
-  HOME_PAGE_MOBILE_STRIP_CARD_WIDTH_CLASS_NAME,
-  HOME_TRENDING_MOBILE_CARD_TOP_PADDING_CLASS_NAME,
-  HOME_TRENDING_MOBILE_DETAILS_OFFSET_CLASS_NAME,
-  HOME_TRENDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
-  HOME_TRENDING_MOBILE_HERO_PULL_UP_CLASS_NAME,
-  HOME_TRENDING_MOBILE_IMAGE_FRAME_CLASS_NAME,
-  getCatalogProductCardImageScaleBoost,
-  getTrendingSectionSmallerImageScaleMultiplier,
-} from '../../app/products/components/catalogProductCardMobilePresentation';
+import { CatalogStripProductCard } from '../../app/products/components/CatalogStripProductCard';
+import { getSectionLabel } from '../../app/products/components/catalogProductLabels';
+import { HOME_PAGE_MOBILE_STRIP_CARD_WIDTH_CLASS_NAME } from '../../app/products/components/catalogProductCardMobilePresentation';
 import type { TrendingMobilePageClusterProps } from './trendingFeatured.types';
 
 /** Staggered 2-column cluster (mobile home trending layout). */
@@ -34,23 +19,13 @@ export function TrendingMobilePageCluster({ items, catalogStartIndex, eager }: T
               index === 1 ? 'pt-[9.75rem]' : index === 2 ? '-mt-[6.75rem] pt-3' : 'pt-3'
             }`}
           >
-            <ProductsCatalogCard
+            <CatalogStripProductCard
               product={product}
               sectionLabel={section}
-              sizeLabel={getSizeLabel(product)}
-              categoryLabel={getCategoryLabel(product, section)}
-              productsCatalogPageScaleMultiplier={getTrendingSectionSmallerImageScaleMultiplier(catalogIndex)}
-              imageNudgeDown={shouldNudgeCatalogProductImage(catalogIndex)}
-              imageScaleBoost={getCatalogProductCardImageScaleBoost(catalogIndex)}
-              imageFrameClassName={HOME_TRENDING_MOBILE_IMAGE_FRAME_CLASS_NAME}
-              catalogHeroPullUpClassName={HOME_TRENDING_MOBILE_HERO_PULL_UP_CLASS_NAME}
-              catalogCardTopPaddingClassName={HOME_TRENDING_MOBILE_CARD_TOP_PADDING_CLASS_NAME}
-              catalogDetailsOffsetClassName={HOME_TRENDING_MOBILE_DETAILS_OFFSET_CLASS_NAME}
-              catalogImageBottomMarginClassName={HOME_TRENDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME}
-              className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} max-sm:!w-full max-sm:!min-w-0 max-sm:!max-w-none`}
-              compactLayout
-              productsCatalogPage
-              trendingSectionCard
+              index={catalogIndex}
+              isSmUp={false}
+              ctaPreset="home-trending"
+              catalogStripMobilePeek={false}
               eagerProductImage={eager}
             />
           </div>

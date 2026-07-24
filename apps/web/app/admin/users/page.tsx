@@ -8,6 +8,7 @@ import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { AdminShell } from '../components/AdminShell';
 import { ADMIN_PAGE_SHELL_CLASS } from '../constants/adminShell.constants';
+import { formatAdminDate } from '../utils/formatAdminDate';
 
 interface User {
   id: string;
@@ -373,7 +374,7 @@ export default function UsersPage() {
                           </button>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-[#414141]/60">
-                          {new Date(user.createdAt).toLocaleDateString()}
+                          {formatAdminDate(user.createdAt)}
                         </td>
                       </tr>
                     ))}

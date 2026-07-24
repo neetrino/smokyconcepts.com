@@ -6,7 +6,9 @@ import {
   cleanImageUrls,
   separateMainAndVariantImages,
 } from "../utils/image-utils";
+import { mergeProductMediaMetadata } from "../utils/product-media";
 import { resolveUniqueSlug } from "./admin-products-update/product-updater";
+import { sanitizeProductRichHtmlFields } from "@/lib/security/sanitize-product-html.server";
 
 class AdminProductsCreateService {
   /**
@@ -113,10 +115,17 @@ class AdminProductsCreateService {
       imageUrl?: string;
       attributes?: unknown;
       published?: boolean;
+      position?: number;
     }>;
   }) {
     try {
       console.log('🆕 [ADMIN PRODUCTS CREATE SERVICE] Creating product:', data.title);
+
+      const sanitizedHtml = sanitizeProductRichHtmlFields({
+        descriptionHtml: data.descriptionHtml,
+        productDetailsHtml: data.productDetailsHtml,
+        shippingHtml: data.shippingHtml,
+      });
 
       const result = await db.$transaction(async (tx: any) => {
         // Resolve slug uniqueness before creating the product
@@ -126,7 +135,7 @@ class AdminProductsCreateService {
         const usedSkus = new Set<string>();
         
         const variantsData = await Promise.all(
-          data.variants.map(async (variant: { price: string | number; compareAtPrice?: string | number; stock: string | number; sku?: string; imageUrl?: string; attributes?: unknown; published?: boolean }, variantIndex: number) => {
+          data.variants.map(async (variant: { price: string | number; compareAtPrice?: string | number; stock: string | number; sku?: string; imageUrl?: string; attributes?: unknown; published?: boolean; position?: number }, variantIndex: number) => {
             const price = typeof variant.price === 'number' ? variant.price : parseFloat(String(variant.price));
             const stock = typeof variant.stock === 'number' ? variant.stock : parseInt(String(variant.stock), 10);
             const compareAtPrice = variant.compareAtPrice !== undefined && variant.compareAtPrice !== null && String(variant.compareAtPrice).trim() !== ''
@@ -158,6 +167,7 @@ class AdminProductsCreateService {
               imageUrl: processedVariantImageUrl,
               attributes: variant.attributes,
               published: variant.published !== false,
+              position: typeof variant.position === 'number' ? variant.position : variantIndex,
             };
           })
         );
@@ -214,7 +224,7 @@ class AdminProductsCreateService {
 
         // Separate main images from variant images and clean them
         const { main } = separateMainAndVariantImages(rawMedia, allVariantImages);
-        const finalMedia = cleanImageUrls(main);
+        const finalMedia = mergeProductMediaMetadata(cleanImageUrls(main), rawMedia);
         
         console.log('📸 [ADMIN PRODUCTS CREATE SERVICE] Final main media count:', finalMedia.length);
         console.log('📸 [ADMIN PRODUCTS CREATE SERVICE] Variant images excluded:', allVariantImages.length);
@@ -234,9 +244,9 @@ class AdminProductsCreateService {
                 title: data.title,
                 slug: uniqueSlug,
                 subtitle: data.subtitle || undefined,
-                descriptionHtml: data.descriptionHtml || undefined,
-                productDetailsHtml: data.productDetailsHtml || undefined,
-                shippingHtml: data.shippingHtml || undefined,
+                descriptionHtml: sanitizedHtml.descriptionHtml || undefined,
+                productDetailsHtml: sanitizedHtml.productDetailsHtml || undefined,
+                shippingHtml: sanitizedHtml.shippingHtml || undefined,
               },
             },
             variants: {

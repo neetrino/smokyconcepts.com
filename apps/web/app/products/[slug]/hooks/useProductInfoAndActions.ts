@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getProductText } from '../../../../lib/i18n';
 import { t } from '../../../../lib/i18n';
 import { apiClient } from '../../../../lib/api-client';
@@ -11,19 +11,24 @@ import {
 } from '../../components/catalogProductLabels';
 import type { CustomOrderDraft } from '../CustomizeSizeOrderFallback';
 import {
-  getPlainTextFromHtml,
-  sanitizeCustomizeHtml,
-} from '../utils/sanitize-customize-html';
-import {
-  CUSTOMIZE_APPLIED_PREVIEW_MS,
+  isOutOfStockProductLabel,
   matchVariantSizeFromCatalogTitle,
 } from '../utils/productInfoAndActions.helpers';
+import {
+  getOptionValues,
+  normalizeVersionToken,
+  variantHasColor,
+  variantHasOptionValue,
+} from '../utils/variant-helpers';
+import { deriveProductAttributeSectionOrder } from '../utils/derive-product-attribute-section-order';
 import type { ProductInfoAndActionsProps, ProductTabKey } from '../productInfoAndActions.types';
+
+function normalizeCatalogSizeValue(value: string | null | undefined): string {
+  return value?.trim().toLowerCase() ?? '';
+}
 
 export function useProductInfoAndActions({
   product,
-  appliedCustomize,
-  onCustomizeApplied,
   language,
   currentVariant,
   selectedColor,
@@ -36,24 +41,14 @@ export function useProductInfoAndActions({
   onSelectedCatalogSizeChange,
   onSelectedCustomSizeRequestChange,
   onCustomizeTabActiveChange,
-  getCustomizeSanitizedHtml,
-  customizeDraftText,
-  customizeFormat,
 }: ProductInfoAndActionsProps) {
   const [activeTab, setActiveTab] = useState<ProductTabKey>('description');
   const [isCustomizeSizeModalOpen, setIsCustomizeSizeModalOpen] = useState(false);
   const [sizeCatalogCategories, setSizeCatalogCategories] = useState<SizeCatalogCategoryDto[]>([]);
   const [selectedCatalogSize, setSelectedCatalogSize] = useState<SizeCatalogItemDto | null>(null);
   const [selectedCustomSizeRequest, setSelectedCustomSizeRequest] = useState<CustomOrderDraft | null>(null);
-  const [appliedPreviewPlain, setAppliedPreviewPlain] = useState<string | null>(null);
-  const appliedPreviewTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const clearAppliedPreviewTimer = useCallback(() => {
-    if (appliedPreviewTimeoutRef.current !== null) {
-      clearTimeout(appliedPreviewTimeoutRef.current);
-      appliedPreviewTimeoutRef.current = null;
-    }
-  }, []);
+  const [showSizeRequired, setShowSizeRequired] = useState(false);
+  const [isSizeShaking, setIsSizeShaking] = useState(false);
 
   const productTitle = getProductText(language, product.id, 'title') || product.title;
   const productDescription =
@@ -84,6 +79,70 @@ export function useProductInfoAndActions({
 
   const showSizeSection = sizeOptions.length > 0 || hasSizeCatalogItems;
 
+  const attributeSectionOrder = useMemo(
+    () => deriveProductAttributeSectionOrder(product),
+    [product]
+  );
+
+  const selectableCatalogSizeValues = useMemo(() => {
+    const values = new Set<string>();
+    sizeOptions.forEach((option) => {
+      values.add(normalizeCatalogSizeValue(option.label));
+      values.add(normalizeCatalogSizeValue(option.value));
+    });
+    product.sizeCatalogCategoryTitles?.forEach((title) => {
+      values.add(normalizeCatalogSizeValue(title));
+    });
+    values.delete('');
+    return values;
+  }, [product.sizeCatalogCategoryTitles, sizeOptions]);
+
+  const isCatalogSizeItemSelectable = useCallback(
+    (item: SizeCatalogItemDto) => {
+      const normalizedCategoryTitle = normalizeCatalogSizeValue(item.categoryTitle);
+      if (!normalizedCategoryTitle) {
+        return false;
+      }
+      if (
+        selectableCatalogSizeValues.size > 0 &&
+        !selectableCatalogSizeValues.has(normalizedCategoryTitle)
+      ) {
+        return false;
+      }
+
+      const sizeMatchedVariants = product.variants.filter((variant) =>
+        variantHasOptionValue(variant, 'size', normalizedCategoryTitle)
+      );
+      if (sizeMatchedVariants.length === 0) {
+        return selectableCatalogSizeValues.size === 0;
+      }
+
+      const colorMatchedVariants =
+        selectedColor !== null
+          ? sizeMatchedVariants.filter((variant) => variantHasColor(variant, selectedColor))
+          : [];
+      const candidateVariants =
+        colorMatchedVariants.length > 0 ? colorMatchedVariants : sizeMatchedVariants;
+
+      const normalizedVersion = normalizeVersionToken(item.version);
+      if (!normalizedVersion) {
+        return true;
+      }
+
+      const hasAnyVersionInCandidates = candidateVariants.some(
+        (variant) => getOptionValues(variant.options, 'size_version').length > 0
+      );
+      if (!hasAnyVersionInCandidates) {
+        return true;
+      }
+
+      return candidateVariants.some((variant) =>
+        variantHasOptionValue(variant, 'size_version', normalizedVersion)
+      );
+    },
+    [product.variants, selectableCatalogSizeValues, selectedColor]
+  );
+
   useEffect(() => {
     let cancelled = false;
     void (async () => {
@@ -109,15 +168,9 @@ export function useProductInfoAndActions({
     setSelectedCatalogSize(null);
     setSelectedCustomSizeRequest(null);
     setActiveTab('description');
-    clearAppliedPreviewTimer();
-    setAppliedPreviewPlain(null);
-  }, [product.id, clearAppliedPreviewTimer]);
-
-  useEffect(() => {
-    return () => {
-      clearAppliedPreviewTimer();
-    };
-  }, [clearAppliedPreviewTimer]);
+    setShowSizeRequired(false);
+    setIsSizeShaking(false);
+  }, [product.id]);
 
   useEffect(() => {
     onSelectedCatalogSizeChange?.(selectedCatalogSize);
@@ -137,9 +190,34 @@ export function useProductInfoAndActions({
     activeSizeOption?.label ||
     t(language, 'product.choose_size');
 
+  const isSizeSelected =
+    !showSizeSection ||
+    Boolean(selectedCustomSizeRequest || selectedCatalogSize || activeSizeOption);
+
+  useEffect(() => {
+    if (isSizeSelected) {
+      setShowSizeRequired(false);
+      setIsSizeShaking(false);
+    }
+  }, [isSizeSelected]);
+
+  const triggerSizeValidation = useCallback(() => {
+    setShowSizeRequired(true);
+    setIsSizeShaking(false);
+    requestAnimationFrame(() => {
+      setIsSizeShaking(true);
+    });
+  }, []);
+
+  const handleSizeShakeAnimationEnd = useCallback(() => {
+    setIsSizeShaking(false);
+  }, []);
+
   const handleSelectCatalogSizeItem = (item: SizeCatalogItemDto) => {
     setSelectedCatalogSize(item);
     setSelectedCustomSizeRequest(null);
+    onSelectedCatalogSizeChange?.(item);
+    onSelectedCustomSizeRequestChange?.(null);
     if (onCatalogVariantSelect) {
       onCatalogVariantSelect(item.categoryTitle, item.version);
       return;
@@ -155,12 +233,15 @@ export function useProductInfoAndActions({
   const handleSelectCustomSizeRequest = (draft: CustomOrderDraft) => {
     setSelectedCatalogSize(null);
     setSelectedCustomSizeRequest(draft);
+    onSelectedCatalogSizeChange?.(null);
+    onSelectedCustomSizeRequestChange?.(draft);
     if (sizeOptions.length > 0) {
       onSizeSelect(sizeOptions[0].value);
     }
   };
 
   const openSizeCatalogModal = () => {
+    void preloadSizeCatalogCategories(sizeCatalogCategories);
     setIsCustomizeSizeModalOpen(true);
   };
 
@@ -168,37 +249,10 @@ export function useProductInfoAndActions({
     setIsCustomizeSizeModalOpen(false);
   };
 
-  const handleCustomizeApplyClick = useCallback(() => {
-    const rawHtml = getCustomizeSanitizedHtml();
-    const sanitized = sanitizeCustomizeHtml(rawHtml);
-    const plain = getPlainTextFromHtml(sanitized).trim();
-    clearAppliedPreviewTimer();
-    if (!plain) {
-      onCustomizeApplied(null);
-      setAppliedPreviewPlain(null);
-      return;
-    }
-    onCustomizeApplied({
-      plain,
-      html: sanitized.trim().length > 0 ? sanitized : null,
-    });
-    setAppliedPreviewPlain(plain);
-    appliedPreviewTimeoutRef.current = setTimeout(() => {
-      setAppliedPreviewPlain(null);
-      appliedPreviewTimeoutRef.current = null;
-    }, CUSTOMIZE_APPLIED_PREVIEW_MS);
-  }, [clearAppliedPreviewTimer, getCustomizeSanitizedHtml, onCustomizeApplied]);
-
-  const handleCustomizeClearApplied = useCallback(() => {
-    clearAppliedPreviewTimer();
-    setAppliedPreviewPlain(null);
-    onCustomizeApplied(null);
-  }, [clearAppliedPreviewTimer, onCustomizeApplied]);
-
   const productTabLabelClass =
     language === 'en'
-      ? 'pb-3 font-montserrat text-[17px] font-extrabold leading-none sm:text-[18px] md:text-[19px]'
-      : 'pb-3 font-montserrat text-[16px] font-extrabold leading-none sm:text-[17px] md:text-[18px]';
+      ? 'pb-3 font-montserrat text-[17px] font-black leading-none sm:text-[18px] md:text-[19px]'
+      : 'pb-3 font-montserrat text-[16px] font-black leading-none sm:text-[17px] md:text-[18px]';
 
   const collectionBadgeItems = useMemo(() => getProductCollectionBadgeItems(product), [product]);
 
@@ -212,8 +266,9 @@ export function useProductInfoAndActions({
               color: label.color?.trim() ?? null,
             }))
             .filter((item) => item.text.length > 0)
+            .filter((item) => !(currentVariant === null && isOutOfStockProductLabel(item.text)))
         : [],
-    [product.labels, product.id]
+    [product.labels, product.id, currentVariant]
   );
 
   const hasTitleRowBadges = collectionBadgeItems.length > 0 || labelBadgeItems.length > 0;
@@ -243,22 +298,6 @@ export function useProductInfoAndActions({
     ]
   );
 
-  const showCustomizeApplyButton = useMemo(() => {
-    const rawHtml = getCustomizeSanitizedHtml();
-    const sanitized = sanitizeCustomizeHtml(rawHtml);
-    const plain = getPlainTextFromHtml(sanitized).trim();
-    if (!plain) {
-      return false;
-    }
-    if (!appliedCustomize) {
-      return true;
-    }
-    const appliedPlain = appliedCustomize.plain.trim();
-    const appliedHtml = (appliedCustomize.html ?? '').trim();
-    const currentHtml = sanitized.trim();
-    return plain !== appliedPlain || currentHtml !== appliedHtml;
-  }, [appliedCustomize, customizeDraftText, customizeFormat, getCustomizeSanitizedHtml]);
-
   return {
     activeTab,
     setActiveTab,
@@ -268,6 +307,7 @@ export function useProductInfoAndActions({
     shippingTabHtml,
     productDetails,
     showSizeSection,
+    attributeSectionOrder,
     sizeButtonLabel,
     openSizeCatalogModal,
     isCustomizeSizeModalOpen,
@@ -276,13 +316,15 @@ export function useProductInfoAndActions({
     selectedCatalogSize,
     handleSelectCatalogSizeItem,
     handleSelectCustomSizeRequest,
-    appliedPreviewPlain,
-    handleCustomizeApplyClick,
-    handleCustomizeClearApplied,
     productTabLabelClass,
     collectionBadgeItems,
     labelBadgeItems,
     hasTitleRowBadges,
-    showCustomizeApplyButton,
+    isSizeSelected,
+    showSizeRequired,
+    isSizeShaking,
+    triggerSizeValidation,
+    handleSizeShakeAnimationEnd,
+    isCatalogSizeItemSelectable,
   };
 }

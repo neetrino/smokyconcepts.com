@@ -4,6 +4,7 @@ import { useAddresses } from './hooks/useAddresses';
 import { usePassword } from './hooks/usePassword';
 import { useDeleteAccount } from './hooks/useDeleteAccount';
 import { useDashboard } from './hooks/useDashboard';
+import { useCoupons } from './hooks/useCoupons';
 import { useOrders } from './hooks/useOrders';
 import { useProfileTabs } from './hooks/useProfileTabs';
 import { useTranslation } from '../../lib/i18n-client';
@@ -73,6 +74,13 @@ export function useProfilePage() {
     onError: setError,
   });
 
+  const couponsState = useCoupons({
+    isLoggedIn,
+    authLoading,
+    activeTab,
+    onError: setError,
+  });
+
   // Orders hook
   const orders = useOrders({
     isLoggedIn,
@@ -102,6 +110,7 @@ export function useProfilePage() {
     // Personal info
     personalInfo: personalInfo.personalInfo,
     setPersonalInfo: personalInfo.setPersonalInfo,
+    phoneError: personalInfo.phoneError,
     savingPersonal: personalInfo.savingPersonal,
     handleSavePersonalInfo: personalInfo.handleSavePersonalInfo,
     
@@ -138,6 +147,10 @@ export function useProfilePage() {
     // Dashboard
     dashboardData: dashboard.dashboardData,
     dashboardLoading: dashboard.dashboardLoading,
+
+    // Coupons
+    coupons: couponsState.coupons,
+    couponsLoading: couponsState.couponsLoading,
     
     // Orders
     orders: orders.orders,

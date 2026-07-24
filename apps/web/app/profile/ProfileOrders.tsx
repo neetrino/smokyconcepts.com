@@ -6,6 +6,7 @@ import {
   formatOrderListShippingDisplay,
   formatOrderListTotalDisplay,
 } from '@/lib/orders/order-summary-display';
+import { formatDisplayDate } from '@/lib/format-display-date';
 import { getStatusColor, getPaymentStatusColor } from './utils';
 import type { OrderListItem } from './types';
 
@@ -109,7 +110,7 @@ export function ProfileOrders({
                   </div>
                 </div>
                 <p className="text-sm text-gray-600">
-                  {order.itemsCount} {order.itemsCount !== 1 ? t('profile.orders.items') : t('profile.orders.item')} • {t('profile.dashboard.placedOn')} {new Date(order.createdAt).toLocaleDateString()}
+                  {order.itemsCount} {order.itemsCount !== 1 ? t('profile.orders.items') : t('profile.orders.item')} • {t('profile.dashboard.placedOn')} {formatDisplayDate(order.createdAt)}
                 </p>
               </div>
               <div className="text-right ml-4">

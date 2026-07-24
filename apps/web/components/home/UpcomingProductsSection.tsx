@@ -11,6 +11,7 @@ import { UpcomingSectionHeader } from './UpcomingSectionHeader';
 import {
   UPCOMING_CARDS_PER_PAGE_MOBILE,
   UPCOMING_CARDS_PER_PAGE_SM_UP,
+  UPCOMING_MOBILE_SECTION_GAP_CLASS,
   UPCOMING_SCROLL_CONTAINER_CLASS_NAME,
 } from './upcomingProducts.constants';
 import { useUpcomingProducts } from './useUpcomingProducts';
@@ -31,6 +32,7 @@ export function UpcomingProductsSection() {
     isSmUp,
     fetchGeneration,
   });
+  const scrollContainerClassName = `${UPCOMING_SCROLL_CONTAINER_CLASS_NAME} ${pagination.stripScrollOffsetClassName}`;
 
   if (error) {
     return <UpcomingProductsErrorState error={error} onRetry={fetchUpcoming} />;
@@ -45,20 +47,19 @@ export function UpcomingProductsSection() {
   }
 
   return (
-    <section className="relative isolate flex flex-col gap-4 sm:gap-5 xl:mr-[calc(50%_-_50vw)] xl:overflow-x-clip">
+    <section
+      className={`relative isolate flex flex-col gap-4 overflow-x-visible overflow-y-visible sm:gap-5 xl:mr-[calc(50%_-_50vw)] ${UPCOMING_MOBILE_SECTION_GAP_CLASS}`}
+    >
       <UpcomingSectionHeader />
       <div
         ref={pagination.scrollContainerRef}
         onScroll={pagination.handleScroll}
-        className={UPCOMING_SCROLL_CONTAINER_CLASS_NAME}
+        className={scrollContainerClassName}
       >
         <UpcomingProductStrip
           items={items}
           cardsPerPage={cardsPerPage}
           isSmUp={isSmUp}
-          safePage={pagination.safePage}
-          isPageTransitioning={pagination.isPageTransitioning}
-          pageDirection={pagination.pageDirection}
           pageStartRefs={pagination.pageStartRefs}
         />
       </div>

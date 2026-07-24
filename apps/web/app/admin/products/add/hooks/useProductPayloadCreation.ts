@@ -22,7 +22,7 @@ interface CreateAndSubmitPayloadProps {
   finalPrimaryCategoryId: string;
   variants: unknown[];
   attributeIds: string[];
-  finalMedia: string[];
+  finalMedia: Array<string | { url: string; isFeatured?: boolean }>;
   mainImage: string | null;
   isEditMode: boolean;
   productId: string | null;

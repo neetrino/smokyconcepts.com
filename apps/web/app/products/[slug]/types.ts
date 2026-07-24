@@ -7,6 +7,7 @@ export interface ProductPageProps {
 export interface ProductMedia {
   url?: string;
   type?: string;
+  isFeatured?: boolean;
 }
 
 export interface VariantOption {
@@ -30,6 +31,7 @@ export interface ProductVariant {
   productDiscount?: number | null;
   globalDiscount?: number | null;
   imageUrl?: string;
+  isDisplayVariant?: boolean;
 }
 
 export interface ProductLabel {

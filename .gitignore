@@ -33,3 +33,4 @@ temp/
 # *.swp
 # *.swo
     
+.vercel

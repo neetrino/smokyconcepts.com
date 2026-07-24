@@ -9,12 +9,13 @@ import { useProductQuantity } from './hooks/useProductQuantity';
 import { useProductCalculations } from './hooks/useProductCalculations';
 import { useAttributeGroups } from './useAttributeGroups';
 import type { ProductVariant } from './types';
-import { getOptionValue } from './utils/variant-helpers';
-import { findVariantByAllAttributes, findVariantByGalleryImage } from './utils/variant-finders';
-import { switchToVariantImage } from './utils/image-switching';
+import { getOptionValue, getOptionValues, normalizeVersionToken, variantHasColor, variantHasOptionValue } from './utils/variant-helpers';
+import { findVariantByAllAttributes } from './utils/variant-finders';
+import { resolveVariantGalleryUrls } from './utils/image-switching';
 
 export function useProductPage(params: Promise<{ slug?: string }>) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [variantImages, setVariantImages] = useState<string[]>([]);
   const [language, setLanguage] = useState<LanguageCode>('en');
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [showMessage, setShowMessage] = useState<string | null>(null);
@@ -38,6 +39,10 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
   });
 
   const images = useProductImages(product);
+  const galleryImages = variantImages.length > 0 ? variantImages : images;
+  const heroImageSrc =
+    galleryImages.length > 0 ? galleryImages[currentImageIndex] ?? galleryImages[0] ?? '' : '';
+  const activeThumbnailIndex = currentImageIndex;
   const selectedAttributeValues = useMemo(() => {
     const map = new Map<string, string>();
     if (selectedSizeVersion) {
@@ -45,22 +50,6 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     }
     return map;
   }, [selectedSizeVersion]);
-
-  const normalizeVersionToken = (value: string | null): string | null => {
-    if (!value) {
-      return null;
-    }
-    const normalized = value.toLowerCase().trim();
-    if (!normalized) {
-      return null;
-    }
-    const compact = normalized.replace(/\s+/g, '');
-    const numericMatch = compact.match(/(\d+)/);
-    if (!numericMatch) {
-      return compact;
-    }
-    return `v${numericMatch[1]}`;
-  };
 
   const { setSelectedVariant, currentVariant } = useVariantSelection({ product });
   const fallbackDefaultVariant = useMemo<ProductVariant | null>(() => {
@@ -128,10 +117,10 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
   }, []);
 
   useEffect(() => {
-    if (images.length > 0 && currentImageIndex >= images.length) {
+    if (galleryImages.length > 0 && currentImageIndex >= galleryImages.length) {
       setCurrentImageIndex(0);
     }
-  }, [images.length, currentImageIndex]);
+  }, [galleryImages.length, currentImageIndex]);
 
   useEffect(() => {
     if (product && product.variants && product.variants.length > 0 && variantIdFromUrl) {
@@ -144,6 +133,7 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
       setSelectedSizeVersion(getOptionValue(initialVariant.options, 'size_version'));
       setCurrentImageIndex(0);
       setThumbnailStartIndex(0);
+      setVariantImages(resolveVariantGalleryUrls(initialVariant, product));
       return;
     }
 
@@ -154,15 +144,21 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
         setSelectedColor(null);
         setSelectedSize(null);
         setSelectedSizeVersion(null);
+        setVariantImages([]);
         return;
       }
-      const fallbackVariant = product.variants[0];
+      const fallbackVariant =
+        product.variants.find((variant) => variant.isDisplayVariant) ?? product.variants[0];
       setSelectedVariant(fallbackVariant);
       setSelectedColor(getOptionValue(fallbackVariant.options, 'color'));
       setSelectedSize(getOptionValue(fallbackVariant.options, 'size'));
       setSelectedSizeVersion(getOptionValue(fallbackVariant.options, 'size_version'));
+      setVariantImages(resolveVariantGalleryUrls(fallbackVariant, product));
+      return;
     }
-  }, [product?.id, product?.variants, variantIdFromUrl, setSelectedVariant]);
+
+    setVariantImages([]);
+  }, [product, product?.id, product?.variants, variantIdFromUrl, setSelectedVariant]);
 
   useEffect(() => {
     if (!product?.variants?.length) {
@@ -190,7 +186,9 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     }
 
     setSelectedVariant(nextVariant);
-    switchToVariantImage(nextVariant, product, images, setCurrentImageIndex);
+    setCurrentImageIndex(0);
+    setThumbnailStartIndex(0);
+    setVariantImages(resolveVariantGalleryUrls(nextVariant, product));
     /**
      * Use images.length (not `images` reference) so a stable gallery index is not reset when
      * useMemo returns a new array reference for the same product. Thumbnail clicks only change
@@ -212,12 +210,36 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     }
 
     const nextColor = getOptionValue(currentVariant.options, 'color');
-    const nextSize = getOptionValue(currentVariant.options, 'size');
-    const nextSizeVersion = getOptionValue(currentVariant.options, 'size_version');
+    const sizeValues = getOptionValues(currentVariant.options, 'size');
+    const sizeVersionValues = getOptionValues(currentVariant.options, 'size_version');
 
-    setSelectedColor((prev) => (prev === nextColor ? prev : nextColor));
-    setSelectedSize((prev) => (prev === nextSize ? prev : nextSize));
-    setSelectedSizeVersion((prev) => (prev === nextSizeVersion ? prev : nextSizeVersion));
+    setSelectedColor((prev) => {
+      if (prev && variantHasColor(currentVariant, prev)) {
+        return prev;
+      }
+      return nextColor ?? prev;
+    });
+    setSelectedSize((prev) => {
+      if (prev && sizeValues.includes(prev)) {
+        return prev;
+      }
+      return sizeValues[0] ?? prev;
+    });
+    setSelectedSizeVersion((prev) => {
+      if (!prev) {
+        const firstVersion = sizeVersionValues[0];
+        return firstVersion ? normalizeVersionToken(firstVersion) : prev;
+      }
+      const normalizedPrev = normalizeVersionToken(prev);
+      const hasMatch = sizeVersionValues.some(
+        (value) => normalizeVersionToken(value) === normalizedPrev
+      );
+      if (hasMatch) {
+        return prev;
+      }
+      const firstVersion = sizeVersionValues[0];
+      return firstVersion ? normalizeVersionToken(firstVersion) : null;
+    });
   }, [currentVariant?.id]);
 
   const handleColorSelect = (color: string) => {
@@ -237,18 +259,18 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     }
 
     const exactMatches = product.variants.filter((variant) => {
-      const variantSize = getOptionValue(variant.options, 'size');
-      const variantVersion = normalizeVersionToken(getOptionValue(variant.options, 'size_version'));
-      if (!normalizedVersion) {
-        return variantSize === normalizedSize;
+      if (!variantHasOptionValue(variant, 'size', normalizedSize)) {
+        return false;
       }
-      return variantSize === normalizedSize && variantVersion === normalizedVersion;
+      if (!normalizedVersion) {
+        return true;
+      }
+      return variantHasOptionValue(variant, 'size_version', normalizedVersion);
     });
 
-    const sizeOnlyMatches = product.variants.filter((variant) => {
-      const variantSize = getOptionValue(variant.options, 'size');
-      return variantSize === normalizedSize;
-    });
+    const sizeOnlyMatches = product.variants.filter((variant) =>
+      variantHasOptionValue(variant, 'size', normalizedSize)
+    );
 
     const candidateMatches = exactMatches.length > 0 ? exactMatches : sizeOnlyMatches;
 
@@ -258,13 +280,20 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
 
     const colorPreferredMatch =
       selectedColor != null
-        ? candidateMatches.find((variant) => getOptionValue(variant.options, 'color') === selectedColor)
+        ? candidateMatches.find((variant) => variantHasColor(variant, selectedColor))
         : null;
     const inStockMatch = candidateMatches.find((variant) => variant.stock > 0);
     const nextVariant = colorPreferredMatch || inStockMatch || candidateMatches[0];
-    const nextVariantSize = getOptionValue(nextVariant.options, 'size') ?? normalizedSize;
+    const nextVariantSize =
+      variantHasOptionValue(nextVariant, 'size', normalizedSize)
+        ? normalizedSize
+        : getOptionValue(nextVariant.options, 'size') ?? normalizedSize;
+    const variantVersionValues = getOptionValues(nextVariant.options, 'size_version');
+    const matchedVersion = variantVersionValues.find(
+      (value) => normalizeVersionToken(value) === normalizedVersion
+    );
     const nextVariantVersion = normalizeVersionToken(
-      getOptionValue(nextVariant.options, 'size_version')
+      matchedVersion ?? variantVersionValues[0] ?? null
     );
 
     setSelectedVariant(nextVariant);
@@ -272,26 +301,21 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     setSelectedSizeVersion(nextVariantVersion ?? normalizedVersion);
     const nextColor = getOptionValue(nextVariant.options, 'color');
     setSelectedColor(nextColor);
-    switchToVariantImage(nextVariant, product, images, setCurrentImageIndex);
+    setCurrentImageIndex(0);
+    setThumbnailStartIndex(0);
+    setVariantImages(resolveVariantGalleryUrls(nextVariant, product));
   };
 
   const handleImageIndexChange = (index: number) => {
     setCurrentImageIndex(index);
-    const matchedVariant = findVariantByGalleryImage(product, images, index);
-    if (!matchedVariant) {
-      return;
-    }
-
-    setSelectedVariant(matchedVariant);
-    setSelectedColor(getOptionValue(matchedVariant.options, 'color'));
-    setSelectedSize(getOptionValue(matchedVariant.options, 'size'));
-    setSelectedSizeVersion(getOptionValue(matchedVariant.options, 'size_version'));
   };
 
   return {
     product,
     loading,
-    images,
+    images: galleryImages,
+    heroImageSrc,
+    activeThumbnailIndex,
     currentImageIndex,
     setCurrentImageIndex: handleImageIndexChange,
     thumbnailStartIndex,

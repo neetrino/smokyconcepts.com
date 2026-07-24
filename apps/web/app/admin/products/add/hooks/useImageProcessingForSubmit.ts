@@ -5,13 +5,18 @@ interface ProcessImagesForSubmitProps {
   variants: any[];
 }
 
+type ProductMediaSubmitItem = {
+  url: string;
+  isFeatured?: boolean;
+};
+
 export function processImagesForSubmit({
   imageUrls,
   featuredImageIndex,
   mainProductImage,
   variants,
 }: ProcessImagesForSubmitProps): {
-  finalMedia: string[];
+  finalMedia: ProductMediaSubmitItem[];
   mainImage: string | null;
   processedVariants: any[];
 } {
@@ -82,6 +87,14 @@ export function processImagesForSubmit({
     return { mapping, skipped: skippedCount };
   };
 
+  const buildMediaItem = (url: string, originalIndex: number): ProductMediaSubmitItem => {
+    const item: ProductMediaSubmitItem = { url };
+    if (originalIndex === featuredImageIndex) {
+      item.isFeatured = true;
+    }
+    return item;
+  };
+
   const mainImages: string[] = [];
   if (imageUrls.length > 0) {
     mainImages.push(...imageUrls.filter(Boolean));
@@ -119,7 +132,7 @@ export function processImagesForSubmit({
     }
   });
 
-  const finalMedia: string[] = [];
+  const finalMedia: ProductMediaSubmitItem[] = [];
   
   if (imageUrls.length > 0) {
     const processedImageUrls: string[] = [];
@@ -139,17 +152,17 @@ export function processImagesForSubmit({
     });
     
     if (processedImageUrls[featuredImageIndex]) {
-      finalMedia.push(processedImageUrls[featuredImageIndex]);
+      finalMedia.push(buildMediaItem(processedImageUrls[featuredImageIndex], featuredImageIndex));
     }
     processedImageUrls.forEach((url, index) => {
       if (index !== featuredImageIndex && url) {
-        finalMedia.push(url);
+        finalMedia.push(buildMediaItem(url, index));
       }
     });
   } else if (mainProductImage) {
     const mainImgProcessed = mainImageMapping[0];
     if (mainImgProcessed) {
-      finalMedia.push(mainImgProcessed);
+      finalMedia.push(buildMediaItem(mainImgProcessed, 0));
     }
   }
   

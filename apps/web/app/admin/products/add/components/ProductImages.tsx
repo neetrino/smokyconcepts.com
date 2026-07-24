@@ -109,7 +109,7 @@ export function ProductImages({
                       className="w-full h-48 object-cover"
                     />
                     
-                    {/* Main Checkbox */}
+                    {/* Main image checkbox */}
                     <div className="absolute top-2 left-2">
                       <label className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md cursor-pointer hover:bg-white transition-colors">
                         <input

@@ -9,8 +9,21 @@ import { BulkSelectionControls } from './components/BulkSelectionControls';
 import { OrdersTable } from './components/OrdersTable';
 import { AdminShell } from '../components/AdminShell';
 import { ADMIN_PAGE_SHELL_CLASS } from '../constants/adminShell.constants';
+import {
+  useAdminLastSeen,
+  useMarkAdminSectionSeenOnLeave,
+  useSeedAdminLastSeenBaseline,
+} from '../hooks/useAdminLastSeen';
+import { useTranslation } from '../../../lib/i18n-client';
+import { getAdminNewBadgeLabel } from '../utils/adminNewBadgeLabel';
 
 export function OrdersPageContent() {
+  const { t } = useTranslation();
+  const { isNew: isOrderNew } = useAdminLastSeen('orders');
+  useMarkAdminSectionSeenOnLeave('orders');
+
+  const newBadgeLabel = getAdminNewBadgeLabel(t);
+
   const {
     orders,
     loading,
@@ -43,6 +56,12 @@ export function OrdersPageContent() {
     searchParams,
   } = useOrders();
 
+  useSeedAdminLastSeenBaseline(
+    'orders',
+    orders.map((order) => order.createdAt),
+    !loading && orders.length > 0
+  );
+
   const detailsDialog = useOrderDetailsDialog({ applyOrderListPatch });
 
   return (
@@ -73,6 +92,8 @@ export function OrdersPageContent() {
 
           <OrdersTable
             orders={orders}
+            isOrderNew={isOrderNew}
+            newBadgeLabel={newBadgeLabel}
             loading={loading}
             selectedIds={selectedIds}
             updatingStatuses={updatingStatuses}

@@ -53,6 +53,8 @@ function cartItemFromGuestSnapshot(item: GuestCartItem, index: number): CartItem
     },
     quantity: item.quantity,
     price: unitPriceUsd,
+    catalogBasePriceAmd:
+      typeof item.price === 'number' && Number.isFinite(item.price) ? Math.round(item.price) : null,
     originalPrice: originalPriceUsd,
     total: unitPriceUsd * item.quantity,
   };

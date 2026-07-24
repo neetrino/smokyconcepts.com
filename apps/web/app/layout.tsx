@@ -28,6 +28,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  minimumScale: 1,
   maximumScale: 1,
   userScalable: false,
 };
@@ -40,13 +41,13 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body
-        className={`${inter.className} ${montserrat.variable} bg-gray-50 text-gray-900 antialiased min-h-full`}
+        className={`${inter.className} ${montserrat.variable} bg-[#efefef] text-gray-900 antialiased min-h-full`}
       >
         <Suspense fallback={null}>
           <ClientProviders>
-            <div className="flex min-h-screen flex-col overflow-x-visible overflow-y-visible">
+            <div className="flex min-h-screen flex-col overflow-x-hidden overflow-y-visible">
               <Header />
-              <main className="flex-1 w-full overflow-x-visible overflow-y-visible">
+              <main className="flex-1 w-full max-w-full overflow-x-hidden overflow-y-visible">
                 {children}
               </main>
               <Footer />

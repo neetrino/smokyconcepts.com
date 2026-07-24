@@ -46,7 +46,9 @@
   },
   "mobileFilters": {
     "title": "Ֆիլտրեր",
-    "close": "Փակել ֆիլտրերը"
+    "close": "Փակել ֆիլտրերը",
+    "clearAll": "Մաքրել բոլորը",
+    "apply": "Կիրառել"
   },
   "discovery": {
     "searchTitle": "Գտնել ապրանքները SKU-ով",

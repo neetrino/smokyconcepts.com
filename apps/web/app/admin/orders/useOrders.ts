@@ -127,7 +127,7 @@ export interface OrderDetails {
   updatedAt?: string;
 }
 
-export type OrderTypeFilter = 'all' | 'orders' | 'custom' | 'new' | 'early';
+export type OrderTypeFilter = 'all' | 'orders' | 'custom' | 'new' | 'early' | 'out_of_stock';
 
 export function useOrders() {
   const { t } = useTranslation();
@@ -160,7 +160,8 @@ export function useOrders() {
         orderTypeParam === 'custom' ||
         orderTypeParam === 'new' ||
         orderTypeParam === 'orders' ||
-        orderTypeParam === 'early'
+        orderTypeParam === 'early' ||
+        orderTypeParam === 'out_of_stock'
           ? orderTypeParam
           : 'all';
       setStatusFilter(status);

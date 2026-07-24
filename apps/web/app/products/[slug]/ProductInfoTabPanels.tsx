@@ -4,7 +4,19 @@ import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import type { Product } from './types';
 import { CustomizeFormatToolbar } from './CustomizeFormatToolbar';
-import type { CustomizeFormatState } from './utils/build-customize-preview-html';
+import {
+  getCustomizeInputStyle,
+  type CustomizeFormatState,
+} from './utils/build-customize-preview-html';
+import {
+  CUSTOMIZE_FORMAT_INPUT_WRAPPER_CLASS,
+  CUSTOMIZE_FORMAT_ROW_CLASS,
+  CUSTOMIZE_FORMAT_ROW_SPACER_CLASS,
+} from './customize-format.constants';
+import {
+  PRODUCT_INFO_CUSTOMIZE_COPY_CLASS,
+  PRODUCT_INFO_CUSTOMIZE_PANEL_CLASS,
+} from './productInfoTabContent.constants';
 import {
   getCustomizeCopy,
   getShippingCopy,
@@ -21,16 +33,11 @@ export interface ProductInfoTabPanelsProps {
   productTabHtml: string;
   shippingTabHtml: string;
   productDetails: string[];
-  appliedCustomize: { plain: string; html: string | null } | null;
-  appliedPreviewPlain: string | null;
   customizeDraftText: string;
   customizeTextMaxLength: number;
   onCustomizeDraftTextChange: (value: string) => void;
   customizeFormat: CustomizeFormatState;
   onCustomizeFormatChange: (next: CustomizeFormatState) => void;
-  showCustomizeApplyButton: boolean;
-  onCustomizeApplyClick: () => void;
-  onCustomizeClearApplied: () => void;
 }
 
 export function ProductInfoTabPanels({
@@ -41,16 +48,11 @@ export function ProductInfoTabPanels({
   productTabHtml,
   shippingTabHtml,
   productDetails,
-  appliedCustomize,
-  appliedPreviewPlain,
   customizeDraftText,
   customizeTextMaxLength,
   onCustomizeDraftTextChange,
   customizeFormat,
   onCustomizeFormatChange,
-  showCustomizeApplyButton,
-  onCustomizeApplyClick,
-  onCustomizeClearApplied,
 }: ProductInfoTabPanelsProps) {
   if (activeTab === 'description') {
     if (!productDescription) {
@@ -87,12 +89,12 @@ export function ProductInfoTabPanels({
 
   if (activeTab === 'customize') {
     return (
-      <div className="flex max-w-[763px] flex-col gap-2.5">
-        <p className="text-[15px] leading-[24px] text-[#414141] sm:text-[16px] sm:leading-[26px]">
+      <div className={PRODUCT_INFO_CUSTOMIZE_PANEL_CLASS}>
+        <p className={PRODUCT_INFO_CUSTOMIZE_COPY_CLASS}>
           {getCustomizeCopy(language)}
         </p>
-        <div className="flex max-w-[763px] flex-col gap-3 sm:flex-row sm:items-start sm:gap-12 sm:pb-4">
-          <div className="w-full min-w-0 sm:max-w-[291px]">
+        <div className={CUSTOMIZE_FORMAT_ROW_CLASS}>
+          <div className={CUSTOMIZE_FORMAT_INPUT_WRAPPER_CLASS}>
             <input
               type="text"
               value={customizeDraftText}
@@ -100,7 +102,8 @@ export function ProductInfoTabPanels({
               onChange={(e) => {
                 onCustomizeDraftTextChange(e.target.value);
               }}
-              className="w-full border-0 border-b border-[#dcc090] bg-transparent pb-0.5 font-montserrat text-[18px] font-medium leading-[30px] text-[#414141] outline-none focus:border-[#dcc090] focus-visible:border-[#dcc090] active:border-[#dcc090]"
+              className="w-full min-w-0 border-0 border-b border-[#dcc090] bg-transparent pb-0.5 text-[16px] leading-[26px] text-[#414141] outline-none"
+              style={getCustomizeInputStyle(customizeFormat)}
               aria-label={t(language, 'product.customize_title')}
               autoComplete="off"
             />
@@ -108,50 +111,17 @@ export function ProductInfoTabPanels({
               className="mt-1 text-right font-montserrat text-[10px] font-medium leading-none text-[#898989]"
               aria-live="polite"
             >
-              {customizeDraftText.length}/{customizeTextMaxLength}
+              {customizeDraftText.length}/ {customizeTextMaxLength}
             </p>
           </div>
-          {showCustomizeApplyButton ? (
-            <button
-              type="button"
-              onClick={onCustomizeApplyClick}
-              className="h-10 w-full shrink-0 cursor-pointer rounded-md border-2 border-solid border-[#dcc090] bg-transparent font-montserrat text-[18px] font-extrabold uppercase tracking-[1.5px] text-[#dcc090] transition-colors duration-200 hover:bg-[#dcc090]/12 hover:text-[#3a3428] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#dcc090] active:bg-[#dcc090]/20 sm:mt-1 sm:w-[168px]"
-            >
-              {t(language, 'product.customize_apply')}
-            </button>
-          ) : null}
+          <div className={CUSTOMIZE_FORMAT_ROW_SPACER_CLASS} aria-hidden />
+          <CustomizeFormatToolbar
+            key={product.id}
+            language={language}
+            format={customizeFormat}
+            onFormatChange={onCustomizeFormatChange}
+          />
         </div>
-        {appliedCustomize?.plain ? (
-          <button
-            type="button"
-            onClick={onCustomizeClearApplied}
-            className="w-fit font-montserrat text-[13px] font-medium text-[#898989] underline decoration-[#898989] underline-offset-2 transition-colors hover:text-[#414141] hover:decoration-[#414141] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#dcc090]"
-          >
-            {t(language, 'product.customize_clear_applied')}
-          </button>
-        ) : null}
-        {appliedPreviewPlain ? (
-          <div
-            className="max-w-[763px] rounded-md border border-[#dcc090]/60 bg-[#faf8f4] px-3 py-2.5 sm:px-4"
-            aria-live="polite"
-          >
-            <p className="font-montserrat text-[11px] font-semibold uppercase tracking-[0.08em] text-[#898989]">
-              {t(language, 'product.customize_applied_text_label')}
-            </p>
-            <p className="mt-1 whitespace-pre-wrap break-words font-montserrat text-[15px] font-medium leading-relaxed text-[#414141] sm:text-[16px]">
-              {appliedPreviewPlain}
-            </p>
-          </div>
-        ) : null}
-        <p className="max-w-[763px] font-montserrat text-[12px] font-medium leading-snug text-[#898989] sm:text-[13px]">
-          {t(language, 'product.customize_apply_cart_hint')}
-        </p>
-        <CustomizeFormatToolbar
-          key={product.id}
-          language={language}
-          format={customizeFormat}
-          onFormatChange={onCustomizeFormatChange}
-        />
       </div>
     );
   }

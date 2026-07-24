@@ -6,17 +6,17 @@ import { useTranslation } from '@/lib/i18n-client';
 
 const HERO_BANNER_KEYS = [
   {
-    src: '/assets/about/banner-1.png',
+    src: '/assets/about/banner-1.webp',
     imageClassName: 'object-cover scale-x-[-1]',
     altKey: 'about.about.hero.banner_1_alt',
   },
   {
-    src: '/assets/about/banner-2.png',
+    src: '/assets/about/banner-2.webp',
     imageClassName: 'object-cover object-[70%_center]',
     altKey: 'about.about.hero.banner_2_alt',
   },
   {
-    src: '/assets/about/banner-3.png',
+    src: '/assets/about/banner-3.webp',
     imageClassName: 'object-cover object-[42%_center]',
     altKey: 'about.about.hero.banner_3_alt',
   },

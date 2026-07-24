@@ -1,9 +1,19 @@
 import { catalogPriceForStorefront } from '@/lib/currency';
+import { isDefaultPricingVariant, isDisplayVariant } from '@/lib/default-pricing-variant';
+import { processImageUrl, smartSplitUrls } from '../../utils/image-utils';
 
 interface ProductListCategory {
   translations?: Array<{
     title: string;
   }>;
+}
+
+interface ProductListVariant {
+  price: number;
+  stock: number;
+  compareAtPrice: number | null;
+  imageUrl?: string | null;
+  attributes?: unknown;
 }
 
 interface ProductListItem {
@@ -20,11 +30,7 @@ interface ProductListItem {
     title: string;
   }>;
   categories?: ProductListCategory[];
-  variants?: Array<{
-    price: number;
-    stock: number;
-    compareAtPrice: number | null;
-  }>;
+  variants?: ProductListVariant[];
   media?: unknown[];
 }
 
@@ -40,12 +46,11 @@ export function formatProductForList(
     ? product.translations[0]
     : null;
   
-  // Безопасное получение variant с проверкой на существование массива
-  const variant = Array.isArray(product.variants) && product.variants.length > 0
-    ? product.variants[0]
-    : null;
-  
-  const image = extractImageFromMedia(product.media);
+  const variants = Array.isArray(product.variants) ? product.variants : [];
+  const defaultPricingVariant = variants.find((item) => isDefaultPricingVariant(item));
+  const pricingVariant = defaultPricingVariant ?? variants[0] ?? null;
+
+  const image = resolveProductListImage(product.media, variants);
   const relationCategories = Array.isArray(product.categories)
     ? product.categories
         .map((category) => category.translations?.[0]?.title?.trim() || "")
@@ -67,11 +72,11 @@ export function formatProductForList(
     published: product.published,
     featured: product.featured || false,
     upcoming: product.upcoming || false,
-    price: catalogPriceForStorefront(variant?.price || 0),
-    stock: variant?.stock || 0,
+    price: catalogPriceForStorefront(pricingVariant?.price || 0),
+    stock: pricingVariant?.stock || 0,
     discountPercent: product.discountPercent || 0,
     compareAtPrice:
-      variant?.compareAtPrice != null ? catalogPriceForStorefront(variant.compareAtPrice) : null,
+      pricingVariant?.compareAtPrice != null ? catalogPriceForStorefront(pricingVariant.compareAtPrice) : null,
     categories,
     colorStocks: [], // Can be enhanced later
     image,
@@ -82,6 +87,53 @@ export function formatProductForList(
 /**
  * Extract image from media array
  */
+function extractFirstVariantImage(
+  variant: { imageUrl?: string | null } | null | undefined
+): string | null {
+  return resolveFirstImageUrl(variant?.imageUrl);
+}
+
+function resolveFirstImageUrl(source: string | null | undefined): string | null {
+  for (const url of smartSplitUrls(source)) {
+    const processed = processImageUrl(url);
+    if (processed) return processed;
+  }
+
+  return null;
+}
+
+function resolveProductListImage(media: unknown[] | undefined, variants: ProductListVariant[]): string | null {
+  const displayVariant = variants.find((item) => isDisplayVariant(item));
+  const displayImage = extractFirstVariantImage(displayVariant);
+  if (displayImage) return displayImage;
+
+  const defaultPricingVariant = variants.find((item) => isDefaultPricingVariant(item));
+  const defaultPricingImage = extractFirstVariantImage(defaultPricingVariant);
+  if (defaultPricingImage) return defaultPricingImage;
+
+  const mediaImage = extractImageFromMedia(media);
+  if (mediaImage) return mediaImage;
+
+  const selectableVariants = variants.filter(
+    (item) => !isDefaultPricingVariant(item) && !isDisplayVariant(item)
+  );
+  for (const selectableVariant of selectableVariants) {
+    const image = extractFirstVariantImage(selectableVariant);
+    if (image) {
+      return image;
+    }
+  }
+
+  for (const item of variants) {
+    const image = extractFirstVariantImage(item);
+    if (image) {
+      return image;
+    }
+  }
+
+  return null;
+}
+
 function extractImageFromMedia(media: unknown[] | undefined): string | null {
   if (!Array.isArray(media) || media.length === 0) {
     return null;
@@ -90,17 +142,13 @@ function extractImageFromMedia(media: unknown[] | undefined): string | null {
   const firstMedia = media[0];
   
   if (typeof firstMedia === "string") {
-    return firstMedia;
+    return resolveFirstImageUrl(firstMedia);
   }
   
   if (firstMedia && typeof firstMedia === "object" && "url" in firstMedia) {
     const mediaObj = firstMedia as { url?: string };
-    return mediaObj.url || null;
+    return resolveFirstImageUrl(mediaObj.url);
   }
 
   return null;
 }
-
-
-
-

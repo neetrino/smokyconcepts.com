@@ -10,6 +10,7 @@ interface ProfilePersonalInfoProps {
     phone: string;
   };
   setPersonalInfo: (info: ProfilePersonalInfoProps['personalInfo']) => void;
+  phoneError?: string;
   savingPersonal: boolean;
   onSave: (e: FormEvent) => void;
   profile: UserProfile | null;
@@ -19,6 +20,7 @@ interface ProfilePersonalInfoProps {
 export function ProfilePersonalInfo({
   personalInfo,
   setPersonalInfo,
+  phoneError,
   savingPersonal,
   onSave,
   profile,
@@ -52,9 +54,12 @@ export function ProfilePersonalInfo({
         <Input
           label={t('profile.personal.phone')}
           type="tel"
+          inputMode="tel"
+          autoComplete="tel"
           value={personalInfo.phone}
           onChange={(e) => setPersonalInfo({ ...personalInfo, phone: e.target.value })}
           placeholder={t('profile.personal.phonePlaceholder')}
+          error={phoneError}
         />
         <div className="flex items-center gap-2 pt-4">
           <Button type="submit" variant="primary" disabled={savingPersonal}>
@@ -79,6 +84,3 @@ export function ProfilePersonalInfo({
     </Card>
   );
 }
-
-
-

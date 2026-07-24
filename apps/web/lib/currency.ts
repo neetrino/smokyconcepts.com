@@ -192,13 +192,37 @@ export function roundCatalogAmd(amount: number): number {
   return Math.max(0, Math.round(amount));
 }
 
+/** Fixed thousands separator — avoids Node vs browser `Intl` hydration mismatches. */
+const AMD_THOUSANDS_SEPARATOR = ' ';
+
+/**
+ * Deterministic AMD integer formatting for SSR and client (e.g. `34 909`).
+ */
+export function formatAmdIntegerDisplay(amount: number): string {
+  const value = roundCatalogAmd(amount);
+  const digits = String(value);
+  if (digits.length <= 3) {
+    return digits;
+  }
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, AMD_THOUSANDS_SEPARATOR);
+}
+
 /** Admin product form → DB variant.price (AMD integer). */
 export function normalizeAdminProductPriceInput(amountAmd: number): number {
   return roundCatalogAmd(amountAmd);
 }
 
 function isLegacyUsdCatalogStoredPrice(stored: number): boolean {
-  return stored > 0 && stored <= LEGACY_USD_CATALOG_PRICE_MAX;
+  if (!(stored > 0) || !Number.isFinite(stored)) {
+    return false;
+  }
+  // Admin product prices are saved as rounded AMD integers.
+  // Keep integer values as AMD to prevent false legacy-USD inflation
+  // (e.g. 10 AMD being rendered as 4,000 AMD).
+  if (Number.isInteger(stored)) {
+    return false;
+  }
+  return stored <= LEGACY_USD_CATALOG_PRICE_MAX;
 }
 
 /**
@@ -237,11 +261,7 @@ export function formatCatalogPrice(amountAmd: number, displayCurrency?: Currency
       ? roundCatalogAmd(amountAmd)
       : convertPrice(amountAmd, CATALOG_STORE_CURRENCY, currency);
   if (currency === 'AMD') {
-    const formatted = new Intl.NumberFormat('hy-AM', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(convertedAmount);
-    return `${formatted} ֏`;
+    return `${formatAmdIntegerDisplay(convertedAmount)} ֏`;
   }
   if (currency === 'RUB') {
     const formatted = new Intl.NumberFormat('ru-RU', {
@@ -354,11 +374,7 @@ export function formatStorePriceForDisplay(amountUsd: number, _displayCurrency: 
 export function formatPriceInCurrency(price: number, currency: string = 'USD'): string {
   const code = currency.trim().toUpperCase();
   if (code === 'AMD') {
-    const formatted = new Intl.NumberFormat('hy-AM', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
-    return `${formatted} ֏`;
+    return `${formatAmdIntegerDisplay(price)} ֏`;
   }
   if (code === 'RUB') {
     const formatted = new Intl.NumberFormat('ru-RU', {

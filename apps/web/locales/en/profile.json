@@ -9,6 +9,28 @@
     "password": "Change Password",
     "orders": "Orders"
   },
+  "menu": {
+    "coupons": "Coupons",
+    "deleteAccount": "Delete account"
+  },
+  "coupons": {
+    "title": "Coupons",
+    "empty": "You do not have any coupons yet.",
+    "loading": "Loading coupons...",
+    "loadError": "Could not load coupons.",
+    "discount": "Discount",
+    "expiresAt": "Expires",
+    "noExpiry": "No expiry date",
+    "copyCode": "Copy coupon code",
+    "copySuccess": "Coupon code copied",
+    "copyError": "Could not copy coupon code",
+    "status": {
+      "active": "Active",
+      "expired": "Expired",
+      "inactive": "Inactive",
+      "exhausted": "Used up"
+    }
+  },
   "dashboard": {
     "loading": "Loading dashboard...",
     "totalOrders": "Total Orders",
@@ -45,7 +67,8 @@
     "firstNamePlaceholder": "John",
     "lastNamePlaceholder": "Doe",
     "emailPlaceholder": "your@email.com",
-    "phonePlaceholder": "+374 XX XXX XXX",
+    "phonePlaceholder": "+374XXXXXXXX",
+    "invalidPhone": "Invalid phone number",
     "cancel": "Cancel"
   },
   "addresses": {
@@ -73,6 +96,9 @@
       "addressLine2": "Address Line 2 (optional)",
       "city": "City",
       "state": "State/Province (optional)",
+      "region": "Region",
+      "selectRegion": "Select region",
+      "loadingRegions": "Loading regions...",
       "postalCode": "Postal Code",
       "phone": "Phone Number",
       "isDefault": "Set as default address",
@@ -101,9 +127,9 @@
     "changedSuccess": "Password successfully changed",
     "failedToChange": "Failed to change password",
     "passwordsDoNotMatch": "New passwords do not match",
-    "passwordMinLength": "Password must be at least 6 characters",
+    "passwordMinLength": "Password must be at least 8 characters",
     "currentPasswordPlaceholder": "Enter your current password",
-    "newPasswordPlaceholder": "Enter new password (min. 6 characters)",
+    "newPasswordPlaceholder": "Enter new password (min. 8 characters)",
     "confirmPasswordPlaceholder": "Confirm new password"
   },
   "deleteAccount": {

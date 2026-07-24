@@ -2,7 +2,13 @@
 
 import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
-import { CUSTOMIZE_GOOGLE_FONT_OPTIONS } from './constants/customize-google-fonts';
+import { CustomizeFontDropdown } from './CustomizeFontDropdown';
+import {
+  CUSTOMIZE_FORMAT_ASSETS,
+  CUSTOMIZE_FORMAT_BUTTON_ACTIVE_CLASS,
+  CUSTOMIZE_FORMAT_BUTTON_CLASS,
+  CUSTOMIZE_FORMAT_TOOLBAR_CLASS,
+} from './customize-format.constants';
 import type { CustomizeFormatState } from './utils/build-customize-preview-html';
 
 export type CustomizeFormatToolbarProps = {
@@ -11,70 +17,59 @@ export type CustomizeFormatToolbarProps = {
   onFormatChange: (next: CustomizeFormatState) => void;
 };
 
+type FormatToggleKey = keyof Pick<CustomizeFormatState, 'bold' | 'italic' | 'underline'>;
+
+const FORMAT_TOGGLE_META: ReadonlyArray<{
+  key: FormatToggleKey;
+  labelKey: 'product.customize_format_bold' | 'product.customize_format_italic' | 'product.customize_format_underline';
+  iconSrc: string;
+}> = [
+  { key: 'bold', labelKey: 'product.customize_format_bold', iconSrc: CUSTOMIZE_FORMAT_ASSETS.boldSrc },
+  { key: 'italic', labelKey: 'product.customize_format_italic', iconSrc: CUSTOMIZE_FORMAT_ASSETS.italicSrc },
+  {
+    key: 'underline',
+    labelKey: 'product.customize_format_underline',
+    iconSrc: CUSTOMIZE_FORMAT_ASSETS.underlineSrc,
+  },
+];
+
 export function CustomizeFormatToolbar({
   language,
   format,
   onFormatChange,
 }: CustomizeFormatToolbarProps) {
-  const toggle = (key: keyof Pick<CustomizeFormatState, 'bold' | 'italic' | 'underline'>) => {
+  const toggle = (key: FormatToggleKey) => {
     onFormatChange({ ...format, [key]: !format[key] });
   };
 
   return (
-    <div className="w-full max-w-[640px]">
-      <div className="flex flex-wrap items-center gap-1.5">
-        <button
-          type="button"
-          aria-pressed={format.bold}
-          className={`rounded border border-[#dcc090] px-2 py-1 font-montserrat text-[13px] font-semibold text-[#414141] ${
-            format.bold ? 'bg-[#dcc090]/25' : ''
-          }`}
-          onClick={() => {
-            toggle('bold');
-          }}
-        >
-          {t(language, 'product.customize_format_bold')}
-        </button>
-        <button
-          type="button"
-          aria-pressed={format.italic}
-          className={`rounded border border-[#dcc090] px-2 py-1 font-montserrat text-[13px] italic text-[#414141] ${
-            format.italic ? 'bg-[#dcc090]/25' : ''
-          }`}
-          onClick={() => {
-            toggle('italic');
-          }}
-        >
-          {t(language, 'product.customize_format_italic')}
-        </button>
-        <button
-          type="button"
-          aria-pressed={format.underline}
-          className={`rounded border border-[#dcc090] px-2 py-1 font-montserrat text-[13px] underline decoration-[#414141] text-[#414141] ${
-            format.underline ? 'bg-[#dcc090]/25' : ''
-          }`}
-          onClick={() => {
-            toggle('underline');
-          }}
-        >
-          {t(language, 'product.customize_format_underline')}
-        </button>
-        <label className="flex flex-wrap items-center gap-1 font-montserrat text-[13px] text-[#414141]">
-          <span>{t(language, 'product.customize_font_label')}</span>
-          <select
-            className="max-w-[200px] rounded border border-[#dcc090] bg-white px-2 py-1 font-montserrat text-[13px] text-[#414141]"
-            value={format.fontStack}
-            onChange={(e) => {
-              onFormatChange({ ...format, fontStack: e.target.value });
+    <div className={CUSTOMIZE_FORMAT_TOOLBAR_CLASS}>
+      <CustomizeFontDropdown
+        value={format.fontStack}
+        fontLabel={t(language, 'product.customize_font_label')}
+        clearLabel={t(language, 'product.customize_font_clear')}
+        ariaLabel={t(language, 'product.customize_font_label')}
+        onChange={(fontStack) => {
+          onFormatChange({ ...format, fontStack });
+        }}
+      />
+      <div className="flex shrink-0 flex-nowrap items-center gap-1.5 sm:gap-2">
+        {FORMAT_TOGGLE_META.map(({ key, labelKey, iconSrc }) => (
+          <button
+            key={key}
+            type="button"
+            aria-pressed={format[key]}
+            aria-label={t(language, labelKey)}
+            className={`${CUSTOMIZE_FORMAT_BUTTON_CLASS} ${
+              format[key] ? CUSTOMIZE_FORMAT_BUTTON_ACTIVE_CLASS : ''
+            }`}
+            onClick={() => {
+              toggle(key);
             }}
           >
-            {CUSTOMIZE_GOOGLE_FONT_OPTIONS.map((opt) => (
-              <option key={opt.id} value={opt.stack}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </label>
+            <img src={iconSrc} alt="" width={18} height={18} className="block" decoding="async" draggable={false} />
+          </button>
+        ))}
       </div>
     </div>
   );

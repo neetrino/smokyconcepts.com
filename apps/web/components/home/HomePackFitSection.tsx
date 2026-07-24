@@ -1,16 +1,37 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { HomeActionButton } from './HomeActionButton';
 import { HomeSectionTitle } from './HomeSectionTitle';
 import { PackFitCard } from './PackFitCard';
 import { PACK_FIT_ITEMS } from './homePage.data';
 import { getProductsPathWithSelectSizeAutopen } from '@/lib/constants/products-catalog.constants';
 import { useTranslation } from '@/lib/i18n-client';
+import { prefetchSizeCatalogCategories } from '@/lib/size-catalog-client-cache';
 
 const PACK_FIT_KEY_BY_INDEX = ['ultraSlims', 'compact', 'superSlims', 'slims', 'kingSize', 'sticks'] as const;
+const MOBILE_INITIAL_SCROLL_BIAS_RATIO = 0.12;
 
 export function HomePackFitSection() {
   const { t } = useTranslation();
+  const mobileCarouselRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    prefetchSizeCatalogCategories();
+  }, []);
+
+  useEffect(() => {
+    const carousel = mobileCarouselRef.current;
+
+    if (!carousel) {
+      return;
+    }
+
+    const maxScrollLeft = Math.max(0, carousel.scrollWidth - carousel.clientWidth);
+    const centeredOffset = maxScrollLeft / 2;
+    const biasedOffset = centeredOffset - carousel.clientWidth * MOBILE_INITIAL_SCROLL_BIAS_RATIO;
+    carousel.scrollLeft = Math.max(0, Math.min(maxScrollLeft, biasedOffset));
+  }, []);
 
   return (
     <section className="-mt-10 flex flex-col gap-8 pb-8 sm:mt-1 sm:gap-10 sm:pb-10">
@@ -19,7 +40,10 @@ export function HomePackFitSection() {
         description={t('home.homepage.packFit.description')}
       />
       <div className="sm:hidden">
-        <div className="-mx-5 overflow-x-auto px-5 pb-2 scrollbar-hide">
+        <div
+          ref={mobileCarouselRef}
+          className="-mx-5 overflow-x-auto px-5 pb-2 scrollbar-hide"
+        >
           <div className="flex min-w-max snap-x snap-mandatory items-end gap-x-0.5">
             {PACK_FIT_ITEMS.map((item, index) => (
               <PackFitCard

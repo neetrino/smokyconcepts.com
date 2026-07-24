@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminInputAmdToUsd } from '../../../lib/currency';
+import { resolveCartLineCollectionPriceAmd } from '../../cart/cart-line-pricing';
+import { useSizeCatalogPriceByTitle } from '@/lib/size-catalog/use-size-catalog-price-by-title';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { clearGuestCart } from '../checkoutUtils';
@@ -15,6 +17,24 @@ interface UseOrderSubmissionProps {
   deliveryLocations: DeliveryLocationOption[];
   /** Normalized coupon code when applied (server validates again on checkout) */
   appliedCouponCode: string | null;
+}
+
+function submitExternalPaymentForm(action: string, fields: Record<string, string>): void {
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = action;
+  form.style.display = 'none';
+
+  Object.entries(fields).forEach(([name, value]) => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+  });
+
+  document.body.appendChild(form);
+  form.submit();
 }
 
 function regionLabelForOrder(value: string, locations: DeliveryLocationOption[]): string {
@@ -46,6 +66,7 @@ export function useOrderSubmission({
   const router = useRouter();
   const { t } = useTranslation();
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const categoryPriceByTitle = useSizeCatalogPriceByTitle();
 
   const submitOrder = async (data: CheckoutFormData) => {
     setError(null);
@@ -61,15 +82,12 @@ export function useOrderSubmission({
         const version = item.variant.sizeCatalogVersion?.trim();
         const img = item.variant.sizeCatalogImageUrl?.trim();
         const categoryTitle = item.variant.sizeCatalogCategoryTitle?.trim();
-        const categoryPriceAmd = item.variant.sizeCatalogCategoryPriceAmd;
+        const resolvedCategoryPriceAmd = resolveCartLineCollectionPriceAmd(item, categoryPriceByTitle);
         const hasSizeCatalogPick = Boolean(title);
-        const hasCollectionPrice =
-          typeof categoryPriceAmd === 'number' &&
-          Number.isFinite(categoryPriceAmd) &&
-          categoryPriceAmd >= 0;
-        const hasCollectionContext = Boolean(categoryTitle) || hasCollectionPrice;
+        const hasCollectionContext = Boolean(categoryTitle) || resolvedCategoryPriceAmd > 0;
         const cPlain = item.variant.customizePlain?.trim();
         const cHtml = item.variant.customizeHtml?.trim();
+        const hasSavedCustomize = Boolean(cPlain || cHtml);
         const customSizeRequest = item.variant.customSizeRequest;
         return {
           productId: item.variant.product.id,
@@ -82,19 +100,19 @@ export function useOrderSubmission({
                 ...(version ? { sizeCatalogVersion: version } : {}),
                 ...(img ? { sizeCatalogImageUrl: img } : {}),
                 ...(categoryTitle ? { sizeCatalogCategoryTitle: categoryTitle } : {}),
-                ...(hasCollectionPrice
-                  ? { sizeCatalogCategoryPriceAmd: Math.round(categoryPriceAmd) }
+                ...(hasSavedCustomize && resolvedCategoryPriceAmd > 0
+                  ? { sizeCatalogCategoryPriceAmd: resolvedCategoryPriceAmd }
                   : {}),
               }
             : hasCollectionContext
               ? {
                   ...(categoryTitle ? { sizeCatalogCategoryTitle: categoryTitle } : {}),
-                  ...(hasCollectionPrice
-                    ? { sizeCatalogCategoryPriceAmd: Math.round(categoryPriceAmd) }
+                  ...(hasSavedCustomize && resolvedCategoryPriceAmd > 0
+                    ? { sizeCatalogCategoryPriceAmd: resolvedCategoryPriceAmd }
                     : {}),
                 }
               : {}),
-          ...(cPlain || cHtml
+          ...(hasSavedCustomize
             ? {
                 ...(cPlain ? { customizePlain: cPlain } : {}),
                 ...(cHtml ? { customizeHtml: cHtml } : {}),
@@ -144,6 +162,7 @@ export function useOrderSubmission({
           provider: string;
           paymentUrl: string | null;
           expiresAt: string | null;
+          initToken?: string | null;
         };
         nextAction: string;
       }>('/api/v1/orders/checkout', {
@@ -159,11 +178,47 @@ export function useOrderSubmission({
         ...(appliedCouponCode ? { couponCode: appliedCouponCode } : {}),
       });
 
-      clearGuestCart();
+      const resolvedProvider = response.payment?.provider?.trim().toLowerCase() || data.paymentMethod;
+
+      if (resolvedProvider === 'arca') {
+        const initToken = response.payment?.initToken;
+        if (!initToken) {
+          throw new Error(t('checkout.errors.failedToCreateOrder'));
+        }
+        const arcaInit = await apiClient.post<{
+          redirectUrl: string;
+          providerOrderId: string;
+        }>('/api/v1/payments/arca/init', {
+          orderNumber: response.order.number,
+          initToken,
+        });
+        window.location.href = arcaInit.redirectUrl;
+        return;
+      }
+
+      if (resolvedProvider === 'idram') {
+        const initToken = response.payment?.initToken;
+        if (!initToken) {
+          throw new Error(t('checkout.errors.failedToCreateOrder'));
+        }
+        const idramInit = await apiClient.post<{
+          formAction: string;
+          formData: Record<string, string>;
+        }>('/api/v1/payments/idram/init', {
+          orderNumber: response.order.number,
+          initToken,
+        });
+        submitExternalPaymentForm(idramInit.formAction, idramInit.formData);
+        return;
+      }
 
       if (response.payment?.paymentUrl) {
         window.location.href = response.payment.paymentUrl;
         return;
+      }
+
+      if (resolvedProvider === 'cash_on_delivery') {
+        clearGuestCart();
       }
 
       const orderNumber = encodeURIComponent(response.order.number);

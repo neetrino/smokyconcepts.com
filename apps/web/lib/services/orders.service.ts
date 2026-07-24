@@ -8,6 +8,7 @@ import {
 } from "@/lib/currency";
 import { resolveCollectionSurchargeUsd } from "@/lib/orders/resolve-collection-surcharge-usd";
 import { resolveOrderShippingPriceAmd, buildOrderSummaryLinesFromPersistedItems } from "@/lib/orders/order-summary-display";
+import { resolvePersistedOrderItemCollectionPriceAmd } from "@/lib/orders/resolve-persisted-order-item-collection-price-amd";
 import { filterDisplayableVariantOptions } from "@/lib/default-pricing-variant";
 import type { CheckoutData } from "../types/checkout";
 import {
@@ -30,6 +31,7 @@ import {
   buildSizeCatalogPriceAmdByTitle,
   resolveSizeCatalogCategoryPriceAmd,
 } from "@/lib/size-catalog/resolve-size-catalog-category-price-amd";
+import { signPaymentInitToken } from "@/lib/payments/payment-init-token";
 
 type ProductVariantWithProduct = Prisma.ProductVariantGetPayload<{
   include: {
@@ -320,14 +322,12 @@ class OrdersService {
               });
             }
 
-            // Check stock
             if (variant.stock < quantity) {
-              throw {
-                status: 422,
-                type: "https://api.shop.am/problems/validation-error",
-                title: "Insufficient stock",
-                detail: `Insufficient stock. Available: ${variant.stock}, Requested: ${quantity}`,
-              };
+              logger.info("Checkout backorder line accepted", {
+                variantId,
+                requestedQuantity: quantity,
+                availableStock: variant.stock,
+              });
             }
 
             const translation = variant.product.translations?.[0] || variant.product.translations?.[0];
@@ -376,14 +376,52 @@ class OrdersService {
               sizeCatalogTitle !== undefined
                 ? sanitizeCheckoutImageUrl(item.sizeCatalogImageUrl)
                 : undefined;
-            const sizeCatalogCategoryPriceAmd = resolveSizeCatalogCategoryPriceAmd({
-              categoryTitle:
-                typeof item.sizeCatalogCategoryTitle === 'string'
-                  ? item.sizeCatalogCategoryTitle
-                  : undefined,
-              clientPriceAmd: item.sizeCatalogCategoryPriceAmd,
-              priceAmdByCategoryTitle: sizeCatalogPriceAmdByTitle,
-            });
+
+            const rawCustomizePlain =
+              typeof item.customizePlain === 'string' ? item.customizePlain.trim() : '';
+            const rawCustomizeHtml =
+              typeof item.customizeHtml === 'string' ? item.customizeHtml.trim() : '';
+
+            let customizePlain: string | undefined;
+            let customizeHtml: string | undefined;
+
+            if (rawCustomizePlain !== '' || rawCustomizeHtml !== '') {
+              const sanitizedHtml =
+                rawCustomizeHtml !== '' ? sanitizeCustomizeHtmlServer(rawCustomizeHtml) : '';
+              const plainFromHtml =
+                sanitizedHtml !== '' ? getPlainTextFromHtmlServer(sanitizedHtml) : '';
+              const resolvedPlain =
+                rawCustomizePlain !== '' ? rawCustomizePlain : plainFromHtml;
+
+              if (resolvedPlain !== '' && !validateCustomizePlainLength(resolvedPlain)) {
+                throw {
+                  status: 400,
+                  type: 'https://api.shop.am/problems/validation-error',
+                  title: 'Validation Error',
+                  detail: `Customize text must be at most ${CUSTOMIZE_PLAIN_MAX_LENGTH} characters`,
+                };
+              }
+
+              if (resolvedPlain === '' && sanitizedHtml === '') {
+                customizePlain = undefined;
+                customizeHtml = undefined;
+              } else {
+                customizePlain = resolvedPlain !== '' ? resolvedPlain : undefined;
+                customizeHtml = sanitizedHtml !== '' ? sanitizedHtml : undefined;
+              }
+            }
+
+            const hasSavedCustomize = Boolean(customizePlain || customizeHtml);
+            const sizeCatalogCategoryPriceAmd = hasSavedCustomize
+              ? resolveSizeCatalogCategoryPriceAmd({
+                  categoryTitle:
+                    typeof item.sizeCatalogCategoryTitle === 'string'
+                      ? item.sizeCatalogCategoryTitle
+                      : undefined,
+                  clientPriceAmd: item.sizeCatalogCategoryPriceAmd,
+                  priceAmdByCategoryTitle: sizeCatalogPriceAmdByTitle,
+                })
+              : 0;
 
             if (rawCustomRequest) {
               const name = typeof rawCustomRequest.name === 'string' ? rawCustomRequest.name.trim() : '';
@@ -444,40 +482,6 @@ class OrdersService {
 
               sizeCatalogTitle = requestDescription.slice(0, SIZE_CATALOG_TITLE_MAX);
               sizeCatalogImageUrl = uploadedCustomImageUrl;
-            }
-
-            const rawCustomizePlain =
-              typeof item.customizePlain === 'string' ? item.customizePlain.trim() : '';
-            const rawCustomizeHtml =
-              typeof item.customizeHtml === 'string' ? item.customizeHtml.trim() : '';
-
-            let customizePlain: string | undefined;
-            let customizeHtml: string | undefined;
-
-            if (rawCustomizePlain !== '' || rawCustomizeHtml !== '') {
-              const sanitizedHtml =
-                rawCustomizeHtml !== '' ? sanitizeCustomizeHtmlServer(rawCustomizeHtml) : '';
-              const plainFromHtml =
-                sanitizedHtml !== '' ? getPlainTextFromHtmlServer(sanitizedHtml) : '';
-              const resolvedPlain =
-                rawCustomizePlain !== '' ? rawCustomizePlain : plainFromHtml;
-
-              if (resolvedPlain !== '' && !validateCustomizePlainLength(resolvedPlain)) {
-                throw {
-                  status: 400,
-                  type: 'https://api.shop.am/problems/validation-error',
-                  title: 'Validation Error',
-                  detail: `Customize text must be at most ${CUSTOMIZE_PLAIN_MAX_LENGTH} characters`,
-                };
-              }
-
-              if (resolvedPlain === '' && sanitizedHtml === '') {
-                customizePlain = undefined;
-                customizeHtml = undefined;
-              } else {
-                customizePlain = resolvedPlain !== '' ? resolvedPlain : undefined;
-                customizeHtml = sanitizedHtml !== '' ? sanitizedHtml : undefined;
-              }
             }
 
             const earlyAccess = await resolveEarlyAccessForCheckoutLine(
@@ -773,6 +777,16 @@ class OrdersService {
         };
       }
 
+      const paymentInitToken =
+        paymentMethod === 'arca' || paymentMethod === 'idram'
+          ? signPaymentInitToken({
+              orderId: order.order.id,
+              orderNumber: order.order.number,
+              paymentMethod,
+              userId: userId ?? null,
+            })
+          : null;
+
       // Return order and payment info
       return {
         order: {
@@ -787,6 +801,7 @@ class OrdersService {
           provider: order.payment.provider,
           paymentUrl: null, // TODO: Generate payment URL for Idram/ArCa
           expiresAt: null, // TODO: Set expiration if needed
+          initToken: paymentInitToken,
         },
         nextAction: paymentMethod === 'idram' || paymentMethod === 'arca' 
           ? 'redirect_to_payment' 
@@ -1077,16 +1092,13 @@ class OrdersService {
           normalizedTitle !== '' ? (sizeCatalogPriceByTitle.get(normalizedTitle) ?? null) : null;
         const unitPriceUsd = persistedOrderMoneyToUsd(Number(item.price), order.currency);
         const variantBaseUsd = catalogPriceToUsd(Number(item.variant?.price ?? Number.NaN));
-        const usdPerAmd = adminInputAmdToUsd(1);
-        const inferredCollectionPriceAmd =
-          Number.isFinite(variantBaseUsd) &&
-          Number.isFinite(unitPriceUsd) &&
-          Number.isFinite(usdPerAmd) &&
-          usdPerAmd > 0
-            ? Math.max(0, Math.round((unitPriceUsd - variantBaseUsd) / usdPerAmd))
-            : null;
-        const sizeCatalogCategoryPriceAmd =
-          inferredCollectionPriceAmd ?? mappedCollectionPriceAmd ?? null;
+        const sizeCatalogCategoryPriceAmd = resolvePersistedOrderItemCollectionPriceAmd({
+          unitPriceUsd,
+          variantBaseUsd,
+          mappedCollectionPriceAmd,
+          customizePlain: item.customizePlain,
+          customizeHtml: item.customizeHtml,
+        });
         const variantBasePriceAmd =
           item.variant?.price != null
             ? catalogPriceForStorefront(Number(item.variant.price))

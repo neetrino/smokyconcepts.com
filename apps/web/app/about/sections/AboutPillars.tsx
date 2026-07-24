@@ -32,7 +32,7 @@ const PILLAR_BASE: readonly PillarBase[] = [
     localeId: 'first',
     bg: 'bg-[#dcc090]',
     image: {
-      src: '/assets/about/first-concept.png',
+      src: '/assets/about/first-concept.webp',
       hideWhiteBg: true,
     },
   },
@@ -41,7 +41,7 @@ const PILLAR_BASE: readonly PillarBase[] = [
     localeId: 'mission',
     bg: 'bg-[#95c48a]',
     image: {
-      src: '/assets/about/mission.png',
+      src: '/assets/about/mission.webp',
       hideWhiteBg: true,
     },
   },
@@ -245,9 +245,9 @@ export function AboutPillars() {
       <div
         ref={mobileScrollerRef}
         onScroll={handleMobileScroll}
-        className="-mx-4 overflow-x-auto px-4 pb-1 touch-pan-x overscroll-x-contain sm:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="-mx-4 snap-x snap-mandatory overflow-x-auto overflow-y-visible overscroll-x-contain px-4 pb-1 sm:hidden [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        <div className="flex snap-x snap-mandatory gap-6">
+        <div className="flex gap-6">
           {pillars.map((pillar, index) => (
             <div
               key={pillar.id}

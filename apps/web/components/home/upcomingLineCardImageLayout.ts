@@ -5,7 +5,7 @@ export interface UpcomingLineImageLayoutFlags {
   imageNudgeDown: boolean;
   imageKeysLayout: boolean;
   imagePhonesLayout: boolean;
-  imageKnifesLayout: boolean;
+  imageKnivesLayout: boolean;
   imageDocumentsLayout: boolean;
   imageWalletsLayout: boolean;
   masonryTile?: UpcomingLineMasonryTile;
@@ -17,7 +17,7 @@ export function getUpcomingLineImageFrameClassName(flags: UpcomingLineImageLayou
     imageNudgeDown,
     imageKeysLayout,
     imagePhonesLayout,
-    imageKnifesLayout,
+    imageKnivesLayout,
     imageDocumentsLayout,
     imageWalletsLayout,
     masonryTile,
@@ -50,8 +50,8 @@ export function getUpcomingLineImageFrameClassName(flags: UpcomingLineImageLayou
       : 'pointer-events-none absolute left-1/2 top-2 h-40 w-40 origin-bottom -translate-x-1/2 -translate-y-[32%] sm:top-3 sm:h-52 sm:w-52 sm:-translate-y-[28%] xl:top-4 xl:h-[15.5rem] xl:w-[15.5rem] xl:-translate-y-[32%]';
   }
 
-  if (imageKnifesLayout) {
-    return masonryTile === 'knifes'
+  if (imageKnivesLayout) {
+    return masonryTile === 'knives'
       ? 'pointer-events-none absolute left-[68%] top-3 h-32 w-32 origin-bottom -translate-x-1/2 -translate-y-[19%] sm:left-[68%] sm:top-2 sm:h-36 sm:w-36 sm:-translate-y-[17%]'
       : 'pointer-events-none absolute left-[68%] top-4 h-32 w-32 origin-bottom -translate-x-1/2 -translate-y-[12%] sm:left-[68%] sm:top-4 sm:h-36 sm:w-36 sm:-translate-y-[12%] xl:left-[68%] xl:top-1 xl:h-36 xl:w-36 xl:-translate-y-[30%]';
   }
@@ -68,7 +68,7 @@ export function getUpcomingLineImageSizes(flags: UpcomingLineImageLayoutFlags): 
     imageNudgeDown,
     imageKeysLayout,
     imagePhonesLayout,
-    imageKnifesLayout,
+    imageKnivesLayout,
     imageDocumentsLayout,
     imageWalletsLayout,
     masonryTile,
@@ -86,7 +86,7 @@ export function getUpcomingLineImageSizes(flags: UpcomingLineImageLayoutFlags): 
       : '(max-width: 640px) 152px, (max-width: 1280px) 232px, 288px';
   }
 
-  if (imageKnifesLayout) {
+  if (imageKnivesLayout) {
     return '(max-width: 640px) 132px, (max-width: 1280px) 176px, 176px';
   }
 
@@ -124,7 +124,7 @@ export function getUpcomingLineRootClassName(masonryTile?: UpcomingLineMasonryTi
     return 'relative flex h-full flex-col overflow-visible pt-5 sm:pt-7';
   }
 
-  if (masonryTile === 'knifes' || masonryTile === 'wallets' || masonryTile === 'documents') {
+  if (masonryTile === 'knives' || masonryTile === 'wallets' || masonryTile === 'documents') {
     return 'relative flex h-auto w-full flex-col overflow-visible pt-2 sm:pt-4';
   }
 

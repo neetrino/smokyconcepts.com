@@ -1,32 +1,21 @@
 'use client';
 
 import { CustomizeSizeModal } from '../[slug]/CustomizeSizeModal';
-import type { CustomOrderDraft } from '../[slug]/CustomizeSizeOrderFallback';
 import type { LanguageCode } from '../../../lib/language';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
 import { CatalogForProductLineRow } from './CatalogForProductLineRow';
 import { ProductsCatalogMobileFilterSheet } from './ProductsCatalogMobileFilterSheet';
-import { ProductsCatalogCard } from './ProductsCatalogCard';
+import { CatalogStripProductCard } from './CatalogStripProductCard';
 import {
-  CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME,
-  CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME,
-  CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME,
+  CATALOG_STRIP_PAGINATION_DOT_CLASS_NAME,
+  CATALOG_STRIP_PAGINATION_ROW_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_LEADING_INSET_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
-  PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME,
   CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME,
-  getCatalogProductCardImageScaleBoost,
-  getProductsCatalogPageSmallerImageScaleMultiplier,
+  getCatalogMobileStripScrollGutterClassName,
 } from './catalogProductCardMobilePresentation';
-import {
-  getCategoryLabel,
-  getSizeLabel,
-  shouldNudgeCatalogProductImage,
-} from './catalogProductLabels';
 import { CatalogChevronIcon } from './CatalogChevronIcon';
 import {
   FILTER_CONTROL_ACTIVE,
@@ -43,6 +32,8 @@ export interface ProductsCatalogViewLayoutProps {
   selectedColor: string;
   selectedSort: SortOption;
   selectedSize: string;
+  selectedSizeCatalogCategoryId: string;
+  selectedSizeCatalogCategoryTitle: string | null;
   collectionOptions: string[];
   colorOptions: string[];
   isCollectionFilterActive: boolean;
@@ -52,7 +43,11 @@ export interface ProductsCatalogViewLayoutProps {
   activeProductFiltersCount: number;
   updateQuery: (updates: Record<string, string>) => void;
   clearFilters: () => void;
+  openCatalogSizeModal: () => void;
+  openCatalogSizeModalFromMobileFilter: () => void;
+  commitMobileFilterApply: () => void;
   setCatalogSizeModalOpen: (open: boolean) => void;
+  mobilePendingSize: string;
   sections: CatalogSectionViewModel[];
   isSmUp: boolean;
   cardsPerPage: number;
@@ -66,7 +61,7 @@ export interface ProductsCatalogViewLayoutProps {
   language: LanguageCode;
   sizeCatalogForModal: SizeCatalogCategoryDto[];
   selectedCatalogItemId: string | null;
-  applyCatalogSizeFilter: (item: SizeCatalogItemDto) => void;
+  handleCatalogSizeItemSelect: (item: SizeCatalogItemDto) => void;
 }
 
 export function ProductsCatalogViewLayout({
@@ -76,6 +71,8 @@ export function ProductsCatalogViewLayout({
   selectedColor,
   selectedSort,
   selectedSize,
+  selectedSizeCatalogCategoryId,
+  selectedSizeCatalogCategoryTitle,
   collectionOptions,
   colorOptions,
   isCollectionFilterActive,
@@ -85,7 +82,11 @@ export function ProductsCatalogViewLayout({
   activeProductFiltersCount,
   updateQuery,
   clearFilters,
+  openCatalogSizeModal,
+  openCatalogSizeModalFromMobileFilter,
+  commitMobileFilterApply,
   setCatalogSizeModalOpen,
+  mobilePendingSize,
   sections,
   isSmUp,
   cardsPerPage,
@@ -99,31 +100,29 @@ export function ProductsCatalogViewLayout({
   language,
   sizeCatalogForModal,
   selectedCatalogItemId,
-  applyCatalogSizeFilter,
+  handleCatalogSizeItemSelect,
 }: ProductsCatalogViewLayoutProps) {
   return (
-    <div className="min-h-full bg-[#f5f4f1]">
+    <div className="min-h-full overflow-x-hidden bg-[#f5f4f1]">
       <ProductsCatalogMobileFilterSheet
         open={mobileFilterOpen}
         onClose={() => setMobileFilterOpen(false)}
+        onApply={commitMobileFilterApply}
         selectedCollection={selectedCollection}
         selectedColor={selectedColor}
         selectedSort={selectedSort}
-        selectedSize={selectedSize}
+        selectedSize={mobilePendingSize}
         collectionOptions={collectionOptions}
         colorOptions={colorOptions}
         sortOptions={SORT_OPTIONS}
         onCollectionChange={(value) => updateQuery({ category: value })}
         onColorChange={(value) => updateQuery({ color: value })}
         onSortChange={(value) => updateQuery({ sort: value })}
-        onOpenSizeCatalog={() => {
-          setMobileFilterOpen(false);
-          setCatalogSizeModalOpen(true);
-        }}
+        onOpenSizeCatalog={openCatalogSizeModalFromMobileFilter}
         onClearAll={clearFilters}
       />
 
-      <div className="mx-auto max-w-[120rem] px-4 pb-20 pt-12 sm:px-8 lg:pl-[7.5rem] lg:pr-0 lg:pt-[5.25rem]">
+      <div className="mx-auto max-w-[120rem] px-5 pb-20 pt-12 sm:px-8 lg:pl-[7.5rem] lg:pr-0 lg:pt-[5.25rem]">
         <div className="font-montserrat">
           <div className="flex flex-col gap-8">
             <div className="flex items-start justify-between gap-4">
@@ -200,7 +199,7 @@ export function ProductsCatalogViewLayout({
 
               <button
                 type="button"
-                onClick={() => setCatalogSizeModalOpen(true)}
+                onClick={openCatalogSizeModal}
                 className={`h-10 w-full whitespace-nowrap rounded-[0.5rem] border-2 px-4 text-left text-[0.9375rem] font-semibold leading-none transition-[box-shadow,ring,border-color,background-color,color] ${
                   isSizeFilterActive ? SIZE_FILTER_BUTTON_ACTIVE : 'border-transparent bg-[#dcc090] text-[#122a26]'
                 }`}
@@ -241,7 +240,10 @@ export function ProductsCatalogViewLayout({
 
           <div className="mt-10 space-y-16 lg:mt-10 lg:space-y-20">
             {sections.length > 0 ? (
-              sections.map((section) => (
+              sections.map((section) => {
+                const mobileStripScrollGutterClassName = getCatalogMobileStripScrollGutterClassName();
+
+                return (
                 <section
                   key={section.title}
                   ref={(element) => {
@@ -260,9 +262,13 @@ export function ProductsCatalogViewLayout({
                     onScroll={() => {
                       handleSectionScroll(section.title);
                     }}
-                    className={CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME}
+                    className={`${CATALOG_PRODUCTS_PAGE_SECTION_STRIP_SCROLL_CLASS_NAME} ${mobileStripScrollGutterClassName}`}
                   >
                     <div className={CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME}>
+                      <div
+                        className={CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_LEADING_INSET_CLASS_NAME}
+                        aria-hidden="true"
+                      />
                       {section.items.map((product, index) => {
                         const isMobileStripPageStart = index % cardsPerPage === 0;
                         const mobileStripPageIndex = Math.floor(index / cardsPerPage);
@@ -275,32 +281,17 @@ export function ProductsCatalogViewLayout({
                               }
                               registerSectionPageStartRef(section.title, mobileStripPageIndex, element);
                             }}
-                            className={`${CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME}${
-                              isMobileStripPageStart ? ' max-sm:snap-start max-sm:snap-always' : ''
-                            }`}
+                            className={CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME}
                           >
-                            <ProductsCatalogCard
+                            <CatalogStripProductCard
                               product={product}
                               sectionLabel={section.title}
-                              sizeLabel={getSizeLabel(product)}
-                              categoryLabel={getCategoryLabel(product, section.title)}
-                              productsCatalogPageScaleMultiplier={getProductsCatalogPageSmallerImageScaleMultiplier(
-                                index
-                              )}
-                              imageNudgeDown={shouldNudgeCatalogProductImage(index)}
-                              imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
-                              imageFrameClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME}
-                              catalogHeroPullUpClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME}
-                              catalogCardTopPaddingClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME}
-                              catalogDetailsOffsetClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME}
-                              catalogImageBottomMarginClassName={
-                                PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME
-                              }
-                              className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} max-sm:!w-full max-sm:!min-w-0 max-sm:!max-w-none`}
-                              catalogStripMobilePeek={isSmUp}
-                              compactLayout
-                              productsCatalogPage
-                              eagerProductImage
+                              selectedSize={selectedSize}
+                              selectedSizeCatalogCategoryId={selectedSizeCatalogCategoryId}
+                              selectedSizeCatalogCategoryTitle={selectedSizeCatalogCategoryTitle}
+                              index={index}
+                              isSmUp={isSmUp}
+                              ctaPreset="products-catalog"
                             />
                           </div>
                         );
@@ -311,7 +302,7 @@ export function ProductsCatalogViewLayout({
                   {section.totalPages > 1 ? (
                     <div className={CATALOG_PRODUCTS_PAGE_PAGINATION_WRAPPER_CLASS_NAME}>
                       <div
-                        className={`${CATALOG_MOBILE_PAGINATION_ROW_CLASS_NAME} sm:max-w-none sm:justify-center sm:gap-4`}
+                        className={CATALOG_STRIP_PAGINATION_ROW_CLASS_NAME}
                         role="tablist"
                         aria-label={`${section.title} pages`}
                       >
@@ -322,7 +313,7 @@ export function ProductsCatalogViewLayout({
                             onClick={() => handleSectionPageChange(section.title, pageIndex)}
                             role="tab"
                             aria-selected={section.currentPage === pageIndex}
-                            className={`h-2 min-w-[1.25rem] shrink rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#122a26] focus-visible:ring-offset-2 max-sm:h-1.5 max-sm:flex-1 max-sm:active:bg-[#c9c9c9] sm:w-[6.25rem] sm:flex-none ${
+                            className={`${CATALOG_STRIP_PAGINATION_DOT_CLASS_NAME} ${
                               section.currentPage === pageIndex
                                 ? 'bg-[#122a26]'
                                 : 'bg-[#d9d9d9] [@media(hover:hover)]:hover:bg-[#c9c9c9]'
@@ -334,7 +325,8 @@ export function ProductsCatalogViewLayout({
                     </div>
                   ) : null}
                 </section>
-              ))
+                );
+              })
             ) : (
               <div className="rounded-[2rem] bg-white px-6 py-12 text-center shadow-[0_4px_22.5px_rgba(0,0,0,0.08)]">
                 <p className="text-xl font-semibold text-[#414141]">No products matched the selected filters.</p>
@@ -350,9 +342,9 @@ export function ProductsCatalogViewLayout({
         language={language}
         sizeCategories={sizeCatalogForModal}
         selectedSizeItemId={selectedCatalogItemId}
-        onSelectSizeCatalogItem={applyCatalogSizeFilter}
-        onSelectCustomSizeRequest={(_draft: CustomOrderDraft) => {
-          setCatalogSizeModalOpen(false);
+        onSelectSizeCatalogItem={handleCatalogSizeItemSelect}
+        onSelectCustomSizeRequest={() => {
+          // Order is created in CustomizeSizeModal; modal closes after success message.
         }}
       />
     </div>
