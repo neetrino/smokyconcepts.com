@@ -46,9 +46,7 @@
   },
   "mobileFilters": {
     "title": "Filters",
-    "close": "Close Filters",
-    "clearAll": "Clear All",
-    "apply": "Apply"
+    "close": "Close Filters"
   },
   "discovery": {
     "searchTitle": "Find products by SKU",

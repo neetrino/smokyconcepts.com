@@ -2,10 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { scrollMobileStripToPageAnchor } from '../../app/products/components/catalogStripScroll';
 import {
-  CATALOG_MOBILE_STRIP_PROGRAMMATIC_SCROLL_RELEASE_MS,
-  getCatalogMobileStripScrollGutterClassName,
-} from '../../app/products/components/catalogProductCardMobilePresentation';
-import {
+  UPCOMING_PAGE_ANIMATION_DURATION_MS,
   UPCOMING_SCROLL_IDLE_UPDATE_DELAY_MS,
   UPCOMING_SCROLL_SETTLE_MAX_WAIT_MS,
   UPCOMING_SCROLL_SETTLE_STABLE_FRAMES,
@@ -34,8 +31,10 @@ export function useUpcomingScrollPagination({
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const pageStartRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isPageTransitioning, setIsPageTransitioning] = useState(false);
+  const [pageDirection, setPageDirection] = useState<1 | -1>(1);
+  const pageTransitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const scrollEndCleanupRef = useRef<(() => void) | null>(null);
   const isProgrammaticScrollRef = useRef(false);
   const programmaticScrollRafRef = useRef<number | null>(null);
   const programmaticScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -43,7 +42,6 @@ export function useUpcomingScrollPagination({
   const totalPages = Math.max(1, Math.ceil(itemCount / cardsPerPage));
   const safePage = Math.min(currentPage, totalPages);
   const visiblePaginationPages = getUpcomingVisiblePageNumbers(totalPages);
-  const stripScrollOffsetClassName = getCatalogMobileStripScrollGutterClassName();
 
   useEffect(() => {
     pageStartRefs.current = [];
@@ -53,11 +51,11 @@ export function useUpcomingScrollPagination({
 
   useEffect(() => {
     return () => {
+      if (pageTransitionTimerRef.current) {
+        clearTimeout(pageTransitionTimerRef.current);
+      }
       if (scrollIdleTimerRef.current) {
         clearTimeout(scrollIdleTimerRef.current);
-      }
-      if (scrollEndCleanupRef.current) {
-        scrollEndCleanupRef.current();
       }
       if (programmaticScrollTimerRef.current) {
         clearTimeout(programmaticScrollTimerRef.current);
@@ -118,53 +116,27 @@ export function useUpcomingScrollPagination({
 
   const resolvePageFromScrollLeft = useCallback(
     (container: HTMLDivElement) => {
-      if (!isSmUp) {
-        return resolveUpcomingPageFromMobileAnchors(container, pageStartRefs.current, totalPages);
-      }
       return resolveUpcomingPageFromStripScroll(container, pageStartRefs.current, totalPages);
     },
     [isSmUp, totalPages],
   );
 
-  const commitPageFromScroll = useCallback(
-    (container: HTMLDivElement) => {
-      const nextPage = resolvePageFromScrollLeft(container);
-      setCurrentPage((current) => (current === nextPage ? current : nextPage));
-    },
-    [resolvePageFromScrollLeft],
-  );
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    scrollEndCleanupRef.current?.();
-    scrollEndCleanupRef.current = null;
-
-    if (!container || isSmUp || totalPages <= 1) {
-      return undefined;
-    }
-
-    const onScrollEnd = () => {
-      if (isProgrammaticScrollRef.current) {
-        return;
-      }
-      commitPageFromScroll(container);
-    };
-
-    container.addEventListener('scrollend', onScrollEnd, { passive: true });
-    scrollEndCleanupRef.current = () => {
-      container.removeEventListener('scrollend', onScrollEnd);
-    };
-
-    return () => {
-      scrollEndCleanupRef.current?.();
-      scrollEndCleanupRef.current = null;
-    };
-  }, [commitPageFromScroll, isSmUp, totalPages, itemCount, cardsPerPage, fetchGeneration]);
-
   const handlePageChange = useCallback(
     (page: number) => {
       const container = scrollContainerRef.current;
       const clampedPage = Math.max(1, Math.min(totalPages, page));
+      const current = safePage;
+
+      if (clampedPage !== current) {
+        setPageDirection(clampedPage > current ? 1 : -1);
+        setIsPageTransitioning(true);
+        if (pageTransitionTimerRef.current) {
+          clearTimeout(pageTransitionTimerRef.current);
+        }
+        pageTransitionTimerRef.current = setTimeout(() => {
+          setIsPageTransitioning(false);
+        }, UPCOMING_PAGE_ANIMATION_DURATION_MS);
+      }
 
       if (!container) {
         setCurrentPage(clampedPage);
@@ -172,6 +144,9 @@ export function useUpcomingScrollPagination({
       }
 
       const pageIndex = Math.max(0, Math.min(totalPages - 1, clampedPage - 1));
+      const targetScrollLeft = isSmUp
+        ? getUpcomingScrollLeftForPage(container, clampedPage, totalPages, isSmUp, pageStartRefs.current)
+        : scrollMobileStripToPageAnchor(container, pageStartRefs.current[pageIndex]);
 
       isProgrammaticScrollRef.current = true;
       setCurrentPage(clampedPage);
@@ -181,25 +156,12 @@ export function useUpcomingScrollPagination({
         scrollIdleTimerRef.current = null;
       }
 
-      if (!isSmUp) {
-        scrollMobileStripToPageAnchor(container, pageStartRefs.current[pageIndex]);
-        window.setTimeout(() => {
-          isProgrammaticScrollRef.current = false;
-        }, CATALOG_MOBILE_STRIP_PROGRAMMATIC_SCROLL_RELEASE_MS);
-        return;
+      if (isSmUp) {
+        container.scrollTo({
+          left: targetScrollLeft,
+          behavior: 'smooth',
+        });
       }
-
-      const targetScrollLeft = getUpcomingScrollLeftForPage(
-        container,
-        clampedPage,
-        totalPages,
-        isSmUp,
-        pageStartRefs.current
-      );
-      container.scrollTo({
-        left: targetScrollLeft,
-        behavior: 'smooth',
-      });
 
       waitForScrollToSettle(container, targetScrollLeft);
     },
@@ -208,31 +170,9 @@ export function useUpcomingScrollPagination({
 
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
-    if (!container || totalPages <= 1) {
+    if (!container || totalPages <= 1 || isProgrammaticScrollRef.current) {
       return;
     }
-
-    if (!isSmUp) {
-      if (scrollIdleTimerRef.current) {
-        clearTimeout(scrollIdleTimerRef.current);
-      }
-
-      scrollIdleTimerRef.current = setTimeout(() => {
-        if (isProgrammaticScrollRef.current) {
-          return;
-        }
-        commitPageFromScroll(container);
-      }, UPCOMING_SCROLL_IDLE_UPDATE_DELAY_MS);
-      return;
-    }
-
-    if (isProgrammaticScrollRef.current) {
-      return;
-    }
-
-    const commitPage = (nextPage: number) => {
-      setCurrentPage((current) => (current === nextPage ? current : nextPage));
-    };
 
     if (scrollIdleTimerRef.current) {
       clearTimeout(scrollIdleTimerRef.current);
@@ -243,9 +183,10 @@ export function useUpcomingScrollPagination({
         return;
       }
 
-      commitPage(resolvePageFromScrollLeft(container));
+      const nextPage = resolvePageFromScrollLeft(container);
+      setCurrentPage((current) => (current === nextPage ? current : nextPage));
     }, UPCOMING_SCROLL_IDLE_UPDATE_DELAY_MS);
-  }, [commitPageFromScroll, isSmUp, resolvePageFromScrollLeft, totalPages]);
+  }, [resolvePageFromScrollLeft, totalPages]);
 
   return {
     scrollContainerRef,
@@ -253,7 +194,8 @@ export function useUpcomingScrollPagination({
     safePage,
     totalPages,
     visiblePaginationPages,
-    stripScrollOffsetClassName,
+    isPageTransitioning,
+    pageDirection,
     handlePageChange,
     handleScroll,
   };

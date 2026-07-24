@@ -1,12 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
-import { createPortal } from 'react-dom';
 
-import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { useSizeModalExitAnimation } from '@/hooks/useSizeModalExitAnimation';
 import {
+  SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS,
   SIZE_MODAL_BLOCK_ENTER_DELAY_HEADER_MS,
   SIZE_MODAL_BLOCK_ENTER_DELAY_SEARCH_MS,
   SIZE_MODAL_EXIT_DURATION_MS,
@@ -15,7 +14,7 @@ import {
 import {
   sizeModalBackdropClass,
   sizeModalBlockClass,
-  sizeModalBlockEnterStyle,
+  sizeModalBlockTransitionDelay,
   sizeModalContentClass,
   sizeModalPanelClass,
 } from '@/lib/size-modal-animation';
@@ -30,11 +29,6 @@ import {
   EMPTY_CUSTOM_ORDER_DRAFT,
   type CustomOrderDraft,
 } from './CustomizeSizeOrderFallback';
-import { isCustomOrderDraftValid } from './utils/custom-order-validation';
-import {
-  getCustomSizeOrderSubmitErrorMessage,
-  submitCustomSizeOrder,
-} from './utils/submit-custom-size-order';
 
 function normalizeSearchQuery(value: string): string {
   return value
@@ -71,11 +65,8 @@ interface CustomizeSizeModalProps {
   language: LanguageCode;
   sizeCategories: SizeCatalogCategoryDto[];
   selectedSizeItemId: string | null;
-  productId?: string;
-  productTitle?: string;
   onSelectSizeCatalogItem: (item: SizeCatalogItemDto) => void;
   onSelectCustomSizeRequest: (draft: CustomOrderDraft) => void;
-  isSizeItemSelectable?: (item: SizeCatalogItemDto) => boolean;
 }
 
 export function CustomizeSizeModal({
@@ -84,11 +75,8 @@ export function CustomizeSizeModal({
   language,
   sizeCategories,
   selectedSizeItemId,
-  productId,
-  productTitle,
   onSelectSizeCatalogItem,
   onSelectCustomSizeRequest,
-  isSizeItemSelectable,
 }: CustomizeSizeModalProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const exitDurationMs = prefersReducedMotion
@@ -98,20 +86,13 @@ export function CustomizeSizeModal({
     isOpen,
     exitDurationMs,
   });
-  const modalMotion = {
-    isEntered,
-    isExiting,
-    skipEnterAnimation: prefersReducedMotion,
-  };
+  const modalMotion = { isEntered, isExiting };
   const titleId = useId();
   const searchInputId = useId();
   const [sizeSearchQuery, setSizeSearchQuery] = useState('');
   const [customOrderDraft, setCustomOrderDraft] = useState<CustomOrderDraft>(EMPTY_CUSTOM_ORDER_DRAFT);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [isSubmittingCustomOrder, setIsSubmittingCustomOrder] = useState(false);
-  const [customOrderSubmitSuccess, setCustomOrderSubmitSuccess] = useState(false);
   const [customOrderSubmitError, setCustomOrderSubmitError] = useState<string | null>(null);
-  const [pendingSizeItem, setPendingSizeItem] = useState<SizeCatalogItemDto | null>(null);
 
   const filteredSizeCategories = useMemo(
     () =>
@@ -138,36 +119,19 @@ export function CustomizeSizeModal({
     setSizeSearchQuery('');
     setCustomOrderDraft(EMPTY_CUSTOM_ORDER_DRAFT);
     setIsUploadingImage(false);
-    setIsSubmittingCustomOrder(false);
-    setCustomOrderSubmitSuccess(false);
     setCustomOrderSubmitError(null);
   }, [isMounted]);
 
-  const hasPendingSizeSelection = pendingSizeItem !== null;
-
-  useBodyScrollLock(isMounted || hasPendingSizeSelection);
-
   useEffect(() => {
-    if (isMounted || !pendingSizeItem) {
+    if (!isMounted) {
       return;
     }
-
-    const item = pendingSizeItem;
-    onSelectSizeCatalogItem(item);
-
-    let outerFrameId = 0;
-    let innerFrameId = 0;
-    outerFrameId = requestAnimationFrame(() => {
-      innerFrameId = requestAnimationFrame(() => {
-        setPendingSizeItem(null);
-      });
-    });
-
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     return () => {
-      cancelAnimationFrame(outerFrameId);
-      cancelAnimationFrame(innerFrameId);
+      document.body.style.overflow = previousOverflow;
     };
-  }, [isMounted, pendingSizeItem, onSelectSizeCatalogItem]);
+  }, [isMounted]);
 
   useEffect(() => {
     if (!isMounted) {
@@ -251,13 +215,20 @@ export function CustomizeSizeModal({
     }
   }, [language]);
 
-  const handleCustomOrderSubmit = useCallback(async (draft: CustomOrderDraft) => {
-    if (!isCustomOrderDraftValid(draft)) {
+  const handleCustomOrderSubmit = useCallback((draft: CustomOrderDraft) => {
+    const canSubmit =
+      draft.name.trim() &&
+      draft.phone.trim() &&
+      draft.email.trim() &&
+      draft.description.trim() &&
+      draft.imageDataUrl.trim();
+
+    if (!canSubmit) {
       setCustomOrderSubmitError(t(language, 'product.size_catalog_custom_order_required_fields'));
       return;
     }
-
-    const normalizedDraft: CustomOrderDraft = {
+    setCustomOrderSubmitError(null);
+    onSelectCustomSizeRequest({
       ...draft,
       name: draft.name.trim(),
       phone: draft.phone.trim(),
@@ -265,51 +236,27 @@ export function CustomizeSizeModal({
       description: draft.description.trim(),
       imageDataUrl: draft.imageDataUrl.trim(),
       imageFileName: draft.imageFileName.trim(),
-    };
-
-    setCustomOrderSubmitError(null);
-    setCustomOrderSubmitSuccess(false);
-    setIsSubmittingCustomOrder(true);
-
-    try {
-      await submitCustomSizeOrder({
-        draft: normalizedDraft,
-        productId,
-        productTitle,
-      });
-      onSelectCustomSizeRequest(normalizedDraft);
-      setCustomOrderSubmitSuccess(true);
-      window.setTimeout(() => {
-        onClose();
-      }, 1500);
-    } catch (error: unknown) {
-      const apiMessage = getCustomSizeOrderSubmitErrorMessage(error);
-      setCustomOrderSubmitError(
-        apiMessage || t(language, 'product.size_catalog_custom_order_submit_failed')
-      );
-    } finally {
-      setIsSubmittingCustomOrder(false);
-    }
-  }, [language, onClose, onSelectCustomSizeRequest, productId, productTitle]);
-
-  const handlePickSizeItem = useCallback(
-    (item: SizeCatalogItemDto) => {
-      if (isSizeItemSelectable && !isSizeItemSelectable(item)) {
-        return;
-      }
-      setPendingSizeItem(item);
-      onClose();
-    },
-    [isSizeItemSelectable, onClose]
-  );
+    });
+    onClose();
+  }, [language, onClose, onSelectCustomSizeRequest]);
 
   if (!isMounted) {
     return null;
   }
 
-  const canSubmitCustomOrder = isCustomOrderDraftValid(customOrderDraft);
+  const canSubmitCustomOrder =
+    customOrderDraft.name.trim().length > 0 &&
+    customOrderDraft.phone.trim().length > 0 &&
+    customOrderDraft.email.trim().length > 0 &&
+    customOrderDraft.description.trim().length > 0 &&
+    customOrderDraft.imageDataUrl.trim().length > 0;
 
-  return createPortal(
+  const handlePickSizeItem = (item: SizeCatalogItemDto) => {
+    onSelectSizeCatalogItem(item);
+    onClose();
+  };
+
+  return (
     <div
       className={`fixed inset-0 z-[110] ${isExiting ? 'pointer-events-none' : ''}`}
       role="presentation"
@@ -330,10 +277,13 @@ export function CustomizeSizeModal({
         <div className="relative min-h-0 flex-1 overflow-y-auto px-[24px] pb-16 pt-[50px] sm:px-[50px]">
           <div
             className={`flex items-start justify-between gap-4 ${sizeModalBlockClass(modalMotion)}`}
-            style={sizeModalBlockEnterStyle(
-              SIZE_MODAL_BLOCK_ENTER_DELAY_HEADER_MS,
-              modalMotion
-            )}
+            style={{
+              transitionDelay: sizeModalBlockTransitionDelay(
+                SIZE_MODAL_BLOCK_ENTER_DELAY_HEADER_MS,
+                0,
+                modalMotion
+              ),
+            }}
           >
             <h2 id={titleId} className="font-montserrat text-[28px] font-extrabold leading-none text-[#414141] sm:text-[36px]">
               {t(language, 'product.choose_size')}
@@ -357,10 +307,13 @@ export function CustomizeSizeModal({
           {hasAnyCatalogItems ? (
             <div
               className={`mt-6 w-full max-w-[978px] ${sizeModalBlockClass(modalMotion)}`}
-              style={sizeModalBlockEnterStyle(
-                SIZE_MODAL_BLOCK_ENTER_DELAY_SEARCH_MS,
-                modalMotion
-              )}
+              style={{
+                transitionDelay: sizeModalBlockTransitionDelay(
+                  SIZE_MODAL_BLOCK_ENTER_DELAY_SEARCH_MS,
+                  0,
+                  modalMotion
+                ),
+              }}
             >
               <label htmlFor={searchInputId} className="sr-only">
                 {t(language, 'product.size_catalog_search_placeholder')}
@@ -377,7 +330,16 @@ export function CustomizeSizeModal({
             </div>
           ) : null}
 
-          <div className={`mt-10 ${sizeModalContentClass(modalMotion)}`}>
+          <div
+            className={`mt-10 ${sizeModalContentClass(modalMotion)}`}
+            style={{
+              transitionDelay: sizeModalBlockTransitionDelay(
+                SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS,
+                0,
+                modalMotion
+              ),
+            }}
+          >
             {hasAnyCatalogItems && !hasFilteredItems && sizeSearchQuery.trim().length > 0 ? (
               <CustomizeSizeOrderFallback
                   language={language}
@@ -386,8 +348,7 @@ export function CustomizeSizeModal({
                   onUploadImage={handleCustomOrderImageUpload}
                   onSubmit={handleCustomOrderSubmit}
                   isUploadingImage={isUploadingImage}
-                  isSubmitting={isSubmittingCustomOrder}
-                  submitSuccess={customOrderSubmitSuccess}
+                  isSubmitting={false}
                   submitError={customOrderSubmitError}
                   canSubmit={canSubmitCustomOrder}
               />
@@ -399,13 +360,11 @@ export function CustomizeSizeModal({
                 modalMotion={modalMotion}
                 suppressEnterAnimation={isExiting}
                 onSelectItem={handlePickSizeItem}
-                isItemSelectable={isSizeItemSelectable}
               />
             )}
           </div>
         </div>
       </div>
-    </div>,
-    document.body
+    </div>
   );
 }

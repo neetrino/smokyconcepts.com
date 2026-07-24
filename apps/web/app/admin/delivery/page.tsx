@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card, Button } from '@shop/ui';
 import { apiClient } from '../../../lib/api-client';
-import { AdminMobileNavigation } from '../components/AdminMobileNavigation';
+import { AdminMenuDrawer } from '../../../components/AdminMenuDrawer';
 import { useTranslation } from '../../../lib/i18n-client';
 import { getAdminMenuTABS } from '../admin-menu.config';
 import {
@@ -135,7 +135,7 @@ export default function DeliveryPage() {
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="lg:hidden mb-6">
-            <AdminMobileNavigation currentPath="/supersudo/delivery" />
+            <AdminMenuDrawer tabs={adminTabs} currentPath="/supersudo/delivery" />
           </div>
           {/* Sidebar Navigation */}
           <aside className={ADMIN_FIXED_SIDEBAR_CLASS}>

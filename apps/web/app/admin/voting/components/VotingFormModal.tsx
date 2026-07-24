@@ -10,16 +10,7 @@ import { useTranslation } from '@/lib/i18n-client';
 import type { VotingFormData } from '../types';
 
 const ALL_CATEGORIES_VALUE = '__all__';
-const ALL_PUBLISH_STATUSES_VALUE = '__all__';
-const PUBLISH_FILTER_ACTIVE = 'active';
-const PUBLISH_FILTER_DRAFT = 'draft';
 const ADMIN_PRODUCTS_PAGE_SIZE = 100;
-
-const VOTING_PRODUCT_FILTER_SELECT_CLASS_NAME =
-  'h-11 w-full rounded-md border border-[#dcc090]/35 bg-white px-3 text-sm text-[#122a26] outline-none focus:border-[#dcc090] focus:ring-2 focus:ring-[#dcc090]/30';
-
-const VOTING_MODAL_CLOSE_BUTTON_CLASS_NAME =
-  'flex size-9 shrink-0 items-center justify-center rounded-md text-[#414141]/70 transition hover:bg-[#efefef] hover:text-[#122a26] disabled:cursor-not-allowed disabled:opacity-50';
 
 interface VotingPickerProduct {
   id: string;
@@ -62,7 +53,6 @@ export function VotingFormModal({
   const [productsLoadError, setProductsLoadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORIES_VALUE);
-  const [selectedPublishStatus, setSelectedPublishStatus] = useState(ALL_PUBLISH_STATUSES_VALUE);
 
   const fetchProducts = useCallback(async () => {
     setProductsLoading(true);
@@ -106,18 +96,11 @@ export function VotingFormModal({
 
       const uniqueProducts = new Map<string, VotingPickerProduct>();
       mergedProducts.forEach((product) => {
-        if (!uniqueProducts.has(product.id)) {
+        if (product.published && !uniqueProducts.has(product.id)) {
           uniqueProducts.set(product.id, product);
         }
       });
-      setProducts(
-        Array.from(uniqueProducts.values()).sort((a, b) => {
-          if (a.published !== b.published) {
-            return a.published ? -1 : 1;
-          }
-          return a.title.localeCompare(b.title);
-        }),
-      );
+      setProducts(Array.from(uniqueProducts.values()));
     } catch {
       setProducts([]);
       setProductsLoadError(t('admin.voting.productsLoadError'));
@@ -149,14 +132,6 @@ export function VotingFormModal({
           return false;
         }
 
-        if (selectedPublishStatus === PUBLISH_FILTER_ACTIVE && !product.published) {
-          return false;
-        }
-
-        if (selectedPublishStatus === PUBLISH_FILTER_DRAFT && product.published) {
-          return false;
-        }
-
         if (!normalizedQuery) {
           return true;
         }
@@ -167,13 +142,10 @@ export function VotingFormModal({
         );
       })
       .sort((a, b) => a.title.localeCompare(b.title));
-  }, [products, searchQuery, selectedCategory, selectedPublishStatus]);
+  }, [products, searchQuery, selectedCategory]);
 
   useEffect(() => {
     if (!isOpen) {
-      setSearchQuery('');
-      setSelectedCategory(ALL_CATEGORIES_VALUE);
-      setSelectedPublishStatus(ALL_PUBLISH_STATUSES_VALUE);
       return;
     }
     fetchProducts().catch(() => undefined);
@@ -194,37 +166,12 @@ export function VotingFormModal({
     return null;
   }
 
-  const modalTitle = isCreateMode ? t('admin.voting.addChoice') : t('admin.voting.editChoice');
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      onClick={saving || productsLoading ? undefined : onClose}
-      role="presentation"
-    >
-      <div
-        className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-lg bg-white p-6 shadow-xl"
-        onClick={(event) => event.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="voting-form-modal-title"
-      >
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <h3 id="voting-form-modal-title" className="text-lg font-semibold text-gray-900">
-            {modalTitle}
-          </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={saving || productsLoading}
-            className={VOTING_MODAL_CLOSE_BUTTON_CLASS_NAME}
-            aria-label={t('admin.common.close')}
-          >
-            <svg className="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="mx-4 max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-lg bg-white p-6">
+        <h3 className="mb-4 text-lg font-semibold text-gray-900">
+          {isCreateMode ? t('admin.voting.addChoice') : t('admin.voting.editChoice')}
+        </h3>
 
         <div className="space-y-4">
           <div>
@@ -247,16 +194,9 @@ export function VotingFormModal({
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate text-sm font-semibold text-[#122a26]">
-                      {selectedProduct.title}
-                    </p>
-                    {!selectedProduct.published ? (
-                      <span className="shrink-0 rounded-full bg-[#414141]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#414141]">
-                        {t('admin.products.draft')}
-                      </span>
-                    ) : null}
-                  </div>
+                  <p className="truncate text-sm font-semibold text-[#122a26]">
+                    {selectedProduct.title}
+                  </p>
                   <p className="truncate text-xs text-gray-600">{selectedProduct.slug}</p>
                 </div>
               </div>
@@ -269,13 +209,12 @@ export function VotingFormModal({
 
           <div>
             <p className="mb-2 text-xs text-gray-500">{t('admin.voting.chooseProductHint')}</p>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[12rem_11rem_minmax(0,1fr)]">
+            <div className="grid gap-3 sm:grid-cols-[16rem_minmax(0,1fr)]">
               <select
                 value={selectedCategory}
                 onChange={(event) => setSelectedCategory(event.target.value)}
                 disabled={saving || productsLoading}
-                className={VOTING_PRODUCT_FILTER_SELECT_CLASS_NAME}
-                aria-label={t('admin.voting.allCategories')}
+                className="h-11 w-full rounded-md border border-[#dcc090]/35 bg-white px-3 text-sm text-[#122a26] outline-none focus:border-[#dcc090] focus:ring-2 focus:ring-[#dcc090]/30"
               >
                 <option value={ALL_CATEGORIES_VALUE}>{t('admin.voting.allCategories')}</option>
                 {categoryOptions
@@ -286,23 +225,11 @@ export function VotingFormModal({
                     </option>
                   ))}
               </select>
-              <select
-                value={selectedPublishStatus}
-                onChange={(event) => setSelectedPublishStatus(event.target.value)}
-                disabled={saving || productsLoading}
-                className={VOTING_PRODUCT_FILTER_SELECT_CLASS_NAME}
-                aria-label={t('admin.voting.allPublishStatuses')}
-              >
-                <option value={ALL_PUBLISH_STATUSES_VALUE}>{t('admin.voting.allPublishStatuses')}</option>
-                <option value={PUBLISH_FILTER_ACTIVE}>{t('admin.products.published')}</option>
-                <option value={PUBLISH_FILTER_DRAFT}>{t('admin.products.draft')}</option>
-              </select>
               <Input
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder={t('admin.voting.productSearchPlaceholder')}
                 disabled={saving || productsLoading}
-                className="sm:col-span-2 lg:col-span-1"
               />
             </div>
           </div>
@@ -352,11 +279,6 @@ export function VotingFormModal({
                         <p className="mt-2 line-clamp-2 text-sm font-semibold text-[#122a26]">
                           {product.title}
                         </p>
-                        {!product.published ? (
-                          <span className="mt-1 inline-block rounded-full bg-[#414141]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#414141]">
-                            {t('admin.products.draft')}
-                          </span>
-                        ) : null}
                         <p className="mt-1 truncate text-xs text-gray-500">{product.slug}</p>
                         <p className="mt-1 text-[11px] font-medium text-[#414141]/70">
                           {isActive ? t('admin.voting.selected') : t('admin.voting.selectForVoting')}

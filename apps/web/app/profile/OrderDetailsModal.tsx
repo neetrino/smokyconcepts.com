@@ -3,7 +3,6 @@ import { OrderItems } from '../orders/[number]/components/OrderItems';
 import { OrderSummary } from '../orders/[number]/components/OrderSummary';
 import type { Order } from '../orders/[number]/types';
 import { resolveShippingCountryLabel } from '../../lib/shipping-address-display';
-import { formatDisplayDate } from '@/lib/format-display-date';
 import { getStatusColor, getPaymentStatusColor } from './utils';
 import type { OrderDetails } from './types';
 
@@ -47,7 +46,7 @@ export function OrderDetailsModal({
               </h2>
               <p className="text-sm text-gray-600 mt-1">
                 {t('profile.orderDetails.placedOn')}{' '}
-                {formatDisplayDate(selectedOrder.createdAt)}
+                {new Date(selectedOrder.createdAt).toLocaleDateString()}
               </p>
             </div>
             <div className="flex items-center gap-3">

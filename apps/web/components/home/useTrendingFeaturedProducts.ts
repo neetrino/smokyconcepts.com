@@ -4,6 +4,7 @@ import { apiClient } from '../../lib/api-client';
 import type { CatalogProduct } from '../../app/products/components/catalogProductLabels';
 import { TRENDING_FEATURED_PAGE_SIZE } from './trendingFeatured.constants';
 import {
+  groupCatalogByCategory,
   mapApiProductToCatalogProduct,
   PLACEHOLDER_IMAGE,
 } from './trendingFeaturedPages';
@@ -53,7 +54,7 @@ export function useTrendingFeaturedProducts() {
           }
           return mappedProduct;
         });
-      setItems(mapped);
+      setItems(groupCatalogByCategory(mapped));
     } catch (err) {
       console.error('TrendingFeaturedSection: failed to load featured products', err);
       setError('load_error');

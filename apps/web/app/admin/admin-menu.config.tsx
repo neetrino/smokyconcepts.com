@@ -289,17 +289,4 @@ export function getAdminMenuTABS(t: (path: string) => string): AdminMenuItem[] {
     : tabs.filter((item) => item.id !== 'price-filter-settings');
 }
 
-const ADMIN_MOBILE_MENU_IDS = ['analytics', 'orders'] as const;
-
-/**
- * Mobile admin navigation: analytics and orders only (hub + drawer).
- */
-export function getAdminMobileMenuTabs(t: (path: string) => string): AdminMenuItem[] {
-  const byId = new Map(getAdminMenuTABS(t).map((tab) => [tab.id, tab]));
-  return ADMIN_MOBILE_MENU_IDS.flatMap((id) => {
-    const tab = byId.get(id);
-    return tab ? [tab] : [];
-  });
-}
-
 

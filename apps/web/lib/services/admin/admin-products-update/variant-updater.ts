@@ -72,7 +72,7 @@ function normalizeVariantAttributes(
 
 async function updateExistingVariant(
   variantId: string,
-  variant: { sku?: string; imageUrl?: string; attributes?: unknown; published?: boolean; position?: number },
+  variant: { sku?: string; imageUrl?: string; attributes?: unknown; published?: boolean },
   price: number,
   stock: number,
   compareAtPrice: number | undefined,
@@ -89,7 +89,6 @@ async function updateExistingVariant(
       imageUrl: processedVariantImageUrl,
       attributes: normalizeVariantAttributes(variant.attributes),
       published: variant.published !== false,
-      ...(typeof variant.position === 'number' ? { position: variant.position } : {}),
     },
   });
   logger.info("Updated variant", { variantId });
@@ -97,7 +96,7 @@ async function updateExistingVariant(
 
 async function createNewVariant(
   productId: string,
-  variant: { sku?: string; imageUrl?: string; attributes?: unknown; published?: boolean; position?: number },
+  variant: { sku?: string; imageUrl?: string; attributes?: unknown; published?: boolean },
   price: number,
   stock: number,
   compareAtPrice: number | undefined,
@@ -124,7 +123,6 @@ async function createNewVariant(
       imageUrl: processedVariantImageUrl,
       attributes: normalizeVariantAttributes(variant.attributes),
       published: variant.published !== false,
-      position: typeof variant.position === 'number' ? variant.position : 0,
     },
   });
   logger.info("Created new variant", { variantId: newVariant.id });
@@ -141,7 +139,6 @@ export async function updateOrCreateVariant(
     imageUrl?: string;
     attributes?: unknown;
     published?: boolean;
-    position?: number;
   },
   productId: string,
   _locale: string,

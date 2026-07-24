@@ -2,20 +2,16 @@
 
 import { useEffect, useState } from 'react';
 
-/** Matches size grid: `grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7`. */
+/** Matches legacy size grid: `grid-cols-3 md:grid-cols-4 lg:grid-cols-7`. */
 const QUERY_MD_MIN_WIDTH = '(min-width: 768px)';
-const QUERY_XL_MIN_WIDTH = '(min-width: 1280px)';
-const QUERY_2XL_MIN_WIDTH = '(min-width: 1536px)';
+const QUERY_LG_MIN_WIDTH = '(min-width: 1024px)';
 
 function readItemsPerRow(): number {
   if (typeof window === 'undefined') {
     return 3;
   }
-  if (window.matchMedia(QUERY_2XL_MIN_WIDTH).matches) {
+  if (window.matchMedia(QUERY_LG_MIN_WIDTH).matches) {
     return 7;
-  }
-  if (window.matchMedia(QUERY_XL_MIN_WIDTH).matches) {
-    return 5;
   }
   if (window.matchMedia(QUERY_MD_MIN_WIDTH).matches) {
     return 4;
@@ -34,15 +30,12 @@ export function useSizeCatalogItemsPerRow(): number {
       setItemsPerRow(readItemsPerRow());
     };
     update();
-    const mq2Xl = window.matchMedia(QUERY_2XL_MIN_WIDTH);
-    const mqXl = window.matchMedia(QUERY_XL_MIN_WIDTH);
+    const mqLg = window.matchMedia(QUERY_LG_MIN_WIDTH);
     const mqMd = window.matchMedia(QUERY_MD_MIN_WIDTH);
-    mq2Xl.addEventListener('change', update);
-    mqXl.addEventListener('change', update);
+    mqLg.addEventListener('change', update);
     mqMd.addEventListener('change', update);
     return () => {
-      mq2Xl.removeEventListener('change', update);
-      mqXl.removeEventListener('change', update);
+      mqLg.removeEventListener('change', update);
       mqMd.removeEventListener('change', update);
     };
   }, []);

@@ -5,87 +5,6 @@ import { useAuth } from '../../../lib/auth/AuthContext';
 import type { CheckoutFormData } from '../types';
 import type { DeliveryLocationOption } from './useDeliveryLocations';
 
-type ProfileAddressResponse = {
-  id: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  state?: string;
-  countryCode?: string;
-  isDefault?: boolean;
-};
-
-type ProfileResponse = {
-  id: string;
-  email?: string;
-  phone?: string;
-  firstName?: string;
-  lastName?: string;
-  addresses?: ProfileAddressResponse[];
-};
-
-function setContactFormValues(
-  values: {
-    firstName?: string | null;
-    lastName?: string | null;
-    email?: string | null;
-    phone?: string | null;
-  },
-  setValue: UseFormSetValue<CheckoutFormData>,
-) {
-  if (values.firstName) {
-    setValue('firstName', values.firstName);
-  }
-  if (values.lastName) {
-    setValue('lastName', values.lastName);
-  }
-  if (values.email) {
-    setValue('email', values.email);
-  }
-  if (values.phone) {
-    setValue('phone', values.phone);
-  }
-}
-
-function resolveRegionByAddressState(
-  stateValue: string | undefined,
-  deliveryLocations: DeliveryLocationOption[],
-) {
-  const stateTrim = stateValue?.trim();
-  if (!stateTrim || deliveryLocations.length === 0) {
-    return null;
-  }
-
-  const byId = deliveryLocations.find((location) => location.id === stateTrim);
-  if (byId) {
-    return byId;
-  }
-
-  return (
-    deliveryLocations.find(
-      (location) => location.city.toLowerCase() === stateTrim.toLowerCase(),
-    ) ?? null
-  );
-}
-
-function applyDefaultAddressToCheckoutForm(
-  address: ProfileAddressResponse,
-  deliveryLocations: DeliveryLocationOption[],
-  setValue: UseFormSetValue<CheckoutFormData>,
-) {
-  const line1 = address.addressLine1?.trim();
-  if (line1) {
-    const line2 = address.addressLine2?.trim();
-    setValue('shippingAddress', line2 ? `${line1}, ${line2}` : line1);
-  }
-
-  const matchedRegion = resolveRegionByAddressState(address.state, deliveryLocations);
-  if (matchedRegion) {
-    setValue('shippingCountry', matchedRegion.country);
-    setValue('shippingRegion', matchedRegion.id);
-  }
-}
-
 export function useUserProfile(
   isLoggedIn: boolean,
   isLoading: boolean,
@@ -100,31 +19,90 @@ export function useUserProfile(
         return;
       }
 
-      if (!isLoggedIn) {
-        return;
-      }
-
-      if (user) {
-        setContactFormValues(user, setValue);
-      }
-
-      try {
-        const profile = await apiClient.get<ProfileResponse>('/api/v1/users/profile');
-        setContactFormValues(profile, setValue);
-
-        const addresses = profile.addresses ?? [];
-        if (addresses.length === 0) {
-          return;
+      if (isLoggedIn) {
+        if (user) {
+          if (user.firstName) {
+            setValue('firstName', user.firstName);
+          }
+          if (user.lastName) {
+            setValue('lastName', user.lastName);
+          }
+          if (user.email) {
+            setValue('email', user.email);
+          }
+          if (user.phone) {
+            setValue('phone', user.phone);
+          }
         }
+        
+        try {
+          const profile = await apiClient.get<{
+            id: string;
+            email?: string;
+            phone?: string;
+            firstName?: string;
+            lastName?: string;
+            addresses?: Array<{
+              id: string;
+              firstName?: string;
+              lastName?: string;
+              addressLine1?: string;
+              addressLine2?: string;
+              city?: string;
+              state?: string;
+              postalCode?: string;
+              countryCode?: string;
+              phone?: string;
+              isDefault?: boolean;
+            }>;
+          }>('/api/v1/users/profile');
+          
+          if (profile.firstName) {
+            setValue('firstName', profile.firstName);
+          }
+          if (profile.lastName) {
+            setValue('lastName', profile.lastName);
+          }
+          if (profile.email) {
+            setValue('email', profile.email);
+          }
+          if (profile.phone) {
+            setValue('phone', profile.phone);
+          }
+          
+          if (profile.addresses && profile.addresses.length > 0) {
+            const defaultAddress = profile.addresses.find(addr => addr.isDefault) || profile.addresses[0];
+            
+            if (defaultAddress) {
+              if (defaultAddress.addressLine1) {
+                const fullAddress = defaultAddress.addressLine2 
+                  ? `${defaultAddress.addressLine1}, ${defaultAddress.addressLine2}`
+                  : defaultAddress.addressLine1;
+                setValue('shippingAddress', fullAddress);
+              }
 
-        const defaultAddress =
-          addresses.find((address) => address.isDefault) ?? addresses[0];
-        applyDefaultAddressToCheckoutForm(defaultAddress, deliveryLocations, setValue);
-      } catch {
-        // Silently fail - use auth context data instead
+              const stateTrim = defaultAddress.state?.trim();
+              if (stateTrim && deliveryLocations.length > 0) {
+                const byId = deliveryLocations.find((l) => l.id === stateTrim);
+                const byCity =
+                  byId ??
+                  deliveryLocations.find(
+                    (l) => l.city.toLowerCase() === stateTrim.toLowerCase(),
+                  );
+                if (byCity) {
+                  setValue('shippingCountry', byCity.country);
+                  setValue('shippingRegion', byCity.id);
+                }
+              }
+            }
+          }
+        } catch {
+          // Silently fail - use auth context data instead
+        }
       }
     }
-
-    void loadUserProfile();
+    
+    loadUserProfile();
   }, [isLoggedIn, isLoading, user?.id, setValue, deliveryLocations]);
 }
+

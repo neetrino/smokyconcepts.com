@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import type { Category, Variant, ProductLabel, GeneratedVariant } from '../types';
 import type { CategoryAttribute } from '@/lib/category-attributes';
-import type { ProductFormFieldId } from '../constants/productFormFieldIds.constants';
+import { DEFAULT_SIMPLE_PRODUCT_DATA } from '../constants/defaultSimpleProductData.constants';
 
 export function useProductFormState() {
   const [loading, setLoading] = useState(false);
@@ -34,18 +34,23 @@ export function useProductFormState() {
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [useNewCategory, setUseNewCategory] = useState(false);
+  const [productType, setProductType] = useState<'simple' | 'variable'>('simple');
+  const [simpleProductData, setSimpleProductData] = useState({
+    price: DEFAULT_SIMPLE_PRODUCT_DATA.price,
+    compareAtPrice: DEFAULT_SIMPLE_PRODUCT_DATA.compareAtPrice,
+    sku: DEFAULT_SIMPLE_PRODUCT_DATA.sku,
+    quantity: DEFAULT_SIMPLE_PRODUCT_DATA.quantity,
+  });
   const [generatedVariants, setGeneratedVariants] = useState<GeneratedVariant[]>([]);
   const [hasVariantsToLoad, setHasVariantsToLoad] = useState(false);
   const [categoryAttributes, setCategoryAttributes] = useState<CategoryAttribute[]>([]);
   const [selectedAttributeValueIds, setSelectedAttributeValueIds] = useState<Record<string, string[]>>({});
   /** Which global attributes participate in this product (checkbox in Select attributes). */
   const [enabledAttributeIds, setEnabledAttributeIds] = useState<Record<string, boolean>>({});
-  /** Enable / restore order for attribute columns in the variants table and PDP. */
-  const [enabledAttributeOrder, setEnabledAttributeOrder] = useState<string[]>([]);
+  /** When false (edit: product has no selectable variants), only Simple type is shown. */
+  const [variableProductTypeAllowed, setVariableProductTypeAllowed] = useState(true);
   /** i18n key under admin.products.add.* — client validation message above submit. */
   const [submitErrorKey, setSubmitErrorKey] = useState<string | null>(null);
-  /** DOM field id to scroll to and highlight when validation fails. */
-  const [submitErrorFieldId, setSubmitErrorFieldId] = useState<ProductFormFieldId | null>(null);
 
   return {
     loading,
@@ -70,6 +75,10 @@ export function useProductFormState() {
     setNewCategoryName,
     useNewCategory,
     setUseNewCategory,
+    productType,
+    setProductType,
+    simpleProductData,
+    setSimpleProductData,
     generatedVariants,
     setGeneratedVariants,
     hasVariantsToLoad,
@@ -80,12 +89,10 @@ export function useProductFormState() {
     setSelectedAttributeValueIds,
     enabledAttributeIds,
     setEnabledAttributeIds,
-    enabledAttributeOrder,
-    setEnabledAttributeOrder,
+    variableProductTypeAllowed,
+    setVariableProductTypeAllowed,
     submitErrorKey,
     setSubmitErrorKey,
-    submitErrorFieldId,
-    setSubmitErrorFieldId,
   };
 }
 

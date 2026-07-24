@@ -67,7 +67,7 @@ export function AttributeValuesModal({
 
   useEffect(() => {
     if (open) {
-      setDraftIds([...initialSelectedIds]);
+      setDraftIds([...initialSelectedIds].sort());
     }
   }, [open, initialSelectedIds]);
 
@@ -80,7 +80,7 @@ export function AttributeValuesModal({
 
   const toggleId = (id: string) => {
     setDraftIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id].sort()
     );
   };
 

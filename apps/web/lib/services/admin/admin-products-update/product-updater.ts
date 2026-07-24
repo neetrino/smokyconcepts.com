@@ -1,8 +1,6 @@
 import { Prisma } from "@prisma/client";
-import { sanitizeProductRichHtmlFields } from "@/lib/security/sanitize-product-html.server";
 import { logger } from "../../utils/logger";
 import { cleanImageUrls, separateMainAndVariantImages, smartSplitUrls } from "../../utils/image-utils";
-import { mergeProductMediaMetadata, type ProductMediaItem } from "../../utils/product-media";
 import type { UpdateProductData } from "./types";
 
 /**
@@ -83,7 +81,7 @@ export function buildProductUpdateData(
 ): {
   primaryCategoryId?: string | null;
   categoryIds?: string[];
-  media?: ProductMediaItem[];
+  media?: string[];
   published?: boolean;
   publishedAt?: Date;
   featured?: boolean;
@@ -92,7 +90,7 @@ export function buildProductUpdateData(
   const updateData: {
     primaryCategoryId?: string | null;
     categoryIds?: string[];
-    media?: ProductMediaItem[];
+    media?: string[];
     published?: boolean;
     publishedAt?: Date;
     featured?: boolean;
@@ -108,9 +106,8 @@ export function buildProductUpdateData(
       data.media as Array<string | { url?: string; src?: string; value?: string }>,
       allVariantImages
     );
-    const mergedMedia = mergeProductMediaMetadata(cleanImageUrls(main), data.media as Array<string | ProductMediaItem>);
-    updateData.media = mergedMedia;
-    logger.debug('Updated main media', { count: mergedMedia.length, variantImagesExcluded: allVariantImages.length });
+    updateData.media = cleanImageUrls(main);
+    logger.debug('Updated main media', { count: updateData.media.length, variantImagesExcluded: allVariantImages.length });
   }
   
   if (data.published !== undefined) {
@@ -148,12 +145,6 @@ export async function updateProductTranslation(
       ? await resolveUniqueSlug(tx, data.slug, productId)
       : undefined;
 
-    const sanitizedHtml = sanitizeProductRichHtmlFields({
-      descriptionHtml: data.descriptionHtml,
-      productDetailsHtml: data.productDetailsHtml,
-      shippingHtml: data.shippingHtml,
-    });
-
     await tx.productTranslation.upsert({
       where: {
         productId_locale: {
@@ -165,13 +156,11 @@ export async function updateProductTranslation(
         ...(data.title && { title: data.title }),
         ...(finalSlug && { slug: finalSlug }),
         ...(data.subtitle !== undefined && { subtitle: data.subtitle || null }),
-        ...(data.descriptionHtml !== undefined && {
-          descriptionHtml: sanitizedHtml.descriptionHtml,
-        }),
+        ...(data.descriptionHtml !== undefined && { descriptionHtml: data.descriptionHtml || null }),
         ...(data.productDetailsHtml !== undefined && {
-          productDetailsHtml: sanitizedHtml.productDetailsHtml,
+          productDetailsHtml: data.productDetailsHtml || null,
         }),
-        ...(data.shippingHtml !== undefined && { shippingHtml: sanitizedHtml.shippingHtml }),
+        ...(data.shippingHtml !== undefined && { shippingHtml: data.shippingHtml || null }),
       },
       create: {
         productId,
@@ -179,9 +168,9 @@ export async function updateProductTranslation(
         title: data.title || "",
         slug: finalSlug || data.slug || "",
         subtitle: data.subtitle || null,
-        descriptionHtml: sanitizedHtml.descriptionHtml,
-        productDetailsHtml: sanitizedHtml.productDetailsHtml,
-        shippingHtml: sanitizedHtml.shippingHtml,
+        descriptionHtml: data.descriptionHtml || null,
+        productDetailsHtml: data.productDetailsHtml || null,
+        shippingHtml: data.shippingHtml || null,
       },
     });
   }

@@ -17,12 +17,17 @@ export function AddProductPageContent() {
     handleSlugBlur,
     isClothingCategory,
     handleVariantAdd,
+    removeImageUrl,
+    setFeaturedImage,
+    handleUploadImages,
+    handleUploadImageFiles,
     handleUploadVariantImage,
     addLabel,
     removeLabel,
     updateLabel,
     handleCreateCategory,
     handleSubmit,
+    handleProductTypeChange,
     applyToAllVariants,
     generateSlug,
   } = useAddProductPage();
@@ -50,10 +55,13 @@ export function AddProductPageContent() {
         <AdminShell>
           <AddProductFormContent
             formData={formState.formData}
+            productType={formState.productType}
+            simpleProductData={formState.simpleProductData}
             categories={formState.categories}
             isEditMode={isEditMode}
             loading={formState.loading}
             imageUploadLoading={formState.imageUploadLoading}
+            imageUploadError={formState.imageUploadError}
             categoriesExpanded={formState.categoriesExpanded}
             useNewCategory={formState.useNewCategory}
             newCategoryName={formState.newCategoryName}
@@ -62,9 +70,8 @@ export function AddProductPageContent() {
             selectedAttributeValueIds={formState.selectedAttributeValueIds}
             enabledAttributeIds={formState.enabledAttributeIds}
             onEnabledAttributeIdsChange={formState.setEnabledAttributeIds}
-            enabledAttributeOrder={formState.enabledAttributeOrder}
-            onEnabledAttributeOrderChange={formState.setEnabledAttributeOrder}
             hasVariantsToLoad={formState.hasVariantsToLoad}
+            fileInputRef={formState.fileInputRef}
             variantImageInputRefs={formState.variantImageInputRefs}
             onTitleChange={handleTitleChange}
             onSlugChange={handleSlugChange}
@@ -74,12 +81,22 @@ export function AddProductPageContent() {
               formState.setFormData((prev) => ({ ...prev, productDetailsHtml: e.target.value }))
             }
             onShippingChange={(e) => formState.setFormData((prev) => ({ ...prev, shippingHtml: e.target.value }))}
+            variableProductTypeAllowed={formState.variableProductTypeAllowed}
+            onProductTypeChange={handleProductTypeChange}
+            onUploadImages={handleUploadImages}
+            onUploadImageFiles={handleUploadImageFiles}
+            onRemoveImage={removeImageUrl}
+            onSetFeaturedImage={setFeaturedImage}
             onCategoriesExpandedChange={formState.setCategoriesExpanded}
             onUseNewCategoryChange={formState.setUseNewCategory}
             onNewCategoryNameChange={formState.setNewCategoryName}
             onCategoryIdsChange={(ids) => formState.setFormData((prev) => ({ ...prev, categoryIds: ids }))}
             onPrimaryCategoryIdChange={(id) => formState.setFormData((prev) => ({ ...prev, primaryCategoryId: id }))}
             onCreateCategory={handleCreateCategory}
+            onPriceChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, price: value }))}
+            onCompareAtPriceChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, compareAtPrice: value }))}
+            onSkuChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, sku: value }))}
+            onQuantityChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, quantity: value }))}
             onVariantUpdate={formState.setGeneratedVariants}
             onVariantAdd={handleVariantAdd}
             onSelectedAttributeValueIdsChange={formState.setSelectedAttributeValueIds}
@@ -95,7 +112,6 @@ export function AddProductPageContent() {
             generateSlug={generateSlug}
             handleSubmit={handleSubmit}
             submitErrorKey={formState.submitErrorKey}
-            submitErrorFieldId={formState.submitErrorFieldId}
           />
         </AdminShell>
       </div>

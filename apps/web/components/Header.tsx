@@ -161,8 +161,8 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-[#122a26]">
-      <div className="relative mx-auto max-w-[120rem]">
-        <div className="flex h-16 items-center px-4 py-3 sm:px-8 lg:px-[7.5rem]">
+      <div className="mx-auto flex max-w-[120rem] flex-col px-4 sm:px-8 lg:px-[7.5rem]">
+        <div className="flex h-16 items-center py-3">
           <Link href="/" className="relative h-10 w-40 shrink-0">
             <img
               src={HEADER_ASSET_PATHS.logo}
@@ -191,10 +191,7 @@ export function Header() {
           </div>
         </div>
         {mobileMenuOpen ? (
-          <div
-            id={MOBILE_MENU_ID}
-            className="absolute left-0 right-0 top-full z-50 flex flex-col border-t border-white/10 bg-[#122a26] px-4 pb-4 pt-1 sm:px-8 lg:px-[7.5rem] md:hidden"
-          >
+          <div id={MOBILE_MENU_ID} className="flex flex-col border-t border-white/10 pb-4 pt-1 md:hidden">
             <nav className="flex flex-col" aria-label="Mobile primary">
               {NAVIGATION_ITEMS.map((item) => {
                 const isActive = pathname === item.href;

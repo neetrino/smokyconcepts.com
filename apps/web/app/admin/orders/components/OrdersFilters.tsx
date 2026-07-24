@@ -140,15 +140,6 @@ export function OrdersFilters({
           >
             {t('admin.orders.earlyAccessOrders')}
           </button>
-          <button
-            type="button"
-            onClick={() => handleOrderTypeChange('out_of_stock')}
-            className={`px-3 py-1 rounded-full transition-all ${
-              orderTypeFilter === 'out_of_stock' ? 'bg-[#122a26] text-[#dcc090] shadow-sm' : 'text-[#414141]/70 hover:text-[#122a26]'
-            }`}
-          >
-            {t('admin.orders.outOfStockOrders')}
-          </button>
         </div>
         {totalOrders !== null && (
           <p className="text-sm font-medium tabular-nums text-[#414141]/75">

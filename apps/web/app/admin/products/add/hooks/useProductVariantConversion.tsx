@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import type { GeneratedVariant } from '../types';
-import { smartSplitUrls } from '@/lib/services/utils/image-utils';
 
 interface UseProductVariantConversionProps {
   productId: string | null;
@@ -85,8 +84,6 @@ export function useProductVariantConversion({
         stock: number;
         sku: string;
         image: string | null;
-        images: string[];
-        mainImageIndex: number;
         originalVariantIds: string[];
       }
       
@@ -181,14 +178,17 @@ export function useProductVariantConversion({
           });
         }
         
-        let variantImages: string[] = [];
+        let variantImage: string | null = null;
         if (variant.imageUrl) {
           if (typeof variant.imageUrl === 'string' && variant.imageUrl.startsWith('data:')) {
-            variantImages = [variant.imageUrl];
-            console.log(`🖼️ [ADMIN] Variant ${variantIndex} base64 image length:`, variant.imageUrl.length);
+            variantImage = variant.imageUrl;
+            console.log(`🖼️ [ADMIN] Variant ${variantIndex} base64 image length:`, variantImage?.length || 0);
           } else {
-            variantImages = typeof variant.imageUrl === 'string' ? smartSplitUrls(variant.imageUrl) : [];
-            console.log(`🖼️ [ADMIN] Variant ${variantIndex} images count:`, variantImages.length);
+            const imageUrls = typeof variant.imageUrl === 'string' 
+              ? variant.imageUrl.split(',').map((url: string) => url.trim()).filter(Boolean)
+              : [];
+            variantImage = imageUrls.length > 0 ? imageUrls[0] : null;
+            console.log(`🖼️ [ADMIN] Variant ${variantIndex} imageUrl length:`, variant.imageUrl?.length || 0, '→ extracted image length:', variantImage?.length || 0);
           }
         } else {
           console.log(`🖼️ [ADMIN] Variant ${variantIndex} has no imageUrl`);
@@ -209,14 +209,12 @@ export function useProductVariantConversion({
 
         variantDataList.push({
           id: variant.id || `variant-${Date.now()}-${variantIndex}-${Math.random()}`,
-          selectedValueIds: selectedValueIds,
+          selectedValueIds: selectedValueIds.sort(),
           price: priceUsd,
           compareAtPrice: compareAtUsd,
           stock: variant.stock !== undefined && variant.stock !== null ? variant.stock : 0,
           sku: variant.sku || '',
-          image: variantImages[0] ?? null,
-          images: variantImages,
-          mainImageIndex: 0,
+          image: variantImage,
           originalVariantIds: [variant.id || `variant-${variantIndex}`],
         });
       });
@@ -244,12 +242,8 @@ export function useProductVariantConversion({
         stock: string;
         sku: string;
         image: string | null;
-        images: string[];
-        mainImageIndex: number;
-        isDisplayVariant: boolean;
       }> = [];
       
-      let convertedIndex = 0;
       variantGroups.forEach((group, groupKey) => {
         const allValueIds = new Set<string>();
         group.forEach(variantData => {
@@ -266,23 +260,17 @@ export function useProductVariantConversion({
           ? firstVariant.sku 
           : group.map(v => v.sku).filter(Boolean).join(', ');
         
-        const combinedImages = group.flatMap((variantData) => variantData.images);
-        const uniqueCombinedImages = [...new Set(combinedImages)];
-        const combinedImage = uniqueCombinedImages[0] ?? null;
+        const combinedImage = firstVariant.image;
         
         convertedVariants.push({
           id: `variant-group-${Date.now()}-${Math.random()}`,
-          selectedValueIds: Array.from(allValueIds),
+          selectedValueIds: Array.from(allValueIds).sort(),
           price: firstVariant.price.toString(),
           compareAtPrice: firstVariant.compareAtPrice !== null ? firstVariant.compareAtPrice.toString() : '',
           stock: stockValue.toString(),
           sku: combinedSku,
           image: combinedImage,
-          images: uniqueCombinedImages,
-          mainImageIndex: 0,
-          isDisplayVariant: convertedIndex === 0,
         });
-        convertedIndex += 1;
         
         console.log(`✅ [ADMIN] Grouped ${group.length} variants into 1 row:`, {
           groupKey,

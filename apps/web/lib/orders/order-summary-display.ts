@@ -9,9 +9,6 @@ import {
   roundCatalogAmd,
   type CurrencyCode,
 } from '@/lib/currency';
-import { resolveCartLineCollectionPriceAmd } from '@/app/cart/cart-line-pricing';
-import type { CartItem } from '@/app/cart/types';
-import { resolvePersistedOrderItemCollectionPriceAmd } from './resolve-persisted-order-item-collection-price-amd';
 
 export interface OrderTotalsLike {
   subtotal: number;
@@ -249,17 +246,6 @@ function usdAmountToAmdSnapshot(amountUsd: number): number {
   return roundCatalogAmd(convertPrice(amountUsd, 'USD', 'AMD'));
 }
 
-/** Discount row — AMD snapshot matches component-sum total on order/checkout summary. */
-export function formatOrderDiscountDisplay(
-  summary: Pick<OrderSummaryDisplayAmounts, 'discountUsd'>,
-  displayCurrency: CurrencyCode
-): string {
-  if (displayCurrency === 'AMD' && summary.discountUsd > 0) {
-    return formatCatalogPrice(usdAmountToAmdSnapshot(summary.discountUsd), 'AMD');
-  }
-  return formatOrderSummaryUsd(summary.discountUsd, displayCurrency);
-}
-
 function resolveShippingAmdForTotal(
   shippingUsd: number,
   shippingPriceAmd: number | null | undefined
@@ -384,32 +370,12 @@ export interface OrderListTotalsSource {
   summaryLines?: OrderLineForSummary[];
 }
 
-/** Build checkout-parity summary lines from live cart (same shape as persisted order items). */
-export function buildCheckoutSummaryLinesFromCart(
-  items: CartItem[],
-  categoryPriceByTitle?: Map<string, number>
-): OrderLineForSummary[] {
-  return items.map((item) => {
-    const collectionAmd = resolveCartLineCollectionPriceAmd(item, categoryPriceByTitle);
-    const collectionUnitUsd = collectionAmd > 0 ? adminInputAmdToUsd(collectionAmd) : 0;
-
-    return {
-      price: item.price + collectionUnitUsd,
-      quantity: item.quantity,
-      sizeCatalogCategoryPriceAmd: collectionAmd > 0 ? collectionAmd : null,
-      variantBasePriceAmd: item.catalogBasePriceAmd ?? null,
-    };
-  });
-}
-
 /** Build checkout-parity summary lines from persisted order items (list/detail). */
 export function buildOrderSummaryLinesFromPersistedItems(
   items: Array<{
     price?: number | null;
     quantity?: number | null;
     sizeCatalogTitle?: string | null;
-    customizePlain?: string | null;
-    customizeHtml?: string | null;
     variant?: { price?: number | null } | null;
   }>,
   orderCurrency: string,
@@ -426,21 +392,22 @@ export function buildOrderSummaryLinesFromPersistedItems(
         ? catalogPriceForStorefront(Number(item.variant.price))
         : null;
     const variantBaseUsd = catalogPriceToUsd(Number(item.variant?.price ?? Number.NaN));
+    const usdPerAmd = adminInputAmdToUsd(1);
     const normalizedTitle = item.sizeCatalogTitle?.trim().toLocaleLowerCase() ?? '';
     const mappedCollectionPriceAmd =
       normalizedTitle !== '' ? (priceMap.get(normalizedTitle) ?? null) : null;
-    const sizeCatalogCategoryPriceAmd = resolvePersistedOrderItemCollectionPriceAmd({
-      unitPriceUsd,
-      variantBaseUsd,
-      mappedCollectionPriceAmd,
-      customizePlain: item.customizePlain,
-      customizeHtml: item.customizeHtml,
-    });
+    const inferredCollectionPriceAmd =
+      Number.isFinite(variantBaseUsd) &&
+      Number.isFinite(unitPriceUsd) &&
+      Number.isFinite(usdPerAmd) &&
+      usdPerAmd > 0
+        ? Math.max(0, Math.round((unitPriceUsd - variantBaseUsd) / usdPerAmd))
+        : null;
 
     return {
       price: unitPriceUsd,
       quantity,
-      sizeCatalogCategoryPriceAmd,
+      sizeCatalogCategoryPriceAmd: mappedCollectionPriceAmd ?? inferredCollectionPriceAmd,
       variantBasePriceAmd,
     };
   });
@@ -474,13 +441,11 @@ export function formatOrderListShippingDisplay(
   return formatOrderShippingDisplay(shippingUsd, order.shippingPriceAmd, displayCurrency);
 }
 
-/**
- * Same totals as order list / profile rows — prefer AMD snapshot sum when available
- * so Total Spent matches the amount shown on each order card.
- */
-export function resolveOrderListTotalAmounts(
-  order: OrderListTotalsSource
-): Pick<OrderSummaryDisplayAmounts, 'totalUsd' | 'totalAmd'> {
+/** Order list / row total — uses persisted `total` when breakdown fields are missing. */
+export function formatOrderListTotalDisplay(
+  order: OrderListTotalsSource,
+  displayCurrency: CurrencyCode
+): string {
   const hasBreakdown =
     order.subtotal !== undefined &&
     order.discountAmount !== undefined &&
@@ -489,12 +454,10 @@ export function resolveOrderListTotalAmounts(
 
   if (!hasBreakdown) {
     const alreadyUsd = order.currency?.trim().toUpperCase() === 'USD';
-    return {
-      totalUsd: alreadyUsd
-        ? order.total
-        : persistedOrderMoneyToUsd(order.total, order.currency),
-      totalAmd: null,
-    };
+    return formatOrderSummaryUsd(
+      alreadyUsd ? order.total : persistedOrderMoneyToUsd(order.total, order.currency),
+      displayCurrency
+    );
   }
 
   const summary = computeOrderSummaryDisplay(
@@ -508,24 +471,12 @@ export function resolveOrderListTotalAmounts(
       collectionPriceAmount: order.collectionPriceAmount,
     },
     order.collectionPriceAmount,
-    'AMD',
+    displayCurrency,
     order.summaryLines,
     {
       amountsAlreadyUsd: order.currency?.trim().toUpperCase() === 'USD',
       shippingPriceAmd: order.shippingPriceAmd,
     }
   );
-  return {
-    totalUsd: summary.totalUsd,
-    totalAmd: summary.totalAmd,
-  };
-}
-
-/** Order list / row total — uses persisted `total` when breakdown fields are missing. */
-export function formatOrderListTotalDisplay(
-  order: OrderListTotalsSource,
-  displayCurrency: CurrencyCode
-): string {
-  const { totalUsd, totalAmd } = resolveOrderListTotalAmounts(order);
-  return formatOrderTotalDisplay({ totalUsd, totalAmd }, displayCurrency);
+  return formatOrderTotalDisplay(summary, displayCurrency);
 }

@@ -9,9 +9,9 @@ import { type CurrencyCode } from '../../../../lib/currency';
 import {
   computeOrderSummaryDisplay,
   formatOrderCollectionDisplay,
-  formatOrderDiscountDisplay,
   formatOrderMerchandiseDisplay,
   formatOrderShippingDisplay,
+  formatOrderSummaryUsd,
   formatOrderTotalDisplay,
 } from '@/lib/orders/order-summary-display';
 import type { Order } from '../types';
@@ -85,7 +85,7 @@ export function OrderSummary({ order, showActions = true }: OrderSummaryProps) {
             {totals.discount > 0 && (
               <div className="flex justify-between text-gray-600">
                 <span>{t('orders.orderSummary.discount')}</span>
-                <span>-{formatOrderDiscountDisplay(summary, displayCurrency)}</span>
+                <span>-{formatOrderSummaryUsd(summary.discountUsd, displayCurrency)}</span>
               </div>
             )}
             <div className="border-t border-gray-200 pt-4">

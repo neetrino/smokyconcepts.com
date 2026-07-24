@@ -72,14 +72,9 @@ export async function updateProduct(productId: string, data: UpdateProductData) 
 
           // Process each variant: update if exists, create if new
           if (data.variants.length > 0) {
-            let variantIndex = 0;
             for (const variant of data.variants) {
               const variantId = await updateOrCreateVariant(
-                {
-                  ...variant,
-                  position:
-                    typeof variant.position === 'number' ? variant.position : variantIndex,
-                },
+                variant,
                 productId,
                 locale,
                 existingVariantIds,
@@ -87,7 +82,6 @@ export async function updateProduct(productId: string, data: UpdateProductData) 
                 tx
               );
               incomingVariantIds.add(variantId);
-              variantIndex += 1;
             }
           }
 

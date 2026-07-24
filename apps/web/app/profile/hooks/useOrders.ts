@@ -3,8 +3,6 @@ import { useRouter } from 'next/navigation';
 import { dispatchCartDrawerOpen } from '../../cart/constants';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
-import { logger } from '../../../lib/services/utils/logger';
-import { addOrderItemToGuestCart } from '../utils/reorder-to-cart';
 import type { OrderDetails, OrderListItem, ProfileTab } from '../types';
 
 interface OrdersMeta {
@@ -116,27 +114,51 @@ export function useOrders({
 
     setIsReordering(true);
     try {
+      console.log('[Profile][ReOrder] Starting re-order for order:', selectedOrder.number);
+      
       let addedCount = 0;
       let skippedCount = 0;
 
       for (const item of selectedOrder.items) {
         try {
-          const added = await addOrderItemToGuestCart(item);
-          if (added) {
-            addedCount++;
-          } else {
-            skippedCount++;
+          interface VariantDetails {
+            id: string;
+            productId: string;
+            stock: number;
+            available: boolean;
           }
+
+          const variantDetails = await apiClient.get<VariantDetails>(`/api/v1/products/variants/${item.variantId}`);
+          
+          if (!variantDetails.available || variantDetails.stock < item.quantity) {
+            console.warn(`[Profile][ReOrder] Item ${item.productTitle} is not available or insufficient stock`);
+            skippedCount++;
+            continue;
+          }
+
+          const stored = localStorage.getItem('shop_cart_guest');
+          const cart: Array<{ productId: string; productSlug?: string; variantId?: string; quantity: number }> = stored ? JSON.parse(stored) : [];
+          const existing = cart.find((cartItem) => cartItem.variantId === item.variantId);
+          if (existing) {
+            existing.quantity += item.quantity;
+          } else {
+            cart.push({
+              productId: variantDetails.productId,
+              variantId: item.variantId,
+              quantity: item.quantity,
+            });
+          }
+          localStorage.setItem('shop_cart_guest', JSON.stringify(cart));
+          addedCount++;
+          console.log('[Profile][ReOrder] Added item to cart:', item.productTitle);
         } catch (error: unknown) {
-          logger.error('Error adding reorder item to cart', {
-            error,
-            variantId: item.variantId,
-            productTitle: item.productTitle,
-          });
+          console.error('[Profile][ReOrder] Error adding item to cart:', error);
           skippedCount++;
         }
       }
 
+      window.dispatchEvent(new Event('cart-updated'));
+      
       if (addedCount > 0) {
         const skippedText = skippedCount > 0 ? `, ${skippedCount} ${t('profile.orderDetails.skipped')}` : '';
         onSuccess(`${addedCount} ${t('profile.orderDetails.itemsAdded')}${skippedText}`);
@@ -147,7 +169,7 @@ export function useOrders({
         onError(t('profile.orderDetails.failedToAdd'));
       }
     } catch (error: unknown) {
-      logger.error('Error during reorder', { error, orderNumber: selectedOrder.number });
+      console.error('[Profile][ReOrder] Error during re-order:', error);
       onError(t('profile.orderDetails.failedToAdd'));
     } finally {
       setIsReordering(false);

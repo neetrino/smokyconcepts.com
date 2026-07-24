@@ -108,12 +108,12 @@
     },
     "upcomingLines": {
       "title": "Upcoming\nProducts Lines",
-      "description": "The Covering concept expands: Smoky Covers for money, phones, laptops, documents, keys, Knives, and more —\nnext up, and it’s going to be special.",
-      "descriptionMobile": "The Covering concept expands:\nSmoky Covers for money, phones, laptops,\ndocuments, keys, Knives, and more — next up, and\nit’s going to be special.",
+      "description": "The Covering concept expands: Smoky Covers for money, phones, laptops, documents, keys, Knifes, and more —\nnext up, and it’s going to be special.",
+      "descriptionMobile": "The Covering concept expands:\nSmoky Covers for money, phones, laptops,\ndocuments, keys, Knifes, and more — next up, and\nit’s going to be special.",
       "cta": "Notify Me",
       "cards": {
         "notebooks": "Notebooks",
-        "knives": "Knives",
+        "knifes": "Knifes",
         "phones": "Phones",
         "wallets": "Wallets",
         "documents": "Documents",
@@ -135,7 +135,6 @@
         "privacy": "Privacy Policy",
         "terms": "Terms and conditions",
         "deliveryTerms": "Delivery Terms",
-        "personalize": "Personalize",
         "refund": "Refund Policy"
       }
     }

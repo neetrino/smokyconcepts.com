@@ -13,21 +13,7 @@ interface HomeHeroSectionProps {
 }
 
 const HERO_AUTO_SLIDE_INTERVAL_MS = 3000;
-const HERO_AUTO_SLIDE_RESUME_DELAY_MS = 10_000;
 const HERO_SWIPE_THRESHOLD_PX = 40;
-const HERO_HORIZONTAL_SWIPE_LOCK_PX = 12;
-
-interface HeroTouchState {
-  startX: number | null;
-  currentX: number | null;
-  isDragging: boolean;
-}
-
-const INITIAL_HERO_TOUCH_STATE: HeroTouchState = {
-  startX: null,
-  currentX: null,
-  isDragging: false,
-};
 
 /**
  * Homepage hero: same layout/size as static Figma block; supports multiple slides and dot navigation.
@@ -36,32 +22,9 @@ const INITIAL_HERO_TOUCH_STATE: HeroTouchState = {
 export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
   const { t, lang } = useTranslation();
   const [activeIndex, setActiveIndex] = useState(0);
-  const [dragOffsetPx, setDragOffsetPx] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const touchStateRef = useRef<HeroTouchState>(INITIAL_HERO_TOUCH_STATE);
-  const heroRef = useRef<HTMLDivElement>(null);
-  const isAutoSlidePausedRef = useRef(false);
-  const autoSlideResumeTimeoutRef = useRef<number | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const touchCurrentXRef = useRef<number | null>(null);
   const safeSlides = slides.length > 0 ? slides : [];
-
-  const pauseAutoSlide = useCallback(() => {
-    isAutoSlidePausedRef.current = true;
-    if (autoSlideResumeTimeoutRef.current !== null) {
-      window.clearTimeout(autoSlideResumeTimeoutRef.current);
-      autoSlideResumeTimeoutRef.current = null;
-    }
-  }, []);
-
-  const scheduleAutoSlideResume = useCallback(() => {
-    if (autoSlideResumeTimeoutRef.current !== null) {
-      window.clearTimeout(autoSlideResumeTimeoutRef.current);
-    }
-
-    autoSlideResumeTimeoutRef.current = window.setTimeout(() => {
-      isAutoSlidePausedRef.current = false;
-      autoSlideResumeTimeoutRef.current = null;
-    }, HERO_AUTO_SLIDE_RESUME_DELAY_MS);
-  }, []);
 
   const goToPrevious = useCallback(() => {
     if (safeSlides.length <= 1) return;
@@ -83,56 +46,13 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
     }
 
     const intervalId = window.setInterval(() => {
-      if (!isAutoSlidePausedRef.current) {
-        goToNext();
-      }
+      goToNext();
     }, HERO_AUTO_SLIDE_INTERVAL_MS);
 
     return () => {
       window.clearInterval(intervalId);
-      if (autoSlideResumeTimeoutRef.current !== null) {
-        window.clearTimeout(autoSlideResumeTimeoutRef.current);
-        autoSlideResumeTimeoutRef.current = null;
-      }
     };
   }, [goToNext, safeSlides.length]);
-
-  useEffect(() => {
-    const heroNode = heroRef.current;
-    if (!heroNode || safeSlides.length <= 1) {
-      return;
-    }
-
-    const lockVerticalScrollDuringHorizontalSwipe = (event: globalThis.TouchEvent) => {
-      const { startX, isDragging } = touchStateRef.current;
-      if (!isDragging || startX === null) {
-        return;
-      }
-
-      const currentX = event.touches[0]?.clientX ?? null;
-      if (currentX === null) {
-        return;
-      }
-
-      if (Math.abs(currentX - startX) >= HERO_HORIZONTAL_SWIPE_LOCK_PX) {
-        event.preventDefault();
-      }
-    };
-
-    heroNode.addEventListener('touchmove', lockVerticalScrollDuringHorizontalSwipe, {
-      passive: false,
-    });
-
-    return () => {
-      heroNode.removeEventListener('touchmove', lockVerticalScrollDuringHorizontalSwipe);
-    };
-  }, [safeSlides.length]);
-
-  const resetTouchState = useCallback(() => {
-    touchStateRef.current = INITIAL_HERO_TOUCH_STATE;
-    setIsDragging(false);
-    setDragOffsetPx(0);
-  }, []);
 
   const current = safeSlides[activeIndex] ?? safeSlides[0];
 
@@ -143,51 +63,22 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
   const lines = getHomeHeroSlideLines(current, lang);
 
   const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
-    if (safeSlides.length <= 1) {
-      return;
-    }
-
-    const startX = event.touches[0]?.clientX ?? null;
-    if (startX === null) {
-      return;
-    }
-
-    pauseAutoSlide();
-
-    touchStateRef.current = {
-      startX,
-      currentX: startX,
-      isDragging: true,
-    };
-    setIsDragging(true);
-    setDragOffsetPx(0);
+    touchStartXRef.current = event.touches[0]?.clientX ?? null;
+    touchCurrentXRef.current = touchStartXRef.current;
   };
 
   const handleTouchMove = (event: TouchEvent<HTMLDivElement>) => {
-    const { startX, isDragging: dragging } = touchStateRef.current;
-    if (!dragging || startX === null) {
-      return;
-    }
-
-    const currentX = event.touches[0]?.clientX ?? null;
-    if (currentX === null) {
-      return;
-    }
-
-    touchStateRef.current.currentX = currentX;
-    const deltaX = currentX - startX;
-    setDragOffsetPx(deltaX);
+    touchCurrentXRef.current = event.touches[0]?.clientX ?? null;
   };
 
   const handleTouchEnd = () => {
-    const { startX, currentX } = touchStateRef.current;
-    if (startX === null || currentX === null) {
-      resetTouchState();
-      scheduleAutoSlideResume();
+    if (touchStartXRef.current === null || touchCurrentXRef.current === null) {
+      touchStartXRef.current = null;
+      touchCurrentXRef.current = null;
       return;
     }
 
-    const deltaX = currentX - startX;
+    const deltaX = touchCurrentXRef.current - touchStartXRef.current;
     if (Math.abs(deltaX) >= HERO_SWIPE_THRESHOLD_PX) {
       if (deltaX > 0) {
         goToPrevious();
@@ -196,35 +87,22 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
       }
     }
 
-    resetTouchState();
-    scheduleAutoSlideResume();
-  };
-
-  const handleDotClick = (index: number) => {
-    pauseAutoSlide();
-    setActiveIndex(index);
-    scheduleAutoSlideResume();
+    touchStartXRef.current = null;
+    touchCurrentXRef.current = null;
   };
 
   return (
     <div className="relative overflow-hidden rounded-[1.5rem] sm:rounded-[2.25rem]">
-      <div
-        ref={heroRef}
-        className="relative h-[28rem] touch-pan-y sm:h-[32rem]"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={() => {
-          resetTouchState();
-          scheduleAutoSlideResume();
-        }}
-      >
-        <div className="h-full overflow-hidden">
+      <div className="relative h-[28rem] sm:h-[32rem]">
+        <div
+          className="h-full overflow-hidden"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <div
-            className={`flex h-full ${isDragging ? '' : 'transition-transform duration-500 ease-in-out'}`}
-            style={{
-              transform: `translateX(calc(-${activeIndex * 100}% + ${dragOffsetPx}px))`,
-            }}
+            className="flex h-full transition-transform duration-500 ease-in-out"
+            style={{ transform: `translateX(-${activeIndex * 100}%)` }}
           >
             {safeSlides.map((slide, index) => {
               const alt =
@@ -262,25 +140,21 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
             })}
           </div>
         </div>
-        <div className="pointer-events-none absolute inset-0 z-[2] bg-gradient-to-t from-black/55 via-black/20 to-transparent" />
-        <div className="pointer-events-none absolute bottom-10 left-7 z-[3] max-w-[22.625rem] text-white sm:bottom-12 sm:left-12 sm:max-w-[33rem]">
+        <div className="absolute inset-0 z-[2] bg-gradient-to-t from-black/55 via-black/20 to-transparent" />
+        <div className="absolute bottom-10 left-7 z-[3] max-w-[22.625rem] text-white sm:bottom-12 sm:left-12 sm:max-w-[33rem]">
           <h1 className="text-4xl font-extrabold leading-none sm:text-5xl">{lines.title}</h1>
           <p className="mt-3 text-sm font-medium leading-[1.57] sm:mt-4 sm:text-lg sm:leading-relaxed">{lines.description}</p>
-          <HomeActionButton
-            href={current.ctaHref}
-            label={lines.ctaLabel}
-            className="pointer-events-auto mt-6 sm:mt-7"
-          />
+          <HomeActionButton href={current.ctaHref} label={lines.ctaLabel} className="mt-6 sm:mt-7" />
         </div>
         {safeSlides.length > 1 ? (
-          <div className="absolute bottom-5 left-1/2 z-[3] flex -translate-x-1/2 gap-2 sm:bottom-4">
+          <div className="absolute bottom-7 left-7 z-[3] flex gap-2 sm:bottom-6 sm:left-1/2 sm:-translate-x-1/2">
             {safeSlides.map((_, index) => {
               const isActive = index === activeIndex;
               return (
                 <button
                   key={index}
                   type="button"
-                  onClick={() => handleDotClick(index)}
+                  onClick={() => setActiveIndex(index)}
                   className={`rounded-full transition-all ${
                     isActive
                       ? 'h-1.5 w-4 bg-white'

@@ -8,7 +8,7 @@ const MASONRY_INNER_BASE =
 export type UpcomingLineMasonryTile =
   | 'phones'
   | 'notebooks'
-  | 'knives'
+  | 'knifes'
   | 'keys'
   | 'documents'
   | 'wallets';
@@ -16,7 +16,7 @@ export type UpcomingLineMasonryTile =
 export const MASONRY_INNER_BY_TILE: Record<UpcomingLineMasonryTile, string> = {
   phones: `${MASONRY_INNER_BASE} min-h-[8.25rem] pt-9 ${UPCOMING_LINE_MASONRY_SHADOW} sm:min-h-[11.25rem] sm:pb-4 sm:pt-12`,
   notebooks: `${MASONRY_INNER_BASE} min-h-[9.5rem] pt-10 ${UPCOMING_LINE_MASONRY_SHADOW} sm:min-h-[12.25rem] sm:pb-5 sm:pt-[3.35rem]`,
-  knives: `${MASONRY_INNER_BASE} min-h-[11.25rem] pt-3 ${UPCOMING_LINE_MASONRY_SHADOW} sm:min-h-[14.75rem] sm:pb-5 sm:pt-6`,
+  knifes: `${MASONRY_INNER_BASE} min-h-[11.25rem] pt-3 ${UPCOMING_LINE_MASONRY_SHADOW} sm:min-h-[14.75rem] sm:pb-5 sm:pt-6`,
   keys: `${MASONRY_INNER_BASE} min-h-[9.25rem] pt-7 ${UPCOMING_LINE_MASONRY_SHADOW} sm:min-h-[13rem] sm:pb-4 sm:pt-10`,
   documents: `${MASONRY_INNER_BASE} min-h-[6.25rem] pt-3 ${UPCOMING_LINE_MASONRY_SHADOW} sm:min-h-[9rem] sm:pb-4 sm:pt-6`,
   wallets: `${MASONRY_INNER_BASE} min-h-[8rem] pt-4 ${UPCOMING_LINE_MASONRY_SHADOW} sm:min-h-[11.25rem] sm:pb-4 sm:pt-6`,

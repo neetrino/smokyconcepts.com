@@ -6,16 +6,7 @@
 
 import 'dotenv/config';
 import { db } from '../packages/db';
-import * as argon2 from 'argon2';
-
-async function hashAdminPassword(plain: string): Promise<string> {
-  return argon2.hash(plain, {
-    type: argon2.argon2id,
-    memoryCost: 19_456,
-    timeCost: 2,
-    parallelism: 1,
-  });
-}
+import * as bcrypt from 'bcryptjs';
 
 async function createAdmin() {
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
@@ -52,7 +43,7 @@ async function createAdmin() {
       if (hasAdmin) {
         console.log('✅ [CREATE ADMIN] User already has admin role');
       } else {
-        const passwordHash = await hashAdminPassword(adminPassword);
+        const passwordHash = await bcrypt.hash(adminPassword, 10);
         
         const updated = await db.user.update({
           where: { id: existing.id },
@@ -78,7 +69,7 @@ async function createAdmin() {
     } else {
       console.log('➕ [CREATE ADMIN] Creating new admin user...');
       
-      const passwordHash = await hashAdminPassword(adminPassword);
+      const passwordHash = await bcrypt.hash(adminPassword, 10);
 
       const created = await db.user.create({
         data: {

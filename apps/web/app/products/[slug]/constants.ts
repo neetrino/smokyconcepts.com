@@ -7,4 +7,4 @@ export const RESERVED_ROUTES = [
 ];
 
 /** Visible thumbnail slots in the product gallery strip before arrows slide the window. */
-export const THUMBNAILS_PER_VIEW = 7;
+export const THUMBNAILS_PER_VIEW = 8;

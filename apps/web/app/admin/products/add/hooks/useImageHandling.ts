@@ -165,7 +165,6 @@ export function useImageHandling({
       const mainImage = newUrls.length > 0 && newUrls[finalFeaturedIndex] ? newUrls[finalFeaturedIndex] : '';
       setFeaturedImageIndex(finalFeaturedIndex);
       setMainProductImage(mainImage);
-
       return newUrls;
     });
   };
@@ -226,9 +225,9 @@ export function useImageHandling({
       return;
     }
 
-    const imageFiles = files.filter((file) => isLikelyRasterImageFileForAdminUpload(file));
-    if (imageFiles.length === 0) {
-      setImageUploadError(t('admin.products.add.failedToProcessImages') || 'No valid image files selected');
+    const file = files[0];
+    if (!isLikelyRasterImageFileForAdminUpload(file)) {
+      setImageUploadError(`"${file.name}" is not an image file`);
       if (event.target) {
         event.target.value = '';
       }
@@ -240,49 +239,25 @@ export function useImageHandling({
     try {
       console.log('🖼️ [VARIANT IMAGE] Processing variant image:', {
         variantId,
-        filesCount: imageFiles.length,
+        fileName: file.name,
+        originalSize: `${Math.round(file.size / 1024)}KB`,
       });
 
-      const base64Images = await Promise.all(
-        imageFiles.map((file) =>
-          processImageFile(file, {
-            maxSizeMB: 1.5,
-            maxWidthOrHeight: 1600,
-            useWebWorker: true,
-            fileType: getOutputFileType(file),
-            initialQuality: 0.85,
-          })
-        )
-      );
+      const base64 = await processImageFile(file, {
+        maxSizeMB: 1.5,
+        maxWidthOrHeight: 1600,
+        useWebWorker: true,
+        fileType: getOutputFileType(file),
+        initialQuality: 0.85,
+      });
 
-      const urls = await uploadImagesToR2(base64Images);
-      const uploadedUrls = urls.length > 0 ? urls : base64Images;
-      setGeneratedVariants((prev) =>
-        prev.map((v) => {
-          if (v.id !== variantId) {
-            return v;
-          }
-          const currentImages = v.images ?? (v.image ? [v.image] : []);
-          const nextImages = [...currentImages];
-          uploadedUrls.forEach((url) => {
-            if (url && !nextImages.includes(url)) {
-              nextImages.push(url);
-            }
-          });
-          const mainImageIndex = Math.min(v.mainImageIndex ?? 0, Math.max(nextImages.length - 1, 0));
-          return {
-            ...v,
-            images: nextImages,
-            mainImageIndex,
-            image: nextImages[mainImageIndex] ?? null,
-          };
-        })
-      );
+      const urls = await uploadImagesToR2([base64]);
+      const imageUrl = urls[0] ?? base64;
+      setGeneratedVariants((prev) => prev.map((v) => (v.id === variantId ? { ...v, image: imageUrl } : v)));
       console.log('✅ [VARIANT BUILDER] Variant image uploaded and processed for variant:', variantId);
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('❌ [VARIANT IMAGE] Error processing variant image:', error);
-      const message = error instanceof Error ? error.message : t('admin.products.add.failedToProcessImage');
-      setImageUploadError(message);
+      setImageUploadError(error?.message || t('admin.products.add.failedToProcessImage'));
     } finally {
       setImageUploadLoading(false);
       if (event.target) {

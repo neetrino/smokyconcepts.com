@@ -75,7 +75,7 @@ export function useAddToCart({
         variantId: defaultVariantId,
         stock: defaultVariantStock,
         sku: defaultSku,
-        sizeLabel: sizeLabel.trim() || null,
+        sizeLabel,
         categoryLabel,
         quantity: 1,
       });

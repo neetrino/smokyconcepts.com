@@ -3,21 +3,16 @@
 import { useTranslation } from '../../../../lib/i18n-client';
 import { Card } from '@shop/ui';
 import {
-  ADMIN_ORDERS_TABLE_CLASS,
-  ADMIN_ORDERS_TABLE_MIN_WIDTH_CLASS,
-  ADMIN_ORDERS_TABLE_SCROLL_CLASS,
-  ADMIN_ORDERS_TABLE_TH_FIRST_CLASS,
-  ADMIN_ORDERS_TABLE_TH_LAST_CLASS,
-  ADMIN_ORDERS_TABLE_TH_MIDDLE_CLASS,
-} from '../constants/ordersTable.constants';
+  PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS,
+  PRODUCTS_TABLE_HEADER_TH_STICKY_FIRST_CLASS,
+  PRODUCTS_TABLE_HEADER_TH_STICKY_LAST_CLASS,
+} from '../../products/constants/productsTable.constants';
 import { OrderRow } from './OrderRow';
 import { OrdersPagination } from './OrdersPagination';
 import type { Order } from '../useOrders';
 
 interface OrdersTableProps {
   orders: Order[];
-  isOrderNew?: (createdAt: string) => boolean;
-  newBadgeLabel?: string;
   loading: boolean;
   selectedIds: Set<string>;
   updatingStatuses: Set<string>;
@@ -38,8 +33,6 @@ interface OrdersTableProps {
 
 export function OrdersTable({
   orders,
-  isOrderNew,
-  newBadgeLabel,
   loading,
   selectedIds,
   updatingStatuses,
@@ -59,7 +52,7 @@ export function OrdersTable({
 }: OrdersTableProps) {
   const { t } = useTranslation();
   const headerTextClass =
-    'whitespace-nowrap px-3 py-4 text-left text-[11px] font-black uppercase tracking-[0.1em] text-[#dcc090]';
+    'px-3 py-4 text-left text-[11px] font-black uppercase tracking-[0.1em] text-[#dcc090]';
 
   if (loading) {
     return (
@@ -84,11 +77,11 @@ export function OrdersTable({
 
   return (
     <Card className="border-[#dcc090]/30 bg-white/85 p-2 shadow-[0_18px_50px_rgba(18,42,38,0.08)] sm:p-3">
-      <div className={`rounded-[1.15rem] ${ADMIN_ORDERS_TABLE_SCROLL_CLASS}`}>
-        <table className={`${ADMIN_ORDERS_TABLE_CLASS} ${ADMIN_ORDERS_TABLE_MIN_WIDTH_CLASS}`}>
+      <div className="rounded-[1.15rem]">
+        <table className="w-full table-fixed border-separate border-spacing-y-2">
           <colgroup>
-            <col className="w-12" />
-            <col className="w-[6.5rem]" />
+            <col className="w-[4.5%]" />
+            <col className="w-[10%]" />
             <col className="w-[23%]" />
             <col className="w-[11%]" />
             <col className="w-[13%]" />
@@ -96,25 +89,25 @@ export function OrdersTable({
             <col className="w-[14%]" />
             <col className="w-[10.5%]" />
           </colgroup>
-          <thead className="max-lg:[&_th]:relative max-lg:[&_th]:z-0">
+          <thead className="bg-[#122a26]">
             <tr>
-              <th className={`${ADMIN_ORDERS_TABLE_TH_FIRST_CLASS} w-12 px-3 py-4`}>
+              <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_FIRST_CLASS} px-3 py-4`}>
                 <input
                   type="checkbox"
                   aria-label={t('admin.orders.selectAllOrders')}
-                  checked={orders.length > 0 && orders.every((o) => selectedIds.has(o.id))}
+                  checked={orders.length > 0 && orders.every(o => selectedIds.has(o.id))}
                   onChange={onToggleSelectAll}
                   className="h-4 w-4 rounded border-[#dcc090]/60 bg-white text-[#122a26] focus:ring-[#dcc090]"
                 />
               </th>
-              <th className={`${ADMIN_ORDERS_TABLE_TH_MIDDLE_CLASS} ${headerTextClass} min-w-[6.5rem]`}>
+              <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS} ${headerTextClass}`}>
                 {t('admin.orders.orderNumber')}
               </th>
-              <th className={`${ADMIN_ORDERS_TABLE_TH_MIDDLE_CLASS} ${headerTextClass} min-w-[10rem]`}>
+              <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS} ${headerTextClass}`}>
                 {t('admin.orders.customer')}
               </th>
               <th
-                className={`${ADMIN_ORDERS_TABLE_TH_MIDDLE_CLASS} min-w-[6.5rem] cursor-pointer select-none ${headerTextClass} transition-colors hover:bg-[#18352f]`}
+                className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS} cursor-pointer select-none ${headerTextClass} transition-colors hover:bg-[#18352f]`}
                 onClick={() => onSort('total')}
               >
                 <div className="flex items-center gap-1">
@@ -137,17 +130,17 @@ export function OrdersTable({
                   </div>
                 </div>
               </th>
-              <th className={`${ADMIN_ORDERS_TABLE_TH_MIDDLE_CLASS} ${headerTextClass} min-w-[8rem]`}>
+              <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS} ${headerTextClass}`}>
                 {t('admin.orders.orderDetails.colorSize')}
               </th>
-              <th className={`${ADMIN_ORDERS_TABLE_TH_MIDDLE_CLASS} ${headerTextClass} min-w-[7.5rem]`}>
+              <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS} ${headerTextClass}`}>
                 {t('admin.orders.status')}
               </th>
-              <th className={`${ADMIN_ORDERS_TABLE_TH_MIDDLE_CLASS} ${headerTextClass} min-w-[7.5rem]`}>
+              <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS} ${headerTextClass}`}>
                 {t('admin.orders.payment')}
               </th>
               <th
-                className={`${ADMIN_ORDERS_TABLE_TH_LAST_CLASS} min-w-[6rem] cursor-pointer select-none ${headerTextClass} transition-colors hover:bg-[#18352f]`}
+                className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_LAST_CLASS} cursor-pointer select-none ${headerTextClass} transition-colors hover:bg-[#18352f]`}
                 onClick={() => onSort('createdAt')}
               >
                 <div className="flex items-center gap-1">
@@ -177,8 +170,6 @@ export function OrdersTable({
               <OrderRow
                 key={order.id}
                 order={order}
-                isNew={isOrderNew?.(order.createdAt) ?? false}
-                newBadgeLabel={newBadgeLabel}
                 selected={selectedIds.has(order.id)}
                 updatingStatus={updatingStatuses.has(order.id)}
                 updatingPaymentStatus={updatingPaymentStatuses.has(order.id)}
@@ -188,23 +179,22 @@ export function OrdersTable({
                   onPrefetchOrderDetails ? () => onPrefetchOrderDetails(order.id) : undefined
                 }
                 onStatusChange={(newStatus) => onStatusChange(order.id, newStatus)}
-                onPaymentStatusChange={(newPaymentStatus) =>
-                  onPaymentStatusChange(order.id, newPaymentStatus)
-                }
+                onPaymentStatusChange={(newPaymentStatus) => onPaymentStatusChange(order.id, newPaymentStatus)}
               />
             ))}
           </tbody>
         </table>
       </div>
 
-      {meta ? (
+      {meta && (
         <OrdersPagination
           page={page}
           totalPages={meta.totalPages}
           total={meta.total}
           onPageChange={onPageChange}
         />
-      ) : null}
+      )}
     </Card>
   );
 }
+

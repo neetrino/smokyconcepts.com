@@ -1,13 +1,6 @@
+import * as bcrypt from "bcryptjs";
 import * as jwt from "jsonwebtoken";
 import { db } from "@white-shop/db";
-import {
-  hashPassword,
-  shouldUpgradePasswordHash,
-  validateNewPasswordPolicy,
-  verifyPassword,
-} from "@/lib/security/password";
-import { PASSWORD_POLICY_DETAIL } from "@/lib/security/password.constants";
-import { logger } from "@/lib/utils/logger";
 
 export interface RegisterData {
   email?: string;
@@ -36,91 +29,17 @@ export interface AuthResponse {
 }
 
 class AuthService {
-  private async releaseSoftDeletedIdentifiers(data: RegisterData): Promise<void> {
-    const releaseTasks: Array<Promise<unknown>> = [];
-
-    if (data.email) {
-      releaseTasks.push(
-        db.user.updateMany({
-          where: {
-            email: data.email,
-            deletedAt: { not: null },
-          },
-          data: {
-            email: null,
-            emailVerified: false,
-          },
-        }),
-      );
-    }
-
-    if (data.phone) {
-      releaseTasks.push(
-        db.user.updateMany({
-          where: {
-            phone: data.phone,
-            deletedAt: { not: null },
-          },
-          data: {
-            phone: null,
-            phoneVerified: false,
-          },
-        }),
-      );
-    }
-
-    if (releaseTasks.length === 0) {
-      return;
-    }
-
-    await Promise.all(releaseTasks);
-  }
-
-  private ensureJwtSecret(): string {
-    const secret = process.env.JWT_SECRET?.trim();
-    if (!secret) {
-      logger.error("JWT_SECRET is not set");
-      throw {
-        status: 500,
-        type: "https://api.shop.am/problems/internal-error",
-        title: "Internal Server Error",
-        detail: "Server configuration error",
-      };
-    }
-    return secret;
-  }
-
-  private signToken(userId: string): string {
-    const secret = this.ensureJwtSecret();
-    return jwt.sign(
-      { userId },
-      secret,
-      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" } as jwt.SignOptions,
-    );
-  }
-
-  private async upgradePasswordHashIfNeeded(
-    userId: string,
-    plainPassword: string,
-    storedHash: string,
-  ): Promise<void> {
-    if (!shouldUpgradePasswordHash(storedHash)) {
-      return;
-    }
-
-    try {
-      const passwordHash = await hashPassword(plainPassword);
-      await db.user.update({
-        where: { id: userId },
-        data: { passwordHash },
-      });
-      logger.info("Password hash upgraded to Argon2id", { userId });
-    } catch (error: unknown) {
-      logger.warn("Password hash upgrade failed", { userId, error });
-    }
-  }
-
+  /**
+   * Register new user
+   */
   async register(data: RegisterData): Promise<AuthResponse> {
+    console.log("🔐 [AUTH] Registration attempt:", {
+      email: data.email || "not provided",
+      phone: data.phone || "not provided",
+      hasFirstName: !!data.firstName,
+      hasLastName: !!data.lastName,
+    });
+
     if (!data.email && !data.phone) {
       throw {
         status: 400,
@@ -130,18 +49,16 @@ class AuthService {
       };
     }
 
-    const passwordError = validateNewPasswordPolicy(data.password);
-    if (passwordError) {
+    if (!data.password || data.password.length < 6) {
       throw {
         status: 400,
         type: "https://api.shop.am/problems/validation-error",
         title: "Validation failed",
-        detail: passwordError === "Password is required"
-          ? PASSWORD_POLICY_DETAIL
-          : passwordError,
+        detail: "Password must be at least 6 characters",
       };
     }
 
+    // Check if user already exists
     const existingUser = await db.user.findFirst({
       where: {
         OR: [
@@ -154,6 +71,10 @@ class AuthService {
     });
 
     if (existingUser) {
+      console.log(
+        "❌ [AUTH] User already exists:",
+        existingUser.email || existingUser.phone
+      );
       throw {
         status: 409,
         type: "https://api.shop.am/problems/conflict",
@@ -162,10 +83,13 @@ class AuthService {
       };
     }
 
-    await this.releaseSoftDeletedIdentifiers(data);
+    // Hash password
+    console.log("🔒 [AUTH] Hashing password...");
+    const passwordHash = await bcrypt.hash(data.password, 10);
+    console.log("✅ [AUTH] Password hashed successfully");
 
-    const passwordHash = await hashPassword(data.password);
-
+    // Create user
+    console.log("💾 [AUTH] Creating user in database...");
     let user;
     try {
       user = await db.user.create({
@@ -187,9 +111,11 @@ class AuthService {
           roles: true,
         },
       });
-    } catch (error: unknown) {
-      const prismaError = error as { code?: string };
-      if (prismaError.code === "P2002") {
+      console.log("✅ [AUTH] User created successfully");
+    } catch (error: any) {
+      console.error("❌ [AUTH] User creation failed:", error);
+      if (error.code === "P2002") {
+        // Prisma unique constraint error
         throw {
           status: 409,
           type: "https://api.shop.am/problems/conflict",
@@ -200,7 +126,24 @@ class AuthService {
       throw error;
     }
 
-    const token = this.signToken(user.id);
+    // Generate JWT token
+    if (!process.env.JWT_SECRET) {
+      console.error("❌ [AUTH] JWT_SECRET is not set!");
+      throw {
+        status: 500,
+        type: "https://api.shop.am/problems/internal-error",
+        title: "Internal Server Error",
+        detail: "Server configuration error",
+      };
+    }
+
+    console.log("🎫 [AUTH] Generating JWT token...");
+    const token = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET as string,
+      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" } as jwt.SignOptions
+    );
+    console.log("✅ [AUTH] JWT token generated");
 
     return {
       user: {
@@ -215,7 +158,15 @@ class AuthService {
     };
   }
 
+  /**
+   * Login user
+   */
   async login(data: LoginData): Promise<AuthResponse> {
+    console.log("🔐 [AUTH] Login attempt:", {
+      email: data.email || "not provided",
+      phone: data.phone || "not provided",
+    });
+
     if (!data.email && !data.phone) {
       throw {
         status: 400,
@@ -234,14 +185,12 @@ class AuthService {
       };
     }
 
-    const normalizedEmail = data.email?.trim();
-
+    // Find user
+    console.log("🔍 [AUTH] Searching for user in database...");
     const user = await db.user.findFirst({
       where: {
         OR: [
-          ...(normalizedEmail
-            ? [{ email: { equals: normalizedEmail, mode: "insensitive" as const } }]
-            : []),
+          ...(data.email ? [{ email: data.email }] : []),
           ...(data.phone ? [{ phone: data.phone }] : []),
         ],
         deletedAt: null,
@@ -259,6 +208,7 @@ class AuthService {
     });
 
     if (!user || !user.passwordHash) {
+      console.log("❌ [AUTH] User not found or no password set");
       throw {
         status: 401,
         type: "https://api.shop.am/problems/unauthorized",
@@ -267,9 +217,17 @@ class AuthService {
       };
     }
 
-    const isValidPassword = await verifyPassword(data.password, user.passwordHash);
+    console.log("✅ [AUTH] User found:", user.id);
+
+    // Check password
+    console.log("🔒 [AUTH] Verifying password...");
+    const isValidPassword = await bcrypt.compare(
+      data.password,
+      user.passwordHash
+    );
 
     if (!isValidPassword) {
+      console.log("❌ [AUTH] Invalid password");
       throw {
         status: 401,
         type: "https://api.shop.am/problems/unauthorized",
@@ -279,6 +237,7 @@ class AuthService {
     }
 
     if (user.blocked) {
+      console.log("❌ [AUTH] Account is blocked");
       throw {
         status: 403,
         type: "https://api.shop.am/problems/forbidden",
@@ -287,9 +246,23 @@ class AuthService {
       };
     }
 
-    await this.upgradePasswordHashIfNeeded(user.id, data.password, user.passwordHash);
+    // Generate JWT token
+    if (!process.env.JWT_SECRET) {
+      throw {
+        status: 500,
+        type: "https://api.shop.am/problems/internal-error",
+        title: "Internal Server Error",
+        detail: "Server configuration error",
+      };
+    }
 
-    const token = this.signToken(user.id);
+    const token = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET as string,
+      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" } as jwt.SignOptions
+    );
+
+    console.log("✅ [AUTH] Login successful, token generated");
 
     return {
       user: {
@@ -306,3 +279,4 @@ class AuthService {
 }
 
 export const authService = new AuthService();
+

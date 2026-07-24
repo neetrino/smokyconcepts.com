@@ -114,12 +114,11 @@ export async function getRequest<T>(
     
     try {
       response = await fetch(url, {
-        ...options,
         method: 'GET',
         headers: getHeaders(options),
-        credentials: options?.credentials ?? 'include',
         cache: 'no-store', // Disable caching for server components
         signal: controller.signal,
+        ...options,
       });
       clearTimeout(timeoutId);
     } catch (fetchError: unknown) {
@@ -206,11 +205,10 @@ export async function postRequest<T>(
     console.log('📤 [API CLIENT] POST request:', { url, data: data ? 'provided' : 'none' });
     
     const response = await fetch(url, {
-      ...options,
       method: 'POST',
       headers: getHeaders(options),
-      credentials: options?.credentials ?? 'include',
       body: data ? JSON.stringify(data) : undefined,
+      ...options,
     });
 
     if (response.ok || shouldLogError(response.status)) {
@@ -277,11 +275,10 @@ export async function putRequest<T>(
   console.log('📤 [API CLIENT] PUT request:', { url, endpoint, hasData: !!data });
   
   const response = await fetch(url, {
-    ...options,
     method: 'PUT',
     headers: getHeaders(options),
-    credentials: options?.credentials ?? 'include',
     body: data ? JSON.stringify(data) : undefined,
+    ...options,
   });
 
   console.log('📥 [API CLIENT] PUT response status:', response.status, response.statusText);
@@ -316,11 +313,10 @@ export async function patchRequest<T>(
   const url = buildUrl(baseUrl, endpoint, options?.params);
   
   const response = await fetch(url, {
-    ...options,
     method: 'PATCH',
     headers: getHeaders(options),
-    credentials: options?.credentials ?? 'include',
     body: data ? JSON.stringify(data) : undefined,
+    ...options,
   });
 
   if (!response.ok) {
@@ -346,10 +342,9 @@ export async function deleteRequest<T>(
   const url = buildUrl(baseUrl, endpoint, options?.params);
   
   const response = await fetch(url, {
-    ...options,
     method: 'DELETE',
     headers: getHeaders(options),
-    credentials: options?.credentials ?? 'include',
+    ...options,
   });
 
   if (!response.ok) {

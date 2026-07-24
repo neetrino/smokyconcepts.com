@@ -4,7 +4,10 @@ import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
 import type { SizeModalMotionState } from '@/lib/size-modal-animation';
-import { sizeModalBlockClass, sizeModalBlockEnterStyle } from '@/lib/size-modal-animation';
+import {
+  sizeModalBlockClass,
+  sizeModalBlockTransitionDelay,
+} from '@/lib/size-modal-animation';
 import { SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS } from '@/lib/size-modal-animation.constants';
 import { CatalogCategorySizeBand } from './SizeCatalogCategoryBand';
 import {
@@ -19,7 +22,6 @@ interface SizeCatalogPickerContentProps {
   modalMotion: SizeModalMotionState;
   suppressEnterAnimation?: boolean;
   onSelectItem: (item: SizeCatalogItemDto) => void;
-  isItemSelectable?: (item: SizeCatalogItemDto) => boolean;
 }
 
 export function SizeCatalogPickerContent({
@@ -29,7 +31,6 @@ export function SizeCatalogPickerContent({
   modalMotion,
   suppressEnterAnimation = false,
   onSelectItem,
-  isItemSelectable,
 }: SizeCatalogPickerContentProps) {
   const hasAny = categories.some((c) => c.items.length > 0);
 
@@ -37,7 +38,13 @@ export function SizeCatalogPickerContent({
     return (
       <p
         className={`font-montserrat text-[16px] font-medium text-[#414141] ${sizeModalBlockClass(modalMotion)}`}
-        style={sizeModalBlockEnterStyle(SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS, modalMotion)}
+        style={{
+          transitionDelay: sizeModalBlockTransitionDelay(
+            SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS,
+            0,
+            modalMotion
+          ),
+        }}
       >
         {t(language, 'product.size_catalog_empty')}
       </p>
@@ -66,7 +73,6 @@ export function SizeCatalogPickerContent({
             modalMotion={modalMotion}
             suppressEnterAnimation={suppressEnterAnimation}
             onSelectItem={onSelectItem}
-            isItemSelectable={isItemSelectable}
             sectionHeadingDelayMs={sectionHeadingDelayMs}
           />
         );

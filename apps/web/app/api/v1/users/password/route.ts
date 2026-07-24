@@ -3,7 +3,6 @@ import { authenticateToken } from "@/lib/middleware/auth";
 import { usersService } from "@/lib/services/users.service";
 import { toApiError } from "@/lib/types/errors";
 import { logger } from "@/lib/utils/logger";
-import { validateNewPasswordPolicy } from "@/lib/security/password";
 
 export async function PUT(req: NextRequest) {
   try {
@@ -53,15 +52,14 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    // Validate password policy for the new password
-    const passwordPolicyError = validateNewPasswordPolicy(newPassword.trim());
-    if (passwordPolicyError) {
+    // Validate password length
+    if (newPassword.length < 6) {
       return NextResponse.json(
         {
           type: "https://api.shop.am/problems/validation-error",
           title: "Validation Error",
           status: 400,
-          detail: passwordPolicyError,
+          detail: "New password must be at least 6 characters long",
           instance: req.url,
         },
         { status: 400 }

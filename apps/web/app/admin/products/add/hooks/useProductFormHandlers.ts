@@ -1,27 +1,15 @@
 import type { FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Category, Variant, GeneratedVariant, ProductLabel } from '../types';
+import type { Category, Variant, GeneratedVariant } from '../types';
 import { useBrandAndCategoryCreation } from './useBrandAndCategoryCreation';
 import { useVariantValidation } from './useVariantValidation';
 import { processImagesForSubmit } from './useImageProcessingForSubmit';
 import { createAndSubmitPayload } from './useProductPayloadCreation';
 import { buildVariantAttributePayload } from '@/lib/category-attributes';
 import type { CategoryAttribute } from '@/lib/category-attributes';
-import { buildDisplayVariantAttributes } from '@/lib/default-pricing-variant';
+import { buildDefaultPricingAttributes } from '@/lib/default-pricing-variant';
 import { initializeCurrencyRates, normalizeAdminProductPriceInput } from '@/lib/currency';
-import type { ProductFormFieldId } from '../constants/productFormFieldIds.constants';
-import { orderGeneratedVariantImagesForSubmit } from '../utils/generatedVariantImages';
-
-interface VariantSubmitPayload {
-  price: number;
-  compareAtPrice?: number;
-  stock: number;
-  sku: string;
-  imageUrl?: string;
-  attributes?: Array<{ attributeKey: string; value: string }>;
-  published: boolean;
-  position: number;
-}
+import { buildAutoSkuBaseFromSlug } from '../utils/autoSku';
 
 interface UseProductFormHandlersProps {
   formData: {
@@ -41,11 +29,18 @@ interface UseProductFormHandlersProps {
     featuredImageIndex: number;
     mainProductImage: string;
     variants: Variant[];
-    labels: ProductLabel[];
+    labels: any[];
   };
   setFormData: (updater: (prev: unknown) => unknown) => void;
   setLoading: (loading: boolean) => void;
   setCategories: (updater: (prev: Category[]) => Category[]) => void;
+  productType: 'simple' | 'variable';
+  simpleProductData: {
+    price: string;
+    compareAtPrice: string;
+    sku: string;
+    quantity: string;
+  };
   generatedVariants: GeneratedVariant[];
   useNewCategory: boolean;
   newCategoryName: string;
@@ -54,13 +49,15 @@ interface UseProductFormHandlersProps {
   isClothingCategory: () => boolean;
   categoryAttributes: CategoryAttribute[];
   setSubmitErrorKey: (key: string | null) => void;
-  setSubmitErrorFieldId: (fieldId: ProductFormFieldId | null) => void;
 }
 
 export function useProductFormHandlers({
   formData,
+  setFormData,
   setLoading,
   setCategories,
+  productType,
+  simpleProductData,
   generatedVariants,
   useNewCategory,
   newCategoryName,
@@ -69,7 +66,6 @@ export function useProductFormHandlers({
   isClothingCategory,
   categoryAttributes,
   setSubmitErrorKey,
-  setSubmitErrorFieldId,
 }: UseProductFormHandlersProps) {
   const router = useRouter();
 
@@ -82,22 +78,24 @@ export function useProductFormHandlers({
   });
 
   const { validateVariants } = useVariantValidation({
+    productType,
     variants: formData.variants,
     generatedVariants,
+    simpleProductData,
     productSlug: formData.slug,
     isClothingCategory,
     setLoading,
     setSubmitErrorKey,
-    setSubmitErrorFieldId,
   });
+
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitErrorKey(null);
-    setSubmitErrorFieldId(null);
     setLoading(true);
 
     try {
+      console.log('📝 [ADMIN] Submitting product form:', formData);
       await initializeCurrencyRates();
 
       const brandCategoryResult = await createBrandAndCategory();
@@ -112,64 +110,110 @@ export function useProductFormHandlers({
         return;
       }
 
-      const variants: VariantSubmitPayload[] = [];
+      const variants: any[] = [];
       const variantSkuSet = new Set<string>();
 
-      generatedVariants.forEach((genVariant, variantIndex) => {
-        const variantPriceText = String(genVariant.price || '').trim();
-        const variantPriceRaw = variantPriceText !== '' ? parseFloat(variantPriceText) : NaN;
-        const variantPriceStored = Number.isFinite(variantPriceRaw)
-          ? normalizeAdminProductPriceInput(variantPriceRaw)
-          : 0;
-
-        const variantCompareAtPriceText = String(genVariant.compareAtPrice || '').trim();
-        const variantCompareAtPriceRaw =
-          variantCompareAtPriceText !== '' ? parseFloat(variantCompareAtPriceText) : NaN;
-        const variantCompareAtPriceStored = Number.isFinite(variantCompareAtPriceRaw)
-          ? normalizeAdminProductPriceInput(variantCompareAtPriceRaw)
+      if (productType === 'simple') {
+        const priceAmd = parseFloat(simpleProductData.price);
+        const compareAtPriceAmd = simpleProductData.compareAtPrice && simpleProductData.compareAtPrice.trim() !== ''
+          ? parseFloat(simpleProductData.compareAtPrice)
           : undefined;
-
-        const finalSku =
-          genVariant.sku && genVariant.sku.trim() !== ''
-            ? genVariant.sku.trim()
-            : `${currentFormData.slug || 'PROD'}-${Date.now()}-${variantIndex + 1}`;
-
-        let uniqueSku = finalSku;
-        let skuCounter = 1;
-        while (variantSkuSet.has(uniqueSku)) {
-          uniqueSku = `${finalSku}-${skuCounter}`;
-          skuCounter++;
+        const priceStored = Number.isFinite(priceAmd) ? normalizeAdminProductPriceInput(priceAmd) : 0;
+        const compareAtPriceStored =
+          compareAtPriceAmd !== undefined && Number.isFinite(compareAtPriceAmd)
+            ? normalizeAdminProductPriceInput(compareAtPriceAmd)
+            : undefined;
+        const resolvedSimpleSku =
+          simpleProductData.sku.trim() || buildAutoSkuBaseFromSlug(currentFormData.slug);
+        const simpleVariant: any = {
+          price: priceStored,
+          stock: parseInt(simpleProductData.quantity) || 0,
+          sku: resolvedSimpleSku,
+          attributes: buildDefaultPricingAttributes({
+            categoryId: currentFormData.sizeCatalogCategoryId,
+            categoryTitle: currentFormData.sizeCatalogCategoryTitle,
+          }),
+          published: true,
+        };
+        if (compareAtPriceStored && compareAtPriceStored > 0) {
+          simpleVariant.compareAtPrice = compareAtPriceStored;
         }
-        variantSkuSet.add(uniqueSku);
-        const variantImages = orderGeneratedVariantImagesForSubmit(genVariant);
+        variants.push(simpleVariant);
+        variantSkuSet.add(resolvedSimpleSku);
+      } else {
+        // Variable: one API variant per generatedVariant (no attributes/options)
+        const defaultVariantPriceText = String(simpleProductData.price || '').trim();
+        const defaultVariantPrice = defaultVariantPriceText !== '' ? parseFloat(defaultVariantPriceText) : NaN;
+        const defaultVariantCompareAtPriceText = String(simpleProductData.compareAtPrice || '').trim();
+        const defaultVariantCompareAtPrice =
+          defaultVariantCompareAtPriceText !== '' ? parseFloat(defaultVariantCompareAtPriceText) : NaN;
 
-        const attributePayload =
-          genVariant.selectedValueIds.length > 0
-            ? buildVariantAttributePayload(genVariant.selectedValueIds, categoryAttributes)
-            : [];
-
-        const attributes = genVariant.isDisplayVariant
-          ? [
-              ...attributePayload,
-              ...buildDisplayVariantAttributes({
-                categoryId: currentFormData.sizeCatalogCategoryId,
-                categoryTitle: currentFormData.sizeCatalogCategoryTitle,
-              }),
-            ]
-          : attributePayload;
+        const defaultVariantCompareAtPriceStored = Number.isFinite(defaultVariantCompareAtPrice)
+          ? normalizeAdminProductPriceInput(defaultVariantCompareAtPrice)
+          : undefined;
+        const defaultSkuInput = String(simpleProductData.sku || '').trim();
+        const defaultVariantSku =
+          defaultSkuInput !== ''
+            ? defaultSkuInput
+            : `${(currentFormData.slug || 'PROD').toUpperCase()}-DEFAULT`;
+        const defaultStockRaw = parseInt(String(simpleProductData.quantity || '0'), 10);
+        const defaultVariantStock =
+          Number.isFinite(defaultStockRaw) && defaultStockRaw >= 0 ? defaultStockRaw : 0;
 
         variants.push({
-          price: variantPriceStored,
-          compareAtPrice: variantCompareAtPriceStored,
-          stock: parseInt(genVariant.stock || '0', 10) || 0,
-          sku: uniqueSku,
-          imageUrl: variantImages.length > 0 ? variantImages.join(',') : undefined,
-          attributes: attributes.length > 0 ? attributes : undefined,
+          price: Number.isFinite(defaultVariantPrice) ? normalizeAdminProductPriceInput(defaultVariantPrice) : 0,
+          compareAtPrice: defaultVariantCompareAtPriceStored,
+          stock: defaultVariantStock,
+          sku: defaultVariantSku,
+          attributes: buildDefaultPricingAttributes({
+            categoryId: currentFormData.sizeCatalogCategoryId,
+            categoryTitle: currentFormData.sizeCatalogCategoryTitle,
+          }),
           published: true,
-          position: variantIndex,
         });
-      });
+        variantSkuSet.add(defaultVariantSku);
 
+        generatedVariants.forEach((genVariant, variantIndex) => {
+          const variantPriceText = String(genVariant.price || '').trim();
+          const variantPriceRaw = variantPriceText !== '' ? parseFloat(variantPriceText) : NaN;
+          const variantPriceStored = Number.isFinite(variantPriceRaw)
+            ? normalizeAdminProductPriceInput(variantPriceRaw)
+            : 0;
+
+          const variantCompareAtPriceText = String(genVariant.compareAtPrice || '').trim();
+          const variantCompareAtPriceRaw =
+            variantCompareAtPriceText !== ''
+              ? parseFloat(variantCompareAtPriceText)
+              : NaN;
+          const variantCompareAtPriceStored = Number.isFinite(variantCompareAtPriceRaw)
+            ? normalizeAdminProductPriceInput(variantCompareAtPriceRaw)
+            : undefined;
+          const finalSku = (genVariant.sku && genVariant.sku.trim() !== '')
+            ? genVariant.sku.trim()
+            : `${currentFormData.slug || 'PROD'}-${Date.now()}-${variantIndex + 1}`;
+          let uniqueSku = finalSku;
+          let skuCounter = 1;
+          while (variantSkuSet.has(uniqueSku)) {
+            uniqueSku = `${finalSku}-${skuCounter}`;
+            skuCounter++;
+          }
+          variantSkuSet.add(uniqueSku);
+          variants.push({
+            price: variantPriceStored,
+            compareAtPrice: variantCompareAtPriceStored,
+            stock: parseInt(genVariant.stock || '0') || 0,
+            sku: uniqueSku,
+            imageUrl: genVariant.image || undefined,
+            attributes:
+              genVariant.selectedValueIds.length > 0
+                ? buildVariantAttributePayload(genVariant.selectedValueIds, categoryAttributes)
+                : undefined,
+            published: true,
+          });
+        });
+      }
+
+      // Final SKU validation
       const finalSkuSet = new Set<string>();
       for (let i = 0; i < variants.length; i++) {
         const variant = variants[i];
@@ -179,26 +223,25 @@ export function useProductFormHandlers({
         } else {
           variant.sku = variant.sku.trim();
         }
-
         let finalSku = variant.sku;
         let skuCounter = 1;
         while (finalSkuSet.has(finalSku)) {
           const baseSlug = currentFormData.slug || 'PROD';
-          finalSku = `${baseSlug.toUpperCase()}-${Date.now()}-${i + 1}-${skuCounter}-${Math.random().toString(36).slice(2, 6)}`;
+          finalSku = `${baseSlug.toUpperCase()}-${Date.now()}-${i + 1}-${skuCounter}-${Math.random().toString(36).substr(2, 4)}`;
           skuCounter++;
         }
         variant.sku = finalSku;
         finalSkuSet.add(finalSku);
       }
 
-      const displayVariant = generatedVariants.find((variant) => variant.isDisplayVariant);
-      const displayImageUrl = displayVariant?.image?.trim() || '';
+      const attributeIds: string[] = [];
 
+      // Process images
       const { finalMedia, mainImage, processedVariants } = processImagesForSubmit({
-        imageUrls: displayImageUrl ? [displayImageUrl] : [],
-        featuredImageIndex: 0,
-        mainProductImage: displayImageUrl,
-        variants,
+        imageUrls: currentFormData.imageUrls,
+        featuredImageIndex: currentFormData.featuredImageIndex,
+        mainProductImage: currentFormData.mainProductImage,
+        variants: variants,
       });
       const finalVariants = processedVariants.length > 0 ? processedVariants : variants;
 
@@ -206,7 +249,7 @@ export function useProductFormHandlers({
         formData: currentFormData,
         finalPrimaryCategoryId,
         variants: finalVariants,
-        attributeIds: [],
+        attributeIds,
         finalMedia,
         mainImage,
         isEditMode,
@@ -215,7 +258,7 @@ export function useProductFormHandlers({
         setLoading,
         router,
       });
-    } catch (err: unknown) {
+    } catch (err: any) {
       console.error('❌ [ADMIN] Error saving product:', err);
     } finally {
       setLoading(false);

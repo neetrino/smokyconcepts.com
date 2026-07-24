@@ -217,18 +217,17 @@ export const CULTURE_PRODUCTS: HomeProductItem[] = [
 
 export const UPCOMING_LINES: HomeSimpleCardItem[] = [
   { title: 'Notebooks', imageSrc: '/assets/home/products/notebook.webp' },
-  { title: 'Knives', imageSrc: '/assets/home/products/knife.webp' },
+  { title: 'Knifes', imageSrc: '/assets/home/products/knife.webp' },
   { title: 'Phones', imageSrc: '/assets/home/products/phone.webp' },
   { title: 'Wallets', imageSrc: '/assets/home/products/wallet.webp' },
-  { title: 'Documents', imageSrc: '/assets/home/products/documents.webp' },
-  { title: 'Keys', imageSrc: '/assets/home/products/keys.webp' },
+  { title: 'Documents', imageSrc: '/assets/home/products/keys.webp' },
+  { title: 'Keys', imageSrc: '/assets/home/products/documents.webp' },
 ];
 
 export const FOOTER_LINKS = [
   { label: 'Privacy Policy', href: '/privacy' },
   { label: 'Terms and conditions', href: '/terms' },
   { label: 'Delivery Terms', href: '/delivery-terms' },
-  { label: 'Personalize', href: '/personalize' },
   { label: 'Refund Policy', href: '/refund-policy' },
 ] as const;
 

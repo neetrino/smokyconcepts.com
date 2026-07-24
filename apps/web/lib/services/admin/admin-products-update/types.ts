@@ -31,7 +31,6 @@ export interface UpdateProductData {
     imageUrl?: string;
     attributes?: unknown;
     published?: boolean;
-    position?: number;
   }>;
 }
 

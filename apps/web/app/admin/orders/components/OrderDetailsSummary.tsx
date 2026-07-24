@@ -12,7 +12,6 @@ import {
   getAdminOrderPaymentSummarySelectClassNames,
   getAdminOrderStatusSummarySelectClassNames,
 } from '../utils/orderUtils';
-import { formatAdminDateTime } from '../../utils/formatAdminDate';
 
 interface OrderDetailsSummaryProps {
   orderDetails: OrderDetails;
@@ -169,7 +168,7 @@ export function OrderDetailsSummary({
             </p>
           </div>
           <p className="mt-1 text-sm font-medium text-gray-900">
-            {formatAdminDateTime(orderDetails.createdAt)}
+            {new Date(orderDetails.createdAt).toLocaleString()}
           </p>
         </div>
       </div>

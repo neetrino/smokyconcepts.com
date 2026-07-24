@@ -90,84 +90,56 @@ export function buildVariantAttributePayload(
   selectedValueIds: string[],
   attributes: CategoryAttribute[]
 ): StoredVariantAttributeOption[] {
-  const valueLookup = new Map<
-    string,
-    { attribute: CategoryAttribute; value: CategoryAttributeValue }
-  >();
+  const selectedValueIdSet = new Set(selectedValueIds);
 
-  for (const attribute of attributes) {
-    for (const value of attribute.values) {
-      valueLookup.set(value.id, { attribute, value });
-    }
-  }
-
-  const payload: StoredVariantAttributeOption[] = [];
-  for (const valueId of selectedValueIds) {
-    const found = valueLookup.get(valueId);
-    if (!found) {
-      continue;
-    }
-    const { attribute, value } = found;
-    payload.push({
-      attributeKey: attribute.key,
-      value: value.value,
-      attributeValue: {
-        id: value.id,
+  return attributes.flatMap((attribute) =>
+    attribute.values
+      .filter((value) => selectedValueIdSet.has(value.id))
+      .map((value) => ({
+        attributeKey: attribute.key,
         value: value.value,
-        attribute: {
-          id: attribute.id,
-          key: attribute.key,
-        },
-        translations: [
-          {
-            locale: "en",
-            label: value.label,
+        attributeValue: {
+          id: value.id,
+          value: value.value,
+          attribute: {
+            id: attribute.id,
+            key: attribute.key,
           },
-        ],
-        imageUrl: value.imageUrl,
-        colors: value.colors,
-      },
-    });
-  }
-
-  return payload;
+          translations: [
+            {
+              locale: "en",
+              label: value.label,
+            },
+          ],
+          imageUrl: value.imageUrl,
+          colors: value.colors,
+        },
+      }))
+  );
 }
 
 export function buildSelectedAttributeValueIdsMap(
   attributes: CategoryAttribute[],
   generatedVariants: Array<{ selectedValueIds: string[] }>
 ): Record<string, string[]> {
-  const valueToAttributeId = new Map<string, string>();
-  for (const attribute of attributes) {
-    for (const value of attribute.values) {
-      valueToAttributeId.set(value.id, attribute.id);
+  const selectedValueIdSet = new Set<string>();
+  generatedVariants.forEach((variant) => {
+    variant.selectedValueIds.forEach((valueId) => {
+      selectedValueIdSet.add(valueId);
+    });
+  });
+
+  return attributes.reduce<Record<string, string[]>>((accumulator, attribute) => {
+    const selectedValues = attribute.values
+      .filter((value) => selectedValueIdSet.has(value.id))
+      .map((value) => value.id);
+
+    if (selectedValues.length > 0) {
+      accumulator[attribute.id] = selectedValues;
     }
-  }
 
-  const accumulator: Record<string, string[]> = {};
-  const seenPerAttribute = new Map<string, Set<string>>();
-
-  for (const variant of generatedVariants) {
-    for (const valueId of variant.selectedValueIds) {
-      const attributeId = valueToAttributeId.get(valueId);
-      if (!attributeId) {
-        continue;
-      }
-      let seen = seenPerAttribute.get(attributeId);
-      if (!seen) {
-        seen = new Set<string>();
-        seenPerAttribute.set(attributeId, seen);
-        accumulator[attributeId] = [];
-      }
-      if (seen.has(valueId)) {
-        continue;
-      }
-      seen.add(valueId);
-      accumulator[attributeId].push(valueId);
-    }
-  }
-
-  return accumulator;
+    return accumulator;
+  }, {});
 }
 
 /** Stable string for comparing attribute id → value id maps (key order and array order ignored). */

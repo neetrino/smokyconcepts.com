@@ -6,7 +6,6 @@ import { buildProductWhereClause, buildProductOrderByClause } from "./query-buil
 import { executeProductListQuery, executeProductDetailQuery } from "./query-executor";
 import { formatProductForList } from "./product-formatter";
 import { formatVariantForAdmin } from "./variant-formatter";
-import { sanitizeProductRichHtmlFields } from "@/lib/security/sanitize-product-html.server";
 
 type CategoryWithEnTranslations = Prisma.CategoryGetPayload<{
   include: {
@@ -105,20 +104,15 @@ export async function getProductById(productId: string) {
   const variants = Array.isArray(product.variants) ? product.variants : [];
   
   const attributeIds: string[] = [];
-  const sanitizedHtml = sanitizeProductRichHtmlFields({
-    descriptionHtml: translation?.descriptionHtml || null,
-    productDetailsHtml: translation?.productDetailsHtml || null,
-    shippingHtml: translation?.shippingHtml || null,
-  });
 
   return {
     id: product.id,
     title: translation?.title || "",
     slug: translation?.slug || "",
     subtitle: translation?.subtitle || null,
-    descriptionHtml: sanitizedHtml.descriptionHtml,
-    productDetailsHtml: sanitizedHtml.productDetailsHtml,
-    shippingHtml: sanitizedHtml.shippingHtml,
+    descriptionHtml: translation?.descriptionHtml || null,
+    productDetailsHtml: translation?.productDetailsHtml || null,
+    shippingHtml: translation?.shippingHtml || null,
     primaryCategoryId: product.primaryCategoryId || null,
     categoryIds: product.categoryIds || [],
     attributeIds,

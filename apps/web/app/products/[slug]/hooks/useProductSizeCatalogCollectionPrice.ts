@@ -14,8 +14,6 @@ interface UseProductSizeCatalogCollectionPriceParams {
   currentVariant: ProductVariant | null;
   selectedSizeLabel: string | null;
   selectedCatalogSize: SizeCatalogItemDto | null;
-  /** Catalog modal pick — blocks default template surcharge after size is chosen. */
-  hasExplicitCatalogSizePick: boolean;
   /** Applied customize text (Save on Customize tab) — triggers collection surcharge display. */
   hasAppliedCustomize: boolean;
 }
@@ -25,7 +23,6 @@ export function useProductSizeCatalogCollectionPrice({
   currentVariant,
   selectedSizeLabel,
   selectedCatalogSize,
-  hasExplicitCatalogSizePick,
   hasAppliedCustomize,
 }: UseProductSizeCatalogCollectionPriceParams) {
   const [sizeCatalogCategories, setSizeCatalogCategories] = useState<SizeCatalogCategoryDto[]>([]);
@@ -63,30 +60,16 @@ export function useProductSizeCatalogCollectionPrice({
           ? {
               categoryId: selectedCatalogSize.categoryId,
               categoryTitle: selectedCatalogSize.categoryTitle,
-              categoryPriceAmd: selectedCatalogSize.categoryPriceAmd,
             }
           : null,
       selectedSizeLabel,
-      hasExplicitCatalogSizePick,
     });
 
-    const resolved = resolveCollectionPriceAmdFromCategories(sizeCatalogCategories, selection);
-    if (resolved.priceAmd > 0) {
-      return resolved;
-    }
-    const embeddedPrice = selectedCatalogSize?.categoryPriceAmd ?? 0;
-    if (embeddedPrice > 0 && selectedCatalogSize != null) {
-      return {
-        priceAmd: embeddedPrice,
-        categoryTitle: selectedCatalogSize.categoryTitle,
-      };
-    }
-    return resolved;
+    return resolveCollectionPriceAmdFromCategories(sizeCatalogCategories, selection);
   }, [
     product,
     currentVariant,
     hasAppliedCustomize,
-    hasExplicitCatalogSizePick,
     sizeCatalogCategories,
     selectedCatalogSize,
     selectedSizeLabel,

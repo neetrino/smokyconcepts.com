@@ -35,56 +35,6 @@ export function resolveStripPageFromScrollAnchors(
   return bestPage;
 }
 
-/** Fraction of viewport width from scroll origin used as the active-page pivot (2-up mobile strips). */
-const MOBILE_STRIP_PAGE_PIVOT_VIEWPORT_RATIO = 0.2;
-
-/**
- * Mobile horizontal strip — map scroll position to a page index (0-based).
- * Uses the last page-start at or before a leading-edge pivot (works when two cards are visible).
- */
-export function resolveMobileStripPageFromScroll(
-  container: HTMLDivElement,
-  pageStartAnchors: Array<HTMLDivElement | null | undefined>,
-  totalPages: number
-): number {
-  if (totalPages <= 1) {
-    return 0;
-  }
-
-  const maxScrollLeft = getCatalogStripMaxScrollLeft(container);
-  const scrollLeft = container.scrollLeft;
-
-  if (scrollLeft >= maxScrollLeft - CATALOG_SCROLL_TARGET_TOLERANCE_PX) {
-    return totalPages - 1;
-  }
-
-  let anchorCount = 0;
-  let activePage = 0;
-  const pivot = scrollLeft + container.clientWidth * MOBILE_STRIP_PAGE_PIVOT_VIEWPORT_RATIO;
-
-  for (let pageIndex = 0; pageIndex < pageStartAnchors.length; pageIndex += 1) {
-    const anchor = pageStartAnchors[pageIndex];
-    if (!anchor) {
-      continue;
-    }
-    anchorCount += 1;
-    const anchorScrollLeft = getScrollLeftForElementWithin(container, anchor);
-    if (anchorScrollLeft <= pivot + CATALOG_SCROLL_TARGET_TOLERANCE_PX) {
-      activePage = pageIndex;
-    }
-  }
-
-  if (anchorCount > 0) {
-    return Math.min(activePage, totalPages - 1);
-  }
-
-  if (maxScrollLeft <= 0) {
-    return 0;
-  }
-
-  return Math.min(totalPages - 1, Math.round((scrollLeft / maxScrollLeft) * (totalPages - 1)));
-}
-
 /**
  * Horizontal scroll offset so ~half of the first strip card sits left of the viewport (peek hint).
  */

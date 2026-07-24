@@ -19,9 +19,7 @@
     "cardNumber": "Card Number",
     "expiryDate": "Expiry Date",
     "cvv": "CVV",
-    "cardHolderName": "Card Holder Name",
-    "acceptPrivacyPolicy": "I confirm that I have read the",
-    "privacyPolicy": "Privacy Policy"
+    "cardHolderName": "Card Holder Name"
   },
   "placeholders": {
     "phone": "+374XXXXXXXX",
@@ -48,14 +46,11 @@
   },
   "payment": {
     "cashOnDelivery": "Cash on Delivery",
-    "cashOnDeliveryShort": "Cash",
     "cashOnDeliveryDescription": "Pay cash when you receive your order",
     "idram": "Idram",
-    "idramShort": "Idram",
     "idramDescription": "Pay with Idram wallet or card",
     "arca": "ArCa",
-    "arcaShort": "By card",
-    "arcaDescription": "Pay with Visa, Mastercard, ArCa card or Apple Pay",
+    "arcaDescription": "Pay with ArCa card",
     "paymentDetails": "Payment Details",
     "enterCardDetails": "Enter your card details to complete payment"
   },
@@ -129,8 +124,7 @@
     "fillShippingAddress": "Please fill in all shipping address fields",
     "cartEmpty": "Cart is empty",
     "failedToLoadCart": "Failed to load cart",
-    "failedToCreateOrder": "Failed to create order. Please try again.",
-    "privacyPolicyRequired": "You must confirm that you have read the Privacy Policy"
+    "failedToCreateOrder": "Failed to create order. Please try again."
   }
 }
 

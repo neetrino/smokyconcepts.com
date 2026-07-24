@@ -26,8 +26,7 @@ export const SIZE_MODAL_BLOCK_ENTER_DELAY_HEADER_MS = 90;
 
 export const SIZE_MODAL_BLOCK_ENTER_DELAY_SEARCH_MS = 160;
 
-/** Catalog grid — no extra delay so size thumbnails appear with the panel. */
-export const SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS = 0;
+export const SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS = 220;
 
 /** Unmount after the longest close transition finishes */
 export const SIZE_MODAL_EXIT_DURATION_MS = Math.max(

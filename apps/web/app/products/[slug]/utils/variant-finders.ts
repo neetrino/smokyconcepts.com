@@ -3,10 +3,8 @@ import {
   processImageUrl,
   smartSplitUrls,
 } from '../../../../lib/services/utils/image-utils';
-import {
-  variantHasColor,
-  variantHasOptionValue,
-} from './variant-helpers';
+import { variantHasColor } from './variant-helpers';
+import { getOptionValue } from './variant-helpers';
 
 function normalizeUrlForVariantMatch(url: string): string {
   let normalized = url.trim();
@@ -96,7 +94,8 @@ export function findVariantByColorAndSize(
   if (normalizedColor && normalizedSize) {
     const variant = product.variants.find((v) => {
       const hasColor = variantHasColor(v, normalizedColor);
-      return hasColor && variantHasOptionValue(v, 'size', normalizedSize);
+      const vSize = getOptionValue(v.options, 'size');
+      return hasColor && vSize === normalizedSize;
     });
     if (variant) return variant;
   }
@@ -116,9 +115,10 @@ export function findVariantByColorAndSize(
 
   // 3. If only size selected or fallback for size
   if (normalizedSize) {
-    const sizeVariants = product.variants.filter((v) =>
-      variantHasOptionValue(v, 'size', normalizedSize)
-    );
+    const sizeVariants = product.variants.filter((v) => {
+      const vSize = getOptionValue(v.options, 'size');
+      return vSize === normalizedSize;
+    });
 
     if (sizeVariants.length > 0) {
       return sizeVariants.find((v) => v.stock > 0) || sizeVariants[0];
@@ -166,18 +166,38 @@ export function findVariantByAllAttributes(
       if (!variantHasColor(variant, normalizedColor)) return false;
     }
 
-    // Check size (variant may list multiple sizes when admin selected "all")
-    if (normalizedSize && !variantHasOptionValue(variant, 'size', normalizedSize)) {
-      return false;
+    // Check size
+    if (normalizedSize) {
+      const vSize = getOptionValue(variant.options, 'size');
+      if (vSize !== normalizedSize) return false;
     }
 
-    // Check other attributes (size_version, etc.)
+    // Check other attributes
     for (const [attrKey, attrValue] of otherAttributes.entries()) {
-      if (attrKey === 'color' || attrKey === 'size') {
-        continue;
-      }
+      if (attrKey === 'color' || attrKey === 'size') continue;
 
-      if (!variantHasOptionValue(variant, attrKey, attrValue)) {
+      const variantValue = getOptionValue(variant.options, attrKey);
+      const normalizedAttrValue = attrValue.toLowerCase().trim();
+
+      // Try matching by valueId first (if available)
+      const option = variant.options?.find(
+        (opt) => opt.key === attrKey || opt.attribute === attrKey
+      );
+
+      if (option) {
+        // Check by valueId if both have it
+        if (option.valueId && attrValue) {
+          // If the selected value is an ID, match by ID
+          if (option.valueId === attrValue) {
+            continue;
+          }
+        }
+
+        // Fallback to value matching
+        if (variantValue !== normalizedAttrValue) {
+          return false;
+        }
+      } else {
         return false;
       }
     }

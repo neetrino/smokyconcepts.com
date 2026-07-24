@@ -6,11 +6,9 @@ import {
   getCatalogStripMaxScrollLeft,
   getCatalogStripPeekStartScroll,
   getCatalogStripScrollLeftForPage,
-  resolveMobileStripPageFromScroll,
   scrollMobileStripToPageAnchor,
 } from '../catalogStripScroll';
 import {
-  CATALOG_MOBILE_STRIP_PROGRAMMATIC_SCROLL_RELEASE_MS,
   CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE,
   CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS,
 } from '../catalogProductCardMobilePresentation';
@@ -19,6 +17,7 @@ import {
   clearSectionScrollSettleTimers,
   waitForSectionScrollToSettle,
 } from '../productsCatalogScrollSettle';
+import { resolveSectionPageFromScrollAnchors } from '../productsCatalogScroll.utils';
 import { CATALOG_SCROLL_TARGET_TOLERANCE_PX } from '../productsCatalogView.constants';
 import type { CatalogSectionViewModel } from '../productsCatalogView.types';
 
@@ -45,7 +44,6 @@ export function useProductsCatalogSectionScroll({
   const sectionProgrammaticScrollRef = useRef<Record<string, boolean>>({});
   const sectionScrollSettleRafRef = useRef<Record<string, number | null>>({});
   const sectionScrollSettleTimerRef = useRef<Record<string, ReturnType<typeof setTimeout> | null>>({});
-  const sectionScrollEndCleanupRef = useRef<Record<string, () => void>>({});
   const [sectionPages, setSectionPages] = useState<Record<string, number>>({});
 
   useEffect(() => {
@@ -157,26 +155,6 @@ export function useProductsCatalogSectionScroll({
     settleTimer: sectionScrollSettleTimerRef.current,
   };
 
-  const commitSectionPageFromScroll = (title: string, container: HTMLDivElement) => {
-    const itemCount = sectionItemsByTitle[title]?.length ?? 0;
-    const totalPages = Math.max(1, Math.ceil(itemCount / cardsPerPage));
-    if (totalPages <= 1) {
-      return;
-    }
-
-    const anchors = sectionPageStartRefs.current[title] ?? [];
-    const nextPage = resolveMobileStripPageFromScroll(container, anchors, totalPages);
-    setSectionPages((currentPages) => {
-      if (currentPages[title] === nextPage) {
-        return currentPages;
-      }
-      return {
-        ...currentPages,
-        [title]: nextPage,
-      };
-    });
-  };
-
   const handleSectionPageChange = (title: string, pageIndex: number) => {
     const container = sectionScrollRefs.current[title];
     if (container) {
@@ -187,6 +165,22 @@ export function useProductsCatalogSectionScroll({
       const totalPages = Math.max(1, Math.ceil(itemCount / cardsPerPage));
       const isLastPage = totalPages > 1 && pageIndex >= totalPages - 1;
 
+      if (!isSmUp) {
+        targetScrollLeft = isLastPage
+          ? getCatalogStripMaxScrollLeft(container)
+          : scrollMobileStripToPageAnchor(container, pageAnchors[pageIndex]);
+        if (isLastPage) {
+          container.scrollTo({ left: targetScrollLeft, behavior: 'auto' });
+        }
+      } else {
+        targetScrollLeft = getCatalogStripScrollLeftForPage(
+          container,
+          pageIndex,
+          pageAnchors,
+          totalPages
+        );
+      }
+
       sectionProgrammaticScrollRef.current[title] = true;
 
       const idleTimer = sectionScrollIdleTimerRef.current[title];
@@ -195,29 +189,14 @@ export function useProductsCatalogSectionScroll({
         delete sectionScrollIdleTimerRef.current[title];
       }
 
-      if (!isSmUp) {
-        targetScrollLeft = isLastPage
-          ? getCatalogStripMaxScrollLeft(container)
-          : scrollMobileStripToPageAnchor(container, pageAnchors[pageIndex]);
-        if (isLastPage) {
-          container.scrollTo({ left: targetScrollLeft, behavior: 'auto' });
-        }
-        window.setTimeout(() => {
-          sectionProgrammaticScrollRef.current[title] = false;
-        }, CATALOG_MOBILE_STRIP_PROGRAMMATIC_SCROLL_RELEASE_MS);
-      } else {
-        targetScrollLeft = getCatalogStripScrollLeftForPage(
-          container,
-          pageIndex,
-          pageAnchors,
-          totalPages
-        );
+      if (isSmUp) {
         container.scrollTo({
           left: targetScrollLeft,
           behavior: 'smooth',
         });
-        waitForSectionScrollToSettle(title, container, targetScrollLeft, scrollSettleRefs);
       }
+
+      waitForSectionScrollToSettle(title, container, targetScrollLeft, scrollSettleRefs);
     }
 
     setSectionPages((currentPages) => {
@@ -239,22 +218,6 @@ export function useProductsCatalogSectionScroll({
       return;
     }
 
-    if (!isSmUp) {
-      const idleTimer = sectionScrollIdleTimerRef.current[title];
-      if (idleTimer) {
-        clearTimeout(idleTimer);
-      }
-
-      sectionScrollIdleTimerRef.current[title] = setTimeout(() => {
-        delete sectionScrollIdleTimerRef.current[title];
-        if (sectionProgrammaticScrollRef.current[title]) {
-          return;
-        }
-        commitSectionPageFromScroll(title, container);
-      }, CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS);
-      return;
-    }
-
     if (sectionProgrammaticScrollRef.current[title]) {
       return;
     }
@@ -271,6 +234,30 @@ export function useProductsCatalogSectionScroll({
       });
     };
 
+    if (!isSmUp) {
+      const maxScrollLeft = getCatalogStripMaxScrollLeft(container);
+      if (container.scrollLeft >= maxScrollLeft - CATALOG_SCROLL_TARGET_TOLERANCE_PX) {
+        commitPage(section.totalPages - 1);
+        return;
+      }
+
+      const idleTimer = sectionScrollIdleTimerRef.current[title];
+      if (idleTimer) {
+        clearTimeout(idleTimer);
+      }
+
+      sectionScrollIdleTimerRef.current[title] = setTimeout(() => {
+        delete sectionScrollIdleTimerRef.current[title];
+        if (sectionProgrammaticScrollRef.current[title]) {
+          return;
+        }
+        const anchors = sectionPageStartRefs.current[title] ?? [];
+        const nextPage = resolveSectionPageFromScrollAnchors(container, anchors);
+        commitPage(nextPage);
+      }, CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS);
+      return;
+    }
+
     const maxScrollLeft = getCatalogStripMaxScrollLeft(container);
     if (container.scrollLeft >= maxScrollLeft - CATALOG_SCROLL_TARGET_TOLERANCE_PX) {
       commitPage(section.totalPages - 1);
@@ -284,8 +271,8 @@ export function useProductsCatalogSectionScroll({
     }
 
     const anchors = sectionPageStartRefs.current[title] ?? [];
-    const nextPage = resolveMobileStripPageFromScroll(container, anchors, section.totalPages);
-    commitPage(nextPage);
+    const nextPage = resolveSectionPageFromScrollAnchors(container, anchors);
+    commitPage(Math.max(0, Math.min(section.totalPages - 1, nextPage)));
   };
 
   useEffect(() => {
@@ -295,40 +282,11 @@ export function useProductsCatalogSectionScroll({
         sectionScrollSettleRafRef.current,
         sectionScrollSettleTimerRef.current
       );
-      for (const cleanup of Object.values(sectionScrollEndCleanupRef.current)) {
-        cleanup();
-      }
-      sectionScrollEndCleanupRef.current = {};
     };
   }, []);
 
   const registerSectionScrollRef = (title: string, element: HTMLDivElement | null) => {
-    sectionScrollEndCleanupRef.current[title]?.();
-    delete sectionScrollEndCleanupRef.current[title];
-
     sectionScrollRefs.current[title] = element;
-
-    if (!element || isSmUp) {
-      return;
-    }
-
-    const itemCount = sectionItemsByTitle[title]?.length ?? 0;
-    const totalPages = Math.max(1, Math.ceil(itemCount / cardsPerPage));
-    if (totalPages <= 1) {
-      return;
-    }
-
-    const onScrollEnd = () => {
-      if (sectionProgrammaticScrollRef.current[title]) {
-        return;
-      }
-      commitSectionPageFromScroll(title, element);
-    };
-
-    element.addEventListener('scrollend', onScrollEnd, { passive: true });
-    sectionScrollEndCleanupRef.current[title] = () => {
-      element.removeEventListener('scrollend', onScrollEnd);
-    };
   };
 
   const registerSectionPageStartRef = (
