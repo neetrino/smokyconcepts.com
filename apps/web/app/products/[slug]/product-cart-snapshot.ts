@@ -1,5 +1,4 @@
 import { CART_KEY } from '@/app/cart/constants';
-import { processImageUrl, smartSplitUrls } from '@/lib/services/utils/image-utils';
 import type { GuestCartItem } from '@/app/cart/types';
 import type { Product, ProductVariant } from './types';
 
@@ -45,36 +44,25 @@ export function getGuestQuantityForVariant(variantId: string): number {
  * Returns false if adding `quantityToAdd` would exceed `variant.stock` given current guest lines.
  */
 export function canAddVariantToGuestCart(variant: ProductVariant, quantityToAdd: number): boolean {
-  if (quantityToAdd <= 0) {
+  if (variant.stock <= 0) {
     return false;
   }
-  const currentGuestQuantity = getGuestQuantityForVariant(variant.id);
-  if (variant.stock <= 0) {
-    // Backorder flow: allow keeping one unit in guest cart for out-of-stock variants.
-    return currentGuestQuantity + quantityToAdd <= 1;
-  }
-  const nextTotal = currentGuestQuantity + quantityToAdd;
+  const nextTotal = getGuestQuantityForVariant(variant.id) + quantityToAdd;
   return nextTotal <= variant.stock;
 }
 
 function resolvePrimaryImage(product: Product, variant: ProductVariant): string | null {
-  const variantImage = resolveFirstImageUrl(variant.imageUrl);
-  if (variantImage) {
-    return variantImage;
+  if (variant.imageUrl) {
+    return variant.imageUrl;
   }
   const first = product.media?.[0];
   if (!first) {
     return null;
   }
   if (typeof first === 'string') {
-    return resolveFirstImageUrl(first);
+    return first;
   }
-  return resolveFirstImageUrl(first.url);
-}
-
-function resolveFirstImageUrl(source: string | null | undefined): string | null {
-  const first = smartSplitUrls(source)[0] ?? null;
-  return processImageUrl(first);
+  return first.url ?? null;
 }
 
 function resolveSizeLabel(variant: ProductVariant): string | null {
@@ -109,7 +97,7 @@ export function buildCatalogGuestCartSnapshot(params: {
     variantId: params.variantId,
     quantity: params.quantity,
     title: params.title,
-    image: resolveFirstImageUrl(params.image),
+    image: params.image,
     price: params.price,
     originalPrice: params.originalPrice,
     stock: params.stock,
@@ -158,11 +146,13 @@ export function buildGuestCartLineSnapshot(
     typeof categoryPriceRaw === 'number' &&
     Number.isFinite(categoryPriceRaw) &&
     categoryPriceRaw > 0;
+  const hasCollectionContext =
+    trimmedCategoryTitle !== '' || trimmedTitle !== '' || hasCollectionPrice;
+  const sizeCatalogCategoryPriceAmd = hasCollectionContext && hasCollectionPrice
+    ? Math.round(categoryPriceRaw)
+    : null;
   const plain = customize?.plain?.trim() ?? '';
   const html = customize?.html?.trim() ?? '';
-  const hasSavedCustomize = plain !== '' || html !== '';
-  const sizeCatalogCategoryPriceAmd =
-    hasSavedCustomize && hasCollectionPrice ? Math.round(categoryPriceRaw) : null;
   const customRequest =
     customSizeRequest != null
       ? {

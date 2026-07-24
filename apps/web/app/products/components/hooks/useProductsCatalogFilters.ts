@@ -1,11 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { apiClient } from '../../../../lib/api-client';
 import { getStoredLanguage, type LanguageCode } from '../../../../lib/language';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
 import { preloadSizeCatalogCategories } from '@/lib/size-catalog-image-cache';
-import { loadSizeCatalogCategories } from '@/lib/size-catalog-client-cache';
 import {
   CATALOG_SELECT_SIZE_AUTOOPEN_QUERY,
   CATALOG_SELECT_SIZE_AUTOOPEN_VALUE,
@@ -19,10 +19,6 @@ import {
   productMatchesSizeFilter,
   resolveSectionLabelFromCollectionValue,
 } from '../catalogProductLabels';
-import {
-  catalogSizeQueryFromItem,
-  resolveCatalogItemId,
-} from '../catalogSizeFilterDraft';
 import { SECTION_ORDER } from '../productsCatalogView.constants';
 import { sortProducts } from '../productsCatalogView.helpers';
 import type { SortOption } from '../productsCatalogView.types';
@@ -31,14 +27,9 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [catalogSizeModalOpen, setCatalogSizeModalOpen] = useState(false);
-  const [pendingSelectSizeAutopen, setPendingSelectSizeAutopen] = useState(false);
   const [sizeCatalogCategories, setSizeCatalogCategories] = useState<SizeCatalogCategoryDto[]>([]);
-  const [sizeCatalogReady, setSizeCatalogReady] = useState(false);
   const [language, setLanguage] = useState<LanguageCode>('en');
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-  const [catalogSizeFromMobileFilter, setCatalogSizeFromMobileFilter] = useState(false);
-  const [mobilePendingSize, setMobilePendingSize] = useState('all');
-  const [mobilePendingSizeCat, setMobilePendingSizeCat] = useState('');
   const [selectedSize, setSelectedSize] = useState(searchParams.get('size') ?? 'all');
 
   const selectedCollection = searchParams.get('category') ?? 'all';
@@ -76,19 +67,10 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
   }, [searchParams]);
 
   useEffect(() => {
-    if (!mobileFilterOpen) {
-      setCatalogSizeFromMobileFilter(false);
-      return;
-    }
-    setMobilePendingSize(selectedSize);
-    setMobilePendingSizeCat(selectedSizeCatalogCategoryId);
-  }, [mobileFilterOpen, selectedSize, selectedSizeCatalogCategoryId]);
-
-  useEffect(() => {
     if (searchParams.get(CATALOG_SELECT_SIZE_AUTOOPEN_QUERY) !== CATALOG_SELECT_SIZE_AUTOOPEN_VALUE) {
       return;
     }
-    setPendingSelectSizeAutopen(true);
+    setCatalogSizeModalOpen(true);
     const params = new URLSearchParams(searchParams.toString());
     params.delete(CATALOG_SELECT_SIZE_AUTOOPEN_QUERY);
     const nextPath = params.toString() ? `/products?${params.toString()}` : '/products';
@@ -106,13 +88,20 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
 
   useEffect(() => {
     let cancelled = false;
-    void loadSizeCatalogCategories().then((data) => {
-      if (cancelled) {
-        return;
+    void (async () => {
+      try {
+        const res = await apiClient.get<{ data: SizeCatalogCategoryDto[] }>('/api/v1/size-catalog');
+        if (!cancelled) {
+          const data = Array.isArray(res.data) ? res.data : [];
+          setSizeCatalogCategories(data);
+          void preloadSizeCatalogCategories(data);
+        }
+      } catch {
+        if (!cancelled) {
+          setSizeCatalogCategories([]);
+        }
       }
-      setSizeCatalogCategories(data);
-      setSizeCatalogReady(true);
-    });
+    })();
     return () => {
       cancelled = true;
     };
@@ -136,47 +125,42 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
     [sizeCatalogCategories, products]
   );
 
-  useEffect(() => {
-    if (!pendingSelectSizeAutopen || !sizeCatalogReady) {
-      return;
+  const selectedCatalogItemId = useMemo(() => {
+    if (selectedSize === 'all') {
+      return null;
     }
-    let cancelled = false;
-    void (async () => {
-      await preloadSizeCatalogCategories(sizeCatalogForModal);
-      if (cancelled) {
-        return;
+    const sizeNeedle = selectedSize.trim().toLowerCase();
+    const categoryNeedle = selectedSizeCatalogCategoryId.trim();
+    for (const category of sizeCatalogCategories) {
+      const exactTitleHit = category.items.find((item) => {
+        const titleMatch = item.title.trim().toLowerCase() === sizeNeedle;
+        if (!titleMatch) {
+          return false;
+        }
+        if (!categoryNeedle) {
+          return true;
+        }
+        return item.categoryId === categoryNeedle;
+      });
+      if (exactTitleHit) {
+        return exactTitleHit.id;
       }
-      setCatalogSizeModalOpen(true);
-      setPendingSelectSizeAutopen(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [pendingSelectSizeAutopen, sizeCatalogReady, sizeCatalogForModal]);
-
-  const openCatalogSizeModal = useCallback(() => {
-    setCatalogSizeFromMobileFilter(false);
-    void preloadSizeCatalogCategories(sizeCatalogForModal);
-    setCatalogSizeModalOpen(true);
-  }, [sizeCatalogForModal]);
-
-  const openCatalogSizeModalFromMobileFilter = useCallback(() => {
-    setCatalogSizeFromMobileFilter(true);
-    setCatalogSizeModalOpen(true);
-    void preloadSizeCatalogCategories(sizeCatalogForModal);
-  }, [sizeCatalogForModal]);
-
-  const sizeForCatalogModal = catalogSizeFromMobileFilter || mobileFilterOpen
-    ? mobilePendingSize
-    : selectedSize;
-  const sizeCatForCatalogModal = catalogSizeFromMobileFilter || mobileFilterOpen
-    ? mobilePendingSizeCat
-    : selectedSizeCatalogCategoryId;
-
-  const selectedCatalogItemId = useMemo(
-    () => resolveCatalogItemId(sizeCatalogCategories, sizeForCatalogModal, sizeCatForCatalogModal),
-    [sizeCatalogCategories, sizeForCatalogModal, sizeCatForCatalogModal]
-  );
+      const bandTitleHit = category.items.find((item) => {
+        const bandMatch = item.categoryTitle.trim().toLowerCase() === sizeNeedle;
+        if (!bandMatch) {
+          return false;
+        }
+        if (!categoryNeedle) {
+          return true;
+        }
+        return item.categoryId === categoryNeedle;
+      });
+      if (bandTitleHit) {
+        return bandTitleHit.id;
+      }
+    }
+    return null;
+  }, [sizeCatalogCategories, selectedSize, selectedSizeCatalogCategoryId]);
 
   const visibleProducts = useMemo(() => {
     const gateByCollection = selectedCollection !== 'all';
@@ -247,67 +231,34 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
   };
 
   const applyCatalogSizeFilter = (item: SizeCatalogItemDto) => {
-    const { size: sizeQueryValue, sizeCat: categoryId } = catalogSizeQueryFromItem(item);
-    setSelectedSize(sizeQueryValue);
+    const packTitle = item.title.trim();
+    const bandTitle = item.categoryTitle.trim();
+    const sizeQueryValue = bandTitle || packTitle;
+    const categoryId = item.categoryId.trim();
+    setSelectedSize(sizeQueryValue ? sizeQueryValue : 'all');
     setCatalogSizeModalOpen(false);
     setMobileFilterOpen(false);
+    if (!sizeQueryValue) {
+      updateQuery({ size: 'all', sizeCat: 'all' });
+      return;
+    }
     updateQuery({ size: sizeQueryValue, sizeCat: categoryId || 'all' });
   };
 
-  const stageCatalogSizeForMobileApply = (item: SizeCatalogItemDto) => {
-    const { size, sizeCat } = catalogSizeQueryFromItem(item);
-    setMobilePendingSize(size);
-    setMobilePendingSizeCat(sizeCat);
-    setCatalogSizeFromMobileFilter(false);
-    setCatalogSizeModalOpen(false);
-    setMobileFilterOpen(true);
-  };
-
-  const handleCatalogSizeItemSelect = (item: SizeCatalogItemDto) => {
-    if (catalogSizeFromMobileFilter) {
-      stageCatalogSizeForMobileApply(item);
-      return;
-    }
-    applyCatalogSizeFilter(item);
-  };
-
-  const commitMobileFilterApply = () => {
-    const sizeChanged =
-      mobilePendingSize !== selectedSize ||
-      mobilePendingSizeCat.trim() !== selectedSizeCatalogCategoryId.trim();
-    if (sizeChanged) {
-      setSelectedSize(mobilePendingSize);
-      updateQuery({
-        size: mobilePendingSize,
-        sizeCat: mobilePendingSizeCat.trim() || 'all',
-      });
-    }
-    setMobileFilterOpen(false);
-  };
-
   const clearFilters = () => {
-    setMobilePendingSize('all');
-    setMobilePendingSizeCat('');
     setSelectedSize('all');
     setCatalogSizeModalOpen(false);
     setMobileFilterOpen(false);
-    setCatalogSizeFromMobileFilter(false);
     router.replace('/products', { scroll: false });
   };
 
   return {
     catalogSizeModalOpen,
     setCatalogSizeModalOpen,
-    openCatalogSizeModal,
-    openCatalogSizeModalFromMobileFilter,
     language,
     mobileFilterOpen,
     setMobileFilterOpen,
-    mobilePendingSize,
-    commitMobileFilterApply,
     selectedSize,
-    selectedSizeCatalogCategoryId,
-    selectedSizeCatalogCategoryTitle,
     selectedCollection,
     selectedColor,
     selectedSort,
@@ -324,7 +275,7 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
     catalogStripSectionTitles,
     selectedSectionTitle,
     updateQuery,
-    handleCatalogSizeItemSelect,
+    applyCatalogSizeFilter,
     clearFilters,
   };
 }

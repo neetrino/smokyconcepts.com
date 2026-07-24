@@ -1,8 +1,8 @@
+import { getAuthToken } from "./auth-utils";
 import type { RequestOptions } from "./types";
 
 /**
- * JSON headers for API requests.
- * Auth is sent via httpOnly cookie (`credentials: 'include'`).
+ * Get headers with automatic token injection
  */
 export function getHeaders(options?: RequestOptions): globalThis.HeadersInit {
   const headers: Record<string, string> = {
@@ -10,8 +10,17 @@ export function getHeaders(options?: RequestOptions): globalThis.HeadersInit {
     ...(options?.headers as Record<string, string> || {}),
   };
 
+  // Add auth token if available and not skipped
+  if (!options?.skipAuth) {
+    const token = getAuthToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
+
   return headers as globalThis.HeadersInit;
 }
+
 
 
 

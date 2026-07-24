@@ -86,10 +86,6 @@ export interface GeneratedVariant {
   stock: string;
   sku: string;
   image: string | null;
-  images?: string[];
-  mainImageIndex?: number;
-  /** Shown on catalog and product pages when selected (only one per product). */
-  isDisplayVariant: boolean;
 }
 
 

@@ -1,15 +1,12 @@
 'use client';
 
-import Link from 'next/link';
 import { Button } from '@shop/ui';
-import type { FieldErrors, UseFormRegister } from 'react-hook-form';
+import { useCurrency } from '../../components/hooks/useCurrency';
 import { useTranslation } from '../../lib/i18n-client';
-import type { CheckoutFormData, CheckoutOrderSummaryTotals } from './types';
-import { CheckoutSummaryBreakdown } from './components/CheckoutSummaryBreakdown';
+import { convertPrice, formatPriceInCurrency } from '../../lib/currency';
+import type { CheckoutOrderSummaryTotals } from './types';
 
 interface OrderSummaryProps {
-  register: UseFormRegister<CheckoutFormData>;
-  errors: FieldErrors<CheckoutFormData>;
   orderSummary: CheckoutOrderSummaryTotals;
   shippingMethod: 'pickup' | 'delivery';
   loadingDeliveryPrice: boolean;
@@ -26,8 +23,6 @@ interface OrderSummaryProps {
 }
 
 export function OrderSummary({
-  register,
-  errors,
   orderSummary,
   shippingMethod,
   loadingDeliveryPrice,
@@ -43,6 +38,9 @@ export function OrderSummary({
   appliedCouponCode,
 }: OrderSummaryProps) {
   const { t } = useTranslation();
+  const displayCurrency = useCurrency();
+  const formatCheckoutUsd = (amountUsd: number) =>
+    formatPriceInCurrency(convertPrice(amountUsd, 'USD', displayCurrency), displayCurrency);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-6">
@@ -99,11 +97,40 @@ export function OrderSummary({
         </div>
 
         <div className="space-y-4 mb-6">
-          <CheckoutSummaryBreakdown
-            orderSummary={orderSummary}
-            shippingMethod={shippingMethod}
-            loadingDeliveryPrice={loadingDeliveryPrice}
-          />
+          <div className="flex justify-between text-gray-600">
+            <span>{t('checkout.summary.subtotal')}</span>
+            <span>{formatCheckoutUsd(orderSummary.subtotalDisplay)}</span>
+          </div>
+          <div className="flex justify-between text-gray-600">
+            <span>{t('checkout.summary.shipping')}</span>
+            <span>
+              {shippingMethod === 'pickup'
+                ? t('checkout.shipping.freePickup')
+                : loadingDeliveryPrice
+                  ? t('checkout.shipping.loading')
+                  : deliveryPrice !== null
+                    ? formatCheckoutUsd(orderSummary.shippingDisplay)
+                    : t('checkout.shipping.enterRegion')}
+            </span>
+          </div>
+          {orderSummary.collectionPriceDisplay > 0 && (
+            <div className="flex justify-between text-gray-600">
+              <span>{t('checkout.summary.collectionPrice')}</span>
+              <span>{formatCheckoutUsd(orderSummary.collectionPriceDisplay)}</span>
+            </div>
+          )}
+          {orderSummary.couponDiscountDisplay > 0 && (
+            <div className="flex justify-between text-emerald-700">
+              <span>{t('checkout.summary.couponDiscount')}</span>
+              <span>-{formatCheckoutUsd(orderSummary.couponDiscountDisplay)}</span>
+            </div>
+          )}
+          <div className="border-t border-gray-200 pt-4">
+            <div className="flex justify-between text-lg font-bold text-gray-900">
+              <span>{t('checkout.summary.total')}</span>
+              <span>{formatCheckoutUsd(orderSummary.totalDisplay)}</span>
+            </div>
+          </div>
         </div>
 
         {error && (
@@ -111,29 +138,6 @@ export function OrderSummary({
             <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
-
-        <div className="mb-4">
-          <div className="flex items-start">
-            <input
-              type="checkbox"
-              id="acceptedPrivacyPolicy"
-              {...register('acceptedPrivacyPolicy')}
-              className="mt-1 rounded border-gray-300 text-[#dcc090] focus:ring-[#dcc090]"
-              disabled={isSubmitting}
-            />
-            <label htmlFor="acceptedPrivacyPolicy" className="ml-2 text-sm text-gray-600">
-              {t('checkout.form.acceptPrivacyPolicy')}{' '}
-              <Link href="/privacy" className="text-[#122a26] underline underline-offset-2 hover:text-[#0f221f]">
-                {t('checkout.form.privacyPolicy')}
-              </Link>
-            </label>
-          </div>
-          {errors.acceptedPrivacyPolicy?.message ? (
-            <p className="mt-2 text-sm text-red-600" role="alert">
-              {errors.acceptedPrivacyPolicy.message}
-            </p>
-          ) : null}
-        </div>
 
       <Button
         type="submit"

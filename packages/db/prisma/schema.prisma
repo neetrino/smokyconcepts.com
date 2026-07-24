@@ -362,24 +362,17 @@ model Settings {
 // ============================================
 // CONTACT MESSAGE MODEL
 // ============================================
-enum ContactMessageSource {
-  CONTACT
-  PERSONALIZE
-}
-
 model ContactMessage {
-  id        String               @id @default(cuid())
+  id        String   @id @default(cuid())
   name      String
   email     String
   subject   String
-  message   String               @db.Text
-  source    ContactMessageSource @default(CONTACT)
-  createdAt DateTime             @default(now())
-  updatedAt DateTime             @updatedAt
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([createdAt(sort: Desc)])
   @@index([email])
-  @@index([source])
   @@map("contact_messages")
 }
 

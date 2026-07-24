@@ -37,8 +37,6 @@ export interface CartItem {
   };
   quantity: number;
   price: number;
-  /** Guest snapshot catalog base price in AMD (checkout/order summary parity). */
-  catalogBasePriceAmd?: number | null;
   originalPrice?: number | null;
   total: number;
 }

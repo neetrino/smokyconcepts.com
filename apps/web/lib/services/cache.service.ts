@@ -140,49 +140,6 @@ export async function setex(key: string, seconds: number, value: string): Promis
 }
 
 /**
- * Increment a counter key and set TTL on first hit (for rate limiting).
- * Returns null when Redis is unavailable.
- */
-export async function increment(key: string, ttlSeconds: number): Promise<number | null> {
-  if (!redisAvailable) {
-    await initRedis();
-  }
-
-  if (!redisAvailable || !redisClient) {
-    return null;
-  }
-
-  try {
-    const count = await redisClient.incr(key);
-    if (count === 1) {
-      await redisClient.expire(key, ttlSeconds);
-    }
-    return count;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Remaining TTL for a key in seconds (-1 if missing, -2 if no expiry).
- */
-export async function ttl(key: string): Promise<number> {
-  if (!redisAvailable) {
-    await initRedis();
-  }
-
-  if (!redisAvailable || !redisClient) {
-    return -1;
-  }
-
-  try {
-    return await redisClient.ttl(key);
-  } catch {
-    return -1;
-  }
-}
-
-/**
  * Delete key from cache
  */
 export async function del(key: string): Promise<boolean> {
@@ -256,8 +213,6 @@ export const cacheService = {
   get,
   set,
   setex,
-  increment,
-  ttl,
   del,
   keys,
   deletePattern,

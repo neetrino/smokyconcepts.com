@@ -1,131 +1,14 @@
 import { db } from "@white-shop/db";
-import { catalogPriceToUsd, persistedOrderMoneyToUsd } from "@/lib/currency";
+import { persistedOrderMoneyToUsd } from "@/lib/currency";
 import { resolveCollectionSurchargeUsd } from "@/lib/orders/resolve-collection-surcharge-usd";
 import {
   buildOrderSummaryLinesFromPersistedItems,
-  resolveOrderListTotalAmounts,
   resolveOrderShippingPriceAmd,
 } from "@/lib/orders/order-summary-display";
-import { hashPassword, validateNewPasswordPolicy, verifyPassword } from "@/lib/security/password";
-import { isValidPhoneNumber } from "@/lib/utils/phone-validation";
-import { logger } from "@/lib/utils/logger";
+import * as bcrypt from "bcryptjs";
 
 function normalizeSizeCatalogTitleLookup(value: string | null | undefined): string {
   return value?.trim().toLocaleLowerCase() ?? "";
-}
-
-type DashboardOrderItem = {
-  price: number | null;
-  quantity: number | null;
-  sizeCatalogTitle: string | null;
-  customizePlain?: string | null;
-  customizeHtml?: string | null;
-  variant?: { price?: number | null } | null;
-};
-
-type DashboardOrderRow = {
-  id: string;
-  number: string;
-  status: string;
-  paymentStatus: string;
-  fulfillmentStatus: string;
-  total: number;
-  subtotal: number;
-  discountAmount: number;
-  shippingAmount: number;
-  taxAmount: number;
-  currency: string | null;
-  shippingAddress?: unknown;
-  createdAt: Date;
-  items: DashboardOrderItem[];
-};
-
-type DashboardMappedOrder = {
-  id: string;
-  number: string;
-  status: string;
-  paymentStatus: string;
-  fulfillmentStatus: string;
-  total: number;
-  subtotal: number;
-  discountAmount: number;
-  shippingAmount: number;
-  taxAmount: number;
-  collectionPriceAmount: number;
-  currency: string;
-  shippingPriceAmd: number | null;
-  summaryLines: ReturnType<typeof buildOrderSummaryLinesFromPersistedItems>;
-  itemsCount: number;
-  createdAt: string;
-};
-
-function mapDashboardOrder(
-  order: DashboardOrderRow,
-  sizeCatalogPriceByTitle: Map<string, number>
-): DashboardMappedOrder {
-  const storedCurrency = order.currency ?? "USD";
-  const summaryLines = buildOrderSummaryLinesFromPersistedItems(
-    order.items,
-    storedCurrency,
-    sizeCatalogPriceByTitle
-  );
-  const shippingPriceAmd = resolveOrderShippingPriceAmd(order.shippingAddress);
-  const collectionPriceAmount = Number(
-    order.items
-      .reduce(
-        (sum, item) =>
-          sum + resolveCollectionSurchargeUsd(item, sizeCatalogPriceByTitle, storedCurrency),
-        0
-      )
-      .toFixed(2)
-  );
-
-  return {
-    id: order.id,
-    number: order.number,
-    status: order.status,
-    paymentStatus: order.paymentStatus,
-    fulfillmentStatus: order.fulfillmentStatus,
-    total: persistedOrderMoneyToUsd(Number(order.total), storedCurrency),
-    subtotal: persistedOrderMoneyToUsd(Number(order.subtotal), storedCurrency),
-    discountAmount: persistedOrderMoneyToUsd(Number(order.discountAmount), storedCurrency),
-    shippingAmount: persistedOrderMoneyToUsd(Number(order.shippingAmount), storedCurrency),
-    taxAmount: persistedOrderMoneyToUsd(Number(order.taxAmount), storedCurrency),
-    collectionPriceAmount,
-    currency: "USD",
-    shippingPriceAmd,
-    summaryLines,
-    itemsCount: order.items.length,
-    createdAt: order.createdAt.toISOString(),
-  };
-}
-
-function sumDashboardTotalSpent(orders: DashboardMappedOrder[]): {
-  totalSpent: number;
-  totalSpentAmd: number | null;
-} {
-  const paid = orders.filter(
-    (o) => o.status === "completed" || o.paymentStatus === "paid"
-  );
-  let totalSpent = 0;
-  let totalSpentAmd = 0;
-  let allHaveAmd = paid.length > 0;
-
-  for (const order of paid) {
-    const { totalUsd, totalAmd } = resolveOrderListTotalAmounts(order);
-    if (typeof totalAmd === "number" && Number.isFinite(totalAmd) && totalAmd > 0) {
-      totalSpentAmd += totalAmd;
-      totalSpent += catalogPriceToUsd(totalAmd);
-    } else {
-      allHaveAmd = false;
-      totalSpent += totalUsd;
-    }
-  }
-
-  return {
-    totalSpent,
-    totalSpentAmd: allHaveAmd ? totalSpentAmd : null,
-  };
 }
 
 class UsersService {
@@ -170,71 +53,14 @@ class UsersService {
   /**
    * Update user profile
    */
-  async updateProfile(userId: string, data: {
-    firstName?: string;
-    lastName?: string;
-    locale?: string;
-    phone?: string | null;
-  }) {
-    const updateData: {
-      firstName?: string;
-      lastName?: string;
-      locale?: string;
-      phone?: string | null;
-      phoneVerified?: boolean;
-    } = {
-      firstName: data.firstName,
-      lastName: data.lastName,
-      locale: data.locale,
-    };
-
-    if (data.phone !== undefined) {
-      const phone = typeof data.phone === 'string' ? data.phone.trim() : '';
-      if (phone.length === 0) {
-        updateData.phone = null;
-        updateData.phoneVerified = false;
-      } else if (!isValidPhoneNumber(phone)) {
-        throw {
-          status: 400,
-          type: "https://api.shop.am/problems/validation-error",
-          title: "Validation Error",
-          detail: "Invalid phone number",
-        };
-      } else {
-        await db.user.updateMany({
-          where: {
-            phone,
-            deletedAt: { not: null },
-          },
-          data: {
-            phone: null,
-            phoneVerified: false,
-          },
-        });
-
-        const existing = await db.user.findFirst({
-          where: {
-            phone,
-            id: { not: userId },
-            deletedAt: null,
-          },
-          select: { id: true },
-        });
-        if (existing) {
-          throw {
-            status: 409,
-            type: "https://api.shop.am/problems/conflict",
-            title: "Conflict",
-            detail: "User with this phone already exists",
-          };
-        }
-        updateData.phone = phone;
-      }
-    }
-
+  async updateProfile(userId: string, data: any) {
     const user = await db.user.update({
       where: { id: userId },
-      data: updateData,
+      data: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        locale: data.locale,
+      },
       select: {
         id: true,
         email: true,
@@ -278,16 +104,6 @@ class UsersService {
       };
     }
 
-    const passwordPolicyError = validateNewPasswordPolicy(newPassword.trim());
-    if (passwordPolicyError) {
-      throw {
-        status: 400,
-        type: "https://api.shop.am/problems/validation-error",
-        title: "Validation Error",
-        detail: passwordPolicyError,
-      };
-    }
-
     const user = await db.user.findUnique({
       where: { id: userId },
       select: {
@@ -315,18 +131,35 @@ class UsersService {
       };
     }
 
-    const isValid = await verifyPassword(oldPassword.trim(), user.passwordHash);
-    if (!isValid) {
+    try {
+      const isValid = await bcrypt.compare(oldPassword.trim(), user.passwordHash);
+      if (!isValid) {
+        throw {
+          status: 401,
+          type: "https://api.shop.am/problems/unauthorized",
+          title: "Invalid password",
+          detail: "The old password is incorrect",
+        };
+      }
+    } catch (bcryptError: any) {
+      // Handle bcrypt errors
+      console.error("❌ [USERS SERVICE] bcrypt.compare error:", {
+        error: bcryptError,
+        message: bcryptError?.message,
+        userId,
+        hasOldPassword: !!oldPassword,
+        hasPasswordHash: !!user.passwordHash,
+      });
       throw {
-        status: 401,
-        type: "https://api.shop.am/problems/unauthorized",
-        title: "Invalid password",
-        detail: "The old password is incorrect",
+        status: 500,
+        type: "https://api.shop.am/problems/internal-error",
+        title: "Internal Server Error",
+        detail: "Failed to verify password",
       };
     }
 
     try {
-      const newPasswordHash = await hashPassword(newPassword.trim());
+      const newPasswordHash = await bcrypt.hash(newPassword.trim(), 10);
       await db.user.update({
         where: { id: userId },
         data: { passwordHash: newPasswordHash },
@@ -334,13 +167,17 @@ class UsersService {
       });
 
       return { success: true };
-    } catch (hashError: unknown) {
-      logger.error("Password hash error on change", { userId, error: hashError });
+    } catch (hashError: any) {
+      console.error("❌ [USERS SERVICE] bcrypt.hash error:", {
+        error: hashError,
+        message: hashError?.message,
+        userId,
+      });
       throw {
         status: 500,
         type: "https://api.shop.am/problems/internal-error",
         title: "Internal Server Error",
-        detail: "Failed to update password",
+        detail: "Failed to hash new password",
       };
     }
   }
@@ -365,34 +202,14 @@ class UsersService {
     const existingAddresses = await db.address.findMany({
       where: { userId },
     });
-    const shouldSetAsDefault =
-      existingAddresses.length === 0 || data?.isDefault === true;
 
-    if (!shouldSetAsDefault) {
-      return db.address.create({
-        data: {
-          ...data,
-          userId,
-          isDefault: false,
-        },
-      });
-    }
-
-    const addressData = { ...(data ?? {}) };
-    delete addressData.isDefault;
-    const [, address] = await db.$transaction([
-      db.address.updateMany({
-        where: { userId, isDefault: true },
-        data: { isDefault: false },
-      }),
-      db.address.create({
-        data: {
-          ...addressData,
-          userId,
-          isDefault: true,
-        },
-      }),
-    ]);
+    const address = await db.address.create({
+      data: {
+        ...data,
+        userId,
+        isDefault: existingAddresses.length === 0,
+      },
+    });
 
     return address;
   }
@@ -413,34 +230,10 @@ class UsersService {
       };
     }
 
-    const shouldSetAsDefault = data?.isDefault === true;
-
-    if (!shouldSetAsDefault) {
-      const addressData = { ...(data ?? {}) };
-      delete addressData.isDefault;
-      return db.address.update({
-        where: { id: addressId },
-        data: addressData,
-      });
-    }
-
-    const addressData = { ...(data ?? {}) };
-    delete addressData.isDefault;
-    const [, updatedAddress] = await db.$transaction([
-      db.address.updateMany({
-        where: { userId, isDefault: true },
-        data: { isDefault: false },
-      }),
-      db.address.update({
-        where: { id: addressId },
-        data: {
-          ...addressData,
-          isDefault: true,
-        },
-      }),
-    ]);
-
-    return updatedAddress;
+    return await db.address.update({
+      where: { id: addressId },
+      data,
+    });
   }
 
   /**
@@ -470,19 +263,6 @@ class UsersService {
    * Set default address
    */
   async setDefaultAddress(userId: string, addressId: string) {
-    const address = await db.address.findFirst({
-      where: { id: addressId, userId },
-      select: { id: true },
-    });
-
-    if (!address) {
-      throw {
-        status: 404,
-        type: "https://api.shop.am/problems/not-found",
-        title: "Address not found",
-      };
-    }
-
     // Unset all other default addresses
     await db.address.updateMany({
       where: { userId, isDefault: true },
@@ -500,6 +280,7 @@ class UsersService {
    * Get user dashboard statistics
    */
   async getDashboard(userId: string) {
+    // Get all orders for the user
     const orders = await db.order.findMany({
       where: { userId },
       include: {
@@ -542,26 +323,86 @@ class UsersService {
       }
     }
 
-    const mappedOrders: DashboardMappedOrder[] = orders.map(
-      (order: DashboardOrderRow) => mapDashboardOrder(order, sizeCatalogPriceByTitle)
-    );
-    const { totalSpent, totalSpentAmd } = sumDashboardTotalSpent(mappedOrders);
+    // Calculate statistics
+    const totalOrders = orders.length;
+    const pendingOrders = orders.filter((o: { status: string }) => o.status === "pending").length;
+    const completedOrders = orders.filter((o: { status: string }) => o.status === "completed").length;
+    const totalSpent = orders
+      .filter((o: { status: string; paymentStatus: string }) => o.status === "completed" || o.paymentStatus === "paid")
+      .reduce(
+        (sum: number, o: { total: number; currency: string | null }) =>
+          sum + persistedOrderMoneyToUsd(Number(o.total), o.currency ?? "USD"),
+        0
+      );
 
-    const totalOrders = mappedOrders.length;
-    const pendingOrders = mappedOrders.filter(
-      (o: DashboardMappedOrder) => o.status === "pending"
-    ).length;
-    const completedOrders = mappedOrders.filter(
-      (o: DashboardMappedOrder) => o.status === "completed"
-    ).length;
-
+    // Count addresses
     const addressesCount = await db.address.count({
       where: { userId },
     });
 
+    // Count orders by status
     const ordersByStatus: Record<string, number> = {};
-    mappedOrders.forEach((order: DashboardMappedOrder) => {
+    orders.forEach((order: { status: string }) => {
       ordersByStatus[order.status] = (ordersByStatus[order.status] || 0) + 1;
+    });
+
+    // Get recent orders (last 5)
+    const recentOrders = orders.slice(0, 5).map((order: {
+      id: string;
+      number: string;
+      status: string;
+      paymentStatus: string;
+      fulfillmentStatus: string;
+      total: number;
+      subtotal: number;
+      discountAmount: number;
+      shippingAmount: number;
+      taxAmount: number;
+      currency: string | null;
+      shippingAddress?: unknown;
+      createdAt: Date;
+      items: Array<{
+        price: number | null;
+        quantity: number | null;
+        sizeCatalogTitle: string | null;
+        variant?: { price?: number | null } | null;
+      }>;
+    }) => {
+      const storedCurrency = order.currency ?? "USD";
+      const summaryLines = buildOrderSummaryLinesFromPersistedItems(
+        order.items,
+        storedCurrency,
+        sizeCatalogPriceByTitle
+      );
+      const shippingPriceAmd = resolveOrderShippingPriceAmd(order.shippingAddress);
+      const collectionPriceAmount = Number(
+        order.items
+          .reduce(
+            (sum, item) =>
+              sum + resolveCollectionSurchargeUsd(item, sizeCatalogPriceByTitle, storedCurrency),
+            0
+          )
+          .toFixed(2)
+      );
+
+      return {
+        id: order.id,
+        number: order.number,
+        status: order.status,
+        paymentStatus: order.paymentStatus,
+        fulfillmentStatus: order.fulfillmentStatus,
+        total: persistedOrderMoneyToUsd(Number(order.total), storedCurrency),
+        subtotal: persistedOrderMoneyToUsd(Number(order.subtotal), storedCurrency),
+        discountAmount: persistedOrderMoneyToUsd(Number(order.discountAmount), storedCurrency),
+        shippingAmount: persistedOrderMoneyToUsd(Number(order.shippingAmount), storedCurrency),
+        taxAmount: persistedOrderMoneyToUsd(Number(order.taxAmount), storedCurrency),
+        collectionPriceAmount,
+        currency: "USD",
+        shippingPriceAmd,
+        summaryLines,
+        itemsCount: order.items.length,
+        createdAt: order.createdAt.toISOString(),
+      };
     });
 
     return {
@@ -570,11 +411,10 @@ class UsersService {
         pendingOrders,
         completedOrders,
         totalSpent,
-        totalSpentAmd,
         addressesCount,
         ordersByStatus,
       },
-      recentOrders: mappedOrders.slice(0, 5),
+      recentOrders,
     };
   }
 
@@ -609,10 +449,6 @@ class UsersService {
       data: {
         deletedAt: new Date(),
         blocked: true,
-        email: null,
-        phone: null,
-        emailVerified: false,
-        phoneVerified: false,
       },
       select: { id: true },
     });

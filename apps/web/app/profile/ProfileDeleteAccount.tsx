@@ -13,7 +13,6 @@ interface ProfileDeleteAccountProps {
   onOpenModal: () => void;
   onCloseModal: () => void;
   onConfirmDelete: () => void;
-  showTrigger?: boolean;
   t: (key: string) => string;
 }
 
@@ -27,7 +26,6 @@ export function ProfileDeleteAccount({
   onOpenModal,
   onCloseModal,
   onConfirmDelete,
-  showTrigger = true,
   t,
 }: ProfileDeleteAccountProps) {
   useEffect(() => {
@@ -41,22 +39,20 @@ export function ProfileDeleteAccount({
 
   return (
     <>
-      {showTrigger ? (
-        <Card className="mt-6 border border-red-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900">{t('profile.deleteAccount.title')}</h2>
-          <p className="mt-2 text-sm text-gray-600">{t('profile.deleteAccount.description')}</p>
-          <div className="mt-4">
-            <Button
-              type="button"
-              variant="outline"
-              className="border-red-300 text-red-700 hover:bg-red-50"
-              onClick={onOpenModal}
-            >
-              {t('profile.deleteAccount.button')}
-            </Button>
-          </div>
-        </Card>
-      ) : null}
+      <Card className="mt-6 border border-red-200 p-6">
+        <h2 className="text-xl font-semibold text-gray-900">{t('profile.deleteAccount.title')}</h2>
+        <p className="mt-2 text-sm text-gray-600">{t('profile.deleteAccount.description')}</p>
+        <div className="mt-4">
+          <Button
+            type="button"
+            variant="outline"
+            className="border-red-300 text-red-700 hover:bg-red-50"
+            onClick={onOpenModal}
+          >
+            {t('profile.deleteAccount.button')}
+          </Button>
+        </div>
+      </Card>
 
       {showDeleteModal ? (
         <div

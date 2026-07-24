@@ -1,12 +1,5 @@
 import { useMemo } from 'react';
-import { adminInputAmdToUsd, amountToUsd, type CurrencyCode } from '../../../lib/currency';
-import {
-  buildCheckoutSummaryLinesFromCart,
-  computeOrderSummaryDisplay,
-  type OrderSummaryDisplayAmounts,
-} from '@/lib/orders/order-summary-display';
-import { useSizeCatalogPriceByTitle } from '@/lib/size-catalog/use-size-catalog-price-by-title';
-import { getCartLineCollectionUnitUsd } from '../../cart/cart-line-pricing';
+import { adminInputAmdToUsd, amountToUsd } from '../../../lib/currency';
 import type { Cart } from '../types';
 import { getCartMerchandiseSubtotalUsd } from '../utils/getCartBaseSubtotalUsd';
 
@@ -17,75 +10,65 @@ interface UseOrderSummaryProps {
   couponDiscountUsd: number;
 }
 
-export type CheckoutOrderSummaryResult = {
-  summary: OrderSummaryDisplayAmounts;
-  shippingPriceAmd: number | null;
-};
-
 export function useOrderSummary({
   cart,
   shippingMethod,
   deliveryPrice,
   couponDiscountUsd,
 }: UseOrderSummaryProps) {
-  const categoryPriceByTitle = useSizeCatalogPriceByTitle();
-
-  const orderSummary = useMemo((): CheckoutOrderSummaryResult => {
-    const emptySummary: OrderSummaryDisplayAmounts = {
-      merchandiseUsd: 0,
-      collectionUsd: 0,
-      discountUsd: 0,
-      shippingUsd: 0,
-      taxUsd: 0,
-      totalUsd: 0,
-      merchandiseAmd: null,
-      collectionAmd: null,
-      totalAmd: null,
-      hasCollection: false,
-    };
-
+  const orderSummary = useMemo(() => {
     if (!cart || cart.items.length === 0) {
-      return { summary: emptySummary, shippingPriceAmd: null };
+      return {
+        subtotalUsd: 0,
+        taxUsd: 0,
+        shippingUsd: 0,
+        collectionPriceUsd: 0,
+        totalUsd: 0,
+        subtotalDisplay: 0,
+        taxDisplay: 0,
+        shippingDisplay: 0,
+        collectionPriceDisplay: 0,
+        couponDiscountDisplay: 0,
+        totalDisplay: 0,
+      };
     }
 
     const cartMoneyCurrency = cart.totals.currency?.trim() || 'USD';
     const discountUsd = amountToUsd(cart.totals.discount, cartMoneyCurrency);
     const taxUsd = amountToUsd(cart.totals.tax, cartMoneyCurrency);
-    const shippingPriceAmd =
-      shippingMethod === 'delivery' && deliveryPrice !== null ? Math.round(deliveryPrice) : null;
     const shippingUsd =
-      shippingPriceAmd != null && shippingPriceAmd > 0 ? adminInputAmdToUsd(shippingPriceAmd) : 0;
-    const collectionPriceUsd = cart.items.reduce(
-      (sum, item) => sum + getCartLineCollectionUnitUsd(item, categoryPriceByTitle) * item.quantity,
-      0
-    );
+      shippingMethod === 'delivery' && deliveryPrice !== null ? adminInputAmdToUsd(deliveryPrice) : 0;
+    const collectionPriceUsd = cart.items.reduce((sum, item) => {
+      const priceAmd = item.variant.sizeCatalogCategoryPriceAmd;
+      if (typeof priceAmd !== 'number' || priceAmd <= 0) {
+        return sum;
+      }
+      return sum + adminInputAmdToUsd(priceAmd) * item.quantity;
+    }, 0);
     const merchandiseUsd = getCartMerchandiseSubtotalUsd(cart) ?? 0;
     const couponUsd = Math.max(0, couponDiscountUsd);
-    const combinedDiscountUsd = discountUsd + couponUsd;
     const totalUsd =
-      merchandiseUsd + collectionPriceUsd - combinedDiscountUsd + taxUsd + shippingUsd;
+      merchandiseUsd +
+      collectionPriceUsd -
+      discountUsd -
+      couponUsd +
+      taxUsd +
+      shippingUsd;
 
-    const summaryLines = buildCheckoutSummaryLinesFromCart(cart.items, categoryPriceByTitle);
-    const summary = computeOrderSummaryDisplay(
-      {
-        subtotal: merchandiseUsd + collectionPriceUsd,
-        discount: combinedDiscountUsd,
-        shipping: shippingUsd,
-        tax: taxUsd,
-        total: totalUsd,
-        currency: 'USD',
-      },
+    return {
+      subtotalUsd: merchandiseUsd,
+      taxUsd,
+      shippingUsd,
       collectionPriceUsd,
-      'AMD' satisfies CurrencyCode,
-      summaryLines,
-      {
-        amountsAlreadyUsd: true,
-        shippingPriceAmd,
-      }
-    );
-
-    return { summary, shippingPriceAmd };
-  }, [cart, shippingMethod, deliveryPrice, couponDiscountUsd, categoryPriceByTitle]);
+      totalUsd,
+      subtotalDisplay: merchandiseUsd,
+      taxDisplay: taxUsd,
+      shippingDisplay: shippingUsd,
+      collectionPriceDisplay: collectionPriceUsd,
+      couponDiscountDisplay: couponUsd,
+      totalDisplay: totalUsd,
+    };
+  }, [cart, shippingMethod, deliveryPrice, couponDiscountUsd]);
 
   return { orderSummary };
 }

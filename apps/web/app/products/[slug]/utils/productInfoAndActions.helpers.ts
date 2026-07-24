@@ -2,6 +2,9 @@ import type { LanguageCode } from '../../../../lib/language';
 import { normalizeHexPalette, parseHexFromText } from './swatch-color-utils';
 import type { ProductOptionValue } from '../productInfoAndActions.types';
 
+/** How long the “applied text” confirmation stays visible under Apply (ms). */
+export const CUSTOMIZE_APPLIED_PREVIEW_MS = 1000;
+
 export const PRODUCT_TAB_HTML_PROSE_CLASS =
   'prose max-w-none text-[15px] leading-[24px] text-[#414141] prose-p:my-0 prose-p:text-[15px] prose-p:leading-[24px] sm:text-[16px] sm:leading-[26px] sm:prose-p:text-[16px] sm:prose-p:leading-[26px]';
 
@@ -75,17 +78,6 @@ export function getCustomizeCopy(language: LanguageCode): string {
     case 'ru':
       return 'Выберите цвет и размер на этой странице, чтобы персонализировать заказ. Для особых пожеланий свяжитесь с нами после оформления.';
     default:
-      return 'Personalize your cover with custom text.';
+      return 'Pick color and size on this page to personalize your order. For special requests, contact us after checkout.';
   }
-}
-
-/** Matches auto-generated or manual "out of stock" product labels across locales. */
-export function isOutOfStockProductLabel(labelText: string): boolean {
-  const normalized = labelText.toLowerCase().trim();
-  return (
-    normalized.includes('out of stock') ||
-    normalized.includes('արտադրված') ||
-    normalized.includes('нет в наличии') ||
-    normalized.includes('არ არის მარაგში')
-  );
 }

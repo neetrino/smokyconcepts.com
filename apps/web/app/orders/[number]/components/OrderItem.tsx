@@ -27,7 +27,6 @@ export function OrderItem({ item, orderTotalsCurrency }: OrderItemProps) {
   const formatOrderMoneyAmd = (amountAmd: number) => formatCatalogPrice(amountAmd, 'AMD');
 
   const allOptions = item.variantOptions || [];
-  const selectedSizeVersion = item.sizeCatalogVersion?.trim() || '';
   const getAttributeType = (key: string): 'category' | 'size' | 'color' | 'other' => {
     const normalizedKey = key.toLowerCase().trim();
     if (normalizedKey === '__size_catalog_category_title__' || normalizedKey === 'category') return 'category';
@@ -45,25 +44,6 @@ export function OrderItem({ item, orderTotalsCurrency }: OrderItemProps) {
   const orderedOptions = [...allOptions].sort(
     (left, right) => getOptionPriority(left.attributeKey || '') - getOptionPriority(right.attributeKey || ''),
   );
-  const displayOptions = orderedOptions
-    .filter((opt) => {
-      if (!opt.attributeKey || !opt.value) return false;
-      const normalizedKey = opt.attributeKey.toLowerCase().trim();
-      if (isInternalVariantAttributeKey(normalizedKey)) return false;
-      // size_version is represented in merged "size" label (e.g. "Ultra Slims (V2)")
-      if (normalizedKey === 'size_version') return false;
-      return true;
-    })
-    .filter((opt, index, list) => {
-      if (!opt.attributeKey) return false;
-      const normalizedKey = opt.attributeKey.toLowerCase().trim();
-      return (
-        list.findIndex((entry) => {
-          if (!entry.attributeKey) return false;
-          return entry.attributeKey.toLowerCase().trim() === normalizedKey;
-        }) === index
-      );
-    });
 
   const getAttributeLabel = (key: string): string => {
     const normalizedKey = key.toLowerCase().trim();
@@ -131,26 +111,18 @@ export function OrderItem({ item, orderTotalsCurrency }: OrderItemProps) {
       <div className="flex-1">
         <h3 className="text-lg font-semibold text-gray-900 mb-1">{item.productTitle}</h3>
 
-        {displayOptions.length > 0 && (
+        {allOptions.length > 0 && (
           <div className="mt-2 mb-2 flex flex-col gap-1">
-            {displayOptions.map((opt, optIndex) => {
-              if (!opt.attributeKey) return null;
+            {orderedOptions.map((opt, optIndex) => {
+              if (!opt.attributeKey || !opt.value) return null;
               const normalizedAttributeKey = opt.attributeKey.toLowerCase().trim();
-              const optionValue = opt.value ?? '';
+              if (isInternalVariantAttributeKey(normalizedAttributeKey)) return null;
 
               const isColor = getAttributeType(normalizedAttributeKey) === 'color';
-              const rawDisplayLabel = opt.label || optionValue;
-              const shouldAppendSizeVersion =
-                normalizedAttributeKey === 'size' &&
-                selectedSizeVersion !== '' &&
-                !rawDisplayLabel?.toLowerCase().includes(selectedSizeVersion.toLowerCase());
-              const displayLabel = shouldAppendSizeVersion
-                ? `${rawDisplayLabel} (${selectedSizeVersion})`
-                : rawDisplayLabel;
+              const displayLabel = opt.label || opt.value;
               const hasImage = opt.imageUrl && opt.imageUrl.trim() !== '';
               const colors = getColorsArray(opt.colors);
-              const primaryColor = colors[0];
-              const colorHex = primaryColor ?? (isColor && optionValue ? getColorValue(optionValue) : null);
+              const colorHex = colors.length > 0 ? colors[0] : (isColor ? getColorValue(opt.value) : null);
 
               return (
                 <div key={optIndex} className="flex items-center gap-2">

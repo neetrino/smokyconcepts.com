@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 
 import { HomeActionButton } from './HomeActionButton';
 import { HomeSectionTitle } from './HomeSectionTitle';
@@ -13,7 +13,6 @@ import {
 import { TrendingPageSlider } from './TrendingPageSlider';
 import { buildTrendingPages } from './trendingFeaturedPages';
 import { useTrendingCarouselNavigation } from './useTrendingCarouselNavigation';
-import { useTrendingCarouselSwipe } from './useTrendingCarouselSwipe';
 import { useTrendingFeaturedProducts } from './useTrendingFeaturedProducts';
 import { useTrendingXlBreakpoint } from './useTrendingXlBreakpoint';
 import { useTranslation } from '@/lib/i18n-client';
@@ -28,15 +27,8 @@ export function TrendingFeaturedSection() {
   const { t } = useTranslation();
   const isXl = useTrendingXlBreakpoint();
   const { items, loading, error, fetchFeatured } = useTrendingFeaturedProducts();
-  const trackRef = useRef<HTMLDivElement | null>(null);
   const pages = useMemo(() => buildTrendingPages(items), [items]);
   const navigation = useTrendingCarouselNavigation(pages, items.length);
-  const swipe = useTrendingCarouselSwipe({
-    enabled: !isXl,
-    hasMultiplePages: navigation.hasMultiplePages,
-    onPrev: navigation.goPrev,
-    onNext: navigation.goNext,
-  });
 
   if (error) {
     return <TrendingFeaturedErrorState error={error} onRetry={fetchFeatured} />;
@@ -67,22 +59,13 @@ export function TrendingFeaturedSection() {
         />
       </div>
 
-      <div
-        ref={swipe.containerRef}
-        className="touch-pan-y"
-        {...swipe.swipeHandlers}
-      >
-        <TrendingCoverflowTrack
-          pages={pages}
-          currentDisplayIndex={navigation.safeDisplayIndex}
-          suppressTransition={navigation.suppressTransition}
-          isXl={isXl}
-          trackRef={trackRef}
-          onTrackTransitionEnd={navigation.handleTrackTransitionEnd}
-          dragOffsetPx={swipe.dragOffsetPx}
-          isDragging={swipe.isDragging}
-        />
-      </div>
+      <TrendingCoverflowTrack
+        pages={pages}
+        currentDisplayIndex={navigation.safeDisplayIndex}
+        currentLogicalIndex={navigation.safeCurrent}
+        suppressTransition={navigation.suppressTransition}
+        isXl={isXl}
+      />
 
       <TrendingPageSlider
         prevLabel={navigation.prevLabel}

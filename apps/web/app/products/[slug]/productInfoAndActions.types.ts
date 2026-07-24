@@ -16,17 +16,14 @@ export interface ProductOptionValue extends AttributeGroupValue {
  */
 export interface ProductInfoAndActionsProps {
   product: Product;
-  /** Live customize snapshot (auto-synced from draft + format for cart). */
+  /** Last applied customize (hero overlay + cart). */
   appliedCustomize: { plain: string; html: string | null } | null;
-  /** Show Figma black-body preview in the hero gallery while customize text is entered. */
-  showCustomizeHeroPreview: boolean;
-  /** @deprecated Use showCustomizeHeroPreview */
-  showCustomizePackPreview?: boolean;
-  /** Live / applied HTML rendered on the pack preview. */
-  customizePreviewHtml?: string | null;
+  onCustomizeApplied: (value: { plain: string; html: string | null } | null) => void;
+  /** Rich preview HTML for cart / overlay — built from draft text + toolbar format on the parent. */
+  getCustomizeSanitizedHtml: () => string;
   customizeFormat: CustomizeFormatState;
   onCustomizeFormatChange: (next: CustomizeFormatState) => void;
-  /** Plain line input for customize text. */
+  /** Plain line next to Apply — drives editor seed when it does not match applied rich HTML. */
   customizeDraftText: string;
   onCustomizeDraftTextChange: (value: string) => void;
   customizeTextMaxLength: number;
@@ -45,8 +42,10 @@ export interface ProductInfoAndActionsProps {
   onSizeSelect: (size: string) => void;
   /** Select variant by size collection + version from size catalog modal item. */
   onCatalogVariantSelect?: (sizeCollectionTitle: string, version: string) => void;
-  /** Add to cart — stay on page and open cart drawer. */
+  /** Quick add (e.g. bag icon) — stay on page. */
   onAddToCart: () => Promise<void>;
+  /** Primary CTA — add line then continue to checkout. */
+  onBuyNow: () => Promise<void>;
   /** Sync size-catalog selection to parent for cart / checkout snapshot */
   onSelectedCatalogSizeChange?: (item: SizeCatalogItemDto | null) => void;
   /** Sync custom-size request selection to parent for checkout payload */

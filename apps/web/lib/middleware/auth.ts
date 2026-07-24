@@ -2,7 +2,6 @@ import { NextRequest } from "next/server";
 import * as jwt from "jsonwebtoken";
 import { Prisma } from "@prisma/client";
 import { db } from "@white-shop/db";
-import { getTokenFromRequest } from "@/lib/auth/auth-cookie.server";
 
 export interface AuthUser {
   id: string;
@@ -32,7 +31,8 @@ export async function authenticateToken(
   request: NextRequest
 ): Promise<AuthUser | null> {
   try {
-    const token = getTokenFromRequest(request);
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader?.split(" ")[1]; // Bearer TOKEN
 
     if (!token) {
       return null;

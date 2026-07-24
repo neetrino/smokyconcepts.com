@@ -6,7 +6,6 @@ import { logger } from '@/lib/utils/logger';
 /**
  * POST /api/v1/coupons/validate
  * Preview coupon discount for checkout (server re-validates on place order).
- * Body `merchandiseSubtotalUsd` must be full checkout subtotal (base + customize surcharges).
  */
 export async function POST(req: NextRequest) {
   try {

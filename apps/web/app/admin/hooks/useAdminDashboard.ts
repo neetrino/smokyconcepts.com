@@ -157,7 +157,7 @@ export function useAdminDashboard({ isLoggedIn, isAdmin, isLoading }: UseAdminDa
     try {
       console.log('📋 [ADMIN] Fetching recent orders...');
       setRecentOrdersLoading(true);
-      const response = await apiClient.get<{ data: RecentOrder[] }>('/api/v1/admin/recent-orders', {
+      const response = await apiClient.get<{ data: RecentOrder[] }>('/api/v1/admin/dashboard/recent-orders', {
         params: { limit: '5' },
       });
       if (response?.data && Array.isArray(response.data)) {
@@ -177,7 +177,7 @@ export function useAdminDashboard({ isLoggedIn, isAdmin, isLoading }: UseAdminDa
     try {
       console.log('📊 [ADMIN] Fetching top products...');
       setTopProductsLoading(true);
-      const response = await apiClient.get<{ data: TopProduct[] }>('/api/v1/admin/top-products', {
+      const response = await apiClient.get<{ data: TopProduct[] }>('/api/v1/admin/dashboard/top-products', {
         params: { limit: '5' },
       });
       if (response?.data && Array.isArray(response.data)) {
@@ -197,7 +197,7 @@ export function useAdminDashboard({ isLoggedIn, isAdmin, isLoading }: UseAdminDa
     try {
       console.log('👥 [ADMIN] Fetching user activity...');
       setUserActivityLoading(true);
-      const response = await apiClient.get<{ data: UserActivity }>('/api/v1/admin/user-activity', {
+      const response = await apiClient.get<{ data: UserActivity }>('/api/v1/admin/dashboard/user-activity', {
         params: { limit: '10' },
       });
       if (response?.data) {

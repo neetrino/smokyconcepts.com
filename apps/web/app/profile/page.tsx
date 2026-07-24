@@ -11,13 +11,11 @@ import { ProfileAddresses } from './ProfileAddresses';
 import { ProfileOrders } from './ProfileOrders';
 import { ProfilePassword } from './ProfilePassword';
 import { ProfileDeleteAccount } from './ProfileDeleteAccount';
-import { ProfileCoupons } from './ProfileCoupons';
 import { OrderDetailsModal } from './OrderDetailsModal';
-import { PageLoadingCenter } from '../../components/loading/PageLoadingCenter';
 import type { ProfileTab, ProfileTabConfig } from './types';
 
 function ProfilePageContent() {
-  const { isLoggedIn, isLoading: authLoading, logout } = useAuth();
+  const { isLoggedIn, isLoading: authLoading } = useAuth();
   const { t } = useTranslation();
   
   const {
@@ -31,7 +29,6 @@ function ProfilePageContent() {
     handleTabChange,
     personalInfo,
     setPersonalInfo,
-    phoneError,
     savingPersonal,
     handleSavePersonalInfo,
     showAddressForm,
@@ -60,8 +57,6 @@ function ProfilePageContent() {
     handleDeleteAccount,
     dashboardData,
     dashboardLoading,
-    coupons,
-    couponsLoading,
     orders,
     ordersLoading,
     ordersPage,
@@ -77,7 +72,17 @@ function ProfilePageContent() {
   } = useProfilePage();
 
   if (authLoading || loading) {
-    return <PageLoadingCenter label={t('profile.common.loadingProfile')} />;
+    return (
+      <div className="min-h-screen bg-white pb-8 pt-[3.75rem]">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="rounded-xl border border-gray-200 bg-white p-12 shadow-[0_8px_30px_rgba(18,42,38,0.06)]">
+            <div className="text-center">
+              <p className="text-gray-600">{t('profile.common.loadingProfile')}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!isLoggedIn) {
@@ -143,8 +148,6 @@ function ProfilePageContent() {
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={handleTabChange}
-            onDeleteAccount={openDeleteModal}
-            onLogout={logout}
             t={t}
           />
 
@@ -178,7 +181,6 @@ function ProfilePageContent() {
               <ProfilePersonalInfo
                 personalInfo={personalInfo}
                 setPersonalInfo={setPersonalInfo}
-                phoneError={phoneError}
                 savingPersonal={savingPersonal}
                 onSave={handleSavePersonalInfo}
                 profile={profile}
@@ -220,32 +222,28 @@ function ProfilePageContent() {
 
             {/* Password Tab */}
             {activeTab === 'password' && (
-              <ProfilePassword
-                passwordForm={passwordForm}
-                setPasswordForm={setPasswordForm}
-                savingPassword={savingPassword}
-                onSave={handleChangePassword}
-                t={t}
-              />
+              <>
+                <ProfilePassword
+                  passwordForm={passwordForm}
+                  setPasswordForm={setPasswordForm}
+                  savingPassword={savingPassword}
+                  onSave={handleChangePassword}
+                  t={t}
+                />
+                <ProfileDeleteAccount
+                  showDeleteModal={showDeleteModal}
+                  confirmText={deleteConfirmText}
+                  setConfirmText={setDeleteConfirmText}
+                  deletingAccount={deletingAccount}
+                  modalError={deleteModalError}
+                  isConfirmValid={isDeleteConfirmValid}
+                  onOpenModal={openDeleteModal}
+                  onCloseModal={closeDeleteModal}
+                  onConfirmDelete={handleDeleteAccount}
+                  t={t}
+                />
+              </>
             )}
-
-            {activeTab === 'coupons' && (
-              <ProfileCoupons coupons={coupons} couponsLoading={couponsLoading} t={t} />
-            )}
-
-            <ProfileDeleteAccount
-              showDeleteModal={showDeleteModal}
-              confirmText={deleteConfirmText}
-              setConfirmText={setDeleteConfirmText}
-              deletingAccount={deletingAccount}
-              modalError={deleteModalError}
-              isConfirmValid={isDeleteConfirmValid}
-              onOpenModal={openDeleteModal}
-              onCloseModal={closeDeleteModal}
-              onConfirmDelete={handleDeleteAccount}
-              showTrigger={false}
-              t={t}
-            />
 
             {/* Order Details Modal */}
             {selectedOrder && (
@@ -268,7 +266,19 @@ function ProfilePageContent() {
 
 export default function ProfilePage() {
   return (
-    <Suspense fallback={<PageLoadingCenter />}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-white pb-8 pt-[3.75rem]">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="rounded-xl border border-gray-200 bg-white p-12 shadow-[0_8px_30px_rgba(18,42,38,0.06)]">
+              <div className="text-center">
+                <p className="text-gray-600">Loading profile...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    >
       <ProfilePageContent />
     </Suspense>
   );

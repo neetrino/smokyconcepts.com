@@ -17,10 +17,6 @@ import {
 } from '@/app/admin/constants/adminMenuThemeClasses';
 import { useAdminTheme } from '@/app/admin/context/AdminThemeContext';
 import { getAdminDrawerNavIndentClass } from '@/app/admin/utils/adminMenuIndent';
-import { AdminNavCountBadge } from '@/app/admin/components/AdminNavCountBadge';
-import { useAdminNewCounts } from '@/app/admin/hooks/useAdminNewCounts';
-import { useAuth } from '@/lib/auth/AuthContext';
-import { useTranslation } from '@/lib/i18n-client';
 
 export interface AdminMenuItem {
   id: string;
@@ -37,31 +33,12 @@ export interface AdminMenuItem {
 interface AdminMenuDrawerProps {
   tabs: AdminMenuItem[];
   currentPath: string;
-  /** Open the drawer on mount (e.g. admin mobile landing). */
-  initialOpen?: boolean;
-  /** Show logout below nav items (mobile admin menu). */
-  showLogout?: boolean;
 }
 
-function getNavBadgeCount(tabId: string, counts: { orders: number; messages: number }): number {
-  if (tabId === 'orders') {
-    return counts.orders;
-  }
-  if (tabId === 'messages') {
-    return counts.messages;
-  }
-  return 0;
-}
-
-export function AdminMenuDrawer({
-  tabs,
-  currentPath,
-  initialOpen = false,
-  showLogout = false,
-}: AdminMenuDrawerProps) {
+export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
   const router = useRouter();
   const { theme } = useAdminTheme();
-  const [open, setOpen] = useState(initialOpen);
+  const [open, setOpen] = useState(false);
 
   const parentIds = new Set(tabs.filter((tab) => tab.parentId).map((tab) => tab.parentId!));
 
@@ -99,31 +76,20 @@ export function AdminMenuDrawer({
     setOpen(false);
   };
 
-  const { logout } = useAuth();
-  const { t } = useTranslation();
-  const newCounts = useAdminNewCounts();
-
-  const handleLogout = () => {
-    setOpen(false);
-    logout();
-  };
-
   return (
     <div className="lg:hidden">
-      {!open ? (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className={adminDrawerTriggerClass(theme)}
-        >
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6H20M4 12H16M4 18H12" />
-          </svg>
-          Menu
-        </button>
-      ) : null}
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className={adminDrawerTriggerClass(theme)}
+      >
+        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6H20M4 12H16M4 18H12" />
+        </svg>
+        Menu
+      </button>
 
-      {open ? (
+      {open && (
         <div
           className="fixed inset-0 z-50 flex bg-black/40 backdrop-blur-sm"
           onClick={() => setOpen(false)}
@@ -174,7 +140,6 @@ export function AdminMenuDrawer({
 
                 const isParent = parentIds.has(tab.id);
                 const isExpanded = expandedGroups.has(tab.id);
-                const navBadgeCount = getNavBadgeCount(tab.id, newCounts);
 
                 return (
                   <button
@@ -195,9 +160,7 @@ export function AdminMenuDrawer({
                       ) : null}
                       {tab.label}
                     </span>
-                    <span className="flex items-center gap-2">
-                      {navBadgeCount > 0 ? <AdminNavCountBadge count={navBadgeCount} /> : null}
-                      {isParent ? (
+                    {isParent ? (
                       <svg
                         className={`h-4 w-4 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''} ${adminDrawerChevronClass(isActive, theme)}`}
                         fill="none"
@@ -216,26 +179,13 @@ export function AdminMenuDrawer({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     )}
-                    </span>
                   </button>
                 );
               })}
             </div>
-
-            {showLogout ? (
-              <div className="border-t border-[#dcc090]/20 p-4">
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="flex h-11 w-full items-center justify-center rounded-lg border border-[#dcc090]/30 bg-white/5 text-sm font-semibold text-red-400 transition-colors hover:bg-white/10 hover:text-red-300"
-                >
-                  {t('common.navigation.logout')}
-                </button>
-              </div>
-            ) : null}
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

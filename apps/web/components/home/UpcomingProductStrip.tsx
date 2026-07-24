@@ -2,24 +2,37 @@
 
 import type { MutableRefObject } from 'react';
 
+import { ProductsCatalogCard } from '../../app/products/components/ProductsCatalogCard';
 import {
-  CatalogStripProductCard,
-} from '../../app/products/components/CatalogStripProductCard';
-import {
+  getCategoryLabel,
   getSectionLabel,
+  getSizeLabel,
+  shouldNudgeCatalogProductImage,
   toCatalogProduct,
 } from '../../app/products/components/catalogProductLabels';
-import { HOME_UPCOMING_MOBILE_ITEM_WRAPPER_CLASS_NAME } from '../../app/products/components/catalogProductCardMobilePresentation';
 import {
-  UPCOMING_DESKTOP_STRIP_LEADING_INSET_CLASS_NAME,
-  UPCOMING_PRODUCT_STRIP_FLEX_CLASS_NAME,
-} from './upcomingProducts.constants';
+  CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME,
+  CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME,
+  PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
+  getCatalogProductCardImageScaleBoost,
+  getProductsCatalogPageSmallerImageScaleMultiplier,
+} from '../../app/products/components/catalogProductCardMobilePresentation';
+import { UPCOMING_PAGE_STAGGER_DELAY_CLASSES } from './upcomingProducts.constants';
 import type { UpcomingApiProduct } from './upcomingProducts.types';
+import { useTranslation } from '@/lib/i18n-client';
 
 interface UpcomingProductStripProps {
   items: UpcomingApiProduct[];
   cardsPerPage: number;
   isSmUp: boolean;
+  safePage: number;
+  isPageTransitioning: boolean;
+  pageDirection: 1 | -1;
   pageStartRefs: MutableRefObject<(HTMLDivElement | null)[]>;
 }
 
@@ -27,14 +40,33 @@ export function UpcomingProductStrip({
   items,
   cardsPerPage,
   isSmUp,
+  safePage,
+  isPageTransitioning,
+  pageDirection,
   pageStartRefs,
 }: UpcomingProductStripProps) {
+  const { t } = useTranslation();
+
   return (
-    <div className={UPCOMING_PRODUCT_STRIP_FLEX_CLASS_NAME}>
-      <div className={UPCOMING_DESKTOP_STRIP_LEADING_INSET_CLASS_NAME} aria-hidden="true" />
+    <div className={`${CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME} items-stretch`}>
       {items.map((item, index) => {
         const pageIndex = Math.floor(index / cardsPerPage);
+        const indexInPage = index % cardsPerPage;
         const isPageStart = index % cardsPerPage === 0;
+        const isActivePageCard = pageIndex === safePage - 1;
+        const shouldAnimateCard = isSmUp && isPageTransitioning && isActivePageCard;
+        const activePageMotionClass =
+          pageDirection === 1
+            ? 'translate-x-[0.35rem] scale-[0.992] rotate-[0.35deg] shadow-[0_10px_26px_rgba(18,42,38,0.16)]'
+            : '-translate-x-[0.35rem] scale-[0.992] -rotate-[0.35deg] shadow-[0_10px_26px_rgba(18,42,38,0.16)]';
+        const pageMotionClass = shouldAnimateCard
+          ? activePageMotionClass
+          : 'translate-x-0 scale-100 rotate-0 shadow-none';
+        const pageDelayClass = shouldAnimateCard
+          ? UPCOMING_PAGE_STAGGER_DELAY_CLASSES[
+              Math.min(indexInPage, UPCOMING_PAGE_STAGGER_DELAY_CLASSES.length - 1)
+            ]
+          : 'delay-0';
         const catalogProduct = toCatalogProduct({
           id: item.id,
           slug: item.slug,
@@ -60,14 +92,29 @@ export function UpcomingProductStrip({
                 pageStartRefs.current[pageIndex] = el;
               }
             }}
-            className={`flex min-h-0 shrink-0 flex-col self-stretch ${HOME_UPCOMING_MOBILE_ITEM_WRAPPER_CLASS_NAME}`}
+            className={`flex min-h-0 shrink-0 flex-col self-stretch transition-transform transition-shadow duration-300 ease-out will-change-transform ${pageMotionClass} ${pageDelayClass} ${
+              isPageStart ? 'max-sm:snap-start max-sm:snap-always' : ''
+            } ${CATALOG_PRODUCTS_PAGE_MOBILE_ITEM_WRAPPER_CLASS_NAME}`}
           >
-            <CatalogStripProductCard
+            <ProductsCatalogCard
               product={catalogProduct}
               sectionLabel={section}
-              index={index}
-              isSmUp={isSmUp}
-              ctaPreset="home-upcoming"
+              sizeLabel={getSizeLabel(catalogProduct)}
+              categoryLabel={getCategoryLabel(catalogProduct, section)}
+              buyButtonLabel={t('home.homepage.upcoming.orderCta')}
+              productsCatalogPageScaleMultiplier={getProductsCatalogPageSmallerImageScaleMultiplier(index)}
+              imageNudgeDown={shouldNudgeCatalogProductImage(index)}
+              imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
+              imageFrameClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_IMAGE_FRAME_CLASS_NAME}
+              catalogHeroPullUpClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME}
+              catalogCardTopPaddingClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_CARD_TOP_PADDING_CLASS_NAME}
+              catalogDetailsOffsetClassName={CATALOG_PRODUCTS_PAGE_DESKTOP_DETAILS_OFFSET_CLASS_NAME}
+              catalogImageBottomMarginClassName={PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME}
+              className={`group ${CATALOG_PRODUCT_CARD_MOBILE_ARTICLE_CLASS_NAME} max-sm:!w-full max-sm:!min-w-0 max-sm:!max-w-none`}
+              catalogStripMobilePeek={isSmUp}
+              compactLayout
+              productsCatalogPage
+              eagerProductImage
             />
           </div>
         );

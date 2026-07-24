@@ -8,11 +8,10 @@ import { useAuth } from '../../lib/auth/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../lib/i18n-client';
 import { Eye, EyeOff } from 'lucide-react';
-import { PageLoadingCenter } from '../../components/loading/PageLoadingCenter';
 
 function LoginPageContent() {
   const { t } = useTranslation();
-  const [email, setEmail] = useState('');
+  const [emailOrPhone, setEmailOrPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -32,8 +31,8 @@ function LoginPageContent() {
     console.log('🔐 [LOGIN PAGE] Form submitted');
 
     // Validation
-    if (!email.trim()) {
-      setError(t('login.errors.emailRequired'));
+    if (!emailOrPhone.trim()) {
+      setError(t('login.errors.emailOrPhoneRequired'));
       setIsSubmitting(false);
       return;
     }
@@ -46,7 +45,7 @@ function LoginPageContent() {
 
     try {
       console.log('📤 [LOGIN PAGE] Calling login function...');
-      await login(email.trim(), password);
+      await login(emailOrPhone.trim(), password);
       console.log('✅ [LOGIN PAGE] Login successful, redirecting to:', redirectTo);
       // Redirect to the specified page or home
       router.push(redirectTo);
@@ -79,16 +78,16 @@ function LoginPageContent() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              {t('login.form.email')}
+            <label htmlFor="emailOrPhone" className="block text-sm font-medium text-gray-700 mb-2">
+              {t('login.form.emailOrPhone')}
             </label>
             <Input
-              id="email"
-              type="email"
-              placeholder={t('login.form.emailPlaceholder')}
+              id="emailOrPhone"
+              type="text"
+              placeholder={t('login.form.emailOrPhonePlaceholder')}
               className="w-full"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={emailOrPhone}
+              onChange={(e) => setEmailOrPhone(e.target.value)}
               disabled={isSubmitting || isLoading}
               required
             />
@@ -165,7 +164,21 @@ function LoginPageContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<PageLoadingCenter />}>
+    <Suspense fallback={
+      <div className="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Card className="p-8 bg-[#DCC090]/20">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
+            <div className="space-y-4">
+              <div className="h-10 bg-gray-200 rounded"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </Card>
+      </div>
+    }>
       <LoginPageContent />
     </Suspense>
   );

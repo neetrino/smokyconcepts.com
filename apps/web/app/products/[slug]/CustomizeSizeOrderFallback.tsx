@@ -1,14 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { sanitizeContactPhoneInput } from '@/lib/utils/contact-phone-input';
 import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
-import {
-  isCustomOrderEmailValid,
-  isCustomOrderPhoneValid,
-} from './utils/custom-order-validation';
 
 export interface CustomOrderDraft {
   name: string;
@@ -33,19 +27,13 @@ function CustomOrderInputField({
   type,
   value,
   autoComplete,
-  inputMode,
-  error,
   onChange,
-  onBlur,
 }: {
   label: string;
   type: 'text' | 'tel' | 'email';
   value: string;
   autoComplete: string;
-  inputMode?: 'tel' | 'email';
-  error?: string | null;
   onChange: (value: string) => void;
-  onBlur?: () => void;
 }) {
   return (
     <label className="block">
@@ -55,18 +43,10 @@ function CustomOrderInputField({
       <input
         type={type}
         value={value}
-        inputMode={inputMode}
         onChange={(event) => onChange(event.target.value)}
-        onBlur={onBlur}
-        aria-invalid={error ? true : undefined}
-        className={`block h-7 w-full border-0 border-b bg-transparent font-montserrat text-[14px] font-medium text-[#414141] outline-none sm:text-[15px] ${
-          error ? 'border-red-500' : 'border-[#dcc090]'
-        }`}
+        className="block h-7 w-full border-0 border-b border-[#dcc090] bg-transparent font-montserrat text-[14px] font-medium text-[#414141] outline-none sm:text-[15px]"
         autoComplete={autoComplete}
       />
-      {error ? (
-        <p className="mt-1 font-montserrat text-[12px] font-medium text-red-600">{error}</p>
-      ) : null}
     </label>
   );
 }
@@ -135,7 +115,6 @@ export function CustomizeSizeOrderFallback({
   onSubmit,
   isUploadingImage,
   isSubmitting,
-  submitSuccess,
   submitError,
   canSubmit,
 }: {
@@ -146,25 +125,9 @@ export function CustomizeSizeOrderFallback({
   onSubmit: (draft: CustomOrderDraft) => void;
   isUploadingImage: boolean;
   isSubmitting: boolean;
-  submitSuccess: boolean;
   submitError: string | null;
   canSubmit: boolean;
 }) {
-  const [touchedFields, setTouchedFields] = useState<{ phone: boolean; email: boolean }>({
-    phone: false,
-    email: false,
-  });
-
-  const phoneError =
-    touchedFields.phone && draft.phone.trim().length > 0 && !isCustomOrderPhoneValid(draft.phone)
-      ? t(language, 'product.size_catalog_custom_order_invalid_phone')
-      : null;
-
-  const emailError =
-    touchedFields.email && draft.email.trim().length > 0 && !isCustomOrderEmailValid(draft.email)
-      ? t(language, 'product.size_catalog_custom_order_invalid_email')
-      : null;
-
   return (
     <div className="max-w-[978px]">
       <p className="font-montserrat text-[14px] font-medium leading-[22px] text-[#414141] sm:text-[15px] sm:leading-[24px]">
@@ -182,22 +145,16 @@ export function CustomizeSizeOrderFallback({
         <CustomOrderInputField
           label={t(language, 'product.size_catalog_custom_order_phone')}
           type="tel"
-          inputMode="tel"
           value={draft.phone}
           autoComplete="tel"
-          error={phoneError}
-          onChange={(value) => onDraftChange('phone', sanitizeContactPhoneInput(value))}
-          onBlur={() => setTouchedFields((previous) => ({ ...previous, phone: true }))}
+          onChange={(value) => onDraftChange('phone', value)}
         />
         <CustomOrderInputField
           label={t(language, 'product.size_catalog_custom_order_email')}
           type="email"
-          inputMode="email"
           value={draft.email}
           autoComplete="email"
-          error={emailError}
           onChange={(value) => onDraftChange('email', value)}
-          onBlur={() => setTouchedFields((previous) => ({ ...previous, email: true }))}
         />
         <CustomOrderInputField
           label={t(language, 'product.size_catalog_custom_order_description')}
@@ -218,9 +175,9 @@ export function CustomizeSizeOrderFallback({
       <button
         type="button"
         onClick={() => onSubmit(draft)}
-        disabled={!canSubmit || isSubmitting || isUploadingImage || submitSuccess}
+        disabled={!canSubmit || isSubmitting || isUploadingImage}
         className={`mt-8 h-11 min-w-[166px] rounded-[8px] px-6 font-montserrat text-[14px] font-semibold uppercase tracking-[0.18em] sm:text-[15px] ${
-          canSubmit && !isSubmitting && !isUploadingImage && !submitSuccess
+          canSubmit && !isSubmitting && !isUploadingImage
             ? 'bg-[#dcc090] text-[#122a26] hover:bg-[#d3b67f]'
             : 'bg-[#d2d2d2] text-[#9d9d9d]'
         }`}
@@ -230,11 +187,6 @@ export function CustomizeSizeOrderFallback({
           ? t(language, 'product.size_catalog_custom_order_submitting')
           : t(language, 'product.size_catalog_custom_order_cta')}
       </button>
-      {submitSuccess ? (
-        <p className="mt-3 max-w-[454px] font-montserrat text-[13px] font-medium text-green-600">
-          {t(language, 'product.size_catalog_custom_order_success')}
-        </p>
-      ) : null}
       {submitError ? (
         <p className="mt-3 max-w-[454px] font-montserrat text-[13px] font-medium text-red-600">{submitError}</p>
       ) : null}

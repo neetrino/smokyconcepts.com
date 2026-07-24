@@ -3,64 +3,42 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    touch-action: manipulation;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-    overflow-x: hidden;
-    overscroll-behavior-x: none;
-    background-color: #efefef;
-    scrollbar-color: rgba(65, 65, 65, 0.38) #efefef;
-  }
-
-  html::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  html::-webkit-scrollbar-track {
-    background: #efefef;
-  }
-
-  html::-webkit-scrollbar-thumb {
-    background-color: rgba(65, 65, 65, 0.38);
-    border-radius: 9999px;
-    border: 2px solid #efefef;
-    background-clip: padding-box;
-  }
-
-  html.scroll-locked {
-    overflow: hidden;
-    background-color: #efefef;
-  }
-
-  html.scroll-locked body {
-    overflow: hidden;
-  }
-
-  html.personalize-scrollbar-hidden,
-  html:has([data-personalize-page]) {
-    scrollbar-width: none;
-  }
-
-  html.personalize-scrollbar-hidden::-webkit-scrollbar,
-  html:has([data-personalize-page])::-webkit-scrollbar {
-    display: none;
-  }
-
   body {
-    @apply bg-[#efefef] text-gray-900;
-    overflow-x: hidden;
-    overscroll-behavior-x: none;
-    max-width: 100%;
+    @apply bg-white text-gray-900;
   }
-
-  /* iOS Safari auto-zooms inputs below 16px — keep mobile form fields at 16px minimum. */
-  @media (max-width: 767px) {
-    input,
-    select,
-    textarea {
-      font-size: 1rem;
-    }
+  
+  /* Prevent text selection and caret on all text elements */
+  p, span, div, h1, h2, h3, h4, h5, h6, 
+  li, td, th, label, strong, em, b, i, 
+  small, blockquote, pre, code, 
+  article, section, aside, header, footer, nav, main {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    caret-color: transparent !important;
+  }
+  
+  /* Allow selection in input and textarea fields */
+  input, textarea {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    caret-color: currentColor !important;
+  }
+  
+  /* Ensure caret is visible and blinking in focused inputs */
+  input:focus, textarea:focus {
+    caret-color: currentColor !important;
+  }
+  
+  /* Links should be selectable but no caret */
+  a {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
   }
 
   /* No visible focus ring sitewide (Tab / pointer focus) */
@@ -87,31 +65,6 @@
   
   .animate-fade-in {
     animation: fade-in 0.3s ease-out;
-  }
-
-  @keyframes size-shake {
-    0%,
-    100% {
-      transform: translateX(0);
-    }
-    20%,
-    60% {
-      transform: translateX(-4px);
-    }
-    40%,
-    80% {
-      transform: translateX(4px);
-    }
-  }
-
-  .animate-size-shake {
-    animation: size-shake 0.45s ease-in-out;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .animate-size-shake {
-      animation: none !important;
-    }
   }
 
   @keyframes trending-label-pop {
@@ -236,16 +189,5 @@
 
 .policy-page-inner li + li {
   margin-top: 0.25rem;
-}
-
-/* Mobile catalog/upcoming strip — left gutter only; right edge stays flush for card peek. */
-@media (max-width: 639px) {
-  .products-catalog-mobile-strip-scroll {
-    margin-left: -1.25rem;
-    margin-right: -1.25rem;
-    padding-left: 1.25rem;
-    padding-right: 0;
-    scroll-padding-inline-start: 1.25rem;
-  }
 }
 

@@ -11,7 +11,7 @@ import {
   getDefaultCustomizeFormat,
   type CustomizeFormatState,
 } from './utils/build-customize-preview-html';
-import { getPlainTextFromHtml, sanitizeCustomizeHtml } from './utils/sanitize-customize-html';
+import { sanitizeCustomizeHtml } from './utils/sanitize-customize-html';
 import { useProductPage } from './useProductPage';
 import { useProductCartActions } from './useProductCartActions';
 import { useProductSizeCatalogCollectionPrice } from './hooks/useProductSizeCatalogCollectionPrice';
@@ -19,7 +19,6 @@ import { useCustomizeGoogleFontLinks } from './useCustomizeGoogleFontLinks';
 import type { ProductPageProps } from './types';
 import type { CustomOrderDraft } from './CustomizeSizeOrderFallback';
 import { PRODUCT_INFO_COLUMN_CLASS } from './productInfoTabContent.constants';
-import { PageLoadingCenter } from '../../../components/loading/PageLoadingCenter';
 
 const CUSTOMIZE_TEXT_MAX_LENGTH = 18;
 
@@ -28,8 +27,6 @@ export default function ProductPage({ params }: ProductPageProps) {
     product,
     loading,
     images,
-    heroImageSrc,
-    activeThumbnailIndex,
     currentImageIndex,
     setCurrentImageIndex,
     thumbnailStartIndex,
@@ -72,28 +69,13 @@ export default function ProductPage({ params }: ProductPageProps) {
     setCustomizeFormat(getDefaultCustomizeFormat());
   }, [product?.id]);
 
-  useEffect(() => {
-    if (typeof document === 'undefined') {
-      return;
+  const onCustomizeApplied = useCallback((value: { plain: string; html: string | null } | null) => {
+    setCustomizeApplied(value);
+    setCustomizeDraftText(value?.plain ?? '');
+    if (value === null) {
+      setCustomizeFormat(getDefaultCustomizeFormat());
     }
-    const raw = buildCustomizePreviewHtml(customizeDraftText, customizeFormat);
-    const sanitized = sanitizeCustomizeHtml(raw);
-    const plain = getPlainTextFromHtml(sanitized).trim();
-
-    setCustomizeApplied((previous) => {
-      if (!plain) {
-        return previous === null ? previous : null;
-      }
-      const next = {
-        plain,
-        html: sanitized.trim().length > 0 ? sanitized : null,
-      };
-      if (previous?.plain === next.plain && (previous?.html ?? '') === (next.html ?? '')) {
-        return previous;
-      }
-      return next;
-    });
-  }, [customizeDraftText, customizeFormat]);
+  }, []);
 
   const liveOverlayHtml = useMemo(() => {
     if (!customizeDraftText.trim()) {
@@ -102,30 +84,35 @@ export default function ProductPage({ params }: ProductPageProps) {
     return buildCustomizePreviewHtml(customizeDraftText, customizeFormat);
   }, [customizeDraftText, customizeFormat]);
 
-  const customizePreviewHtml = useMemo(() => {
-    if (liveOverlayHtml) {
-      return liveOverlayHtml;
-    }
+  /** Live preview while on Customize tab; after Apply, keep showing applied HTML when user switches tabs. */
+  const heroCustomizeOverlayHtml = useMemo(() => {
     const appliedHtml = customizeApplied?.html?.trim();
+    const appliedPlain = customizeApplied?.plain?.trim();
+
+    if (isCustomizeTabActive) {
+      if (liveOverlayHtml) {
+        return liveOverlayHtml;
+      }
+      if (appliedHtml) {
+        return appliedHtml;
+      }
+      if (appliedPlain) {
+        return buildCustomizePreviewHtml(appliedPlain, getDefaultCustomizeFormat());
+      }
+      return null;
+    }
+
     if (appliedHtml) {
       return appliedHtml;
     }
-    const appliedPlain = customizeApplied?.plain?.trim();
     if (appliedPlain) {
       return buildCustomizePreviewHtml(appliedPlain, getDefaultCustomizeFormat());
     }
     return null;
-  }, [liveOverlayHtml, customizeApplied]);
-
-  const hasCustomizePreviewText = Boolean(
-    customizeDraftText.trim() || customizeApplied?.plain?.trim() || customizeApplied?.html?.trim()
-  );
-
-  const showCustomizeHeroPreview = isCustomizeTabActive && hasCustomizePreviewText;
+  }, [isCustomizeTabActive, liveOverlayHtml, customizeApplied]);
 
   const shouldLoadCustomizeFonts =
     isCustomizeTabActive ||
-    Boolean(customizeDraftText.trim()) ||
     Boolean(customizeApplied?.plain?.trim()) ||
     Boolean(customizeApplied?.html?.trim());
 
@@ -135,31 +122,34 @@ export default function ProductPage({ params }: ProductPageProps) {
 
   useCustomizeGoogleFontLinks(shouldLoadCustomizeFonts);
 
+  const getCustomizeSanitizedHtml = useCallback(() => {
+    if (typeof document === 'undefined') {
+      return '';
+    }
+    const raw = buildCustomizePreviewHtml(customizeDraftText, customizeFormat);
+    return sanitizeCustomizeHtml(raw);
+  }, [customizeDraftText, customizeFormat]);
+
   const productDisplayTitle = product
     ? getProductText(language, product.id, 'title') || product.title
     : '';
 
-  const hasCustomizeForPricing = Boolean(
-    customizeDraftText.trim() ||
-      customizeApplied?.plain?.trim() ||
-      customizeApplied?.html?.trim()
+  const hasAppliedCustomize = Boolean(
+    customizeApplied?.plain?.trim() || customizeApplied?.html?.trim()
   );
-
-  const hasExplicitCatalogSizePick = selectedCatalogSize != null;
 
   const { collectionPriceAmd, collectionCategoryTitle } = useProductSizeCatalogCollectionPrice({
     product,
     currentVariant,
     selectedSizeLabel: selectedSize,
     selectedCatalogSize,
-    hasExplicitCatalogSizePick,
-    hasAppliedCustomize: hasCustomizeForPricing,
+    hasAppliedCustomize,
   });
 
   const displayPrice =
     collectionPriceAmd > 0 ? price + collectionPriceAmd : price;
 
-  const { handleAddToCart } = useProductCartActions({
+  const { handleAddToCart, handleBuyNow } = useProductCartActions({
     product,
     currentVariant,
     quantity,
@@ -178,27 +168,27 @@ export default function ProductPage({ params }: ProductPageProps) {
   });
 
   if (loading || !product) {
-    return <PageLoadingCenter />;
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+        {t(language, 'common.messages.loading')}
+      </div>
+    );
   }
 
   return (
-    <div className="overflow-x-hidden overflow-y-visible bg-[#efefef]">
-      <div className="mx-auto max-w-[1920px] overflow-x-hidden overflow-y-visible px-4 pb-16 pt-2 sm:px-6 lg:px-[120px] lg:pb-24 lg:pt-5">
+    <div className="overflow-visible bg-[#efefef]">
+      <div className="mx-auto max-w-[1920px] overflow-visible px-4 pb-16 pt-2 sm:px-6 lg:px-[120px] lg:pb-24 lg:pt-5">
         <div className="grid min-h-0 items-start gap-8 overflow-visible xl:grid-cols-[minmax(0,640px)_minmax(0,1fr)] xl:items-stretch xl:gap-11">
           <div className="flex min-h-0 min-w-0 flex-col gap-5 overflow-visible sm:gap-6">
             <ProductImageGallery
               images={images}
-              heroImageSrc={heroImageSrc}
-              activeThumbnailIndex={activeThumbnailIndex}
               product={product}
               language={language}
               currentImageIndex={currentImageIndex}
               onImageIndexChange={setCurrentImageIndex}
               thumbnailStartIndex={thumbnailStartIndex}
               onThumbnailStartIndexChange={setThumbnailStartIndex}
-              customizeOverlayHtml={null}
-              showCustomizeHeroPreview={showCustomizeHeroPreview}
-              customizeHeroPreviewHtml={customizePreviewHtml}
+              customizeOverlayHtml={heroCustomizeOverlayHtml}
             />
           </div>
 
@@ -206,6 +196,8 @@ export default function ProductPage({ params }: ProductPageProps) {
           <ProductInfoAndActions
             product={product}
             appliedCustomize={customizeApplied}
+            onCustomizeApplied={onCustomizeApplied}
+            getCustomizeSanitizedHtml={getCustomizeSanitizedHtml}
             customizeDraftText={customizeDraftText}
             onCustomizeDraftTextChange={onCustomizeDraftTextChange}
             customizeTextMaxLength={CUSTOMIZE_TEXT_MAX_LENGTH}
@@ -226,11 +218,10 @@ export default function ProductPage({ params }: ProductPageProps) {
             onSizeSelect={handleSizeSelect}
             onCatalogVariantSelect={handleCatalogVariantSelect}
             onAddToCart={handleAddToCart}
+            onBuyNow={handleBuyNow}
             onSelectedCatalogSizeChange={setSelectedCatalogSize}
             onSelectedCustomSizeRequestChange={setSelectedCustomSizeRequest}
             onCustomizeTabActiveChange={setIsCustomizeTabActive}
-            showCustomizeHeroPreview={showCustomizeHeroPreview}
-            customizePreviewHtml={customizePreviewHtml}
           />
           </div>
         </div>

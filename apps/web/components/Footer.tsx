@@ -35,8 +35,6 @@ export function Footer() {
                     ? t('home.homepage.footer.links.terms')
                     : item.href === '/delivery-terms'
                       ? t('home.homepage.footer.links.deliveryTerms')
-                    : item.href === '/personalize'
-                      ? t('home.homepage.footer.links.personalize')
                     : t('home.homepage.footer.links.refund')}
               </Link>
             ))}

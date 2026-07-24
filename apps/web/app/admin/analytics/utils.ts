@@ -1,5 +1,4 @@
 import { ADMIN_PRICE_CURRENCY, formatStoredMoney } from '@/lib/currency';
-import { formatAdminDate, formatAdminDateShort } from '../utils/formatAdminDate';
 
 /**
  * Format currency amount
@@ -8,14 +7,27 @@ export function formatCurrency(amount: number, currency: string = ADMIN_PRICE_CU
   return formatStoredMoney(amount, currency, ADMIN_PRICE_CURRENCY);
 }
 
-/** Full date: day, month, year. */
+/**
+ * Format date to full format (year, month, day)
+ */
 export function formatDate(dateString: string): string {
-  return formatAdminDate(dateString);
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('hy-AM', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(date);
 }
 
-/** Compact date: day + short month. */
+/**
+ * Format date to short format (month, day)
+ */
 export function formatDateShort(dateString: string): string {
-  return formatAdminDateShort(dateString);
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('hy-AM', {
+    month: 'short',
+    day: 'numeric',
+  }).format(date);
 }
 
 

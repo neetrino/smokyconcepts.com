@@ -5,27 +5,15 @@ const config: Config = {
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
-    './lib/**/*.{js,ts}',
-    './hooks/**/*.{js,ts}',
     '!./app/api/**',
     '../../packages/ui/**/*.{js,ts,jsx,tsx}',
-  ],
-  safelist: [
-    'animate-size-modal-backdrop-in',
-    'animate-size-modal-panel-in',
-    'animate-size-modal-block-in',
-    'duration-[420ms]',
-    'delay-[0ms]',
-    'duration-[320ms]',
-    'delay-[48ms]',
-    'ease-[cubic-bezier(0.4,0,1,1)]',
   ],
   theme: {
     extend: {
       keyframes: {
         'size-catalog-card-in': {
-          '0%': { opacity: '0', transform: 'translateX(16px)' },
-          '100%': { opacity: '1', transform: 'translateX(0)' },
+          '0%': { opacity: '0', transform: 'translateY(14px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         'size-modal-backdrop-in': {
           '0%': { opacity: '0' },
@@ -41,7 +29,7 @@ const config: Config = {
         },
       },
       animation: {
-        'size-catalog-card-in': 'size-catalog-card-in 0.38s ease-out both',
+        'size-catalog-card-in': 'size-catalog-card-in 0.5s ease-out both',
         'size-modal-backdrop-in': 'size-modal-backdrop-in 0.38s ease-out both',
         'size-modal-panel-in': 'size-modal-panel-in 0.48s cubic-bezier(0.22, 1, 0.36, 1) both',
         'size-modal-block-in': 'size-modal-block-in 0.42s ease-out both',

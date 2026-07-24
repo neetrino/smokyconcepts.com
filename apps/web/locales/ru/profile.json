@@ -9,28 +9,6 @@
     "password": "Изменить пароль",
     "orders": "Заказы"
   },
-  "menu": {
-    "coupons": "Купоны",
-    "deleteAccount": "Удалить аккаунт"
-  },
-  "coupons": {
-    "title": "Купоны",
-    "empty": "У вас пока нет купонов.",
-    "loading": "Загрузка купонов...",
-    "loadError": "Не удалось загрузить купоны.",
-    "discount": "Скидка",
-    "expiresAt": "Действует до",
-    "noExpiry": "Без срока",
-    "copyCode": "Скопировать код купона",
-    "copySuccess": "Код купона скопирован",
-    "copyError": "Не удалось скопировать код купона",
-    "status": {
-      "active": "Активен",
-      "expired": "Истёк",
-      "inactive": "Неактивен",
-      "exhausted": "Исчерпан"
-    }
-  },
   "dashboard": {
     "loading": "Загрузка панели управления...",
     "totalOrders": "Всего заказов",
@@ -67,8 +45,7 @@
     "firstNamePlaceholder": "Иван",
     "lastNamePlaceholder": "Иванов",
     "emailPlaceholder": "your@email.com",
-    "phonePlaceholder": "+374XXXXXXXX",
-    "invalidPhone": "Неверный номер телефона",
+    "phonePlaceholder": "+374 XX XXX XXX",
     "cancel": "Отмена"
   },
   "addresses": {
@@ -96,9 +73,6 @@
       "addressLine2": "Адрес строка 2 (необязательно)",
       "city": "Город",
       "state": "Область/Провинция (необязательно)",
-      "region": "Область",
-      "selectRegion": "Выберите область",
-      "loadingRegions": "Загрузка областей...",
       "postalCode": "Почтовый индекс",
       "phone": "Номер телефона",
       "isDefault": "Установить как адрес по умолчанию",
@@ -127,9 +101,9 @@
     "changedSuccess": "Пароль успешно изменен",
     "failedToChange": "Не удалось изменить пароль",
     "passwordsDoNotMatch": "Новые пароли не совпадают",
-    "passwordMinLength": "Пароль должен содержать не менее 8 символов",
+    "passwordMinLength": "Пароль должен содержать не менее 6 символов",
     "currentPasswordPlaceholder": "Введите текущий пароль",
-    "newPasswordPlaceholder": "Введите новый пароль (мин. 8 символов)",
+    "newPasswordPlaceholder": "Введите новый пароль (мин. 6 символов)",
     "confirmPasswordPlaceholder": "Подтвердите новый пароль"
   },
   "deleteAccount": {

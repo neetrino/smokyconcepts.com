@@ -1,22 +1,26 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient, ApiError } from '../api-client';
-import { clearLegacyAuthStorage, migrateLegacyAuthSession } from '../api-client/auth-utils';
 
+/**
+ * User interface
+ */
 interface User {
   id: string;
-  email?: string | null;
-  phone?: string | null;
-  firstName?: string | null;
-  lastName?: string | null;
+  email?: string;
+  phone?: string;
+  firstName?: string;
+  lastName?: string;
   roles?: string[];
 }
 
+/**
+ * Auth Context interface
+ */
 interface AuthContextType {
   user: User | null;
-  /** @deprecated Token is stored in an httpOnly cookie; always null on the client. */
   token: string | null;
   isLoggedIn: boolean;
   isLoading: boolean;
@@ -24,9 +28,12 @@ interface AuthContextType {
   roles: string[];
   login: (_emailOrPhone: string, _password: string) => Promise<void>;
   register: (_data: RegisterData) => Promise<void>;
-  logout: () => Promise<void>;
+  logout: () => void;
 }
 
+/**
+ * Register data interface
+ */
 interface RegisterData {
   email?: string;
   phone?: string;
@@ -35,80 +42,118 @@ interface RegisterData {
   lastName?: string;
 }
 
+/**
+ * Auth response from API
+ */
 interface AuthResponse {
   user: User;
+  token: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-async function fetchCurrentUser(): Promise<User | null> {
-  try {
-    const profile = await apiClient.get<User>('/api/v1/users/profile');
-    if (!profile?.id) {
-      return null;
-    }
-    return profile;
-  } catch {
-    return null;
-  }
-}
+const AUTH_TOKEN_KEY = 'auth_token';
+const AUTH_USER_KEY = 'auth_user';
 
+/**
+ * Auth Provider component
+ */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  const refreshSession = useCallback(async () => {
-    const profile = await fetchCurrentUser();
-    setUser(profile);
-  }, []);
-
+  // Load auth state from localStorage on mount
   useEffect(() => {
-    let cancelled = false;
-
-    const loadSession = async () => {
+    console.log('🔐 [AUTH] Loading auth state from localStorage...');
+    
+    const loadAuthState = async () => {
       try {
-        await migrateLegacyAuthSession();
-        if (cancelled) {
-          return;
+        const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
+        const storedUser = localStorage.getItem(AUTH_USER_KEY);
+
+        if (storedToken && storedUser) {
+          console.log('✅ [AUTH] Found stored auth data');
+          const parsedUser = JSON.parse(storedUser);
+          
+          // If user doesn't have roles, fetch from API
+          if (!parsedUser.roles || !Array.isArray(parsedUser.roles)) {
+            console.log('⚠️ [AUTH] User data missing roles, fetching from API...');
+            try {
+              const profileData = await apiClient.get<{ roles: string[] }>('/api/v1/users/profile');
+              if (profileData.roles) {
+                parsedUser.roles = profileData.roles;
+                localStorage.setItem(AUTH_USER_KEY, JSON.stringify(parsedUser));
+                console.log('✅ [AUTH] Roles updated from API:', profileData.roles);
+              }
+            } catch (fetchError) {
+              console.error('❌ [AUTH] Failed to fetch user roles:', fetchError);
+            }
+          }
+          
+          setToken(storedToken);
+          setUser(parsedUser);
+        } else {
+          console.log('ℹ️ [AUTH] No stored auth data found');
         }
-        const profile = await fetchCurrentUser();
-        if (!cancelled) {
-          setUser(profile);
-        }
+      } catch (error) {
+        console.error('❌ [AUTH] Error loading auth state:', error);
+        // Clear corrupted data
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        localStorage.removeItem(AUTH_USER_KEY);
       } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     };
 
-    void loadSession();
-
-    return () => {
-      cancelled = true;
-    };
+    loadAuthState();
   }, []);
 
+  /**
+   * Login user
+   */
   const login = async (emailOrPhone: string, password: string) => {
+    console.log('🔐 [AUTH] Login attempt:', { emailOrPhone: emailOrPhone ? 'provided' : 'not provided', password: password ? 'provided' : 'not provided' });
+    
     try {
       setIsLoading(true);
 
+      // Determine if it's email or phone
       const isEmail = emailOrPhone.includes('@');
       const requestData = isEmail
         ? { email: emailOrPhone, password }
         : { phone: emailOrPhone, password };
 
+      console.log('📤 [AUTH] Sending login request to API...');
       const response = await apiClient.post<AuthResponse>('/api/v1/auth/login', requestData, {
-        skipAuth: true,
+        skipAuth: true, // Don't send token for login
       });
 
-      clearLegacyAuthStorage();
-      setUser(response.user);
-      window.dispatchEvent(new Event('auth-updated'));
-    } catch (error: unknown) {
-      let errorMessage = 'Login failed. Please try again.';
+      console.log('✅ [AUTH] Login successful:', { 
+        userId: response.user.id,
+        roles: response.user.roles,
+        isAdmin: response.user.roles?.includes('admin')
+      });
 
+      // Store auth data
+      localStorage.setItem(AUTH_TOKEN_KEY, response.token);
+      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(response.user));
+
+      setToken(response.token);
+      setUser(response.user);
+
+      // Trigger auth update event
+      window.dispatchEvent(new Event('auth-updated'));
+
+      // Don't redirect here - let the login page handle redirect based on query params
+    } catch (error: any) {
+      console.error('❌ [AUTH] Login error:', error);
+      
+      // Extract error message from API response
+      let errorMessage = 'Login failed. Please try again.';
+      
+      // Check if it's an ApiError
       if (error instanceof ApiError) {
         if (error.status === 401) {
           errorMessage = error.message || 'Invalid email/phone or password';
@@ -116,12 +161,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           errorMessage = error.message || 'Your account has been blocked';
         } else if (error.status === 400) {
           errorMessage = error.message || 'Please provide email/phone and password';
-        } else if (error.status === 429) {
-          errorMessage = error.message || 'Too many login attempts. Please try again later.';
         } else {
           errorMessage = error.message || errorMessage;
         }
-      } else if (error instanceof Error && error.message) {
+      } else if (error.status === 401) {
+        errorMessage = error.message || 'Invalid email/phone or password';
+      } else if (error.status === 403) {
+        errorMessage = error.message || 'Your account has been blocked';
+      } else if (error.status === 400) {
+        errorMessage = error.message || 'Please provide email/phone and password';
+      } else if (error.message) {
+        // Use the error message directly if available
         errorMessage = error.message;
       }
 
@@ -131,82 +181,166 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  /**
+   * Register new user
+   */
   const register = async (data: RegisterData) => {
+    console.log('🔐 [AUTH] Registration attempt:', { 
+      email: data.email || 'not provided',
+      phone: data.phone || 'not provided',
+      hasFirstName: !!data.firstName,
+      hasLastName: !!data.lastName
+    });
+
     try {
       setIsLoading(true);
 
+      console.log('📤 [AUTH] Sending registration request to API...', { data });
       const response = await apiClient.post<AuthResponse>('/api/v1/auth/register', data, {
-        skipAuth: true,
+        skipAuth: true, // Don't send token for registration
       });
 
-      if (!response?.user) {
+      console.log('✅ [AUTH] Registration response received:', response);
+
+      if (!response || !response.user || !response.token) {
+        console.error('❌ [AUTH] Invalid response structure:', response);
         throw new Error('Invalid response from server');
       }
 
-      clearLegacyAuthStorage();
-      setUser(response.user);
-      window.dispatchEvent(new Event('auth-updated'));
-      router.push('/');
-    } catch (error: unknown) {
-      let errorMessage = 'Registration failed. Please try again.';
+      console.log('✅ [AUTH] Registration successful:', { userId: response.user.id });
 
-      if (error instanceof ApiError) {
-        if (error.status === 409) {
-          errorMessage = error.message || 'User with this email or phone already exists';
-        } else if (error.status === 400) {
-          errorMessage = error.message || 'Invalid registration data. Please check your input.';
-        } else if (error.status === 429) {
-          errorMessage = error.message || 'Too many registration attempts. Please try again later.';
+      // Store auth data
+      try {
+        localStorage.setItem(AUTH_TOKEN_KEY, response.token);
+        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(response.user));
+        console.log('💾 [AUTH] Auth data stored in localStorage');
+      } catch (storageError) {
+        console.error('❌ [AUTH] Failed to store auth data:', storageError);
+        throw new Error('Failed to save authentication data');
+      }
+
+      setToken(response.token);
+      setUser(response.user);
+
+      // Trigger auth update event
+      window.dispatchEvent(new Event('auth-updated'));
+
+      console.log('🔄 [AUTH] Redirecting to home page...');
+      // Redirect to home page
+      router.push('/');
+    } catch (error: any) {
+      console.error('❌ [AUTH] Registration error:', error);
+      console.error('❌ [AUTH] Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+      });
+      
+      // Extract error message from API response
+      let errorMessage = 'Registration failed. Please try again.';
+      
+      if (error.message) {
+        // Check if error has structured data
+        if ((error as any).data && (error as any).data.detail) {
+          errorMessage = (error as any).data.detail;
+        } else if ((error as any).data && (error as any).data.message) {
+          errorMessage = (error as any).data.message;
         } else {
-          errorMessage = error.message || errorMessage;
-        }
-      } else if (error instanceof Error) {
-        const errorText = error.message;
-        if (errorText.includes('409') || errorText.includes('already exists')) {
-          errorMessage = 'User with this email or phone already exists';
-        } else if (errorText.includes('password') || errorText.includes('Password')) {
-          errorMessage = 'Password must be at least 8 characters';
-        } else if (errorText) {
-          errorMessage = errorText;
+          // Fallback to parsing error message
+          const errorText = error.message;
+          if (errorText.includes('409') || errorText.includes('already exists') || errorText.includes('User already exists')) {
+            errorMessage = 'User with this email or phone already exists';
+          } else if (errorText.includes('400') || errorText.includes('Validation failed')) {
+            if (errorText.includes('password') || errorText.includes('Password')) {
+              errorMessage = 'Password must be at least 6 characters';
+            } else if (errorText.includes('email') || errorText.includes('phone')) {
+              errorMessage = 'Please provide email or phone and password';
+            } else {
+              errorMessage = 'Invalid registration data. Please check your input.';
+            }
+          } else if (errorText.includes('500') || errorText.includes('Internal Server Error')) {
+            errorMessage = 'Server error. Please try again later.';
+          } else if (errorText.includes('Failed to parse')) {
+            errorMessage = 'Invalid response from server. Please try again.';
+          } else {
+            // Try to extract meaningful message
+            const match = errorText.match(/detail[:\s]+([^,\n]+)/i);
+            if (match) {
+              errorMessage = match[1].trim();
+            }
+          }
         }
       }
 
+      console.error('❌ [AUTH] Final error message:', errorMessage);
       throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = async () => {
-    try {
-      await apiClient.post('/api/v1/auth/logout', undefined, { skipAuth: true });
-    } catch {
-      // Cookie clear is best-effort; local state must still reset.
-    }
+  /**
+   * Logout user
+   */
+  const logout = () => {
+    console.log('🔐 [AUTH] Logging out...');
+    
+    // Clear auth data
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_USER_KEY);
 
-    clearLegacyAuthStorage();
+    setToken(null);
     setUser(null);
+
+    // Trigger auth update event
     window.dispatchEvent(new Event('auth-updated'));
+
+    // Redirect to home page
     router.push('/');
   };
 
+  // Calculate roles and admin status
   const roles = user && Array.isArray(user.roles) ? user.roles : [];
   const isAdmin = roles.includes('admin');
-
+  
+  // Debug logging and ensure roles are loaded
   useEffect(() => {
-    if (!user?.id) {
-      return;
+    if (user && token) {
+      const userRoles = Array.isArray(user.roles) ? user.roles : [];
+      const userIsAdmin = userRoles.includes('admin');
+      
+      console.log('🔍 [AUTH] User state updated:', {
+        userId: user.id,
+        roles: user.roles,
+        rolesArray: userRoles,
+        isAdmin: userIsAdmin,
+        rolesType: typeof user.roles,
+        rolesIsArray: Array.isArray(user.roles)
+      });
+      
+      // If user doesn't have roles, fetch from API
+      if (!user.roles || !Array.isArray(user.roles) || user.roles.length === 0) {
+        console.log('⚠️ [AUTH] User missing roles, fetching from API...');
+        apiClient.get<{ roles: string[] }>('/api/v1/users/profile')
+          .then(profileData => {
+            if (profileData.roles && Array.isArray(profileData.roles)) {
+              const updatedUser = { ...user, roles: profileData.roles };
+              setUser(updatedUser);
+              localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updatedUser));
+              console.log('✅ [AUTH] Roles updated from API:', profileData.roles);
+            }
+          })
+          .catch(error => {
+            console.error('❌ [AUTH] Failed to fetch user roles:', error);
+          });
+      }
     }
-
-    if (!user.roles || !Array.isArray(user.roles) || user.roles.length === 0) {
-      void refreshSession();
-    }
-  }, [user, refreshSession]);
+  }, [user, token]);
 
   const value: AuthContextType = {
     user,
-    token: null,
-    isLoggedIn: !!user,
+    token,
+    isLoggedIn: !!token && !!user,
     isLoading,
     isAdmin,
     roles,
@@ -218,6 +352,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+/**
+ * Hook to use auth context
+ */
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -225,3 +362,4 @@ export function useAuth() {
   }
   return context;
 }
+

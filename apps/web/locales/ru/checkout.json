@@ -19,9 +19,7 @@
     "cardNumber": "Номер карты",
     "expiryDate": "Срок действия",
     "cvv": "CVV",
-    "cardHolderName": "Имя держателя карты",
-    "acceptPrivacyPolicy": "Подтверждаю, что ознакомился с",
-    "privacyPolicy": "Политикой конфиденциальности"
+    "cardHolderName": "Имя держателя карты"
   },
   "placeholders": {
     "phone": "+374XXXXXXXX",
@@ -48,14 +46,11 @@
   },
   "payment": {
     "cashOnDelivery": "Наложенный платеж",
-    "cashOnDeliveryShort": "Наличные",
     "cashOnDeliveryDescription": "Оплатите наличными при получении заказа",
     "idram": "Idram",
-    "idramShort": "Idram",
     "idramDescription": "Оплатите кошельком Idram или картой",
     "arca": "ArCa",
-    "arcaShort": "Картой",
-    "arcaDescription": "Оплачивайте Visa, Mastercard, картой ArCa или через Apple Pay",
+    "arcaDescription": "Оплатите картой ArCa",
     "paymentDetails": "Детали оплаты",
     "enterCardDetails": "Введите данные вашей карты для завершения оплаты"
   },
@@ -129,8 +124,7 @@
     "fillShippingAddress": "Пожалуйста, заполните все поля адреса доставки",
     "cartEmpty": "Корзина пуста",
     "failedToLoadCart": "Не удалось загрузить корзину",
-    "failedToCreateOrder": "Не удалось создать заказ. Пожалуйста, попробуйте снова.",
-    "privacyPolicyRequired": "Необходимо подтвердить, что вы ознакомились с Политикой конфиденциальности"
+    "failedToCreateOrder": "Не удалось создать заказ. Пожалуйста, попробуйте снова."
   }
 }
 

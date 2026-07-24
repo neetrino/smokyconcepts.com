@@ -2,7 +2,6 @@
 
 import { formatAdminUsdAmount } from '@/lib/currency';
 import { useTranslation } from '../../../lib/i18n-client';
-import { formatAdminDateShort } from '../utils/formatAdminDate';
 
 interface LineChartData {
   _id: string;
@@ -21,6 +20,14 @@ export function LineChart({ data }: LineChartProps) {
 
   const formatCurrency = (amount: number) => formatAdminUsdAmount(amount);
 
+  const formatDateShort = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('hy-AM', {
+      month: 'short',
+      day: 'numeric',
+    }).format(date);
+  };
+
   const maxCount = Math.max(...data.map(d => d.count), 1);
   const width = 800;
   const height = 300;
@@ -36,8 +43,7 @@ export function LineChart({ data }: LineChartProps) {
 
   // Smooth curve using quadratic bezier
   const getSmoothPath = (points: Array<{ x: number; y: number }>) => {
-    if (points.length === 0) return '';
-    if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+    if (points.length < 2) return '';
     
     let path = `M ${points[0].x} ${points[0].y}`;
     
@@ -231,7 +237,7 @@ export function LineChart({ data }: LineChartProps) {
             
             {/* Tooltip on hover */}
             <title>
-              {formatAdminDateShort(point._id)}: {t('admin.analytics.ordersLabel').replace('{count}', point.count.toString())}, {formatCurrency(point.revenue)}
+              {formatDateShort(point._id)}: {t('admin.analytics.ordersLabel').replace('{count}', point.count.toString())}, {formatCurrency(point.revenue)}
             </title>
           </g>
         ))}
@@ -253,7 +259,7 @@ export function LineChart({ data }: LineChartProps) {
           data.map((d, i) => (
             <div key={i} className="flex flex-col items-center">
               <span className="text-xs font-medium text-gray-600 transform -rotate-45 origin-center whitespace-nowrap">
-                {formatAdminDateShort(d._id)}
+                {formatDateShort(d._id)}
               </span>
             </div>
           ))
@@ -261,17 +267,17 @@ export function LineChart({ data }: LineChartProps) {
           <>
             <div className="flex flex-col items-center">
               <span className="text-xs font-medium text-gray-600">
-                {formatAdminDateShort(data[0]._id)}
+                {formatDateShort(data[0]._id)}
               </span>
             </div>
             <div className="flex flex-col items-center">
               <span className="text-xs font-medium text-gray-600">
-                {formatAdminDateShort(data[Math.floor(data.length / 2)]._id)}
+                {formatDateShort(data[Math.floor(data.length / 2)]._id)}
               </span>
             </div>
             <div className="flex flex-col items-center">
               <span className="text-xs font-medium text-gray-600">
-                {formatAdminDateShort(data[data.length - 1]._id)}
+                {formatDateShort(data[data.length - 1]._id)}
               </span>
             </div>
           </>

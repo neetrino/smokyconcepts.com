@@ -7,7 +7,7 @@ import { resolveSectionLabelFromCollectionValue } from '../catalogProductLabels'
 import type { CatalogSectionViewModel } from '../productsCatalogView.types';
 
 /** Sticky site header clearance when scrolling to a catalog section. */
-const CATALOG_SECTION_SCROLL_MARGIN_TOP_CLASS = 'scroll-mt-24 overflow-x-visible overflow-y-visible';
+const CATALOG_SECTION_SCROLL_MARGIN_TOP_CLASS = 'scroll-mt-24';
 
 interface UseProductsCatalogCategoryScrollParams {
   sections: CatalogSectionViewModel[];

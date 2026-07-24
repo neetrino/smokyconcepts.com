@@ -1,14 +1,11 @@
 'use client';
 
 import { Input } from '@shop/ui';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
-import { apiClient, ApiError } from '../../lib/api-client';
-import { CONTACT_MESSAGE_MAX_LENGTH } from '../../lib/constants/contact-form.constants';
+import { apiClient } from '../../lib/api-client';
 import { sanitizeContactPhoneInput } from '../../lib/utils/contact-phone-input';
-import { usePrefillLoggedInContactFields } from '../../hooks/usePrefillLoggedInContactFields';
 import contactData from '../../../../json/contact.json';
 
 // Icons
@@ -35,7 +32,6 @@ const OfficeHouseIcon = () => (
 
 export default function ContactPage() {
   const { t } = useTranslation();
-  const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -44,16 +40,8 @@ export default function ContactPage() {
   });
   const [submitting, setSubmitting] = useState(false);
 
-  usePrefillLoggedInContactFields(setFormData);
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
-    if (!formData.message.trim()) {
-      alert(t('contact.form.commentRequired'));
-      return;
-    }
-
     setSubmitting(true);
     
     try {
@@ -62,7 +50,6 @@ export default function ContactPage() {
         email: formData.email,
         phone: formData.phone,
         message: formData.message,
-        source: 'CONTACT',
       }, {
         skipAuth: true, // Contact form doesn't require authentication
       });
@@ -76,37 +63,18 @@ export default function ContactPage() {
       });
       
       alert(t('contact.form.submitSuccess') || 'Ձեր հաղորդագրությունը հաջողությամբ ուղարկվեց');
-      router.push('/');
-    } catch (error: unknown) {
-      const isCommentRequiredError =
-        error instanceof ApiError &&
-        error.message.toLowerCase().includes("field 'message'");
-      if (isCommentRequiredError) {
-        alert(t('contact.form.commentRequired'));
-        return;
-      }
-      const detail =
-        error instanceof Error ? error.message : '';
-      alert(
-        detail
-          ? `${t('contact.form.submitError')}: ${detail}`
-          : t('contact.form.submitError'),
-      );
+    } catch (error: any) {
+      console.error('Error submitting contact form:', error);
+      alert(t('contact.form.submitError') || 'Սխալ: ' + (error.message || 'Չհաջողվեց ուղարկել հաղորդագրությունը'));
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    const nextValue =
-      name === 'message'
-        ? value.slice(0, CONTACT_MESSAGE_MAX_LENGTH)
-        : value;
-
     setFormData({
       ...formData,
-      [name]: nextValue,
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -232,19 +200,11 @@ export default function ContactPage() {
                   id="message"
                   name="message"
                   rows={6}
-                  required
-                  maxLength={CONTACT_MESSAGE_MAX_LENGTH}
                   value={formData.message}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   placeholder={t('contact.form.commentPlaceholder') || 'Write your comment'}
                 />
-                <p
-                  className="mt-1 text-right text-xs text-gray-500"
-                  aria-live="polite"
-                >
-                  {formData.message.length}/{CONTACT_MESSAGE_MAX_LENGTH}
-                </p>
               </div>
               <button
                 type="submit"

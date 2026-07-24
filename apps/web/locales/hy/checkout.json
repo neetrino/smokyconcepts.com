@@ -19,9 +19,7 @@
     "cardNumber": "Քարտի համար",
     "expiryDate": "Վավերականության ժամկետ",
     "cvv": "CVV",
-    "cardHolderName": "Քարտի տիրոջ անուն",
-    "acceptPrivacyPolicy": "Հաստատում եմ, որ ծանոթացել եմ",
-    "privacyPolicy": "Գաղտնիության քաղաքականությանը"
+    "cardHolderName": "Քարտի տիրոջ անուն"
   },
   "placeholders": {
     "phone": "+374XXXXXXXX",
@@ -48,14 +46,11 @@
   },
   "payment": {
     "cashOnDelivery": "Կանխիկ առաքման ժամանակ",
-    "cashOnDeliveryShort": "Կանխիկ",
     "cashOnDeliveryDescription": "Վճարեք կանխիկ, երբ ստանաք ձեր պատվերը",
     "idram": "Idram",
-    "idramShort": "Idram",
     "idramDescription": "Վճարեք Idram դրամապանակով կամ քարտով",
     "arca": "ArCa",
-    "arcaShort": "Քարտով",
-    "arcaDescription": "Ընդունեք Visa, Mastercard, ArCa քարտով կամ Apple Pay-ով",
+    "arcaDescription": "Վճարեք ArCa քարտով",
     "paymentDetails": "Վճարման մանրամասներ",
     "enterCardDetails": "Մուտքագրեք ձեր քարտի տվյալները՝ վճարումն ավարտելու համար"
   },
@@ -129,8 +124,7 @@
     "fillShippingAddress": "Խնդրում ենք լրացնել բոլոր առաքման հասցեի դաշտերը",
     "cartEmpty": "Զամբյուղը դատարկ է",
     "failedToLoadCart": "Չհաջողվեց բեռնել զամբյուղը",
-    "failedToCreateOrder": "Չհաջողվեց ստեղծել պատվերը: Խնդրում ենք կրկին փորձել:",
-    "privacyPolicyRequired": "Պետք է հաստատեք, որ ծանոթացել եք Գաղտնիության քաղաքականությանը"
+    "failedToCreateOrder": "Չհաջողվեց ստեղծել պատվերը: Խնդրում ենք կրկին փորձել:"
   }
 }
 

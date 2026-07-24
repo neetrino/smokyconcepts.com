@@ -5,8 +5,6 @@ import { apiClient } from '@/lib/api-client';
 import { buildSelectedAttributeValueIdsMap } from '@/lib/category-attributes';
 import type { CategoryAttribute } from '@/lib/category-attributes';
 import type { SizeCatalogCategoryDto } from '@/lib/types/size-catalog';
-import { scrollToProductFormField } from '../utils/scrollToProductFormField';
-import { deriveAttributeOrderFromVariants } from '../utils/attributeDisplayOrder';
 import type { useProductFormState } from './useProductFormState';
 
 type ProductFormState = ReturnType<typeof useProductFormState>;
@@ -20,6 +18,7 @@ interface UseAddProductPageEffectsParams {
   categoryAttributesForVariants: CategoryAttribute[];
   setSizeCatalogCategories: (categories: SizeCatalogCategoryDto[]) => void;
   attributePoolSeededForProductRef: MutableRefObject<string | null>;
+  variableChosenWithEmptyRowsRef: MutableRefObject<boolean>;
 }
 
 export function useAddProductPageEffects({
@@ -31,7 +30,50 @@ export function useAddProductPageEffects({
   categoryAttributesForVariants,
   setSizeCatalogCategories,
   attributePoolSeededForProductRef,
+  variableChosenWithEmptyRowsRef,
 }: UseAddProductPageEffectsParams): void {
+  useEffect(() => {
+    if (!isEditMode) {
+      formState.setVariableProductTypeAllowed(true);
+    }
+  }, [isEditMode, formState.setVariableProductTypeAllowed]);
+
+  useEffect(() => {
+    variableChosenWithEmptyRowsRef.current = false;
+  }, [productId, variableChosenWithEmptyRowsRef]);
+
+  useEffect(() => {
+    if (formState.generatedVariants.length > 0) {
+      variableChosenWithEmptyRowsRef.current = false;
+    }
+  }, [formState.generatedVariants.length, variableChosenWithEmptyRowsRef]);
+
+  useEffect(() => {
+    if (!isEditMode || !productId || formState.loadingProduct) {
+      return;
+    }
+    if (formState.productType !== 'variable') {
+      return;
+    }
+    if (formState.generatedVariants.length > 0) {
+      return;
+    }
+    if (variableChosenWithEmptyRowsRef.current) {
+      return;
+    }
+    formState.setProductType('simple');
+    formState.setVariableProductTypeAllowed(true);
+  }, [
+    isEditMode,
+    productId,
+    formState.loadingProduct,
+    formState.productType,
+    formState.generatedVariants.length,
+    formState.setProductType,
+    formState.setVariableProductTypeAllowed,
+    variableChosenWithEmptyRowsRef,
+  ]);
+
   useEffect(() => {
     if (formState.submitErrorKey !== 'variableSubmitNeedVariants') {
       return;
@@ -45,13 +87,6 @@ export function useAddProductPageEffects({
     formState.generatedVariants.length,
     formState.setSubmitErrorKey,
   ]);
-
-  useEffect(() => {
-    if (!formState.submitErrorFieldId) {
-      return;
-    }
-    scrollToProductFormField(formState.submitErrorFieldId);
-  }, [formState.submitErrorFieldId, formState.submitErrorKey]);
 
   useEffect(() => {
     if (!isLoggedIn || !isAdmin) {
@@ -123,9 +158,6 @@ export function useAddProductPageEffects({
       enabled[attribute.id] = Object.prototype.hasOwnProperty.call(derived, attribute.id);
     });
     formState.setEnabledAttributeIds(enabled);
-    formState.setEnabledAttributeOrder(
-      deriveAttributeOrderFromVariants(categoryAttributesForVariants, formState.generatedVariants)
-    );
     attributePoolSeededForProductRef.current = productId;
   }, [
     isEditMode,
@@ -135,7 +167,6 @@ export function useAddProductPageEffects({
     formState.generatedVariants,
     formState.setSelectedAttributeValueIds,
     formState.setEnabledAttributeIds,
-    formState.setEnabledAttributeOrder,
     attributePoolSeededForProductRef,
   ]);
 
@@ -152,17 +183,12 @@ export function useAddProductPageEffects({
     ) {
       formState.setEnabledAttributeIds({});
     }
-    if (categoryAttributesForVariants.length === 0 && formState.enabledAttributeOrder.length > 0) {
-      formState.setEnabledAttributeOrder([]);
-    }
   }, [
     categoryAttributesForVariants,
     formState.selectedAttributeValueIds,
     formState.enabledAttributeIds,
-    formState.enabledAttributeOrder,
     formState.setSelectedAttributeValueIds,
     formState.setEnabledAttributeIds,
-    formState.setEnabledAttributeOrder,
   ]);
 
   useEffect(() => {

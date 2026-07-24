@@ -11,7 +11,6 @@ import {
   PRODUCTS_TABLE_HEADER_TH_STICKY_LAST_CLASS,
 } from '../constants/productsTable.constants';
 import type { Product, ProductsResponse } from '../types';
-import { formatAdminDate } from '../../utils/formatAdminDate';
 
 interface ProductsTableProps {
   loading: boolean;
@@ -434,7 +433,7 @@ export function ProductsTable({
                       </div>
                     </td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-[#414141]/60">
-                      {formatAdminDate(product.createdAt)}
+                      {new Date(product.createdAt).toLocaleDateString('hy-AM')}
                     </td>
                   </tr>
                 ))}

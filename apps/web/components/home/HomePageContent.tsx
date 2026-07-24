@@ -14,7 +14,6 @@ import { TrendingFeaturedSection } from './TrendingFeaturedSection';
 import type { HomeCoverCollectionItem } from './homePage.types';
 import type { HomeHeroSlide } from '@/lib/types/home-hero.types';
 import { UpcomingProductsSection } from '@/components/home/UpcomingProductsSection';
-import { UPCOMING_SECTION_BLEED_WRAPPER_CLASS_NAME } from '@/components/home/upcomingProducts.constants';
 import { useTranslation } from '@/lib/i18n-client';
 
 /**
@@ -58,9 +57,7 @@ export function HomePageContent({ coverCollections, heroSlides }: HomePageConten
 
         <HomeBringingSection />
 
-        <div className={UPCOMING_SECTION_BLEED_WRAPPER_CLASS_NAME}>
-          <UpcomingProductsSection />
-        </div>
+        <UpcomingProductsSection />
 
         <HomeBehindCreationSection />
 

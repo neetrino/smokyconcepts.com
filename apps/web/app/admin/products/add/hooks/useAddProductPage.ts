@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, type SetStateAction } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { useTranslation } from '@/lib/i18n-client';
@@ -13,6 +13,7 @@ import { useImageHandling } from './useImageHandling';
 import { useLabelManagement } from './useLabelManagement';
 import { useProductFormHandlers } from './useProductFormHandlers';
 import { useProductFormCallbacks } from './useProductFormCallbacks';
+import { useAutoSkuSyncForNewProduct } from './useAutoSkuSyncForNewProduct';
 import { useAddProductPageEffects } from './useAddProductPageEffects';
 import { isClothingCategory as checkIsClothingCategory, generateSlug } from '../utils/productUtils';
 import { buildCategoryAttributesWithSizeCatalog } from '../utils/buildCategoryAttributesWithSizeCatalog';
@@ -26,6 +27,7 @@ export function useAddProductPage() {
   const productId = searchParams.get('id');
   const isEditMode = !!productId;
   const attributePoolSeededForProductRef = useRef<string | null>(null);
+  const variableChosenWithEmptyRowsRef = useRef(false);
 
   const formState = useProductFormState();
   const [sizeCatalogCategories, setSizeCatalogCategories] = useState<SizeCatalogCategoryDto[]>([]);
@@ -43,6 +45,14 @@ export function useAddProductPage() {
     setCategoriesExpanded: formState.setCategoriesExpanded,
   });
 
+  useAutoSkuSyncForNewProduct({
+    isEditMode,
+    loadingProduct: formState.loadingProduct,
+    slug: formState.formData.slug,
+    simpleProductSku: formState.simpleProductData.sku,
+    setSimpleProductData: formState.setSimpleProductData,
+  });
+
   useProductEditMode({
     productId,
     isLoggedIn,
@@ -52,7 +62,10 @@ export function useAddProductPage() {
     setUseNewCategory: formState.setUseNewCategory,
     setNewCategoryName: formState.setNewCategoryName,
     setHasVariantsToLoad: formState.setHasVariantsToLoad,
+    setProductType: formState.setProductType,
+    setSimpleProductData: (value) => formState.setSimpleProductData(value as SetStateAction<typeof formState.simpleProductData>),
     setGeneratedVariants: formState.setGeneratedVariants,
+    setVariableProductTypeAllowed: formState.setVariableProductTypeAllowed,
   });
 
   useAddProductPageEffects({
@@ -64,6 +77,7 @@ export function useAddProductPage() {
     categoryAttributesForVariants,
     setSizeCatalogCategories,
     attributePoolSeededForProductRef,
+    variableChosenWithEmptyRowsRef,
   });
 
   const { applyToAllVariants } = useVariantGeneration({
@@ -83,12 +97,19 @@ export function useAddProductPage() {
     generatedVariants: formState.generatedVariants,
     setFormData: (updater) => formState.setFormData((prev) => updater(prev) as typeof formState.formData),
     setGeneratedVariants: formState.setGeneratedVariants,
+    setSimpleProductData: (value) => formState.setSimpleProductData(value as SetStateAction<typeof formState.simpleProductData>),
     checkIsClothingCategory,
     productId,
     isEditMode,
   });
 
-  const { handleUploadVariantImage } = useImageHandling({
+  const {
+    removeImageUrl,
+    setFeaturedImage,
+    handleUploadImageFiles,
+    handleUploadImages,
+    handleUploadVariantImage,
+  } = useImageHandling({
     imageUrls: formState.formData.imageUrls,
     featuredImageIndex: formState.formData.featuredImageIndex,
     variants: formState.formData.variants,
@@ -151,6 +172,8 @@ export function useAddProductPage() {
     setFormData: (updater) => formState.setFormData((prev) => updater(prev) as typeof formState.formData),
     setLoading: formState.setLoading,
     setCategories: formState.setCategories,
+    productType: formState.productType,
+    simpleProductData: formState.simpleProductData,
     generatedVariants: formState.generatedVariants,
     useNewCategory: formState.useNewCategory,
     newCategoryName: formState.newCategoryName,
@@ -159,8 +182,20 @@ export function useAddProductPage() {
     isClothingCategory,
     categoryAttributes: categoryAttributesForVariants,
     setSubmitErrorKey: formState.setSubmitErrorKey,
-    setSubmitErrorFieldId: formState.setSubmitErrorFieldId,
   });
+
+  const handleProductTypeChange = (type: 'simple' | 'variable') => {
+    if (!formState.variableProductTypeAllowed && type === 'variable') {
+      return;
+    }
+    formState.setSubmitErrorKey(null);
+    if (type === 'variable') {
+      variableChosenWithEmptyRowsRef.current = true;
+    } else {
+      variableChosenWithEmptyRowsRef.current = false;
+    }
+    formState.setProductType(type);
+  };
 
   const showPageLoading = isLoading || formState.loadingProduct;
   const canRenderForm = isLoggedIn && isAdmin;
@@ -177,12 +212,17 @@ export function useAddProductPage() {
     handleSlugBlur,
     isClothingCategory,
     handleVariantAdd,
+    removeImageUrl,
+    setFeaturedImage,
+    handleUploadImageFiles,
+    handleUploadImages,
     handleUploadVariantImage,
     addLabel,
     removeLabel,
     updateLabel,
     handleCreateCategory,
     handleSubmit,
+    handleProductTypeChange,
     applyToAllVariants,
     generateSlug,
   };

@@ -2,16 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@white-shop/db";
 import { logger } from "@/lib/utils/logger";
 import { isContactPhoneAllowedCharacterSet } from "@/lib/utils/contact-phone-input";
-import { enforceRateLimit } from "@/lib/security/rate-limit";
-import { CONTACT_MESSAGE_MAX_LENGTH } from "@/lib/constants/contact-form.constants";
-import {
-  CONTACT_MESSAGE_SOURCES,
-  normalizeContactMessageSource,
-} from "@/lib/constants/contact-message-source.constants";
-import {
-  CONTACT_MAX_ATTEMPTS,
-  CONTACT_RATE_LIMIT_WINDOW_SECONDS,
-} from "@/lib/security/rate-limit.constants";
 
 /** Stored in DB `subject` column (schema); form field is the visitor's phone. */
 const CONTACT_PHONE_MIN_LENGTH = 3;
@@ -22,19 +12,9 @@ const CONTACT_PHONE_MAX_LENGTH = 40;
  * Submit contact form
  */
 export async function POST(req: NextRequest) {
-  const rateLimited = await enforceRateLimit(req, {
-    scope: 'contact:submit',
-    limit: CONTACT_MAX_ATTEMPTS,
-    windowSeconds: CONTACT_RATE_LIMIT_WINDOW_SECONDS,
-  });
-  if (rateLimited) {
-    return rateLimited;
-  }
-
   try {
     const body = await req.json();
     const { name, email, message } = body;
-    const source = normalizeContactMessageSource(body.source);
     const phoneRaw = body.phone ?? body.subject;
     const phone =
       typeof phoneRaw === "string" ? phoneRaw.trim() : "";
@@ -95,29 +75,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const messageText = typeof message === 'string' ? message.trim() : '';
-    const isMessageRequired = source === CONTACT_MESSAGE_SOURCES.CONTACT;
-
-    if (isMessageRequired && messageText.length === 0) {
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
       return NextResponse.json(
         {
           type: "https://api.shop.am/problems/validation-error",
           title: "Validation Error",
           status: 400,
           detail: "Field 'message' is required",
-          instance: req.url,
-        },
-        { status: 400 }
-      );
-    }
-
-    if (messageText.length > CONTACT_MESSAGE_MAX_LENGTH) {
-      return NextResponse.json(
-        {
-          type: "https://api.shop.am/problems/validation-error",
-          title: "Validation Error",
-          status: 400,
-          detail: `Field 'message' must be at most ${CONTACT_MESSAGE_MAX_LENGTH} characters`,
           instance: req.url,
         },
         { status: 400 }
@@ -145,12 +109,11 @@ export async function POST(req: NextRequest) {
         name: name.trim(),
         email: email.trim(),
         subject: phone,
-        message: messageText,
-        source,
+        message: message.trim(),
       },
     });
 
-    logger.info("Contact message created", { id: contactMessage.id, source });
+    logger.info("Contact message created", { id: contactMessage.id });
 
     return NextResponse.json(
       {
@@ -161,20 +124,20 @@ export async function POST(req: NextRequest) {
           phone: contactMessage.subject,
           subject: contactMessage.subject,
           message: contactMessage.message,
-          source: contactMessage.source,
           createdAt: contactMessage.createdAt,
         },
       },
       { status: 201 }
     );
   } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error("Contact form error", { error });
     return NextResponse.json(
       {
         type: "https://api.shop.am/problems/internal-error",
         title: "Internal Server Error",
         status: 500,
-        detail: "An error occurred while submitting the contact form",
+        detail: errorMessage || "An error occurred while submitting the contact form",
         instance: req.url,
       },
       { status: 500 }

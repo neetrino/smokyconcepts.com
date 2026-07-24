@@ -16,7 +16,7 @@ import {
 import {
   sizeModalBackdropClass,
   sizeModalBlockClass,
-  sizeModalBlockEnterStyle,
+  sizeModalBlockTransitionDelay,
   sizeModalContentClass,
   sizeModalPanelClass,
 } from '@/lib/size-modal-animation';
@@ -29,15 +29,7 @@ import {
   getCartLineTotalUsd,
 } from '../app/cart/cart-line-pricing';
 import { handleRemoveItem, handleUpdateQuantity } from '../app/cart/cart-handlers';
-import type { Cart, CartItem } from '../app/cart/types';
-
-function resolveCartItemImage(item: CartItem): string | null {
-  return (
-    item.variant.product.image?.trim() ||
-    item.variant.sizeCatalogImageUrl?.trim() ||
-    null
-  );
-}
+import type { Cart } from '../app/cart/types';
 
 function CloseIcon() {
   return (
@@ -82,11 +74,7 @@ export function CartDrawer() {
     isOpen,
     exitDurationMs,
   });
-  const drawerMotion = {
-    isEntered,
-    isExiting,
-    skipEnterAnimation: prefersReducedMotion,
-  };
+  const drawerMotion = { isEntered, isExiting };
 
   const handleClose = useCallback(() => {
     if (isExiting) {
@@ -214,10 +202,13 @@ export function CartDrawer() {
         <div className="flex h-full flex-col px-8 pb-6 pt-6 font-montserrat">
           <div
             className={`flex items-center gap-4 ${sizeModalBlockClass(drawerMotion)}`}
-            style={sizeModalBlockEnterStyle(
-              SIZE_MODAL_BLOCK_ENTER_DELAY_HEADER_MS,
-              drawerMotion
-            )}
+            style={{
+              transitionDelay: sizeModalBlockTransitionDelay(
+                SIZE_MODAL_BLOCK_ENTER_DELAY_HEADER_MS,
+                0,
+                drawerMotion
+              ),
+            }}
           >
             <h2 className="text-[1.625rem] font-extrabold leading-none text-[#414141]">My Cart</h2>
             <span className="pt-1 text-[0.875rem] font-medium leading-none text-[#414141]">
@@ -227,26 +218,27 @@ export function CartDrawer() {
 
           <div
             className={`mt-8 flex min-h-0 flex-1 flex-col ${sizeModalContentClass(drawerMotion)}`}
-            style={sizeModalBlockEnterStyle(
-              SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS,
-              drawerMotion
-            )}
+            style={{
+              transitionDelay: sizeModalBlockTransitionDelay(
+                SIZE_MODAL_BLOCK_ENTER_DELAY_BODY_MS,
+                0,
+                drawerMotion
+              ),
+            }}
           >
           <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-1">
             {cart && cart.items.length > 0 ? (
               <div className="space-y-8">
-                {cart.items.map((item) => {
-                  const itemImage = resolveCartItemImage(item);
-                  return (
+                {cart.items.map((item) => (
                   <div key={item.id} className="flex gap-5 rounded-[1rem] px-2 py-2 transition-all">
                     <Link
                       href={`/products/${item.variant.product.slug}`}
                       onClick={handleClose}
                       className="relative mt-1 block h-[6.5rem] w-[6.25rem] shrink-0 rounded-[0.875rem] bg-white"
                     >
-                      {itemImage ? (
+                      {item.variant.product.image ? (
                         <Image
-                          src={itemImage}
+                          src={item.variant.product.image}
                           alt={item.variant.product.title}
                           fill
                           className="object-contain p-1"
@@ -269,11 +261,9 @@ export function CartDrawer() {
                         </Link>
 
                         <div className="mt-1.5 flex items-center gap-2">
-                          {item.variant.sizeLabel?.trim() ? (
-                            <span className="text-[0.625rem] font-medium leading-none text-[#9d9d9d]">
-                              {item.variant.sizeLabel.trim()}
-                            </span>
-                          ) : null}
+                          <span className="text-[0.625rem] font-medium leading-none text-[#9d9d9d]">
+                            {item.variant.sizeLabel || 'King Size'}
+                          </span>
                           <span className="rounded-[0.375rem] bg-[#122a26] px-[0.375rem] py-[0.125rem] text-[0.625rem] font-medium leading-none text-white">
                             {item.variant.product.categoryLabel || 'Classic'}
                           </span>
@@ -317,8 +307,7 @@ export function CartDrawer() {
                       </div>
                     </div>
                   </div>
-                  );
-                })}
+                ))}
               </div>
             ) : (
               <div className="pt-6 text-center text-[#414141]">

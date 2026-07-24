@@ -9,9 +9,6 @@ import {
   formatOrderListShippingDisplay,
   formatOrderListTotalDisplay,
 } from '@/lib/orders/order-summary-display';
-import { AdminNewBadge } from './AdminNewBadge';
-import { useAdminLastSeen } from '../hooks/useAdminLastSeen';
-import { getAdminNewBadgeLabel } from '../utils/adminNewBadgeLabel';
 import { formatDate } from '../utils/dashboardUtils';
 
 interface RecentOrder {
@@ -49,8 +46,6 @@ export function RecentOrdersCard({ recentOrders, recentOrdersLoading }: RecentOr
   const router = useRouter();
   useCurrencyRatesReady();
   const displayCurrency = ADMIN_PRICE_CURRENCY as CurrencyCode;
-  const { isNew: isOrderNew } = useAdminLastSeen('orders');
-  const newBadgeLabel = getAdminNewBadgeLabel(t);
 
   return (
     <Card className="border border-[#dcc090]/30 bg-white/90 p-6 shadow-[0_8px_30px_rgba(18,42,38,0.06)]">
@@ -89,9 +84,8 @@ export function RecentOrdersCard({ recentOrders, recentOrdersLoading }: RecentOr
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="mb-1 flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-2 mb-1">
                       <p className="text-sm font-bold text-[#122a26]">#{order.number}</p>
-                      {isOrderNew(order.createdAt) ? <AdminNewBadge label={newBadgeLabel} /> : null}
                       <span
                         className={`px-2 py-0.5 text-xs rounded-full ${
                           order.paymentStatus === 'paid'

@@ -5,9 +5,8 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { Card, Button, Input } from '@shop/ui';
 import { apiClient } from '@/lib/api-client';
-import type { AdminMenuItem } from '@/components/AdminMenuDrawer';
+import { AdminMenuDrawer, type AdminMenuItem } from '@/components/AdminMenuDrawer';
 import { getAdminMenuTABS } from '../../admin-menu.config';
-import { AdminMobileNavigation } from '../../components/AdminMobileNavigation';
 import {
   ADMIN_FIXED_SIDEBAR_CLASS,
   ADMIN_FIXED_SIDEBAR_SPACER_CLASS,
@@ -248,7 +247,7 @@ export default function PriceFilterSettingsPage() {
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="lg:hidden mb-6">
-            <AdminMobileNavigation currentPath={currentPath} />
+            <AdminMenuDrawer tabs={adminTabs} currentPath={currentPath} />
           </div>
           {/* Sidebar Navigation */}
           <aside className={ADMIN_FIXED_SIDEBAR_CLASS}>

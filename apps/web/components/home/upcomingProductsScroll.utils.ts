@@ -1,12 +1,12 @@
 import {
-  getCatalogStripMaxScrollLeft,
   getCatalogStripPeekStartScroll,
   getCatalogStripScrollLeftForPage,
-  resolveMobileStripPageFromScroll,
 } from '../../app/products/components/catalogStripScroll';
 import { UPCOMING_SCROLL_TARGET_TOLERANCE_PX } from './upcomingProducts.constants';
 
-/** Pagination tab indices — one tab per page (desktop / hover-capable viewports only). */
+/**
+ * Mobile/sm+ pagination tabs — always one tab per page; dot widths flex to fit one row on narrow viewports.
+ */
 export function getUpcomingVisiblePageNumbers(totalPages: number): number[] {
   return Array.from({ length: totalPages }, (_, i) => i + 1);
 }
@@ -18,7 +18,6 @@ export function getScrollLeftForElementWithin(container: HTMLDivElement, element
   return container.scrollLeft + (elementRect.left - containerRect.left);
 }
 
-/** Mobile upcoming strip — 1-based page index from scroll position. */
 export function resolveUpcomingPageFromMobileAnchors(
   container: HTMLDivElement,
   pageStartAnchors: Array<HTMLDivElement | null | undefined>,
@@ -28,11 +27,24 @@ export function resolveUpcomingPageFromMobileAnchors(
     return 1;
   }
 
-  if (container.scrollLeft >= getCatalogStripMaxScrollLeft(container) - UPCOMING_SCROLL_TARGET_TOLERANCE_PX) {
-    return totalPages;
+  const scrollLeft = container.scrollLeft;
+  let bestPage = 1;
+  let bestDistance = Number.POSITIVE_INFINITY;
+
+  for (let pageIndex = 0; pageIndex < totalPages; pageIndex += 1) {
+    const anchor = pageStartAnchors[pageIndex];
+    if (!anchor) {
+      continue;
+    }
+    const anchorScrollLeft = getScrollLeftForElementWithin(container, anchor);
+    const distance = Math.abs(scrollLeft - anchorScrollLeft);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestPage = pageIndex + 1;
+    }
   }
 
-  return resolveMobileStripPageFromScroll(container, pageStartAnchors, totalPages) + 1;
+  return bestPage;
 }
 
 export function resolveUpcomingPageFromProportionalScroll(
@@ -86,12 +98,7 @@ export function getUpcomingScrollLeftForPage(
   const pageIndex = Math.max(0, Math.min(totalPages - 1, page - 1));
 
   if (isSmUp) {
-    const anchorTarget = getCatalogStripScrollLeftForPage(
-      container,
-      pageIndex,
-      pageStartAnchors,
-      totalPages
-    );
+    const anchorTarget = getCatalogStripScrollLeftForPage(container, pageIndex, pageStartAnchors);
     if (pageStartAnchors[pageIndex]) {
       return anchorTarget;
     }

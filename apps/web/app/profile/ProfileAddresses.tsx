@@ -1,44 +1,6 @@
 import type { FormEvent } from 'react';
 import { Button, Input, Card } from '@shop/ui';
 import type { Address, UserProfile } from './types';
-import { useDeliveryLocations } from '../checkout/hooks/useDeliveryLocations';
-
-function resolveRegionSelectValue(
-  state: string | undefined,
-  deliveryLocations: Array<{ id: string; city: string }>,
-): string {
-  const normalizedState = state?.trim();
-  if (!normalizedState) {
-    return '';
-  }
-
-  const byId = deliveryLocations.find((location) => location.id === normalizedState);
-  if (byId) {
-    return byId.id;
-  }
-
-  const byCity = deliveryLocations.find(
-    (location) => location.city.toLowerCase() === normalizedState.toLowerCase(),
-  );
-  return byCity?.id ?? '';
-}
-
-function resolveRegionLabel(
-  state: string | undefined,
-  deliveryLocations: Array<{ id: string; city: string }>,
-): string {
-  const normalizedState = state?.trim();
-  if (!normalizedState) {
-    return '';
-  }
-
-  const byId = deliveryLocations.find((location) => location.id === normalizedState);
-  if (byId) {
-    return byId.city;
-  }
-
-  return normalizedState;
-}
 
 interface ProfileAddressesProps {
   profile: UserProfile | null;
@@ -71,9 +33,6 @@ export function ProfileAddresses({
   onResetForm,
   t,
 }: ProfileAddressesProps) {
-  const { deliveryLocations, loadingDeliveryLocations } = useDeliveryLocations();
-  const selectedRegion = resolveRegionSelectValue(addressForm.state, deliveryLocations);
-
   return (
     <div className="space-y-6">
       <Card className="p-6">
@@ -103,47 +62,18 @@ export function ProfileAddresses({
                 onChange={(e) => setAddressForm({ ...addressForm, addressLine1: e.target.value })}
                 required
               />
-              <div className="w-full">
-                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="profile-address-region">
-                  {t('profile.addresses.form.region')}
-                </label>
-                <select
-                  id="profile-address-region"
-                  value={selectedRegion}
-                  onChange={(event) => {
-                    const nextRegionId = event.target.value;
-                    const selectedLocation = deliveryLocations.find(
-                      (location) => location.id === nextRegionId,
-                    );
-                    setAddressForm({
-                      ...addressForm,
-                      state: nextRegionId,
-                      city: selectedLocation?.city || '',
-                    });
-                  }}
-                  disabled={loadingDeliveryLocations}
-                  required
-                  className="w-full px-4 py-2 border rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-gray-900 border-gray-300 focus:border-gray-900 disabled:bg-gray-50 disabled:cursor-not-allowed"
-                >
-                  <option value="">
-                    {loadingDeliveryLocations
-                      ? t('profile.addresses.form.loadingRegions')
-                      : t('profile.addresses.form.selectRegion')}
-                  </option>
-                  {deliveryLocations.map((location) => (
-                    <option key={location.id} value={location.id}>
-                      {location.city}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Input
+                label={t('profile.addresses.form.city')}
+                value={addressForm.city}
+                onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })}
+                required
+              />
             </div>
             <label className="flex items-center">
               <input
-                type="radio"
-                name="profile-default-address"
+                type="checkbox"
                 checked={addressForm.isDefault || false}
-                onChange={() => setAddressForm({ ...addressForm, isDefault: true })}
+                onChange={(e) => setAddressForm({ ...addressForm, isDefault: e.target.checked })}
                 className="rounded border-gray-300 text-gray-900 focus:ring-gray-900"
               />
               <span className="ml-2 text-sm text-gray-700">{t('profile.addresses.form.isDefault')}</span>
@@ -186,12 +116,9 @@ export function ProfileAddresses({
                     <p className="text-sm text-gray-700">
                       {address.addressLine1}
                     </p>
-                    {address.state ? (
-                      <p className="text-sm text-gray-700">
-                        {t('profile.addresses.form.region')}:{' '}
-                        {resolveRegionLabel(address.state, deliveryLocations)}
-                      </p>
-                    ) : null}
+                    <p className="text-sm text-gray-700">
+                      {address.city}
+                    </p>
                   </div>
                   <div className="flex gap-2 ml-4">
                     {!address.isDefault && (
