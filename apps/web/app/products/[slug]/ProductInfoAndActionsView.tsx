@@ -111,7 +111,7 @@ export function ProductInfoAndActionsView({
     : !canAddToCart && isOutOfStock
       ? t(language, 'product.outOfStock')
       : t(language, 'product.addToCart');
-  const showSizeAsterisk = showSizeSection && (!isSizeSelected || showSizeRequired);
+  const showSizeAsterisk = showSizeSection;
 
   return (
     <>

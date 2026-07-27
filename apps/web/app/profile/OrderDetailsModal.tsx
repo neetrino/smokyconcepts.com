@@ -8,7 +8,7 @@ import { getStatusColor, getPaymentStatusColor } from './utils';
 import type { OrderDetails } from './types';
 
 interface OrderDetailsModalProps {
-  selectedOrder: OrderDetails;
+  selectedOrder: OrderDetails | null;
   orderDetailsLoading: boolean;
   orderDetailsError: string | null;
   isReordering: boolean;
@@ -26,9 +26,11 @@ export function OrderDetailsModal({
   onReOrder,
   t,
 }: OrderDetailsModalProps) {
-  const orderForDisplay = selectedOrder as Order;
-  const shippingCountry = resolveShippingCountryLabel(selectedOrder.shippingAddress);
-  const orderTotalsCurrency = selectedOrder.totals?.currency ?? 'USD';
+  const orderForDisplay = selectedOrder as Order | null;
+  const shippingCountry = selectedOrder
+    ? resolveShippingCountryLabel(selectedOrder.shippingAddress)
+    : null;
+  const orderTotalsCurrency = selectedOrder?.totals?.currency ?? 'USD';
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -43,17 +45,21 @@ export function OrderDetailsModal({
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
                 {t('profile.orderDetails.title')}
-                {selectedOrder.number}
+                {selectedOrder?.number ?? ''}
               </h2>
-              <p className="text-sm text-gray-600 mt-1">
-                {t('profile.orderDetails.placedOn')}{' '}
-                {formatDisplayDate(selectedOrder.createdAt)}
-              </p>
+              {selectedOrder ? (
+                <p className="text-sm text-gray-600 mt-1">
+                  {t('profile.orderDetails.placedOn')}{' '}
+                  {formatDisplayDate(selectedOrder.createdAt)}
+                </p>
+              ) : null}
             </div>
             <div className="flex items-center gap-3">
-              <Button onClick={onReOrder} disabled={isReordering} variant="primary" size="sm">
-                {isReordering ? t('profile.orderDetails.adding') : t('profile.orderDetails.reorder')}
-              </Button>
+              {selectedOrder && !orderDetailsLoading && !orderDetailsError ? (
+                <Button onClick={onReOrder} disabled={isReordering} variant="primary" size="sm">
+                  {isReordering ? t('profile.orderDetails.adding') : t('profile.orderDetails.reorder')}
+                </Button>
+              ) : null}
               <button
                 onClick={onClose}
                 className="text-gray-400 hover:text-gray-500 focus:outline-none"
@@ -79,7 +85,7 @@ export function OrderDetailsModal({
                   {t('profile.orderDetails.close')}
                 </Button>
               </div>
-            ) : (
+            ) : selectedOrder && orderForDisplay ? (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
                   <Card className="p-6">
@@ -173,7 +179,7 @@ export function OrderDetailsModal({
                   </Card>
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>

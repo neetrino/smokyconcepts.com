@@ -17,6 +17,7 @@ import {
 } from '../hooks/useAdminLastSeen';
 import { getAdminNewBadgeLabel } from '../utils/adminNewBadgeLabel';
 import { formatAdminDateTime } from '../utils/formatAdminDate';
+import { MessageDetailsDrawer } from './components/MessageDetailsDrawer';
 
 interface ContactMessage {
   id: string;
@@ -50,10 +51,12 @@ export default function AdminMessagesPage() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'new'>('all');
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState<ContactMessagesResponse['meta'] | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [openedMessage, setOpenedMessage] = useState<ContactMessage | null>(null);
 
   const title = getText(t('admin.menu.messages'), 'admin.menu.messages', 'Messages');
   const searchPlaceholder = getText(
@@ -75,8 +78,17 @@ export default function AdminMessagesPage() {
     'Personalize',
   );
   const messageLabel = getText(t('admin.messages.message'), 'admin.messages.message', 'Message');
+  const messageDetailsTitle = getText(
+    t('admin.messages.detailsTitle'),
+    'admin.messages.detailsTitle',
+    'Message details'
+  );
+  const emailLabel = getText(t('admin.messages.email'), 'admin.messages.email', 'Email');
   const dateLabel = getText(t('admin.messages.date'), 'admin.messages.date', 'Date');
+  const closeLabel = getText(t('admin.common.close'), 'admin.common.close', 'Close');
   const noMessagesLabel = getText(t('admin.messages.empty'), 'admin.messages.empty', 'No messages found');
+  const allMessagesLabel = getText(t('admin.messages.allMessages'), 'admin.messages.allMessages', 'All');
+  const newMessagesLabel = getText(t('admin.messages.newMessages'), 'admin.messages.newMessages', 'New');
   const showingPageLabel = getText(
     t('admin.messages.showingPage'),
     'admin.messages.showingPage',
@@ -93,13 +105,13 @@ export default function AdminMessagesPage() {
   );
   const newBadgeLabel = getAdminNewBadgeLabel(t);
 
-  const { isNew: isMessageNew } = useAdminLastSeen('messages');
+  const { isNew: isMessageNew, lastSeenAt } = useAdminLastSeen('messages');
   useMarkAdminSectionSeenOnLeave('messages');
 
   useSeedAdminLastSeenBaseline(
     'messages',
     messages.map((contactMessage) => contactMessage.createdAt),
-    !loading && messages.length > 0
+    !loading && messages.length > 0 && typeFilter === 'all'
   );
 
   useEffect(() => {
@@ -111,12 +123,16 @@ export default function AdminMessagesPage() {
   const fetchMessages = useCallback(async () => {
     try {
       setLoading(true);
+      const params: Record<string, string> = {
+        page: page.toString(),
+        limit: '20',
+        search,
+      };
+      if (typeFilter === 'new') {
+        params.createdAfter = lastSeenAt ?? new Date().toISOString();
+      }
       const response = await apiClient.get<ContactMessagesResponse>('/api/v1/admin/messages', {
-        params: {
-          page: page.toString(),
-          limit: '20',
-          search,
-        },
+        params,
       });
       setMessages(response.data ?? []);
       setMeta(response.meta ?? null);
@@ -127,7 +143,7 @@ export default function AdminMessagesPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search]);
+  }, [page, search, typeFilter, lastSeenAt]);
 
   useEffect(() => {
     if (isLoggedIn && isAdmin) {
@@ -237,6 +253,36 @@ export default function AdminMessagesPage() {
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <AdminShell>
           <Card className="mb-6 border-[#dcc090]/30 bg-white/90 p-4 shadow-[0_8px_30px_rgba(18,42,38,0.06)]">
+            <div className="mb-4 inline-flex rounded-full bg-[#dcc090]/20 p-1 text-xs">
+              <button
+                type="button"
+                onClick={() => {
+                  setTypeFilter('all');
+                  setPage(1);
+                }}
+                className={`rounded-full px-3 py-1 transition-all ${
+                  typeFilter === 'all'
+                    ? 'bg-[#122a26] text-[#dcc090] shadow-sm'
+                    : 'text-[#414141]/70 hover:text-[#122a26]'
+                }`}
+              >
+                {allMessagesLabel}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setTypeFilter('new');
+                  setPage(1);
+                }}
+                className={`rounded-full px-3 py-1 transition-all ${
+                  typeFilter === 'new'
+                    ? 'bg-[#122a26] text-[#dcc090] shadow-sm'
+                    : 'text-[#414141]/70 hover:text-[#122a26]'
+                }`}
+              >
+                {newMessagesLabel}
+              </button>
+            </div>
             <form
               onSubmit={(event) => {
                 event.preventDefault();
@@ -306,17 +352,18 @@ export default function AdminMessagesPage() {
                         {phoneLabel}
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#dcc090]">
-                        {messageLabel}
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#dcc090]">
                         {dateLabel}
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#dcc090]/20 bg-white">
                     {messages.map((contactMessage) => (
-                      <tr key={contactMessage.id} className="align-top hover:bg-[#dcc090]/10">
-                        <td className="px-3 py-4">
+                      <tr
+                        key={contactMessage.id}
+                        className="cursor-pointer align-top hover:bg-[#dcc090]/10"
+                        onClick={() => setOpenedMessage(contactMessage)}
+                      >
+                        <td className="px-3 py-4" onClick={(event) => event.stopPropagation()}>
                           <input
                             type="checkbox"
                             aria-label={getText(
@@ -352,9 +399,6 @@ export default function AdminMessagesPage() {
                           </span>
                         </td>
                         <td className="px-4 py-4 text-sm text-[#122a26]">{contactMessage.subject}</td>
-                        <td className="max-w-[420px] px-4 py-4 text-sm text-[#122a26]">
-                          <p className="whitespace-pre-wrap break-words">{contactMessage.message}</p>
-                        </td>
                         <td className="whitespace-nowrap px-4 py-4 text-sm text-[#414141]/70">
                           {formatAdminDateTime(contactMessage.createdAt)}
                         </td>
@@ -394,6 +438,23 @@ export default function AdminMessagesPage() {
               </div>
             ) : null}
           </Card>
+
+          <MessageDetailsDrawer
+            message={openedMessage}
+            labels={{
+              title: messageDetailsTitle,
+              sender: senderLabel,
+              email: emailLabel,
+              phone: phoneLabel,
+              source: sourceLabel,
+              sourceContact: sourceContactLabel,
+              sourcePersonalize: sourcePersonalizeLabel,
+              message: messageLabel,
+              date: dateLabel,
+              close: closeLabel,
+            }}
+            onClose={() => setOpenedMessage(null)}
+          />
         </AdminShell>
       </div>
     </div>

@@ -230,7 +230,9 @@ export const CATALOG_STRIP_PAGINATION_DOT_CLASS_NAME =
 /** `/products` horizontal strip — card flex row. */
 export const CATALOG_PRODUCTS_PAGE_STRIP_FLEX_CLASS_NAME = `flex min-w-max items-stretch max-sm:pr-5 max-lg:pr-4 lg:pr-[7.5rem] ${CATALOG_MOBILE_STRIP_FLEX_SNAP_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCT_CARD_MOBILE_STRIP_GAP_CLASS_NAME} ${CATALOG_PRODUCTS_PAGE_DESKTOP_STRIP_HERO_HORIZONTAL_BLEED_CLASS_NAME}`;
 
-/** `/products` strip — slightly smaller hero on positions 2 and 5 in each group of six (0-based: 1, 4). */
+/**
+ * Legacy stagger helpers (home trending historically). Catalog strips now use uniform scale (1).
+ */
 export const PRODUCTS_CATALOG_PAGE_SMALLER_IMAGE_SCALE_MULTIPLIER = 0.85;
 
 /** Home trending — same stagger positions, legacy scale from before catalog strip tuning. */
@@ -240,9 +242,10 @@ export function isProductsCatalogPageSmallerImageCard(cardIndex: number): boolea
   return cardIndex % 6 === 1 || cardIndex % 6 === 4;
 }
 
-/** Catalog horizontal strip mobile — cards 2 & 5: trim top height while keeping hero bottoms aligned. */
+/** Home strip mobile — cards 2 & 5: trim top height while keeping hero bottoms aligned. */
 export const CATALOG_STRIP_MOBILE_SMALLER_IMAGE_SCALE_MULTIPLIER = 0.94;
 
+/** Home / related strips only — `/products` catalog always passes scale `1`. */
 export function getCatalogStripMobileImageScaleMultiplier(cardIndex: number, isSmUp: boolean): number {
   if (isSmUp) {
     return getProductsCatalogPageSmallerImageScaleMultiplier(cardIndex);

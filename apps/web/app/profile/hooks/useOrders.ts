@@ -43,9 +43,10 @@ export function useOrders({
   const [orderDetailsError, setOrderDetailsError] = useState<string | null>(null);
   const [isReordering, setIsReordering] = useState(false);
 
-  // Lock body scroll when order modal is open
+  // Lock body scroll when order modal is open (loading, error, or loaded)
   useEffect(() => {
-    if (selectedOrder) {
+    const isModalOpen = orderDetailsLoading || orderDetailsError !== null || selectedOrder !== null;
+    if (isModalOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -53,7 +54,7 @@ export function useOrders({
     return () => {
       document.body.style.overflow = '';
     };
-  }, [selectedOrder]);
+  }, [selectedOrder, orderDetailsLoading, orderDetailsError]);
 
   const loadOrders = useCallback(async () => {
     try {
@@ -86,15 +87,23 @@ export function useOrders({
     }
   }, [isLoggedIn, authLoading, activeTab, loadOrders]);
 
+  const closeOrderDetails = useCallback(() => {
+    setSelectedOrder(null);
+    setOrderDetailsError(null);
+    setOrderDetailsLoading(false);
+  }, []);
+
   const loadOrderDetails = async (orderNumber: string) => {
     try {
       setOrderDetailsLoading(true);
       setOrderDetailsError(null);
+      setSelectedOrder(null);
       const data = await apiClient.get<OrderDetails>(`/api/v1/orders/${orderNumber}`);
       setSelectedOrder(data);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       console.error('Error loading order details:', err);
+      setSelectedOrder(null);
       setOrderDetailsError(errorMessage || t('profile.orderDetails.failedToLoad'));
     } finally {
       setOrderDetailsLoading(false);
@@ -167,6 +176,7 @@ export function useOrders({
     isReordering,
     handleOrderClick,
     handleReOrder,
+    closeOrderDetails,
   };
 }
 

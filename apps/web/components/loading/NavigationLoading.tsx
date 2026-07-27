@@ -6,10 +6,12 @@ import { useTranslation } from '../../lib/i18n-client';
 import { PageLoadingOverlay } from './PageLoadingOverlay';
 import { shouldShowNavigationLoadingForAnchor } from './shouldShowNavigationLoadingForAnchor';
 
+/** Clear overlay if URL never changed (preventDefault / cancelled soft-nav). */
+const STUCK_NAVIGATION_LOADING_MS = 400;
+
 /**
  * Shows the shared glass overlay while navigating between pathnames.
- * Hides in the same render as the destination pathname becomes active
- * (no fixed timer) so page-level loaders are not stacked on top.
+ * Hides when the destination pathname becomes active (no fixed minimum duration).
  */
 export function NavigationLoading() {
   const pathname = usePathname();
@@ -38,12 +40,23 @@ export function NavigationLoading() {
         return;
       }
 
+      let nextPathname: string;
       try {
-        const nextUrl = new URL(anchor.href, window.location.href);
-        setPendingPathname(nextUrl.pathname);
+        nextPathname = new URL(anchor.href, window.location.href).pathname;
       } catch {
         return;
       }
+
+      // Must set in capture (before Next.js Link preventDefault) so real navigations show overlay.
+      const pathnameAtClick = window.location.pathname;
+      setPendingPathname(nextPathname);
+
+      window.setTimeout(() => {
+        if (window.location.pathname !== pathnameAtClick) {
+          return;
+        }
+        setPendingPathname((current) => (current === nextPathname ? null : current));
+      }, STUCK_NAVIGATION_LOADING_MS);
     };
 
     const onPopState = () => {

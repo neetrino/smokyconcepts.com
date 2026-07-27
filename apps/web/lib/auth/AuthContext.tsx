@@ -1,6 +1,14 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  ReactNode,
+  useCallback,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient, ApiError } from '../api-client';
 import { clearLegacyAuthStorage, migrateLegacyAuthSession } from '../api-client/auth-utils';
@@ -53,10 +61,16 @@ async function fetchCurrentUser(): Promise<User | null> {
   }
 }
 
+function userHasRoles(user: User | null): boolean {
+  return Array.isArray(user?.roles) && user.roles.length > 0;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  /** Prevents infinite /profile refetch when roles stay empty after one refresh. */
+  const rolesRefreshAttemptedRef = useRef(false);
 
   const refreshSession = useCallback(async () => {
     const profile = await fetchCurrentUser();
@@ -195,12 +209,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!user?.id) {
+      rolesRefreshAttemptedRef.current = false;
       return;
     }
 
-    if (!user.roles || !Array.isArray(user.roles) || user.roles.length === 0) {
-      void refreshSession();
+    if (userHasRoles(user) || rolesRefreshAttemptedRef.current) {
+      return;
     }
+
+    rolesRefreshAttemptedRef.current = true;
+    void refreshSession();
   }, [user, refreshSession]);
 
   const value: AuthContextType = {

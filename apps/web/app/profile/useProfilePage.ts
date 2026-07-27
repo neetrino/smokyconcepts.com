@@ -167,6 +167,7 @@ export function useProfilePage() {
     isReordering: orders.isReordering,
     handleOrderClick: orders.handleOrderClick,
     handleReOrder: orders.handleReOrder,
+    closeOrderDetails: orders.closeOrderDetails,
 
     // Translation
     t,

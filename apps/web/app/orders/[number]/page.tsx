@@ -12,29 +12,63 @@ import { ShippingAddress } from './components/ShippingAddress';
 import { OrderSummary } from './components/OrderSummary';
 import type { Order } from './types';
 
+function resolveOrderNumberParam(value: string | string[] | undefined): string | null {
+  if (typeof value === 'string' && value.trim() !== '') {
+    return value.trim();
+  }
+  if (Array.isArray(value) && typeof value[0] === 'string' && value[0].trim() !== '') {
+    return value[0].trim();
+  }
+  return null;
+}
+
 export default function OrderPage() {
   const params = useParams();
   const { t } = useTranslation();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const orderNumber = resolveOrderNumberParam(params.number);
 
   useEffect(() => {
-    void fetchOrder();
-  }, [params.number]);
-
-  async function fetchOrder() {
-    try {
-      setLoading(true);
-      const response = await apiClient.get<Order>(`/api/v1/orders/${params.number}`);
-      setOrder(response);
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : t('orders.notFound.description');
-      setError(errorMessage);
-    } finally {
+    if (!orderNumber) {
+      setOrder(null);
+      setError(t('orders.notFound.description'));
       setLoading(false);
+      return;
     }
-  }
+
+    let cancelled = false;
+
+    async function fetchOrder() {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await apiClient.get<Order>(`/api/v1/orders/${orderNumber}`);
+        if (cancelled) {
+          return;
+        }
+        setOrder(response);
+      } catch (err: unknown) {
+        if (cancelled) {
+          return;
+        }
+        const errorMessage = err instanceof Error ? err.message : t('orders.notFound.description');
+        setOrder(null);
+        setError(errorMessage);
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void fetchOrder();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [orderNumber, t]);
 
   if (loading) {
     return <LoadingState />;

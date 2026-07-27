@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { db } from "@white-shop/db";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 
@@ -36,18 +37,30 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(requestedLimit, MAX_LIMIT);
     const skip = (page - 1) * limit;
     const search = (searchParams.get("search") ?? "").trim();
+    const createdAfterRaw = (searchParams.get("createdAfter") ?? "").trim();
+    const createdAfterDate = createdAfterRaw.length > 0 ? new Date(createdAfterRaw) : null;
+    const createdAfter =
+      createdAfterDate && Number.isFinite(createdAfterDate.getTime()) ? createdAfterDate : null;
 
-    const whereClause =
-      search.length > 0
-        ? {
-            OR: [
-              { name: { contains: search, mode: "insensitive" as const } },
-              { email: { contains: search, mode: "insensitive" as const } },
-              { subject: { contains: search, mode: "insensitive" as const } },
-              { message: { contains: search, mode: "insensitive" as const } },
-            ],
-          }
-        : {};
+    const andConditions: Prisma.ContactMessageWhereInput[] = [];
+
+    if (search.length > 0) {
+      andConditions.push({
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { email: { contains: search, mode: "insensitive" } },
+          { subject: { contains: search, mode: "insensitive" } },
+          { message: { contains: search, mode: "insensitive" } },
+        ],
+      });
+    }
+
+    if (createdAfter) {
+      andConditions.push({ createdAt: { gt: createdAfter } });
+    }
+
+    const whereClause: Prisma.ContactMessageWhereInput =
+      andConditions.length === 0 ? {} : { AND: andConditions };
 
     const [messages, total] = await Promise.all([
       db.contactMessage.findMany({

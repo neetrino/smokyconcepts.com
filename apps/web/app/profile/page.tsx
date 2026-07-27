@@ -68,12 +68,12 @@ function ProfilePageContent() {
     setOrdersPage,
     ordersMeta,
     selectedOrder,
-    setSelectedOrder,
     orderDetailsLoading,
     orderDetailsError,
     isReordering,
     handleOrderClick,
     handleReOrder,
+    closeOrderDetails,
   } = useProfilePage();
 
   if (authLoading || loading) {
@@ -248,13 +248,13 @@ function ProfilePageContent() {
             />
 
             {/* Order Details Modal */}
-            {selectedOrder && (
+            {(orderDetailsLoading || orderDetailsError || selectedOrder) && (
               <OrderDetailsModal
                 selectedOrder={selectedOrder}
                 orderDetailsLoading={orderDetailsLoading}
                 orderDetailsError={orderDetailsError}
                 isReordering={isReordering}
-                onClose={() => setSelectedOrder(null)}
+                onClose={closeOrderDetails}
                 onReOrder={handleReOrder}
                 t={t}
               />
