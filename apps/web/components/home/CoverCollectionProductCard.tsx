@@ -9,9 +9,11 @@ const COVER_COLLECTION_MOBILE_PANEL_OVERLAP_CLASS = 'max-sm:pt-[clamp(1.25rem,6v
 const COVER_COLLECTION_MOBILE_LINK_MARGIN_TOP_CLASS = 'max-sm:mt-1';
 /** Mobile: raise only the white panel; image compensates downward to stay put. */
 const COVER_COLLECTION_MOBILE_BG_NUDGE_UP_CLASS = 'max-sm:-mt-4';
-/** Image overlap includes BG nudge compensation so the hero stays fixed. */
+/** Image overlap includes BG nudge compensation so the hero stays fixed.
+ * Below 384px: lower the hero a bit so it does not sit too high on narrow tiles.
+ */
 const COVER_COLLECTION_MOBILE_IMAGE_OVERLAP_CLASS =
-  'max-sm:-top-5 max-sm:-translate-y-11 max-[360px]:-top-4 max-[360px]:-translate-y-9';
+  'max-sm:-top-7 max-sm:-translate-y-[3.25rem] max-[383px]:-top-4 max-[383px]:-translate-y-9';
 /** Mobile: nudge category title down inside the white panel. */
 const COVER_COLLECTION_MOBILE_TITLE_OFFSET_CLASS = 'max-sm:translate-y-4';
 /** Desktop: card height follows content so the grid row does not add empty space below the title. */
@@ -36,9 +38,10 @@ const COVER_COLLECTION_MOBILE_CARD_MIN_HEIGHT_CLASS =
 /**
  * Desktop: product hero transform (uniform scale avoids raster stretch).
  * Mobile: image slot slightly above Figma Mob `4345:2059` baseline (`max-sm:`).
+ * Image-only nudge — white panel position stays fixed.
  */
 const COVER_COLLECTION_PRODUCT_IMAGE_TRANSFORM_CLASS =
-  'origin-bottom max-sm:translate-y-0 max-sm:scale-[1.16] translate-y-4 scale-[1.16] sm:translate-y-[2rem] sm:scale-[1.2] sm:group-hover:translate-y-[1.5rem] sm:group-hover:scale-[1.28] max-[360px]:scale-[1.06] min-[390px]:max-sm:scale-[1.2]';
+  'origin-bottom max-sm:translate-y-0 max-sm:scale-[1.16] translate-y-4 scale-[1.16] sm:translate-y-[0.5rem] sm:scale-[1.2] sm:group-hover:translate-y-0 sm:group-hover:scale-[1.28] max-[360px]:scale-[1.06] min-[390px]:max-sm:scale-[1.2]';
 
 const TITLE_MIN_HEIGHT_MOBILE = 'min-h-[2.75rem]';
 const COVER_COLLECTION_COMPACT_MOBILE_TITLE_MIN_HEIGHT_CLASS = 'max-[360px]:min-h-[2.375rem]';
