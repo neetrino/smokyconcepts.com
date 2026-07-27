@@ -22,8 +22,6 @@ interface CultureVotingCardProps {
   variantTone?: CultureVotingVariantTone;
   showEarlyAccess?: boolean;
   earlyAccessLabel?: string;
-  /** Middle "Compact" card — slightly smaller hero inside the shared box. */
-  compactHero?: boolean;
 }
 
 type CultureVotingVariantTone = 'special' | 'classic' | 'atelier';
@@ -64,26 +62,17 @@ const CULTURE_VOTING_IMAGE_BOX_CLASS_NAME =
 const CULTURE_HERO_IMAGE_OBJECT_CLASS_NAME = 'object-contain object-bottom';
 /**
  * Keep extra breathing room on mobile so edge embossing is not clipped inside voting cards.
- * Desktop keeps the existing catalog-aligned scale.
+ * Desktop keeps the existing catalog-aligned scale. All cards use the same hero scale.
  */
 const CULTURE_MOBILE_HERO_IMAGE_SCALE = 0.9;
-const CULTURE_MOBILE_COMPACT_HERO_IMAGE_SCALE = 0.84;
-const CULTURE_DESKTOP_COMPACT_HERO_IMAGE_SCALE = 0.88;
 
-function getCultureHeroImageTransformStyle(
-  compactHero: boolean,
-  isDesktopViewport: boolean,
-): {
+function getCultureHeroImageTransformStyle(isDesktopViewport: boolean): {
   transform: string;
   transformOrigin: string;
 } {
   const scale = isDesktopViewport
-    ? compactHero
-      ? CULTURE_DESKTOP_COMPACT_HERO_IMAGE_SCALE
-      : PRODUCTS_CATALOG_PAGE_DESIRED_IMAGE_SCALE
-    : compactHero
-      ? CULTURE_MOBILE_COMPACT_HERO_IMAGE_SCALE
-      : CULTURE_MOBILE_HERO_IMAGE_SCALE;
+    ? PRODUCTS_CATALOG_PAGE_DESIRED_IMAGE_SCALE
+    : CULTURE_MOBILE_HERO_IMAGE_SCALE;
   return {
     transform: `scale(${scale})`,
     transformOrigin: 'bottom center',
@@ -251,7 +240,6 @@ export function CultureVotingCard({
   variantTone = 'classic',
   showEarlyAccess = false,
   earlyAccessLabel = 'Early Access',
-  compactHero = false,
 }: CultureVotingCardProps) {
   const [isDesktopViewport, setIsDesktopViewport] = useState(false);
 
@@ -290,7 +278,7 @@ export function CultureVotingCard({
     pending: isLikePending,
     onToggleLike,
   };
-  const heroImageTransformStyle = getCultureHeroImageTransformStyle(compactHero, isDesktopViewport);
+  const heroImageTransformStyle = getCultureHeroImageTransformStyle(isDesktopViewport);
 
   return (
     <div

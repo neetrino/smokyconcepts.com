@@ -8,7 +8,6 @@ import {
   CATALOG_PRODUCTS_PAGE_DESKTOP_HERO_PULL_UP_CLASS_NAME,
   getCatalogProductCardImageScaleBoost,
   getCatalogStripMobileImageFrameClassName,
-  getCatalogStripMobileImageScaleMultiplier,
   PRODUCTS_CATALOG_LANDING_MOBILE_IMAGE_BOTTOM_MARGIN_CLASS_NAME,
 } from './catalogProductCardMobilePresentation';
 import type { CatalogProduct } from './catalogProductLabels';
@@ -86,7 +85,7 @@ export function CatalogStripProductCard({
       categoryLabel={getCategoryLabel(product, sectionLabel)}
       buyButtonLabel={resolveStripBuyButtonLabel(ctaPreset, t)}
       catalogBuyOnlyCta
-      productsCatalogPageScaleMultiplier={getCatalogStripMobileImageScaleMultiplier(index, isSmUp)}
+      productsCatalogPageScaleMultiplier={1}
       imageNudgeDown={shouldNudgeCatalogProductImage(index)}
       imageScaleBoost={getCatalogProductCardImageScaleBoost(index)}
       imageFrameClassName={getCatalogStripMobileImageFrameClassName(index)}
