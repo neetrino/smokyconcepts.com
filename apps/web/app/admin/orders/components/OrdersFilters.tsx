@@ -124,15 +124,6 @@ export function OrdersFilters({
           </button>
           <button
             type="button"
-            onClick={() => handleOrderTypeChange('new')}
-            className={`px-3 py-1 rounded-full transition-all ${
-              orderTypeFilter === 'new' ? 'bg-[#122a26] text-[#dcc090] shadow-sm' : 'text-[#414141]/70 hover:text-[#122a26]'
-            }`}
-          >
-            {t('admin.orders.newOrders')}
-          </button>
-          <button
-            type="button"
             onClick={() => handleOrderTypeChange('early')}
             className={`px-3 py-1 rounded-full transition-all ${
               orderTypeFilter === 'early' ? 'bg-[#122a26] text-[#dcc090] shadow-sm' : 'text-[#414141]/70 hover:text-[#122a26]'

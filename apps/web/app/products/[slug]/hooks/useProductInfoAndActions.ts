@@ -14,12 +14,8 @@ import {
   isOutOfStockProductLabel,
   matchVariantSizeFromCatalogTitle,
 } from '../utils/productInfoAndActions.helpers';
-import {
-  getOptionValues,
-  normalizeVersionToken,
-  variantHasColor,
-  variantHasOptionValue,
-} from '../utils/variant-helpers';
+import { isCatalogSizeItemSelectable as resolveCatalogSizeItemSelectable } from '../utils/is-catalog-size-item-selectable';
+import { getOptionValues } from '../utils/variant-helpers';
 import { deriveProductAttributeSectionOrder } from '../utils/derive-product-attribute-section-order';
 import type { ProductInfoAndActionsProps, ProductTabKey } from '../productInfoAndActions.types';
 
@@ -93,53 +89,26 @@ export function useProductInfoAndActions({
     product.sizeCatalogCategoryTitles?.forEach((title) => {
       values.add(normalizeCatalogSizeValue(title));
     });
+    product.variants.forEach((variant) => {
+      getOptionValues(variant.options, 'size').forEach((sizeValue) => {
+        values.add(normalizeCatalogSizeValue(sizeValue));
+      });
+      getOptionValues(variant.options, '__size_catalog_category_title__').forEach((title) => {
+        values.add(normalizeCatalogSizeValue(title));
+      });
+    });
     values.delete('');
     return values;
-  }, [product.sizeCatalogCategoryTitles, sizeOptions]);
+  }, [product.sizeCatalogCategoryTitles, product.variants, sizeOptions]);
 
   const isCatalogSizeItemSelectable = useCallback(
-    (item: SizeCatalogItemDto) => {
-      const normalizedCategoryTitle = normalizeCatalogSizeValue(item.categoryTitle);
-      if (!normalizedCategoryTitle) {
-        return false;
-      }
-      if (
-        selectableCatalogSizeValues.size > 0 &&
-        !selectableCatalogSizeValues.has(normalizedCategoryTitle)
-      ) {
-        return false;
-      }
-
-      const sizeMatchedVariants = product.variants.filter((variant) =>
-        variantHasOptionValue(variant, 'size', normalizedCategoryTitle)
-      );
-      if (sizeMatchedVariants.length === 0) {
-        return selectableCatalogSizeValues.size === 0;
-      }
-
-      const colorMatchedVariants =
-        selectedColor !== null
-          ? sizeMatchedVariants.filter((variant) => variantHasColor(variant, selectedColor))
-          : [];
-      const candidateVariants =
-        colorMatchedVariants.length > 0 ? colorMatchedVariants : sizeMatchedVariants;
-
-      const normalizedVersion = normalizeVersionToken(item.version);
-      if (!normalizedVersion) {
-        return true;
-      }
-
-      const hasAnyVersionInCandidates = candidateVariants.some(
-        (variant) => getOptionValues(variant.options, 'size_version').length > 0
-      );
-      if (!hasAnyVersionInCandidates) {
-        return true;
-      }
-
-      return candidateVariants.some((variant) =>
-        variantHasOptionValue(variant, 'size_version', normalizedVersion)
-      );
-    },
+    (item: SizeCatalogItemDto) =>
+      resolveCatalogSizeItemSelectable({
+        item,
+        variants: product.variants,
+        selectableCatalogSizeValues,
+        selectedColor,
+      }),
     [product.variants, selectableCatalogSizeValues, selectedColor]
   );
 

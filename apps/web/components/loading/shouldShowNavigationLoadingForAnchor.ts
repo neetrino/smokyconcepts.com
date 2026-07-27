@@ -22,6 +22,10 @@ export function shouldShowNavigationLoadingForAnchor(
   if (anchor.hasAttribute('download')) {
     return false;
   }
+  // Opt out for in-page actions that use <Link> + preventDefault (e.g. order modal).
+  if (anchor.hasAttribute('data-no-navigation-loading')) {
+    return false;
+  }
 
   const href = anchor.getAttribute('href');
   if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) {

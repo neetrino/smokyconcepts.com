@@ -90,6 +90,7 @@ export function ProfileOrders({
             key={order.id}
             href={`/orders/${order.number}`}
             onClick={(e) => onOrderClick(order.number, e)}
+            data-no-navigation-loading=""
             className="block border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-md transition-all cursor-pointer"
           >
             <div className="flex items-start justify-between">

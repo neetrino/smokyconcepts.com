@@ -62,7 +62,9 @@ function CatalogSizeCard({
             ? 'border-[2px] border-solid border-[#dcc090] shadow-none'
             : 'border border-transparent shadow-[0px_2px_8px_rgba(0,0,0,0.06)]'
         } ${
-          selectable ? '' : 'cursor-not-allowed opacity-70'
+          selectable
+            ? ''
+            : 'cursor-not-allowed opacity-80'
         }`}
         aria-disabled={!selectable}
       >

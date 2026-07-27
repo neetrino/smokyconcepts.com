@@ -159,6 +159,7 @@ export function ProfileDashboard({
                 key={order.id}
                 href={`/orders/${order.number}`}
                 onClick={(e) => onOrderClick(order.number, e)}
+                data-no-navigation-loading=""
                 className="block cursor-pointer rounded-lg border border-[#dcc090]/25 bg-white/70 p-4 transition-colors hover:border-[#dcc090] hover:bg-[#dcc090]/10"
               >
                 <div className="flex items-start justify-between">

@@ -86,10 +86,6 @@ export function OrderDetailsTotals({
             <span>-{formatOrderSummaryUsd(summary.discountUsd, displayCurrency)}</span>
           </div>
         )}
-        <div className="flex justify-between text-sm text-gray-700">
-          <span>{t('orders.orderSummary.tax')}</span>
-          <span>{formatOrderSummaryUsd(summary.taxUsd, displayCurrency)}</span>
-        </div>
         <div className="border-t border-gray-200 pt-3 mt-3">
           <div className="flex justify-between text-base font-bold text-gray-900">
             <span>{t('orders.orderSummary.total')}</span>
