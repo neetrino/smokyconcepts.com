@@ -3,18 +3,21 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { CATALOG_SECTION_PAGE_SIZE, type CatalogProduct } from '../catalogProductLabels';
 import {
+  applyCatalogStripPageZeroScroll,
   getCatalogStripMaxScrollLeft,
   getCatalogStripPeekStartScroll,
   getCatalogStripScrollLeftForPage,
   resolveMobileStripPageFromScroll,
+  restoreCatalogStripScrollLeft,
   scrollMobileStripToPageAnchor,
+  subscribeCatalogStripViewportResize,
 } from '../catalogStripScroll';
 import {
   CATALOG_MOBILE_STRIP_PROGRAMMATIC_SCROLL_RELEASE_MS,
   CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE,
   CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS,
 } from '../catalogProductCardMobilePresentation';
-import { CATALOG_STRIP_PEEK_MEDIA_QUERY, SECTION_ORDER } from '../productsCatalogView.constants';
+import { SECTION_ORDER } from '../productsCatalogView.constants';
 import {
   clearSectionScrollSettleTimers,
   waitForSectionScrollToSettle,
@@ -46,7 +49,10 @@ export function useProductsCatalogSectionScroll({
   const sectionScrollSettleRafRef = useRef<Record<string, number | null>>({});
   const sectionScrollSettleTimerRef = useRef<Record<string, ReturnType<typeof setTimeout> | null>>({});
   const sectionScrollEndCleanupRef = useRef<Record<string, () => void>>({});
+  const sectionSavedScrollLeftRef = useRef<Record<string, number>>({});
   const [sectionPages, setSectionPages] = useState<Record<string, number>>({});
+  const sectionPagesRef = useRef(sectionPages);
+  sectionPagesRef.current = sectionPages;
 
   useEffect(() => {
     setSectionPages((currentPages) => {
@@ -111,14 +117,11 @@ export function useProductsCatalogSectionScroll({
       if (element) {
         element.scrollLeft = 0;
       }
+      sectionSavedScrollLeftRef.current[title] = 0;
     }
   }, [cardsPerPage, catalogStripSectionTitles]);
 
   const applyStripPeekStartScroll = useCallback(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
     for (const title of catalogStripSectionTitles) {
       if ((sectionItemsByTitle[title]?.length ?? 0) === 0) {
         continue;
@@ -129,14 +132,44 @@ export function useProductsCatalogSectionScroll({
         continue;
       }
 
-      if (!isSmUp || !window.matchMedia(CATALOG_STRIP_PEEK_MEDIA_QUERY).matches) {
-        element.scrollLeft = 0;
+      sectionSavedScrollLeftRef.current[title] = applyCatalogStripPageZeroScroll(element, isSmUp);
+    }
+  }, [catalogStripSectionTitles, isSmUp, sectionItemsByTitle]);
+
+  const restoreStripScrollAfterViewportChange = useCallback(() => {
+    for (const title of catalogStripSectionTitles) {
+      const itemCount = sectionItemsByTitle[title]?.length ?? 0;
+      if (itemCount === 0) {
         continue;
       }
 
-      element.scrollLeft = getCatalogStripPeekStartScroll(element);
+      const element = sectionScrollRefs.current[title];
+      if (!element) {
+        continue;
+      }
+
+      const totalPages = Math.max(1, Math.ceil(itemCount / cardsPerPage));
+      const pageIndex = Math.min(sectionPagesRef.current[title] ?? 0, totalPages - 1);
+      const anchors = sectionPageStartRefs.current[title] ?? [];
+
+      if (pageIndex <= 0) {
+        sectionSavedScrollLeftRef.current[title] = applyCatalogStripPageZeroScroll(element, isSmUp);
+        continue;
+      }
+
+      if (!isSmUp) {
+        sectionSavedScrollLeftRef.current[title] = scrollMobileStripToPageAnchor(
+          element,
+          anchors[pageIndex]
+        );
+        continue;
+      }
+
+      const target = getCatalogStripScrollLeftForPage(element, pageIndex, anchors, totalPages);
+      element.scrollLeft = target;
+      sectionSavedScrollLeftRef.current[title] = target;
     }
-  }, [catalogStripSectionTitles, isSmUp, sectionItemsByTitle]);
+  }, [cardsPerPage, catalogStripSectionTitles, isSmUp, sectionItemsByTitle]);
 
   useLayoutEffect(() => {
     applyStripPeekStartScroll();
@@ -147,9 +180,20 @@ export function useProductsCatalogSectionScroll({
   }, [applyStripPeekStartScroll]);
 
   useEffect(() => {
-    window.addEventListener('resize', applyStripPeekStartScroll);
-    return () => window.removeEventListener('resize', applyStripPeekStartScroll);
-  }, [applyStripPeekStartScroll]);
+    return subscribeCatalogStripViewportResize({
+      onHeightOnlyResize: () => {
+        for (const title of catalogStripSectionTitles) {
+          const element = sectionScrollRefs.current[title];
+          const savedLeft = sectionSavedScrollLeftRef.current[title];
+          if (!element || savedLeft === undefined) {
+            continue;
+          }
+          restoreCatalogStripScrollLeft(element, savedLeft);
+        }
+      },
+      onWidthChange: restoreStripScrollAfterViewportChange,
+    });
+  }, [catalogStripSectionTitles, restoreStripScrollAfterViewportChange]);
 
   const scrollSettleRefs = {
     programmatic: sectionProgrammaticScrollRef.current,
@@ -202,6 +246,7 @@ export function useProductsCatalogSectionScroll({
         if (isLastPage) {
           container.scrollTo({ left: targetScrollLeft, behavior: 'auto' });
         }
+        sectionSavedScrollLeftRef.current[title] = targetScrollLeft;
         window.setTimeout(() => {
           sectionProgrammaticScrollRef.current[title] = false;
         }, CATALOG_MOBILE_STRIP_PROGRAMMATIC_SCROLL_RELEASE_MS);
@@ -216,6 +261,7 @@ export function useProductsCatalogSectionScroll({
           left: targetScrollLeft,
           behavior: 'smooth',
         });
+        sectionSavedScrollLeftRef.current[title] = targetScrollLeft;
         waitForSectionScrollToSettle(title, container, targetScrollLeft, scrollSettleRefs);
       }
     }
@@ -235,7 +281,13 @@ export function useProductsCatalogSectionScroll({
     const container = sectionScrollRefs.current[title];
     const section = sections.find((item) => item.title === title);
 
-    if (!container || !section || section.totalPages <= 1) {
+    if (!container || !section) {
+      return;
+    }
+
+    sectionSavedScrollLeftRef.current[title] = container.scrollLeft;
+
+    if (section.totalPages <= 1) {
       return;
     }
 

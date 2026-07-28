@@ -171,3 +171,60 @@ export function getCatalogStripPeekStartScroll(container: HTMLElement): number {
 
   return Math.min(halfCard, maxScroll);
 }
+
+/** Page 0 scroll: mobile flush start, sm–lg peek offset when the peek media query matches. */
+export function applyCatalogStripPageZeroScroll(container: HTMLElement, isSmUp: boolean): number {
+  if (typeof window === 'undefined') {
+    return 0;
+  }
+
+  if (!isSmUp || !window.matchMedia(CATALOG_STRIP_PEEK_MEDIA_QUERY).matches) {
+    container.scrollLeft = 0;
+    return 0;
+  }
+
+  const peekStart = getCatalogStripPeekStartScroll(container);
+  container.scrollLeft = peekStart;
+  return peekStart;
+}
+
+/** Re-apply a remembered scrollLeft after layout thrash (clamped to the live max). */
+export function restoreCatalogStripScrollLeft(
+  container: HTMLElement,
+  savedLeft: number,
+  tolerancePx: number = CATALOG_SCROLL_TARGET_TOLERANCE_PX
+): void {
+  const maxScrollLeft = getCatalogStripMaxScrollLeft(container);
+  const clampedLeft = Math.min(Math.max(0, savedLeft), maxScrollLeft);
+  if (Math.abs(container.scrollLeft - clampedLeft) > tolerancePx) {
+    container.scrollLeft = clampedLeft;
+  }
+}
+
+/**
+ * Mobile URL-bar show/hide fires `resize` with height-only change. Call `onHeightOnlyResize`
+ * for those; `onWidthChange` only when `innerWidth` actually changes.
+ */
+export function subscribeCatalogStripViewportResize(handlers: {
+  onHeightOnlyResize: () => void;
+  onWidthChange: () => void;
+}): () => void {
+  if (typeof window === 'undefined') {
+    return () => {};
+  }
+
+  let lastWidth = window.innerWidth;
+
+  const handleResize = () => {
+    const nextWidth = window.innerWidth;
+    if (lastWidth === nextWidth) {
+      requestAnimationFrame(handlers.onHeightOnlyResize);
+      return;
+    }
+    lastWidth = nextWidth;
+    handlers.onWidthChange();
+  };
+
+  window.addEventListener('resize', handleResize);
+  return () => window.removeEventListener('resize', handleResize);
+}

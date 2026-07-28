@@ -35,11 +35,13 @@ import {
   subscribeCatalogProductsSmViewport,
 } from '../app/products/components/catalogProductCardMobilePresentation';
 import {
+  applyCatalogStripPageZeroScroll,
   CATALOG_SCROLL_TARGET_TOLERANCE_PX,
-  CATALOG_STRIP_PEEK_MEDIA_QUERY,
   getCatalogStripPeekStartScroll,
   resolveMobileStripPageFromScroll,
+  restoreCatalogStripScrollLeft,
   scrollMobileStripToPageAnchor,
+  subscribeCatalogStripViewportResize,
 } from '../app/products/components/catalogStripScroll';
 import { HomeActionButton } from './home/HomeActionButton';
 
@@ -59,6 +61,9 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
   const scrollIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollEndCleanupRef = useRef<(() => void) | null>(null);
   const programmaticScrollRef = useRef(false);
+  const savedScrollLeftRef = useRef(0);
+  const currentPageRef = useRef(currentPage);
+  currentPageRef.current = currentPage;
   const { products, loading } = useRelatedProducts({ categorySlug, currentProductId, language });
 
   const isSmUp = useSyncExternalStore(
@@ -97,13 +102,38 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
       return;
     }
 
-    if (!isSmUp || !window.matchMedia(CATALOG_STRIP_PEEK_MEDIA_QUERY).matches) {
-      container.scrollLeft = 0;
+    savedScrollLeftRef.current = applyCatalogStripPageZeroScroll(container, isSmUp);
+  }, [isSmUp, products.length]);
+
+  const restoreStripScrollAfterViewportChange = useCallback(() => {
+    const container = sectionScrollRef.current;
+    if (!container || products.length === 0) {
       return;
     }
 
-    container.scrollLeft = getCatalogStripPeekStartScroll(container);
-  }, [isSmUp, products.length]);
+    const pageIndex = Math.min(currentPageRef.current, Math.max(0, totalPages - 1));
+    if (pageIndex <= 0) {
+      applyStripPeekStartScroll();
+      return;
+    }
+
+    if (!isSmUp) {
+      savedScrollLeftRef.current = scrollMobileStripToPageAnchor(
+        container,
+        pageStartRefs.current[pageIndex]
+      );
+      return;
+    }
+
+    const maxScrollLeft = container.scrollWidth - container.clientWidth;
+    const startLeft = getCatalogStripPeekStartScroll(container);
+    const span = Math.max(0, maxScrollLeft - startLeft);
+    const denominator = Math.max(1, totalPages - 1);
+    const target =
+      maxScrollLeft <= 0 ? 0 : Math.min(maxScrollLeft, startLeft + (span * pageIndex) / denominator);
+    container.scrollLeft = target;
+    savedScrollLeftRef.current = target;
+  }, [applyStripPeekStartScroll, isSmUp, products.length, totalPages]);
 
   useLayoutEffect(() => {
     applyStripPeekStartScroll();
@@ -112,9 +142,17 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
   }, [applyStripPeekStartScroll]);
 
   useEffect(() => {
-    window.addEventListener('resize', applyStripPeekStartScroll);
-    return () => window.removeEventListener('resize', applyStripPeekStartScroll);
-  }, [applyStripPeekStartScroll]);
+    return subscribeCatalogStripViewportResize({
+      onHeightOnlyResize: () => {
+        const container = sectionScrollRef.current;
+        if (!container) {
+          return;
+        }
+        restoreCatalogStripScrollLeft(container, savedScrollLeftRef.current);
+      },
+      onWidthChange: restoreStripScrollAfterViewportChange,
+    });
+  }, [restoreStripScrollAfterViewportChange]);
 
   useEffect(() => {
     const container = sectionScrollRef.current;
@@ -185,6 +223,7 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
       left: targetScrollLeft,
       behavior: isSmUp ? 'smooth' : 'auto',
     });
+    savedScrollLeftRef.current = targetScrollLeft;
 
     setCurrentPage(pageIndex);
 
@@ -198,6 +237,8 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
     if (!container || totalPages <= 1) {
       return;
     }
+
+    savedScrollLeftRef.current = container.scrollLeft;
 
     const commitPage = (nextPage: number) => {
       setCurrentPage((previous) => (previous === nextPage ? previous : nextPage));

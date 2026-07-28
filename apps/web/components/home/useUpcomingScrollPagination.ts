@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { scrollMobileStripToPageAnchor } from '../../app/products/components/catalogStripScroll';
+import { scrollMobileStripToPageAnchor, restoreCatalogStripScrollLeft, subscribeCatalogStripViewportResize } from '../../app/products/components/catalogStripScroll';
 import {
   CATALOG_MOBILE_STRIP_PROGRAMMATIC_SCROLL_RELEASE_MS,
   getCatalogMobileStripScrollGutterClassName,
@@ -39,6 +39,9 @@ export function useUpcomingScrollPagination({
   const isProgrammaticScrollRef = useRef(false);
   const programmaticScrollRafRef = useRef<number | null>(null);
   const programmaticScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const savedScrollLeftRef = useRef(0);
+  const currentPageRef = useRef(currentPage);
+  currentPageRef.current = currentPage;
 
   const totalPages = Math.max(1, Math.ceil(itemCount / cardsPerPage));
   const safePage = Math.min(currentPage, totalPages);
@@ -48,8 +51,65 @@ export function useUpcomingScrollPagination({
   useEffect(() => {
     pageStartRefs.current = [];
     setCurrentPage(1);
+    savedScrollLeftRef.current = 0;
     scrollContainerRef.current?.scrollTo({ left: 0 });
   }, [isSmUp, itemCount, cardsPerPage, fetchGeneration]);
+
+  useEffect(() => {
+    const restoreToCurrentPage = () => {
+      const container = scrollContainerRef.current;
+      if (!container || totalPages <= 1) {
+        if (container) {
+          restoreCatalogStripScrollLeft(
+            container,
+            savedScrollLeftRef.current,
+            UPCOMING_SCROLL_TARGET_TOLERANCE_PX
+          );
+        }
+        return;
+      }
+
+      const pageIndex = Math.max(0, Math.min(totalPages - 1, currentPageRef.current - 1));
+      if (pageIndex <= 0) {
+        container.scrollLeft = 0;
+        savedScrollLeftRef.current = 0;
+        return;
+      }
+
+      if (!isSmUp) {
+        savedScrollLeftRef.current = scrollMobileStripToPageAnchor(
+          container,
+          pageStartRefs.current[pageIndex]
+        );
+        return;
+      }
+
+      const target = getUpcomingScrollLeftForPage(
+        container,
+        pageIndex + 1,
+        totalPages,
+        isSmUp,
+        pageStartRefs.current
+      );
+      container.scrollLeft = target;
+      savedScrollLeftRef.current = target;
+    };
+
+    return subscribeCatalogStripViewportResize({
+      onHeightOnlyResize: () => {
+        const container = scrollContainerRef.current;
+        if (!container) {
+          return;
+        }
+        restoreCatalogStripScrollLeft(
+          container,
+          savedScrollLeftRef.current,
+          UPCOMING_SCROLL_TARGET_TOLERANCE_PX
+        );
+      },
+      onWidthChange: restoreToCurrentPage,
+    });
+  }, [isSmUp, totalPages, itemCount, cardsPerPage, fetchGeneration]);
 
   useEffect(() => {
     return () => {
@@ -182,7 +242,8 @@ export function useUpcomingScrollPagination({
       }
 
       if (!isSmUp) {
-        scrollMobileStripToPageAnchor(container, pageStartRefs.current[pageIndex]);
+        const target = scrollMobileStripToPageAnchor(container, pageStartRefs.current[pageIndex]);
+        savedScrollLeftRef.current = target;
         window.setTimeout(() => {
           isProgrammaticScrollRef.current = false;
         }, CATALOG_MOBILE_STRIP_PROGRAMMATIC_SCROLL_RELEASE_MS);
@@ -200,10 +261,11 @@ export function useUpcomingScrollPagination({
         left: targetScrollLeft,
         behavior: 'smooth',
       });
+      savedScrollLeftRef.current = targetScrollLeft;
 
       waitForScrollToSettle(container, targetScrollLeft);
     },
-    [isSmUp, safePage, totalPages, waitForScrollToSettle],
+    [isSmUp, totalPages, waitForScrollToSettle],
   );
 
   const handleScroll = useCallback(() => {
@@ -211,6 +273,8 @@ export function useUpcomingScrollPagination({
     if (!container || totalPages <= 1) {
       return;
     }
+
+    savedScrollLeftRef.current = container.scrollLeft;
 
     if (!isSmUp) {
       if (scrollIdleTimerRef.current) {
