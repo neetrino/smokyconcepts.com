@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, type ReactNode } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
@@ -23,7 +23,7 @@ import { useTranslation } from '@/lib/i18n-client';
 import { CatalogForProductLineRow } from './CatalogForProductLineRow';
 
 const MOBILE_FILTER_TOUCH_ROW =
-  'relative w-full overflow-hidden rounded-xl bg-white shadow-[0_4px_6px_rgba(0,0,0,0.05)]';
+  'w-full overflow-hidden rounded-xl bg-white shadow-[0_4px_6px_rgba(0,0,0,0.05)]';
 
 function ChevronIcon({ className }: { className?: string }) {
   return (
@@ -67,40 +67,85 @@ const MOBILE_FILTER_ROW_MIN_H = 'min-h-[3.25rem]';
 const MOBILE_FILTER_APPLY_BUTTON_CLASS =
   'flex h-12 w-full items-center justify-center rounded-lg border border-[#dcc090] bg-white text-sm font-bold uppercase tracking-[0.2em] text-[#dcc090] transition-colors hover:bg-[#dcc090]/10';
 
-/** Single tap target: invisible native select over the labeled row (no duplicate “All” / default in list). */
-function MobileFilterNativeRow({
+interface MobileFilterOption {
+  value: string;
+  label: string;
+}
+
+/**
+ * Custom expandable row — avoids native `<select>` popovers that render as a
+ * floating dark list on mobile (Classic / Premium / Atelier).
+ */
+function MobileFilterExpandableRow({
   ariaLabel,
   value,
   onChange,
   isActive,
   displayText,
-  children,
+  options,
+  openRowId,
+  rowId,
+  onOpenRowIdChange,
 }: {
   ariaLabel: string;
   value: string;
   onChange: (value: string) => void;
   isActive: boolean;
   displayText: string;
-  children: ReactNode;
+  options: MobileFilterOption[];
+  openRowId: string | null;
+  rowId: string;
+  onOpenRowIdChange: (rowId: string | null) => void;
 }) {
+  const listId = useId();
+  const isOpen = openRowId === rowId;
   const wrapClass = isActive ? `${MOBILE_FILTER_TOUCH_ROW} ${FILTER_SECTION_ACTIVE}` : MOBILE_FILTER_TOUCH_ROW;
   const titleClass = isActive ? 'text-[#122a26]' : 'text-[#333333]';
+
   return (
     <div className={wrapClass}>
-      <select
+      <button
+        type="button"
         aria-label={ariaLabel}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className={`absolute inset-0 z-10 w-full ${MOBILE_FILTER_ROW_MIN_H} cursor-pointer opacity-0`}
-      >
-        {children}
-      </select>
-      <div
-        className={`pointer-events-none flex w-full items-center justify-between px-4 py-3.5 text-left ${MOBILE_FILTER_ROW_MIN_H}`}
+        aria-expanded={isOpen}
+        aria-controls={listId}
+        onClick={() => onOpenRowIdChange(isOpen ? null : rowId)}
+        className={`flex w-full items-center justify-between px-4 py-3.5 text-left ${MOBILE_FILTER_ROW_MIN_H}`}
       >
         <span className={`text-[0.9375rem] font-semibold ${titleClass}`}>{displayText}</span>
-        <ChevronIcon className={`shrink-0 ${isActive ? 'text-[#122a26]' : 'text-[#414141]'}`} />
-      </div>
+        <ChevronIcon
+          className={`shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''} ${
+            isActive ? 'text-[#122a26]' : 'text-[#414141]'
+          }`}
+        />
+      </button>
+      {isOpen ? (
+        <ul id={listId} role="listbox" aria-label={ariaLabel} className="border-t border-[#ebebeb] pb-1">
+          {options.map((option) => {
+            const isSelected = value === option.value;
+            return (
+              <li key={option.value} role="presentation">
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={isSelected}
+                  onClick={() => {
+                    onChange(option.value);
+                    onOpenRowIdChange(null);
+                  }}
+                  className={`flex w-full px-4 py-3 text-left text-[0.9375rem] font-medium transition-colors ${
+                    isSelected
+                      ? 'bg-[#122a26]/08 font-semibold text-[#122a26]'
+                      : 'text-[#333333] active:bg-black/5'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
     </div>
   );
 }
@@ -142,6 +187,7 @@ export function ProductsCatalogMobileFilterSheet({
 }: ProductsCatalogMobileFilterSheetProps) {
   const { t } = useTranslation();
   const prefersReducedMotion = usePrefersReducedMotion();
+  const [openRowId, setOpenRowId] = useState<string | null>(null);
   const exitDurationMs = prefersReducedMotion
     ? SIZE_MODAL_REDUCED_MOTION_EXIT_MS
     : SIZE_MODAL_EXIT_DURATION_MS;
@@ -161,6 +207,12 @@ export function ProductsCatalogMobileFilterSheet({
     }
     onClose();
   }, [isExiting, onClose]);
+
+  useEffect(() => {
+    if (!open) {
+      setOpenRowId(null);
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!isMounted) {
@@ -194,6 +246,13 @@ export function ProductsCatalogMobileFilterSheet({
   const isColorActive = selectedColor !== 'all';
   const isSortActive = selectedSort !== 'default';
   const isSizeActive = selectedSize !== 'all';
+  const collectionFilterOptions = collectionOptions
+    .filter((option) => option !== 'all')
+    .map((option) => ({ value: option, label: option }));
+  const colorFilterOptions = colorOptions.map((option) => ({ value: option, label: option }));
+  const sortFilterOptions = sortOptions
+    .filter((option) => option.value !== 'default')
+    .map((option) => ({ value: option.value, label: option.label }));
 
   return createPortal(
     <div
@@ -255,40 +314,33 @@ export function ProductsCatalogMobileFilterSheet({
             </div>
 
             <div className="flex flex-col gap-3">
-              <MobileFilterNativeRow
+              <MobileFilterExpandableRow
                 ariaLabel="Collections"
+                rowId="collection"
                 value={selectedCollection}
                 onChange={onCollectionChange}
                 isActive={isCollectionActive}
                 displayText={selectedCollection === 'all' ? 'Collections' : selectedCollection}
-              >
-                <option value="all" hidden />
-                {collectionOptions
-                  .filter((option) => option !== 'all')
-                  .map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-              </MobileFilterNativeRow>
+                options={collectionFilterOptions}
+                openRowId={openRowId}
+                onOpenRowIdChange={setOpenRowId}
+              />
 
-              <MobileFilterNativeRow
+              <MobileFilterExpandableRow
                 ariaLabel="Color"
+                rowId="color"
                 value={selectedColor}
                 onChange={onColorChange}
                 isActive={isColorActive}
                 displayText={selectedColor === 'all' ? 'Color' : selectedColor}
-              >
-                <option value="all" hidden />
-                {colorOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </MobileFilterNativeRow>
+                options={colorFilterOptions}
+                openRowId={openRowId}
+                onOpenRowIdChange={setOpenRowId}
+              />
 
-              <MobileFilterNativeRow
+              <MobileFilterExpandableRow
                 ariaLabel="Sort By"
+                rowId="sort"
                 value={selectedSort}
                 onChange={onSortChange}
                 isActive={isSortActive}
@@ -297,16 +349,10 @@ export function ProductsCatalogMobileFilterSheet({
                     ? 'Sort By'
                     : (sortOptions.find((o) => o.value === selectedSort)?.label ?? 'Sort By')
                 }
-              >
-                <option value="default" hidden />
-                {sortOptions
-                  .filter((option) => option.value !== 'default')
-                  .map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-              </MobileFilterNativeRow>
+                options={sortFilterOptions}
+                openRowId={openRowId}
+                onOpenRowIdChange={setOpenRowId}
+              />
             </div>
 
             <div className="mt-6">

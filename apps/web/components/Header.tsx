@@ -160,62 +160,65 @@ export function Header() {
   );
 
   return (
-    <header className="sticky top-0 z-50 bg-[#122a26]">
-      <div className="relative mx-auto max-w-[120rem]">
-        <div className="flex h-16 items-center px-4 py-3 sm:px-8 lg:px-[7.5rem]">
-          <Link href="/" className="relative h-10 w-40 shrink-0">
-            <img
-              src={HEADER_ASSET_PATHS.logo}
-              alt="Smoky Concepts"
-              className="h-full w-full object-contain object-left"
-            />
-          </Link>
-          {renderNavLinks(
-            'hidden flex-1 items-center justify-center gap-10 pl-10 md:flex lg:pl-20 xl:pl-28',
-            NAVIGATION_ITEMS,
-          )}
-          <div className="ml-auto flex shrink-0 items-center gap-3">
-            <div className={`${HEADER_UTILITIES_ROW_CLASS} gap-3 md:hidden`}>
-              <HeaderCartButton cartCount={cartCount} cartReady={cartReady} />
-              <HeaderDesktopAccount />
+    <>
+      <header className="sticky top-0 z-50 bg-[#122a26] max-md:fixed max-md:inset-x-0">
+        <div className="relative mx-auto max-w-[120rem]">
+          <div className="flex h-16 items-center px-4 py-3 sm:px-8 lg:px-[7.5rem]">
+            <Link href="/" className="relative h-10 w-40 shrink-0">
+              <img
+                src={HEADER_ASSET_PATHS.logo}
+                alt="Smoky Concepts"
+                className="h-full w-full object-contain object-left"
+              />
+            </Link>
+            {renderNavLinks(
+              'hidden flex-1 items-center justify-center gap-10 pl-10 md:flex lg:pl-20 xl:pl-28',
+              NAVIGATION_ITEMS,
+            )}
+            <div className="ml-auto flex shrink-0 items-center gap-3">
+              <div className={`${HEADER_UTILITIES_ROW_CLASS} gap-3 md:hidden`}>
+                <HeaderCartButton cartCount={cartCount} cartReady={cartReady} />
+                <HeaderDesktopAccount />
+              </div>
+              <div
+                className={`${HEADER_UTILITIES_ROW_CLASS} hidden md:flex`}
+                style={{ gap: HEADER_UTILITIES_GAP_PX }}
+              >
+                <HeaderLocaleCurrencySwitcher />
+                <HeaderCartButton cartCount={cartCount} cartReady={cartReady} />
+                <HeaderDesktopAccount />
+              </div>
+              <MobileMenuButton open={mobileMenuOpen} onToggle={() => setMobileMenuOpen((v) => !v)} />
             </div>
+          </div>
+          {mobileMenuOpen ? (
             <div
-              className={`${HEADER_UTILITIES_ROW_CLASS} hidden md:flex`}
-              style={{ gap: HEADER_UTILITIES_GAP_PX }}
+              id={MOBILE_MENU_ID}
+              className="absolute left-0 right-0 top-full z-50 flex flex-col border-t border-white/10 bg-[#122a26] px-4 pb-4 pt-1 sm:px-8 lg:px-[7.5rem] md:hidden"
             >
-              <HeaderLocaleCurrencySwitcher />
-              <HeaderCartButton cartCount={cartCount} cartReady={cartReady} />
-              <HeaderDesktopAccount />
+              <nav className="flex flex-col" aria-label="Mobile primary">
+                {NAVIGATION_ITEMS.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`border-b border-white/10 py-3.5 ${NAV_LINK_BASE} ${
+                        isActive ? NAV_LINK_ACTIVE : NAV_LINK_INACTIVE
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+              <HeaderLocaleCurrencySwitcher variant="drawer" />
             </div>
-            <MobileMenuButton open={mobileMenuOpen} onToggle={() => setMobileMenuOpen((v) => !v)} />
-          </div>
+          ) : null}
         </div>
-        {mobileMenuOpen ? (
-          <div
-            id={MOBILE_MENU_ID}
-            className="absolute left-0 right-0 top-full z-50 flex flex-col border-t border-white/10 bg-[#122a26] px-4 pb-4 pt-1 sm:px-8 lg:px-[7.5rem] md:hidden"
-          >
-            <nav className="flex flex-col" aria-label="Mobile primary">
-              {NAVIGATION_ITEMS.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`border-b border-white/10 py-3.5 ${NAV_LINK_BASE} ${
-                      isActive ? NAV_LINK_ACTIVE : NAV_LINK_INACTIVE
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-            <HeaderLocaleCurrencySwitcher variant="drawer" />
-          </div>
-        ) : null}
-      </div>
-    </header>
+      </header>
+      <div className="h-16 shrink-0 md:hidden" aria-hidden />
+    </>
   );
 }

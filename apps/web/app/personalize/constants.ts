@@ -18,13 +18,20 @@ export const PERSONALIZE_GALLERY_IMAGES = [
 export const PERSONALIZE_PAGE_SHELL_CLASS =
   'mx-auto flex w-full max-w-[120rem] flex-col gap-10 px-6 pb-16 pt-10 sm:px-8 sm:pb-20 lg:flex-row lg:items-start lg:gap-[clamp(7.75rem,8.34vw,10rem)] lg:px-[clamp(3.75rem,6.25vw,7.5rem)] lg:pb-24 lg:pt-[clamp(1.5rem,3.125vw,3.75rem)]' as const;
 
-/** Gallery wrapper — no w-full on desktop so the form stays in view. */
-export const PERSONALIZE_GALLERY_WRAPPER_CLASS =
-  'mx-auto shrink-0 overflow-x-auto [scrollbar-width:none] lg:mx-0 lg:overflow-visible [&::-webkit-scrollbar]:hidden' as const;
+/** Gap between gallery images — Figma desktop: 9px, mobile: 6px. */
+export const PERSONALIZE_GALLERY_GAP_CLASS = 'gap-1.5 lg:gap-[9px]' as const;
 
-/** Gallery width scales from the annotated screenshot to the full Figma frame. */
+/** Gallery wrapper — full width on mobile so all three images stay in view. */
+export const PERSONALIZE_GALLERY_WRAPPER_CLASS =
+  'mx-auto w-full shrink-0 lg:mx-0 lg:w-auto' as const;
+
+/** Gallery row fills the viewport on mobile; desktop keeps Figma slot widths. */
+export const PERSONALIZE_GALLERY_ROW_CLASS =
+  `mx-auto flex w-full lg:mx-0 lg:w-max ${PERSONALIZE_GALLERY_GAP_CLASS}` as const;
+
+/** Gallery width scales with the screen; desktop uses annotated Figma clamps. */
 export const PERSONALIZE_GALLERY_IMAGE_CLASS =
-  'relative aspect-[272/560] w-[140px] overflow-hidden first:rounded-l-[28px] last:rounded-r-[28px] lg:w-[clamp(8.75rem,14.17vw,17rem)] lg:first:rounded-l-[clamp(1.75rem,2.92vw,3.5rem)] lg:last:rounded-r-[clamp(1.75rem,2.92vw,3.5rem)]' as const;
+  'relative aspect-[272/560] min-w-0 flex-1 overflow-hidden first:rounded-l-[28px] last:rounded-r-[28px] lg:w-[clamp(8.75rem,14.17vw,17rem)] lg:flex-none lg:first:rounded-l-[clamp(1.75rem,2.92vw,3.5rem)] lg:last:rounded-r-[clamp(1.75rem,2.92vw,3.5rem)]' as const;
 
 /** Right column height matches the responsive gallery height on desktop. */
 export const PERSONALIZE_CONTENT_COLUMN_CLASS =
@@ -40,9 +47,6 @@ export const PERSONALIZE_FORM_CLASS =
 /** Gap between title and description follows the annotated desktop composition. */
 export const PERSONALIZE_TITLE_DESCRIPTION_GAP_CLASS =
   'mt-4 lg:mt-[clamp(0.35rem,2.08vw,2.5rem)]' as const;
-
-/** Gap between gallery images — Figma desktop: 9px, mobile: 6px. */
-export const PERSONALIZE_GALLERY_GAP_CLASS = 'gap-1.5 lg:gap-[9px]' as const;
 
 /** Submit button scales with the gallery at desktop widths. */
 export const PERSONALIZE_SUBMIT_BUTTON_CLASS =
