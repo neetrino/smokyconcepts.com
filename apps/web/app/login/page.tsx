@@ -10,6 +10,9 @@ import { useTranslation } from '../../lib/i18n-client';
 import { Eye, EyeOff } from 'lucide-react';
 import { PageLoadingCenter } from '../../components/loading/PageLoadingCenter';
 
+/** Lets in-flight soft navigations (header links) update the URL before we redirect. */
+const LOGIN_ALREADY_AUTHENTICATED_REDIRECT_DELAY_MS = 50;
+
 function LoginPageContent() {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
@@ -58,11 +61,28 @@ function LoginPageContent() {
     }
   };
 
-  // Redirect if already logged in
+  // Redirect if already logged in — but never steal an in-flight header navigation
+  // (e.g. hamburger → /products while the session probe is still resolving).
   useEffect(() => {
-    if (isLoggedIn && !isLoading) {
-      router.push(redirectTo);
+    if (!isLoggedIn || isLoading) {
+      return;
     }
+
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      if (cancelled) {
+        return;
+      }
+      if (window.location.pathname !== '/login') {
+        return;
+      }
+      router.replace(redirectTo);
+    }, LOGIN_ALREADY_AUTHENTICATED_REDIRECT_DELAY_MS);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
   }, [isLoggedIn, isLoading, redirectTo, router]);
 
   return (
@@ -146,7 +166,7 @@ function LoginPageContent() {
             type="submit"
             disabled={isSubmitting || isLoading}
           >
-            {isSubmitting || isLoading ? t('login.form.submitting') : t('login.form.submit')}
+            {isSubmitting ? t('login.form.submitting') : t('login.form.submit')}
           </Button>
         </form>
 

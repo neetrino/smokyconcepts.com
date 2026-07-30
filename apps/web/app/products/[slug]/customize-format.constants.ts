@@ -4,7 +4,6 @@ export const CUSTOMIZE_FORMAT_ASSETS = {
   chevronSrc: '/assets/product/customize/format-chevron.svg',
   boldSrc: '/assets/product/customize/format-bold.svg',
   italicSrc: '/assets/product/customize/format-italic.svg',
-  underlineSrc: '/assets/product/customize/format-underline.svg',
 } as const;
 
 /** ~88% of Figma px — fits PDP info column (~763px) without horizontal scroll. */
@@ -44,14 +43,21 @@ export const CUSTOMIZE_FONT_DROPDOWN_OPTION_CLASS =
 
 export const CUSTOMIZE_FORMAT_CONTROL_HEIGHT_CLASS = 'h-[42px]';
 export const CUSTOMIZE_FORMAT_FONT_TRIGGER_CLASS = [
-  'flex h-[42px] items-center justify-between rounded-[6px] bg-white px-3',
+  'flex h-[42px] items-center justify-between rounded-[6px] px-3 transition-colors',
   CUSTOMIZE_FONT_CONTROL_WIDTH_CLASS,
 ].join(' ');
 export const CUSTOMIZE_FORMAT_BUTTON_CLASS =
-  'flex h-[42px] w-[43px] shrink-0 items-center justify-center rounded-[6px] bg-white';
-export const CUSTOMIZE_FORMAT_BUTTON_ACTIVE_CLASS = 'bg-[#122a26]/8';
+  'flex h-[42px] w-[43px] shrink-0 items-center justify-center rounded-[6px] transition-colors';
+/** Idle surface — mutually exclusive with active (avoid bg-white winning over active). */
+export const CUSTOMIZE_FORMAT_CONTROL_IDLE_CLASS = 'bg-white';
+/** Filled brand surface so pressed/open state reads clearly against white idle. */
+export const CUSTOMIZE_FORMAT_CONTROL_ACTIVE_CLASS = 'bg-[#122a26]';
+/** Light foreground for labels/icons on the filled active surface. */
+export const CUSTOMIZE_FORMAT_CONTROL_ACTIVE_FG_CLASS = 'text-[#faf8f4]';
+export const CUSTOMIZE_FORMAT_CONTROL_ACTIVE_ICON_CLASS =
+  'brightness-0 invert';
 
-/** Font dropdown + B/I/U — single row (Figma node 1:8510). */
+/** Font dropdown + B/I — single row (Figma node 1:8510). */
 export const CUSTOMIZE_FORMAT_TOOLBAR_CLASS =
   'relative flex shrink-0 flex-nowrap items-center gap-2 overflow-visible sm:gap-3';
 

@@ -7,6 +7,10 @@ import {
   CUSTOMIZE_FONT_DROPDOWN_OPTION_CLASS,
   CUSTOMIZE_FONT_DROPDOWN_PANEL_CLASS,
   CUSTOMIZE_FORMAT_ASSETS,
+  CUSTOMIZE_FORMAT_CONTROL_ACTIVE_CLASS,
+  CUSTOMIZE_FORMAT_CONTROL_ACTIVE_FG_CLASS,
+  CUSTOMIZE_FORMAT_CONTROL_ACTIVE_ICON_CLASS,
+  CUSTOMIZE_FORMAT_CONTROL_IDLE_CLASS,
   CUSTOMIZE_FORMAT_FONT_TRIGGER_CLASS,
 } from './customize-format.constants';
 import {
@@ -84,7 +88,11 @@ export function CustomizeFontDropdown({
 
   return (
     <div ref={rootRef} className={`relative shrink-0 ${CUSTOMIZE_FONT_CONTROL_WIDTH_CLASS}`}>
-      <div className={CUSTOMIZE_FORMAT_FONT_TRIGGER_CLASS}>
+      <div
+        className={`${CUSTOMIZE_FORMAT_FONT_TRIGGER_CLASS} ${
+          open ? CUSTOMIZE_FORMAT_CONTROL_ACTIVE_CLASS : CUSTOMIZE_FORMAT_CONTROL_IDLE_CLASS
+        }`}
+      >
         <button
           type="button"
           aria-haspopup="listbox"
@@ -94,7 +102,9 @@ export function CustomizeFontDropdown({
           className="flex min-w-0 flex-1 items-center"
         >
           <span
-            className="min-w-0 flex-1 truncate text-left text-[16px] font-medium leading-[26px] text-[#414141]"
+            className={`min-w-0 flex-1 truncate text-left text-[16px] font-medium leading-[26px] ${
+              open ? CUSTOMIZE_FORMAT_CONTROL_ACTIVE_FG_CLASS : 'text-[#414141]'
+            }`}
             style={{ fontFamily: selected?.stack ?? CUSTOMIZE_INPUT_FONT_STACK }}
           >
             {selected?.label ?? fontLabel}
@@ -104,7 +114,11 @@ export function CustomizeFontDropdown({
           <button
             type="button"
             aria-label={clearLabel}
-            className="ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded text-[#898989] hover:bg-[#122a26]/8 hover:text-[#414141]"
+            className={`ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded ${
+              open
+                ? 'text-[#faf8f4]/80 hover:bg-white/15 hover:text-[#faf8f4]'
+                : 'text-[#898989] hover:bg-[#122a26]/8 hover:text-[#414141]'
+            }`}
             onClick={handleClear}
           >
             <span aria-hidden className="text-[14px] leading-none">
@@ -125,7 +139,7 @@ export function CustomizeFontDropdown({
             alt=""
             width={9}
             height={16}
-            className={`block transition-transform ${open ? 'rotate-180' : ''}`}
+            className={`block transition-transform ${open ? `rotate-180 ${CUSTOMIZE_FORMAT_CONTROL_ACTIVE_ICON_CLASS}` : ''}`}
             decoding="async"
             draggable={false}
             aria-hidden

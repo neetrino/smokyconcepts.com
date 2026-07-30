@@ -228,7 +228,6 @@ export const FOOTER_LINKS = [
   { label: 'Privacy Policy', href: '/privacy' },
   { label: 'Terms and conditions', href: '/terms' },
   { label: 'Delivery Terms', href: '/delivery-terms' },
-  { label: 'Personalize', href: '/personalize' },
   { label: 'Refund Policy', href: '/refund-policy' },
 ] as const;
 
