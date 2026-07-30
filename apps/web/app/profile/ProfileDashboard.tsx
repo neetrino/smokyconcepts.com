@@ -62,10 +62,7 @@ export function ProfileDashboard({
 
   if (dashboardLoading) {
     return (
-      <PageLoadingCenter
-        label={t('profile.dashboard.loading')}
-        className="flex items-center justify-center py-12"
-      />
+      <PageLoadingCenter label={t('profile.dashboard.loading')} />
     );
   }
 
