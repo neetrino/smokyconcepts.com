@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { buildIdramFailureRedirect } from '@/lib/payments/idram/redirects';
-import { buildTopLevelRedirectHtml } from '@/lib/payments/idram/top-level-redirect';
+import { createPaymentReturnResponse } from '@/lib/payments/idram/top-level-redirect';
 
 function resolveOrderNumber(query: URLSearchParams): string | undefined {
   const candidates = [
@@ -23,11 +23,5 @@ export async function GET(req: NextRequest) {
     resolveOrderNumber(req.nextUrl.searchParams),
     req.nextUrl.origin,
   );
-  return new NextResponse(buildTopLevelRedirectHtml(targetUrl), {
-    status: 200,
-    headers: {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'no-store',
-    },
-  });
+  return createPaymentReturnResponse(req, targetUrl);
 }

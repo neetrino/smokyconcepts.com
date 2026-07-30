@@ -237,12 +237,6 @@ export function useCheckout() {
   );
 
   useEffect(() => {
-    if (isLoading) {
-      return;
-    }
-
-    fetchCart();
-
     const handleLanguageUpdate = () => {
       setLanguage(getStoredLanguage());
     };
@@ -252,7 +246,7 @@ export function useCheckout() {
     return () => {
       window.removeEventListener('language-updated', handleLanguageUpdate);
     };
-  }, [isLoggedIn, isLoading, fetchCart]);
+  }, []);
 
   const handlePlaceOrder = (e: React.FormEvent) => {
     e.preventDefault();

@@ -2,7 +2,12 @@
 
 import { useTranslation } from '../../../../lib/i18n-client';
 import { Card } from '@shop/ui';
-import { ADMIN_PRICE_CURRENCY, persistedOrderMoneyToUsd, type CurrencyCode } from '../../../../lib/currency';
+import {
+  ADMIN_PRICE_CURRENCY,
+  adminInputAmdToUsd,
+  formatCatalogPrice,
+  type CurrencyCode,
+} from '../../../../lib/currency';
 import { formatOrderSummaryUsd } from '@/lib/orders/order-summary-display';
 import { isInternalVariantAttributeKey } from '@/lib/default-pricing-variant';
 import { getColorValue } from '../utils/orderUtils';
@@ -13,30 +18,51 @@ interface OrderDetailsItemsProps {
   formatCurrency: (amount: number, orderCurrency?: string, storedCurrency?: string) => string;
 }
 
+/** Admin API returns item unitPrice/total already in USD. */
+function resolveItemLineDisplay(params: {
+  unitPriceUsd: number;
+  lineTotalUsd: number;
+  quantity: number;
+  variantBasePriceAmd: number | null | undefined;
+  sizeCatalogCategoryPriceAmd: number | null | undefined;
+  displayCurrency: CurrencyCode;
+}): { unitDisplay: string; lineTotalDisplay: string } {
+  const collectionAmd =
+    typeof params.sizeCatalogCategoryPriceAmd === 'number' &&
+    Number.isFinite(params.sizeCatalogCategoryPriceAmd) &&
+    params.sizeCatalogCategoryPriceAmd > 0
+      ? Math.round(params.sizeCatalogCategoryPriceAmd)
+      : 0;
+  const variantBaseAmd =
+    typeof params.variantBasePriceAmd === 'number' &&
+    Number.isFinite(params.variantBasePriceAmd) &&
+    params.variantBasePriceAmd > 0
+      ? Math.round(params.variantBasePriceAmd)
+      : null;
+
+  const qty = Math.max(1, params.quantity);
+  const useAmdSnapshots = params.displayCurrency === 'AMD' && variantBaseAmd != null;
+  if (useAmdSnapshots) {
+    return {
+      unitDisplay: formatCatalogPrice(variantBaseAmd, 'AMD'),
+      lineTotalDisplay: formatCatalogPrice((variantBaseAmd + collectionAmd) * qty, 'AMD'),
+    };
+  }
+
+  const collectionUnitUsd = collectionAmd > 0 ? adminInputAmdToUsd(collectionAmd) : 0;
+  const baseUnitUsd = Math.max(0, params.unitPriceUsd - collectionUnitUsd);
+  return {
+    unitDisplay: formatOrderSummaryUsd(baseUnitUsd, params.displayCurrency),
+    lineTotalDisplay: formatOrderSummaryUsd(params.lineTotalUsd, params.displayCurrency),
+  };
+}
+
 export function OrderDetailsItems({
   orderDetails,
   formatCurrency: _formatCurrency,
 }: OrderDetailsItemsProps) {
   const { t } = useTranslation();
-  const itemMoneyCurrency = orderDetails.totals?.currency ?? orderDetails.currency ?? 'USD';
   const displayCurrency = ADMIN_PRICE_CURRENCY as CurrencyCode;
-
-  const formatLineMoneyUsd = (amountUsd: number): string =>
-    formatOrderSummaryUsd(amountUsd, displayCurrency);
-
-  const formatItemUnitDisplay = (unitPriceStored: number): string =>
-    formatLineMoneyUsd(
-      itemMoneyCurrency.trim().toUpperCase() === 'USD'
-        ? unitPriceStored
-        : persistedOrderMoneyToUsd(unitPriceStored, itemMoneyCurrency)
-    );
-
-  const formatItemLineTotalDisplay = (lineTotalStored: number): string =>
-    formatLineMoneyUsd(
-      itemMoneyCurrency.trim().toUpperCase() === 'USD'
-        ? lineTotalStored
-        : persistedOrderMoneyToUsd(lineTotalStored, itemMoneyCurrency)
-    );
 
   const getColorsArray = (colors: unknown): string[] => {
     if (!colors) return [];
@@ -82,12 +108,16 @@ export function OrderDetailsItems({
                 (opt) => !isInternalVariantAttributeKey(opt.attributeKey),
               );
               const quantity = Number(item.quantity ?? 0);
-              const unitPrice = Number(item.unitPrice ?? 0);
-              const lineTotal = Number(item.total ?? 0);
-              const collectionPriceAmd =
-                typeof item.sizeCatalogCategoryPriceAmd === 'number'
-                  ? item.sizeCatalogCategoryPriceAmd
-                  : null;
+              const unitPriceUsd = Number(item.unitPrice ?? 0);
+              const lineTotalUsd = Number(item.total ?? 0);
+              const { unitDisplay, lineTotalDisplay } = resolveItemLineDisplay({
+                unitPriceUsd: Number.isFinite(unitPriceUsd) ? unitPriceUsd : 0,
+                lineTotalUsd: Number.isFinite(lineTotalUsd) ? lineTotalUsd : 0,
+                quantity: Number.isFinite(quantity) ? quantity : 0,
+                variantBasePriceAmd: item.variantBasePriceAmd,
+                sizeCatalogCategoryPriceAmd: item.sizeCatalogCategoryPriceAmd,
+                displayCurrency,
+              });
               return (
                 <tr key={item.id}>
                   <td className="px-3 py-2">{item.productTitle}</td>
@@ -135,12 +165,8 @@ export function OrderDetailsItems({
                   <td className="px-3 py-2 text-right">
                     {Number.isFinite(quantity) ? quantity : '—'}
                   </td>
-                  <td className="px-3 py-2 text-right">
-                    {formatItemUnitDisplay(Number.isFinite(unitPrice) ? unitPrice : 0)}
-                  </td>
-                  <td className="px-3 py-2 text-right">
-                    {formatItemLineTotalDisplay(Number.isFinite(lineTotal) ? lineTotal : 0)}
-                  </td>
+                  <td className="px-3 py-2 text-right">{unitDisplay}</td>
+                  <td className="px-3 py-2 text-right">{lineTotalDisplay}</td>
                 </tr>
               );
             })}

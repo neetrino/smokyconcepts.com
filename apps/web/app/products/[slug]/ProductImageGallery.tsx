@@ -48,7 +48,8 @@ interface ProductImageGalleryProps {
 const GALLERY_TOP_OFFSET_CLASSES = 'pt-5 sm:pt-14 lg:pt-16';
 
 /**
- * Pulls the hero slightly above the card top while {@link GALLERY_TOP_OFFSET_CLASSES} keeps header clearance.
+ * Pulls the product hero slightly above the card top (skipped for customize preview so the 3D badge stays inside the card).
+ * Pairs with {@link GALLERY_TOP_OFFSET_CLASSES} for header clearance.
  */
 const HERO_PULL_ABOVE_CARD = 'max-sm:-mt-7 sm:-mt-12 lg:-mt-14';
 
@@ -509,7 +510,9 @@ export function ProductImageGallery({
           <div
             className={`flex w-full justify-center ${
               hasHeroContent
-                ? `product-hero group relative z-10 ${HERO_PULL_ABOVE_CARD}`
+                ? `product-hero group relative z-10 ${
+                    showHeroPreviewInGallery ? '' : HERO_PULL_ABOVE_CARD
+                  }`
                 : 'min-h-[240px] items-center sm:min-h-[260px]'
             }`}
           >

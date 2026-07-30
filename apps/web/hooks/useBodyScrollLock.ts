@@ -50,15 +50,26 @@ function restoreScrollPosition(scrollY: number): void {
   }
 }
 
-function hasScrollableOverflow(element: HTMLElement): boolean {
-  const overflowY = getComputedStyle(element).overflowY;
-  const canOverflow =
-    overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay';
-  return canOverflow && element.scrollHeight > element.clientHeight;
+function isOverflowScrollable(overflowValue: string): boolean {
+  return overflowValue === 'auto' || overflowValue === 'scroll' || overflowValue === 'overlay';
 }
 
-function canElementScrollByDelta(element: HTMLElement, deltaY: number): boolean {
-  if (!hasScrollableOverflow(element)) {
+function hasVerticalScrollableOverflow(element: HTMLElement): boolean {
+  const overflowY = getComputedStyle(element).overflowY;
+  return isOverflowScrollable(overflowY) && element.scrollHeight > element.clientHeight;
+}
+
+function hasHorizontalScrollableOverflow(element: HTMLElement): boolean {
+  const overflowX = getComputedStyle(element).overflowX;
+  return isOverflowScrollable(overflowX) && element.scrollWidth > element.clientWidth;
+}
+
+function hasScrollableOverflow(element: HTMLElement): boolean {
+  return hasVerticalScrollableOverflow(element) || hasHorizontalScrollableOverflow(element);
+}
+
+function canElementScrollVerticallyByDelta(element: HTMLElement, deltaY: number): boolean {
+  if (!hasVerticalScrollableOverflow(element)) {
     return false;
   }
 
@@ -73,15 +84,44 @@ function canElementScrollByDelta(element: HTMLElement, deltaY: number): boolean 
   return false;
 }
 
+function canElementScrollHorizontallyByDelta(element: HTMLElement, deltaX: number): boolean {
+  if (!hasHorizontalScrollableOverflow(element)) {
+    return false;
+  }
+
+  if (deltaX < 0) {
+    return element.scrollLeft > 0;
+  }
+
+  if (deltaX > 0) {
+    return element.scrollLeft + element.clientWidth < element.scrollWidth - 1;
+  }
+
+  return false;
+}
+
 function findScrollableAncestorForWheel(
   node: Node | null,
+  deltaX: number,
   deltaY: number
 ): HTMLElement | null {
+  const preferHorizontal = Math.abs(deltaX) > Math.abs(deltaY);
   let current: Node | null = node;
 
   while (current && current !== document.documentElement) {
-    if (current instanceof HTMLElement && canElementScrollByDelta(current, deltaY)) {
-      return current;
+    if (current instanceof HTMLElement) {
+      if (preferHorizontal) {
+        if (canElementScrollHorizontallyByDelta(current, deltaX)) {
+          return current;
+        }
+        if (canElementScrollVerticallyByDelta(current, deltaY)) {
+          return current;
+        }
+      } else if (canElementScrollVerticallyByDelta(current, deltaY)) {
+        return current;
+      } else if (canElementScrollHorizontallyByDelta(current, deltaX)) {
+        return current;
+      }
     }
     current = current.parentNode;
   }
@@ -109,7 +149,7 @@ function shouldAllowScrollEvent(event: Event): boolean {
   }
 
   if (event.type === 'wheel' && event instanceof WheelEvent) {
-    return findScrollableAncestorForWheel(target, event.deltaY) !== null;
+    return findScrollableAncestorForWheel(target, event.deltaX, event.deltaY) !== null;
   }
 
   if (event.type === 'touchmove') {

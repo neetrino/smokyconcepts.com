@@ -27,12 +27,6 @@ const CLIENT_SIDE_COLLECTION_VALUES = new Set<string>([
   ...Object.keys(SECTION_NAME_BY_CATEGORY_SLUG),
 ]);
 
-const COLOR_PATTERNS: Array<{ label: string; pattern: RegExp }> = [
-  { label: 'Forest Green', pattern: /(forest|green)/i },
-  { label: 'Deep Red', pattern: /(deep|red|wine|burgundy)/i },
-  { label: 'Mystique Black', pattern: /(mystique|black|charcoal)/i },
-];
-
 export interface CatalogProduct extends CatalogProductCardItem {
   categories: Array<{
     id: string;
@@ -204,16 +198,50 @@ export function getCategoryLabel(product: CatalogProduct, sectionTitle: string):
   return matchingCategory?.title?.trim() || sectionTitle;
 }
 
+/**
+ * Normalize list/API color payloads into unique display labels from the DB.
+ * Accepts plain strings or `{ value }` objects from products-find-transform.
+ */
+export function normalizeCatalogColorLabels(colors: unknown): string[] {
+  if (!Array.isArray(colors)) {
+    return [];
+  }
+
+  const labels: string[] = [];
+  const seen = new Set<string>();
+
+  for (const item of colors) {
+    let label = '';
+    if (typeof item === 'string') {
+      label = item.trim();
+    } else if (item && typeof item === 'object' && 'value' in item) {
+      const value = (item as { value?: unknown }).value;
+      if (typeof value === 'string') {
+        label = value.trim();
+      }
+    }
+    if (!label) {
+      continue;
+    }
+    const key = label.toLowerCase();
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    labels.push(label);
+  }
+
+  return labels;
+}
+
+/** All color labels for a catalog product (DB only — no title/slug heuristics). */
+export function getProductColorLabels(product: CatalogProduct): string[] {
+  return normalizeCatalogColorLabels(product.colors);
+}
+
+/** First DB color label for a product, or empty when none are set. */
 export function getColorLabel(product: CatalogProduct): string {
-  const explicitColor = product.colors?.find(
-    (color) => typeof color === 'string' && color.trim().length > 0
-  );
-  if (explicitColor) return explicitColor;
-
-  const source = `${product.title} ${product.slug}`;
-  const matchedPattern = COLOR_PATTERNS.find(({ pattern }) => pattern.test(source));
-
-  return matchedPattern?.label ?? 'Signature';
+  return getProductColorLabels(product)[0] ?? '';
 }
 
 /** Explicit size from the list API only — no title/slug heuristics or default "King Size". */

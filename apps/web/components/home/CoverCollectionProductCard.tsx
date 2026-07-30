@@ -41,7 +41,7 @@ const COVER_COLLECTION_MOBILE_CARD_MIN_HEIGHT_CLASS =
  * Image-only nudge — white panel position stays fixed.
  */
 const COVER_COLLECTION_PRODUCT_IMAGE_TRANSFORM_CLASS =
-  'origin-bottom max-sm:translate-y-0 max-sm:scale-[1.16] translate-y-4 scale-[1.16] sm:translate-y-[0.5rem] sm:scale-[1.2] sm:group-hover:translate-y-0 sm:group-hover:scale-[1.28] max-[360px]:scale-[1.06] min-[390px]:max-sm:scale-[1.2]';
+  'origin-bottom max-sm:translate-y-0 max-sm:scale-[1.14] translate-y-4 scale-[1.14] sm:translate-y-[0.5rem] sm:scale-[1.18] sm:group-hover:translate-y-0 sm:group-hover:scale-[1.25] max-[360px]:scale-[1.04] min-[390px]:max-sm:scale-[1.18]';
 
 const TITLE_MIN_HEIGHT_MOBILE = 'min-h-[2.75rem]';
 const COVER_COLLECTION_COMPACT_MOBILE_TITLE_MIN_HEIGHT_CLASS = 'max-[360px]:min-h-[2.375rem]';

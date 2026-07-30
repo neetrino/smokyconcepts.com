@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { buildIdramSuccessRedirect } from '@/lib/payments/idram/redirects';
-import { buildTopLevelRedirectHtml } from '@/lib/payments/idram/top-level-redirect';
+import { createPaymentReturnResponse } from '@/lib/payments/idram/top-level-redirect';
 
 function resolveOrderNumber(query: URLSearchParams): string {
   const candidates = [
@@ -21,11 +21,5 @@ function resolveOrderNumber(query: URLSearchParams): string {
 export async function GET(req: NextRequest) {
   const orderNumber = resolveOrderNumber(req.nextUrl.searchParams);
   const targetUrl = buildIdramSuccessRedirect(orderNumber || undefined, req.nextUrl.origin);
-  return new NextResponse(buildTopLevelRedirectHtml(targetUrl), {
-    status: 200,
-    headers: {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'no-store',
-    },
-  });
+  return createPaymentReturnResponse(req, targetUrl);
 }

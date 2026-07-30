@@ -70,14 +70,16 @@ export function CartDrawer() {
   const router = useRouter();
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  const [skipExitAnimation, setSkipExitAnimation] = useState(false);
   const [cart, setCart] = useState<Cart | null>(null);
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
   const isLocalUpdateRef = useRef(false);
 
   const prefersReducedMotion = usePrefersReducedMotion();
-  const exitDurationMs = prefersReducedMotion
-    ? SIZE_MODAL_REDUCED_MOTION_EXIT_MS
-    : SIZE_MODAL_EXIT_DURATION_MS;
+  const exitDurationMs =
+    skipExitAnimation || prefersReducedMotion
+      ? SIZE_MODAL_REDUCED_MOTION_EXIT_MS
+      : SIZE_MODAL_EXIT_DURATION_MS;
   const { isMounted, isExiting, isEntered } = useSizeModalExitAnimation({
     isOpen,
     exitDurationMs,
@@ -92,15 +94,23 @@ export function CartDrawer() {
     if (isExiting) {
       return;
     }
+    setSkipExitAnimation(false);
     setIsOpen(false);
   }, [isExiting]);
+
+  const goToCheckout = useCallback(() => {
+    setSkipExitAnimation(true);
+    setIsOpen(false);
+    router.push('/checkout');
+  }, [router]);
 
   async function loadCart() {
     setCart(readGuestCartFromStorage());
   }
 
   useEffect(() => {
-    const handleOpen = (event: Event) => {
+    const handleOpen = () => {
+      setSkipExitAnimation(false);
       setIsOpen(true);
       void loadCart();
     };
@@ -124,6 +134,13 @@ export function CartDrawer() {
       window.removeEventListener('cart-updated', handleCartUpdate);
     };
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isMounted) {
+      return;
+    }
+    router.prefetch('/checkout');
+  }, [isMounted, router]);
 
   useEffect(() => {
     if (!isMounted) {
@@ -355,10 +372,7 @@ export function CartDrawer() {
 
             <button
               type="button"
-              onClick={() => {
-                handleClose();
-                router.push('/checkout');
-              }}
+              onClick={goToCheckout}
               className="mt-6 inline-flex h-10 w-full items-center justify-center rounded-[0.5rem] bg-[#dcc090] text-[0.875rem] font-extrabold uppercase tracking-[0.06em] text-[#122a26] transition-opacity hover:opacity-90"
             >
               CHECKOUT

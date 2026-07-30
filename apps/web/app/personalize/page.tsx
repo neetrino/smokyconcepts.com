@@ -17,9 +17,9 @@ import {
   PERSONALIZE_DESCRIPTION_TEXT_CLASS,
   PERSONALIZE_FIELD_LABEL_CLASS,
   PERSONALIZE_FORM_CLASS,
-  PERSONALIZE_GALLERY_GAP_CLASS,
   PERSONALIZE_GALLERY_IMAGES,
   PERSONALIZE_GALLERY_IMAGE_CLASS,
+  PERSONALIZE_GALLERY_ROW_CLASS,
   PERSONALIZE_GALLERY_WRAPPER_CLASS,
   PERSONALIZE_PAGE_SHELL_CLASS,
   PERSONALIZE_SUBMIT_BUTTON_CLASS,
@@ -104,14 +104,14 @@ export default function PersonalizePage() {
     <div className="bg-[#efefef]" data-personalize-page>
       <div className={PERSONALIZE_PAGE_SHELL_CLASS}>
         <div className={PERSONALIZE_GALLERY_WRAPPER_CLASS}>
-          <div className={`mx-auto flex w-max lg:mx-0 ${PERSONALIZE_GALLERY_GAP_CLASS}`}>
+          <div className={PERSONALIZE_GALLERY_ROW_CLASS}>
             {PERSONALIZE_GALLERY_IMAGES.map((image) => (
               <div key={image.src} className={PERSONALIZE_GALLERY_IMAGE_CLASS}>
                 <Image
                   src={image.src}
                   alt={t(image.altKey)}
                   fill
-                  sizes="(max-width: 1023px) 140px, clamp(140px, 14.17vw, 272px)"
+                  sizes="(max-width: 1023px) 33vw, clamp(140px, 14.17vw, 272px)"
                   className="object-cover"
                   priority
                 />

@@ -222,7 +222,7 @@ export function useOrderSubmission({
       }
 
       const orderNumber = encodeURIComponent(response.order.number);
-      router.push(`/checkout/thank-you?orderNumber=${orderNumber}`);
+      router.replace(`/checkout/thank-you?orderNumber=${orderNumber}`);
     } catch (err: unknown) {
       setIsPlacingOrder(false);
       const error = err as { message?: string };

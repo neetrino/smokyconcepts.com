@@ -16,7 +16,7 @@ import type { Order } from '../useOrders';
 
 interface OrdersTableProps {
   orders: Order[];
-  isOrderNew?: (createdAt: string) => boolean;
+  isOrderNew?: (status: string) => boolean;
   newBadgeLabel?: string;
   loading: boolean;
   selectedIds: Set<string>;
@@ -177,7 +177,7 @@ export function OrdersTable({
               <OrderRow
                 key={order.id}
                 order={order}
-                isNew={isOrderNew?.(order.createdAt) ?? false}
+                isNew={isOrderNew?.(order.status) ?? false}
                 newBadgeLabel={newBadgeLabel}
                 selected={selectedIds.has(order.id)}
                 updatingStatus={updatingStatuses.has(order.id)}

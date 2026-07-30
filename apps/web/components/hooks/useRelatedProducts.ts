@@ -1,42 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import { apiClient } from '../../lib/api-client';
 import { type LanguageCode } from '../../lib/language';
+import {
+  getRelatedProductsCache,
+  setRelatedProductsCache,
+  type RelatedProductCacheItem,
+} from '../../lib/related-products-cache';
+import { preloadCatalogProductImages } from '../../lib/home/catalog-product-image-cache';
 
 const RELATED_PRODUCTS_MAX = 12;
 
-interface RelatedProduct {
-  id: string;
-  slug: string;
-  title: string;
-  price: number;
-  originalPrice?: number | null;
-  compareAtPrice: number | null;
-  discountPercent?: number | null;
-  image: string | null;
-  images?: string[];
-  inStock: boolean;
-  brand?: {
-    id: string;
-    name: string;
-  } | null;
-  categories?: Array<{
-    id: string;
-    slug: string;
-    title: string;
-  }>;
-  skus?: string[];
-  defaultVariantId?: string | null;
-  defaultVariantStock?: number;
-  defaultSku?: string;
-  variants?: Array<{
-    options?: Array<{
-      key: string;
-      value: string;
-    }>;
-  }>;
-}
+type RelatedProduct = RelatedProductCacheItem;
 
 interface UseRelatedProductsProps {
   categorySlug?: string;
@@ -44,18 +20,50 @@ interface UseRelatedProductsProps {
   language: LanguageCode;
 }
 
+function pickRelatedProducts(
+  items: RelatedProduct[],
+  currentProductId: string
+): RelatedProduct[] {
+  return items.filter((product) => product.id !== currentProductId).slice(0, RELATED_PRODUCTS_MAX);
+}
+
 /**
  * Fetches related products for the PDP — cap list to 12 items.
+ * Hydrates from session cache before paint so reload shows the strip immediately.
  */
 export function useRelatedProducts({ categorySlug, currentProductId, language }: UseRelatedProductsProps) {
   const [products, setProducts] = useState<RelatedProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
+  useLayoutEffect(() => {
+    const cached = getRelatedProductsCache(categorySlug, language);
+    if (!cached) {
+      return;
+    }
+
+    const cachedPick = pickRelatedProducts(cached, currentProductId);
+    if (cachedPick.length === 0) {
+      return;
+    }
+
+    setProducts(cachedPick);
+    setLoading(false);
+    void preloadCatalogProductImages(cachedPick);
+  }, [categorySlug, currentProductId, language]);
+
   useEffect(() => {
+    let cancelled = false;
+
+    const cached = getRelatedProductsCache(categorySlug, language);
+    const hasFreshCache =
+      Boolean(cached) && pickRelatedProducts(cached!, currentProductId).length > 0;
+
+    if (!hasFreshCache) {
+      setLoading(true);
+    }
+
     const fetchRelatedProducts = async () => {
       try {
-        setLoading(true);
-
         const params: Record<string, string> = {
           limit: String(RELATED_PRODUCTS_MAX + 8),
           lang: language,
@@ -74,17 +82,34 @@ export function useRelatedProducts({ categorySlug, currentProductId, language }:
           params,
         });
 
-        const filtered = response.data.filter((p) => p.id !== currentProductId);
-        setProducts(filtered.slice(0, RELATED_PRODUCTS_MAX));
+        if (cancelled) {
+          return;
+        }
+
+        setRelatedProductsCache(categorySlug, language, response.data);
+        const filtered = pickRelatedProducts(response.data, currentProductId);
+        setProducts(filtered);
+        void preloadCatalogProductImages(filtered);
       } catch (error) {
+        if (cancelled) {
+          return;
+        }
         console.error('[RelatedProducts] Error fetching related products:', error);
-        setProducts([]);
+        if (!hasFreshCache) {
+          setProducts([]);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
-    fetchRelatedProducts();
+    void fetchRelatedProducts();
+
+    return () => {
+      cancelled = true;
+    };
   }, [categorySlug, currentProductId, language]);
 
   return { products, loading };
