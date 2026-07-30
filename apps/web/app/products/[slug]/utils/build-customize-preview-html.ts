@@ -34,7 +34,7 @@ export function getDefaultCustomizeFormat(): CustomizeFormatState {
   };
 }
 
-/** Live styles for the customize text input (font + B/I/U toggles). */
+/** Live styles for the customize text input (font + B/I toggles). */
 export function getCustomizeInputStyle(format: CustomizeFormatState): CSSProperties {
   return {
     fontFamily: format.fontStack ?? CUSTOMIZE_INPUT_FONT_STACK,

@@ -31,7 +31,7 @@ function ResetPasswordContent() {
 export default function ResetPasswordPage() {
   return (
     <div className="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <Suspense fallback={<PageLoadingCenter className="flex min-h-[40vh] items-center justify-center" />}>
+      <Suspense fallback={<PageLoadingCenter />}>
         <ResetPasswordContent />
       </Suspense>
     </div>

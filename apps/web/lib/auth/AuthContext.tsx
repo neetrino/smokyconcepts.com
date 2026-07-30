@@ -51,7 +51,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 async function fetchCurrentUser(): Promise<User | null> {
   try {
-    const profile = await apiClient.get<User>('/api/v1/users/profile');
+    const profile = await apiClient.get<User>('/api/v1/users/profile', {
+      // Guest 401 is expected — must not bounce public pages to /login.
+      skipUnauthorizedHandler: true,
+    });
     if (!profile?.id) {
       return null;
     }

@@ -53,7 +53,8 @@ function handleNetworkError(error: unknown, baseUrl: string, url: string): never
 async function handleErrorResponse(
   response: Response,
   url: string,
-  baseUrl: string
+  baseUrl: string,
+  options?: RequestOptions
 ): Promise<never> {
   const isUnauthorized = response.status === 401;
   const isNotFound = response.status === 404;
@@ -73,8 +74,8 @@ async function handleErrorResponse(
     });
   }
   
-  // Handle 401 Unauthorized - clear token and redirect
-  if (isUnauthorized) {
+  // Handle 401 Unauthorized - clear token and redirect (unless caller expects guest 401)
+  if (isUnauthorized && !options?.skipUnauthorizedHandler) {
     handleUnauthorized();
   }
   
@@ -150,7 +151,7 @@ export async function getRequest<T>(
       return getRequest<T>(baseUrl, endpoint, options, retryCount + 1);
     }
 
-    await handleErrorResponse(response, url, baseUrl);
+    await handleErrorResponse(response, url, baseUrl, options);
   }
 
   try {
@@ -218,14 +219,7 @@ export async function postRequest<T>(
     }
 
     if (!response.ok) {
-      const isUnauthorized = response.status === 401;
-      
-      // Handle 401 Unauthorized - clear token and redirect
-      if (isUnauthorized) {
-        handleUnauthorized();
-      }
-      
-      await handleErrorResponse(response, url, baseUrl);
+      await handleErrorResponse(response, url, baseUrl, options);
     }
 
     try {
@@ -287,7 +281,7 @@ export async function putRequest<T>(
   console.log('📥 [API CLIENT] PUT response status:', response.status, response.statusText);
 
   if (!response.ok) {
-    await handleErrorResponse(response, url, baseUrl);
+    await handleErrorResponse(response, url, baseUrl, options);
   }
 
   try {
@@ -324,7 +318,7 @@ export async function patchRequest<T>(
   });
 
   if (!response.ok) {
-    await handleErrorResponse(response, url, baseUrl);
+    await handleErrorResponse(response, url, baseUrl, options);
   }
 
   try {
@@ -353,7 +347,7 @@ export async function deleteRequest<T>(
   });
 
   if (!response.ok) {
-    await handleErrorResponse(response, url, baseUrl);
+    await handleErrorResponse(response, url, baseUrl, options);
   }
 
   // DELETE requests might not return a body

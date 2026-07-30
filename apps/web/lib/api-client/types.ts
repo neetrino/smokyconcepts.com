@@ -4,6 +4,8 @@
 export interface RequestOptions extends globalThis.RequestInit {
   params?: Record<string, string>;
   skipAuth?: boolean; // Skip automatic token injection
+  /** When true, a 401 does not clear the session or redirect to /login (e.g. session probe). */
+  skipUnauthorizedHandler?: boolean;
 }
 
 /**

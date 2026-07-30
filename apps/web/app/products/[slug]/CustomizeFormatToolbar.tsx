@@ -5,8 +5,10 @@ import type { LanguageCode } from '../../../lib/language';
 import { CustomizeFontDropdown } from './CustomizeFontDropdown';
 import {
   CUSTOMIZE_FORMAT_ASSETS,
-  CUSTOMIZE_FORMAT_BUTTON_ACTIVE_CLASS,
   CUSTOMIZE_FORMAT_BUTTON_CLASS,
+  CUSTOMIZE_FORMAT_CONTROL_ACTIVE_CLASS,
+  CUSTOMIZE_FORMAT_CONTROL_ACTIVE_ICON_CLASS,
+  CUSTOMIZE_FORMAT_CONTROL_IDLE_CLASS,
   CUSTOMIZE_FORMAT_TOOLBAR_CLASS,
 } from './customize-format.constants';
 import type { CustomizeFormatState } from './utils/build-customize-preview-html';
@@ -17,20 +19,15 @@ export type CustomizeFormatToolbarProps = {
   onFormatChange: (next: CustomizeFormatState) => void;
 };
 
-type FormatToggleKey = keyof Pick<CustomizeFormatState, 'bold' | 'italic' | 'underline'>;
+type FormatToggleKey = keyof Pick<CustomizeFormatState, 'bold' | 'italic'>;
 
 const FORMAT_TOGGLE_META: ReadonlyArray<{
   key: FormatToggleKey;
-  labelKey: 'product.customize_format_bold' | 'product.customize_format_italic' | 'product.customize_format_underline';
+  labelKey: 'product.customize_format_bold' | 'product.customize_format_italic';
   iconSrc: string;
 }> = [
   { key: 'bold', labelKey: 'product.customize_format_bold', iconSrc: CUSTOMIZE_FORMAT_ASSETS.boldSrc },
   { key: 'italic', labelKey: 'product.customize_format_italic', iconSrc: CUSTOMIZE_FORMAT_ASSETS.italicSrc },
-  {
-    key: 'underline',
-    labelKey: 'product.customize_format_underline',
-    iconSrc: CUSTOMIZE_FORMAT_ASSETS.underlineSrc,
-  },
 ];
 
 export function CustomizeFormatToolbar({
@@ -54,22 +51,35 @@ export function CustomizeFormatToolbar({
         }}
       />
       <div className="flex shrink-0 flex-nowrap items-center gap-1.5 sm:gap-2">
-        {FORMAT_TOGGLE_META.map(({ key, labelKey, iconSrc }) => (
-          <button
-            key={key}
-            type="button"
-            aria-pressed={format[key]}
-            aria-label={t(language, labelKey)}
-            className={`${CUSTOMIZE_FORMAT_BUTTON_CLASS} ${
-              format[key] ? CUSTOMIZE_FORMAT_BUTTON_ACTIVE_CLASS : ''
-            }`}
-            onClick={() => {
-              toggle(key);
-            }}
-          >
-            <img src={iconSrc} alt="" width={18} height={18} className="block" decoding="async" draggable={false} />
-          </button>
-        ))}
+        {FORMAT_TOGGLE_META.map(({ key, labelKey, iconSrc }) => {
+          const isActive = format[key];
+          return (
+            <button
+              key={key}
+              type="button"
+              aria-pressed={isActive}
+              aria-label={t(language, labelKey)}
+              className={`${CUSTOMIZE_FORMAT_BUTTON_CLASS} ${
+                isActive
+                  ? CUSTOMIZE_FORMAT_CONTROL_ACTIVE_CLASS
+                  : CUSTOMIZE_FORMAT_CONTROL_IDLE_CLASS
+              }`}
+              onClick={() => {
+                toggle(key);
+              }}
+            >
+              <img
+                src={iconSrc}
+                alt=""
+                width={18}
+                height={18}
+                className={`block ${isActive ? CUSTOMIZE_FORMAT_CONTROL_ACTIVE_ICON_CLASS : ''}`}
+                decoding="async"
+                draggable={false}
+              />
+            </button>
+          );
+        })}
       </div>
     </div>
   );

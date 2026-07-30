@@ -1,30 +1,16 @@
-import { GlassPageSpinner } from './GlassPageSpinner';
+'use client';
+
+import { PageLoadingOverlay } from './PageLoadingOverlay';
 
 interface PageLoadingCenterProps {
   /** Optional accessible label; defaults to a generic loading status. */
   label?: string;
-  /** Extra classes for the outer wrapper. */
-  className?: string;
 }
 
 /**
- * Centered in-page glass spinner for route/page loading states
- * (no fixed duration — parent unmounts when ready).
+ * Full-screen glass loading overlay — same popup style as navigation loading.
+ * Name kept for call-site compatibility (replaces the old in-page spinner).
  */
-export function PageLoadingCenter({
-  label = 'Loading',
-  className = 'mx-auto flex min-h-[50vh] max-w-7xl items-center justify-center px-4 py-12',
-}: PageLoadingCenterProps) {
-  return (
-    <div
-      role="status"
-      aria-live="polite"
-      aria-busy="true"
-      aria-label={label}
-      className={className}
-    >
-      <span className="sr-only">{label}</span>
-      <GlassPageSpinner />
-    </div>
-  );
+export function PageLoadingCenter({ label = 'Loading' }: PageLoadingCenterProps) {
+  return <PageLoadingOverlay visible label={label} />;
 }
