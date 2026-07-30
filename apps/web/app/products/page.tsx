@@ -1,6 +1,9 @@
 import { getStoredLanguage } from '../../lib/language';
 import { ProductsCatalogView } from './components/ProductsCatalogView';
-import { isClientSideCollectionFilterValue } from './components/catalogProductLabels';
+import {
+  isClientSideCollectionFilterValue,
+  normalizeCatalogColorLabels,
+} from './components/catalogProductLabels';
 
 export const revalidate = 60;
 
@@ -162,7 +165,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     skus: Array.isArray(p.skus) ? p.skus : [],
     brand: p.brand ?? null,
     labels: p.labels ?? [],
-    colors: Array.isArray(p.colors) ? p.colors : [],
+    colors: normalizeCatalogColorLabels(p.colors),
     discountPercent: p.discountPercent ?? null,
     defaultVariantId: p.defaultVariantId ?? null,
     defaultVariantStock: p.defaultVariantStock ?? 0,

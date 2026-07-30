@@ -14,7 +14,7 @@ import {
   type CatalogProduct,
   filterSizeCatalogByProducts,
   getProductSectionLabels,
-  getColorLabel,
+  getProductColorLabels,
   productMatchesCategoryFilter,
   productMatchesSizeFilter,
   resolveSectionLabelFromCollectionValue,
@@ -130,9 +130,8 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
   }, [products]);
 
   const colorOptions = useMemo(() => {
-    return Array.from(new Set(products.map((product) => getColorLabel(product)))).sort((a, b) =>
-      a.localeCompare(b)
-    );
+    const labels = products.flatMap((product) => getProductColorLabels(product));
+    return Array.from(new Set(labels)).sort((a, b) => a.localeCompare(b));
   }, [products]);
 
   const sizeCatalogForModal = useMemo(
@@ -185,13 +184,14 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
   const visibleProducts = useMemo(() => {
     const gateByCollection = selectedCollection !== 'all';
     const filtered = products.filter((product) => {
-      const colorLabel = getColorLabel(product);
-
       if (gateByCollection && !productMatchesCategoryFilter(product, selectedCollection)) {
         return false;
       }
-      if (selectedColor !== 'all' && colorLabel !== selectedColor) {
-        return false;
+      if (selectedColor !== 'all') {
+        const productColors = getProductColorLabels(product);
+        if (!productColors.includes(selectedColor)) {
+          return false;
+        }
       }
       if (
         !productMatchesSizeFilter(
@@ -236,45 +236,56 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
       : [...SECTION_ORDER];
   }, [selectedCollection, selectedSectionTitle]);
 
-  const updateQuery = (updates: Record<string, string>) => {
-    const params = new URLSearchParams(searchParams.toString());
+  const updateQuery = useCallback(
+    (updates: Record<string, string>) => {
+      const params = new URLSearchParams(searchParams.toString());
 
-    Object.entries(updates).forEach(([key, value]) => {
-      if (!value || value === 'all' || value === 'default') {
-        params.delete(key);
-        return;
-      }
-      params.set(key, value);
-    });
+      Object.entries(updates).forEach(([key, value]) => {
+        if (!value || value === 'all' || value === 'default') {
+          params.delete(key);
+          return;
+        }
+        params.set(key, value);
+      });
 
-    router.replace(params.toString() ? `/products?${params.toString()}` : '/products', { scroll: false });
-  };
+      router.replace(params.toString() ? `/products?${params.toString()}` : '/products', {
+        scroll: false,
+      });
+    },
+    [router, searchParams]
+  );
 
-  const applyCatalogSizeFilter = (item: SizeCatalogItemDto) => {
-    const { size: sizeQueryValue, sizeCat: categoryId } = catalogSizeQueryFromItem(item);
-    setSelectedSize(sizeQueryValue);
-    setSelectedSizeCatalogCategoryId(categoryId);
-    setCatalogSizeModalOpen(false);
-    setMobileFilterOpen(false);
-    updateQuery({ size: sizeQueryValue, sizeCat: categoryId || 'all' });
-  };
+  const applyCatalogSizeFilter = useCallback(
+    (item: SizeCatalogItemDto) => {
+      const { size: sizeQueryValue, sizeCat: categoryId } = catalogSizeQueryFromItem(item);
+      setSelectedSize(sizeQueryValue);
+      setSelectedSizeCatalogCategoryId(categoryId);
+      setCatalogSizeModalOpen(false);
+      setMobileFilterOpen(false);
+      updateQuery({ size: sizeQueryValue, sizeCat: categoryId || 'all' });
+    },
+    [updateQuery]
+  );
 
-  const stageCatalogSizeForMobileApply = (item: SizeCatalogItemDto) => {
+  const stageCatalogSizeForMobileApply = useCallback((item: SizeCatalogItemDto) => {
     const { size, sizeCat } = catalogSizeQueryFromItem(item);
     setMobilePendingSize(size);
     setMobilePendingSizeCat(sizeCat);
     setCatalogSizeFromMobileFilter(false);
     setCatalogSizeModalOpen(false);
     setMobileFilterOpen(true);
-  };
+  }, []);
 
-  const handleCatalogSizeItemSelect = (item: SizeCatalogItemDto) => {
-    if (catalogSizeFromMobileFilter) {
-      stageCatalogSizeForMobileApply(item);
-      return;
-    }
-    applyCatalogSizeFilter(item);
-  };
+  const handleCatalogSizeItemSelect = useCallback(
+    (item: SizeCatalogItemDto) => {
+      if (catalogSizeFromMobileFilter) {
+        stageCatalogSizeForMobileApply(item);
+        return;
+      }
+      applyCatalogSizeFilter(item);
+    },
+    [applyCatalogSizeFilter, catalogSizeFromMobileFilter, stageCatalogSizeForMobileApply]
+  );
 
   const commitMobileFilterApply = () => {
     const nextSizeCat = mobilePendingSizeCat.trim();

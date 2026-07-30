@@ -182,32 +182,44 @@ export function useProductInfoAndActions({
     setIsSizeShaking(false);
   }, []);
 
-  const handleSelectCatalogSizeItem = (item: SizeCatalogItemDto) => {
-    setSelectedCatalogSize(item);
-    setSelectedCustomSizeRequest(null);
-    onSelectedCatalogSizeChange?.(item);
-    onSelectedCustomSizeRequestChange?.(null);
-    if (onCatalogVariantSelect) {
-      onCatalogVariantSelect(item.categoryTitle, item.version);
-      return;
-    }
-    if (sizeOptions.length > 0) {
-      const matched = matchVariantSizeFromCatalogTitle(item.categoryTitle, sizeOptions);
-      if (matched) {
-        onSizeSelect(matched);
+  const handleSelectCatalogSizeItem = useCallback(
+    (item: SizeCatalogItemDto) => {
+      setSelectedCatalogSize(item);
+      setSelectedCustomSizeRequest(null);
+      onSelectedCatalogSizeChange?.(item);
+      onSelectedCustomSizeRequestChange?.(null);
+      if (onCatalogVariantSelect) {
+        onCatalogVariantSelect(item.categoryTitle, item.version);
+        return;
       }
-    }
-  };
+      if (sizeOptions.length > 0) {
+        const matched = matchVariantSizeFromCatalogTitle(item.categoryTitle, sizeOptions);
+        if (matched) {
+          onSizeSelect(matched);
+        }
+      }
+    },
+    [
+      onCatalogVariantSelect,
+      onSelectedCatalogSizeChange,
+      onSelectedCustomSizeRequestChange,
+      onSizeSelect,
+      sizeOptions,
+    ]
+  );
 
-  const handleSelectCustomSizeRequest = (draft: CustomOrderDraft) => {
-    setSelectedCatalogSize(null);
-    setSelectedCustomSizeRequest(draft);
-    onSelectedCatalogSizeChange?.(null);
-    onSelectedCustomSizeRequestChange?.(draft);
-    if (sizeOptions.length > 0) {
-      onSizeSelect(sizeOptions[0].value);
-    }
-  };
+  const handleSelectCustomSizeRequest = useCallback(
+    (draft: CustomOrderDraft) => {
+      setSelectedCatalogSize(null);
+      setSelectedCustomSizeRequest(draft);
+      onSelectedCatalogSizeChange?.(null);
+      onSelectedCustomSizeRequestChange?.(draft);
+      if (sizeOptions.length > 0) {
+        onSizeSelect(sizeOptions[0].value);
+      }
+    },
+    [onSelectedCatalogSizeChange, onSelectedCustomSizeRequestChange, onSizeSelect, sizeOptions]
+  );
 
   const openSizeCatalogModal = () => {
     void preloadSizeCatalogCategories(sizeCatalogCategories);

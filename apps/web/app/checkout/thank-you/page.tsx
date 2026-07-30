@@ -4,15 +4,20 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button, Card } from '@shop/ui';
+import { breakOutOfPaymentIframeIfNeeded } from '@/lib/payments/break-out-of-payment-iframe';
+import { resolvePaymentReturnOrderNumber } from '@/lib/payments/resolve-payment-return-order-number';
 import { clearGuestCart } from '../checkoutUtils';
 
 export default function ThankYouPage() {
   const searchParams = useSearchParams();
-  const orderNumber = searchParams.get('orderNumber');
+  const orderNumber = resolvePaymentReturnOrderNumber(searchParams);
   const shouldClearGuestCart = searchParams.get('clearCart') === '1';
   const orderHref = orderNumber ? `/orders/${encodeURIComponent(orderNumber)}` : '/profile';
 
   useEffect(() => {
+    if (breakOutOfPaymentIframeIfNeeded()) {
+      return;
+    }
     if (shouldClearGuestCart) {
       clearGuestCart();
     }

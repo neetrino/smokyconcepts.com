@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
@@ -144,30 +144,25 @@ export function CustomizeSizeModal({
   }, [isMounted]);
 
   const hasPendingSizeSelection = pendingSizeItem !== null;
+  const onSelectSizeCatalogItemRef = useRef(onSelectSizeCatalogItem);
+  onSelectSizeCatalogItemRef.current = onSelectSizeCatalogItem;
 
   useBodyScrollLock(isMounted || hasPendingSizeSelection);
 
+  /**
+   * Apply the pick only after the exit animation unmounts the portal.
+   * Use a ref for the parent callback so identity churn cannot cancel pending clear
+   * (which would leave body scroll locked).
+   */
   useEffect(() => {
     if (isMounted || !pendingSizeItem) {
       return;
     }
 
     const item = pendingSizeItem;
-    onSelectSizeCatalogItem(item);
-
-    let outerFrameId = 0;
-    let innerFrameId = 0;
-    outerFrameId = requestAnimationFrame(() => {
-      innerFrameId = requestAnimationFrame(() => {
-        setPendingSizeItem(null);
-      });
-    });
-
-    return () => {
-      cancelAnimationFrame(outerFrameId);
-      cancelAnimationFrame(innerFrameId);
-    };
-  }, [isMounted, pendingSizeItem, onSelectSizeCatalogItem]);
+    setPendingSizeItem(null);
+    onSelectSizeCatalogItemRef.current(item);
+  }, [isMounted, pendingSizeItem]);
 
   useEffect(() => {
     if (!isMounted) {

@@ -1,14 +1,21 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button, Card } from '@shop/ui';
+import { breakOutOfPaymentIframeIfNeeded } from '@/lib/payments/break-out-of-payment-iframe';
+import { resolvePaymentReturnOrderNumber } from '@/lib/payments/resolve-payment-return-order-number';
 
 export default function CheckoutPaymentFailedPage() {
   const searchParams = useSearchParams();
-  const orderNumber = searchParams.get('orderNumber');
+  const orderNumber = resolvePaymentReturnOrderNumber(searchParams);
   const retryCheckoutHref = '/checkout';
   const orderHref = orderNumber ? `/orders/${encodeURIComponent(orderNumber)}` : '/profile';
+
+  useEffect(() => {
+    breakOutOfPaymentIframeIfNeeded();
+  }, []);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">

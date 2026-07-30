@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useCallback } from 'react';
 import { useTranslation } from '../../../lib/i18n-client';
-import { fetchCartForGuest } from '../checkoutUtils';
+import { readGuestCartFromStorage } from '../../cart/cart-fetcher';
 import type { Cart } from '../types';
 
 export function useCart() {
@@ -9,11 +9,9 @@ export function useCart() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchCart = useCallback(async () => {
+  const syncCartFromStorage = useCallback(() => {
     try {
-      setLoading(true);
-      const guestCart = await fetchCartForGuest();
-      setCart(guestCart);
+      setCart(readGuestCartFromStorage());
     } catch {
       setError(t('checkout.errors.failedToLoadCart'));
     } finally {
@@ -21,22 +19,18 @@ export function useCart() {
     }
   }, [t]);
 
-  const syncCartFromStorage = useCallback(async () => {
-    try {
-      const guestCart = await fetchCartForGuest();
-      setCart(guestCart);
-    } catch {
-      setError(t('checkout.errors.failedToLoadCart'));
-    }
-  }, [t]);
+  const fetchCart = useCallback(async () => {
+    syncCartFromStorage();
+  }, [syncCartFromStorage]);
 
-  useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
+  // Before paint so soft-nav from cart drawer does not flash a loading screen.
+  useLayoutEffect(() => {
+    syncCartFromStorage();
+  }, [syncCartFromStorage]);
 
   useEffect(() => {
     const handleCartUpdate = () => {
-      void syncCartFromStorage();
+      syncCartFromStorage();
     };
 
     window.addEventListener('cart-updated', handleCartUpdate);
@@ -45,4 +39,3 @@ export function useCart() {
 
   return { cart, loading, error, setError, setCart, fetchCart };
 }
-
