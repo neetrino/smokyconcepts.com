@@ -24,10 +24,9 @@ export function useAdminNewCounts(enabled = true): AdminNewCounts {
 
     const fetchCounts = async () => {
       try {
-        const ordersSince = readAdminLastSeenAt('orders') ?? '';
         const messagesSince = readAdminLastSeenAt('messages') ?? '';
         const response = await apiClient.get<AdminNewCounts>('/api/v1/admin/new-counts', {
-          params: { ordersSince, messagesSince },
+          params: { messagesSince },
         });
         if (!cancelled) {
           setCounts({

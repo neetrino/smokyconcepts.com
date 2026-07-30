@@ -29,13 +29,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const ordersSince = parseSinceTimestamp(req.nextUrl.searchParams.get("ordersSince"));
     const messagesSince = parseSinceTimestamp(req.nextUrl.searchParams.get("messagesSince"));
 
     const [orders, messages] = await Promise.all([
-      ordersSince
-        ? db.order.count({ where: { createdAt: { gt: ordersSince } } })
-        : Promise.resolve(0),
+      db.order.count({ where: { status: "pending" } }),
       messagesSince
         ? db.contactMessage.count({ where: { createdAt: { gt: messagesSince } } })
         : Promise.resolve(0),
