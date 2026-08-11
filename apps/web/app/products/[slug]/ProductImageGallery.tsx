@@ -68,8 +68,11 @@ const THUMBNAIL_NAV_BUTTON_CLASSES =
 
 const THUMBNAIL_NAV_ICON_CLASSES = 'size-5 sm:size-6';
 
-/** Fills the frame: upscales small assets, downscales large ones, keeps aspect ratio. */
-const GALLERY_IMAGE_FIT_CLASSES = 'size-full object-contain object-center';
+/**
+ * Fills the fixed hero/thumb frame without layout jump from intrinsic image size.
+ * `absolute inset-0` keeps the CSS box stable before decode; object-contain scales the bitmap.
+ */
+const GALLERY_IMAGE_FIT_CLASSES = 'absolute inset-0 size-full object-contain object-center';
 
 /** Vertical rhythm between hero and thumbnail strip inside the card. */
 const GALLERY_SECTION_GAP_CLASSES = 'gap-3 sm:gap-4';
@@ -344,8 +347,8 @@ export function ProductImageGallery({
           isActive ? 'opacity-100' : 'opacity-75 hover:opacity-100'
         }`}
       >
-        <div className={`flex items-center justify-center overflow-visible ${THUMBNAIL_IMAGE_BOX_SIZE_CLASSES}`}>
-          <img src={image} alt="" draggable={false} className={`block ${GALLERY_IMAGE_FIT_CLASSES}`} />
+        <div className={`relative overflow-hidden ${THUMBNAIL_IMAGE_BOX_SIZE_CLASSES}`}>
+          <img src={image} alt="" draggable={false} className={GALLERY_IMAGE_FIT_CLASSES} />
         </div>
         <span
           aria-hidden
@@ -486,15 +489,14 @@ export function ProductImageGallery({
     }
 
     return (
-      <div
-        className={`relative mx-auto flex w-full max-w-full items-center justify-center ${HERO_IMAGE_BOX_SIZE_CLASSES}`}
-      >
+      <div className={`relative mx-auto w-full max-w-full ${HERO_IMAGE_BOX_SIZE_CLASSES}`}>
         <img
           src={heroImageSrc}
           alt={product.title}
           decoding="async"
+          fetchPriority="high"
           draggable={false}
-          className={`block transition-transform duration-300 ease-out max-sm:group-hover:scale-100 sm:group-hover:scale-[1.03] ${GALLERY_IMAGE_FIT_CLASSES}`}
+          className={`transition-transform duration-300 ease-out max-sm:group-hover:scale-100 sm:group-hover:scale-[1.03] ${GALLERY_IMAGE_FIT_CLASSES}`}
         />
         {customizeOverlayHtml ? (
           <CustomizeProductOverlay html={customizeOverlayHtml} position={customizeOverlayPosition} />

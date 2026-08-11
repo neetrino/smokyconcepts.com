@@ -13,6 +13,10 @@ import {
   ADMIN_FIXED_SIDEBAR_SPACER_CLASS,
 } from '../constants/adminShell.constants';
 import { getAdminSidebarNavIndentClass } from '../utils/adminMenuIndent';
+import {
+  AddDeliveryLocationDrawer,
+  type NewDeliveryLocationDraft,
+} from './components/AddDeliveryLocationDrawer';
 
 interface DeliveryLocation {
   id?: string;
@@ -35,7 +39,7 @@ export default function DeliveryPage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [locations, setLocations] = useState<DeliveryLocation[]>([]);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [isAddDrawerOpen, setIsAddDrawerOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading) {
@@ -84,7 +88,6 @@ export default function DeliveryPage() {
       await apiClient.put('/api/v1/admin/delivery', { locations });
       alert(t('admin.delivery.savedSuccess'));
       console.log('✅ [ADMIN] Delivery settings saved');
-      setEditingId(null);
       await fetchDeliverySettings();
     } catch (err: any) {
       console.error('❌ [ADMIN] Error saving delivery settings:', err);
@@ -95,9 +98,13 @@ export default function DeliveryPage() {
     }
   };
 
-  const handleAddLocation = () => {
-    setLocations([...locations, { country: '', city: '', price: 1000, freeDeliveryFromAmd: 0 }]);
-    setEditingId(`new-${Date.now()}`);
+  const handleOpenAddDrawer = () => {
+    setIsAddDrawerOpen(true);
+  };
+
+  const handleConfirmAddLocation = (location: NewDeliveryLocationDraft) => {
+    setLocations((prev) => [...prev, location]);
+    setIsAddDrawerOpen(false);
   };
 
   const handleUpdateLocation = (index: number, field: keyof DeliveryLocation, value: string | number) => {
@@ -177,7 +184,7 @@ export default function DeliveryPage() {
                 <h2 className="text-xl font-semibold text-[#122a26]">{t('admin.delivery.deliveryPricesByLocation')}</h2>
                 <Button
                   variant="primary"
-                  onClick={handleAddLocation}
+                  onClick={handleOpenAddDrawer}
                   disabled={saving}
                 >
                   {t('admin.delivery.addLocation')}
@@ -292,6 +299,13 @@ export default function DeliveryPage() {
           </div>
         </div>
       </div>
+
+      <AddDeliveryLocationDrawer
+        isOpen={isAddDrawerOpen}
+        saving={saving}
+        onClose={() => setIsAddDrawerOpen(false)}
+        onConfirm={handleConfirmAddLocation}
+      />
     </div>
   );
 }

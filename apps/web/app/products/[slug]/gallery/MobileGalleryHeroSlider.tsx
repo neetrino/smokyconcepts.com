@@ -38,7 +38,7 @@ const INITIAL_GALLERY_TOUCH_STATE: GalleryTouchState = {
 /** Movement before deciding horizontal gallery swipe vs vertical page scroll. */
 const HORIZONTAL_SWIPE_AXIS_LOCK_THRESHOLD_PX = 8;
 
-const HERO_SLIDE_LAYER_BASE_CLASSES = 'absolute inset-0 flex items-center justify-center';
+const HERO_SLIDE_LAYER_BASE_CLASSES = 'absolute inset-0';
 /** Vertical pans reach the page; horizontal swipes are handled in JS. */
 const HERO_SWIPE_CONTAINER_CLASSES = 'touch-pan-y overscroll-none';
 const HERO_SLIDE_TRANSITION_CLASSES = 'transition-transform duration-300 ease-out';
@@ -182,7 +182,7 @@ export function MobileGalleryHeroSlider({
       alt={imageAlt}
       decoding="async"
       draggable={false}
-      className={`block ${fitClasses}`}
+      className={fitClasses}
     />
   );
 
@@ -222,7 +222,7 @@ export function MobileGalleryHeroSlider({
           </div>
         </>
       ) : (
-        <div className="flex size-full items-center justify-center">
+        <div className="relative size-full">
           {renderHeroImage(images[currentIndex] ?? '', alt)}
         </div>
       )}
