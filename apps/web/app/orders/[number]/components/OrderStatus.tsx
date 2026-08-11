@@ -34,14 +34,16 @@ export function OrderStatus({ status, paymentStatus }: OrderStatusProps) {
 
   return (
     <Card className="p-6">
-      <div className="flex items-center gap-3 max-sm:flex-nowrap">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <h2 className="text-xl font-semibold text-gray-900">{t('orders.orderStatus.title')}</h2>
-        <span className={`whitespace-nowrap rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(status)}`}>
-          {status}
-        </span>
-        <span className={`whitespace-nowrap rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(paymentStatus)}`}>
-          {t('orders.orderStatus.payment').replace('{status}', paymentStatus)}
-        </span>
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <span className={`whitespace-nowrap rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(status)}`}>
+            {status}
+          </span>
+          <span className={`whitespace-nowrap rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(paymentStatus)}`}>
+            {t('orders.orderStatus.payment').replace('{status}', paymentStatus)}
+          </span>
+        </div>
       </div>
     </Card>
   );

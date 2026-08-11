@@ -82,12 +82,15 @@ export function BasicInformation({
             {t('admin.products.add.productTabHtml')}
           </label>
           <textarea
-            className="w-full px-3 py-2 border border-[#dcc090]/35 rounded-md focus:outline-none focus:ring-2 focus:ring-[#dcc090] focus:border-[#dcc090]"
-            rows={5}
+            className="w-full px-3 py-2 border border-[#dcc090]/35 rounded-md focus:outline-none focus:ring-2 focus:ring-[#dcc090] focus:border-[#dcc090] whitespace-pre-wrap"
+            rows={8}
             value={productDetailsHtml}
             onChange={onProductDetailsChange}
             placeholder={t('admin.products.add.productTabHtmlPlaceholder')}
           />
+          <p className="mt-1 text-xs text-gray-500">
+            {t('admin.products.add.productTabHtmlHint')}
+          </p>
         </div>
 
         <div>

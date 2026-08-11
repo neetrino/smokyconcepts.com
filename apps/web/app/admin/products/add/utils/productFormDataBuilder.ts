@@ -3,6 +3,7 @@
  */
 
 import type { ProductData, Variant, ProductLabel } from '../types';
+import { productTabHtmlToEditableText } from './productTabContentFormat';
 
 interface FormData {
   title: string;
@@ -37,7 +38,7 @@ export function buildFormData(
     title: product.title || '',
     slug: product.slug || '',
     descriptionHtml: product.descriptionHtml || '',
-    productDetailsHtml: product.productDetailsHtml || '',
+    productDetailsHtml: productTabHtmlToEditableText(product.productDetailsHtml || ''),
     shippingHtml: product.shippingHtml || '',
     brandIds: [],
     primaryCategoryId: product.primaryCategoryId || '',

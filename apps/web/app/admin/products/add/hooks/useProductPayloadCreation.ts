@@ -1,6 +1,7 @@
 import { apiClient } from '@/lib/api-client';
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import type { ProductLabel } from '../types';
+import { editableProductTabTextToHtml } from '../utils/productTabContentFormat';
 import { ensureUniqueSlug } from '../utils/productUtils';
 
 interface CreateAndSubmitPayloadProps {
@@ -53,7 +54,7 @@ export async function createAndSubmitPayload({
       title: formData.title,
       slug: uniqueSlug,
       descriptionHtml: formData.descriptionHtml || undefined,
-      productDetailsHtml: formData.productDetailsHtml || undefined,
+      productDetailsHtml: editableProductTabTextToHtml(formData.productDetailsHtml) || undefined,
       shippingHtml: formData.shippingHtml || undefined,
       primaryCategoryId: finalPrimaryCategoryId || undefined,
       categoryIds: formData.categoryIds.length > 0 ? formData.categoryIds : undefined,
