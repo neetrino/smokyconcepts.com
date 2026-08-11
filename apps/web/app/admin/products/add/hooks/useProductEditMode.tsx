@@ -4,6 +4,7 @@ import { apiClient } from '@/lib/api-client';
 import { cleanImageUrls } from '@/lib/services/utils/image-utils';
 import { initializeCurrencyRates } from '@/lib/currency';
 import { mapApiVariantsToGeneratedVariants } from '../utils/mapApiVariantsToGeneratedVariants';
+import { productTabHtmlToEditableText } from '../utils/productTabContentFormat';
 import type { ProductData } from '../types';
 import type { GeneratedVariant } from '../types';
 
@@ -48,7 +49,7 @@ export function useProductEditMode({
           title: product.title || '',
           slug: product.slug || '',
           descriptionHtml: product.descriptionHtml || '',
-          productDetailsHtml: product.productDetailsHtml || '',
+          productDetailsHtml: productTabHtmlToEditableText(product.productDetailsHtml || ''),
           shippingHtml: product.shippingHtml || '',
           primaryCategoryId: product.primaryCategoryId || '',
           categoryIds: product.categoryIds || [],

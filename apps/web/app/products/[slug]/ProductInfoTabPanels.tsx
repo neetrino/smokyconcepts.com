@@ -21,6 +21,7 @@ import {
   getCustomizeCopy,
   getShippingCopy,
   hasRenderableTabHtml,
+  normalizeProductTabHtmlForDisplay,
   PRODUCT_TAB_HTML_PROSE_CLASS,
 } from './utils/productInfoAndActions.helpers';
 import type { ProductTabKey } from './productInfoAndActions.types';
@@ -130,7 +131,7 @@ export function ProductInfoTabPanels({
     return (
       <div
         className={PRODUCT_TAB_HTML_PROSE_CLASS}
-        dangerouslySetInnerHTML={{ __html: productTabHtml }}
+        dangerouslySetInnerHTML={{ __html: normalizeProductTabHtmlForDisplay(productTabHtml) }}
       />
     );
   }

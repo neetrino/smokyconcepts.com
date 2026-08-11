@@ -161,7 +161,8 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-[#122a26] max-md:fixed max-md:inset-x-0">
+      {/* Fixed (not sticky): html/body overflow-x:hidden breaks position:sticky. */}
+      <header className="fixed inset-x-0 top-0 z-50 w-full bg-[#122a26]">
         <div className="relative mx-auto max-w-[120rem]">
           <div className="flex h-16 items-center px-4 py-3 sm:px-8 lg:px-[7.5rem]">
             <Link href="/" className="relative h-10 w-40 shrink-0">
@@ -218,7 +219,7 @@ export function Header() {
           ) : null}
         </div>
       </header>
-      <div className="h-16 shrink-0 md:hidden" aria-hidden />
+      <div className="h-16 shrink-0" aria-hidden />
     </>
   );
 }

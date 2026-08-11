@@ -2,8 +2,28 @@ import type { LanguageCode } from '../../../../lib/language';
 import { normalizeHexPalette, parseHexFromText } from './swatch-color-utils';
 import type { ProductOptionValue } from '../productInfoAndActions.types';
 
+/** Stacked tab HTML: each `<p>` / block sits under the previous with clear separation. */
 export const PRODUCT_TAB_HTML_PROSE_CLASS =
-  'prose max-w-none text-[15px] leading-[24px] text-[#414141] prose-p:my-0 prose-p:text-[15px] prose-p:leading-[24px] sm:text-[16px] sm:leading-[26px] sm:prose-p:text-[16px] sm:prose-p:leading-[26px]';
+  'prose max-w-none space-y-2 text-[15px] leading-[24px] text-[#414141] prose-p:my-0 prose-p:text-[15px] prose-p:leading-[24px] sm:text-[16px] sm:leading-[26px] sm:prose-p:text-[16px] sm:prose-p:leading-[26px]';
+
+const STRUCTURED_TAB_HTML_RE = /<\/?(?:p|div|ul|ol|li|h[1-6]|br|table|section)\b/i;
+
+/**
+ * Ensures plain newline-separated Product-tab text renders as stacked blocks.
+ */
+export function normalizeProductTabHtmlForDisplay(html: string): string {
+  const trimmed = html.trim();
+  if (!trimmed || STRUCTURED_TAB_HTML_RE.test(trimmed)) {
+    return html;
+  }
+
+  return trimmed
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .map((line) => `<p>${line}</p>`)
+    .join('');
+}
 
 const COLOR_SWATCH_FALLBACKS: Record<string, string[]> = {
   black: ['#1d1d1f'],
