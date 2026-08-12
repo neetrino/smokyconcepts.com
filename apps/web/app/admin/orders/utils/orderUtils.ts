@@ -25,6 +25,8 @@ export function getPaymentStatusColor(paymentStatus: string): string {
       return 'bg-yellow-100 text-yellow-800';
     case 'failed':
       return 'bg-red-100 text-red-800';
+    case 'refunded':
+      return 'bg-slate-100 text-slate-800';
     default:
       return 'bg-gray-100 text-gray-800';
   }
@@ -73,6 +75,11 @@ const PAYMENT_STATUS_SELECT_UI: Record<string, AdminOrderSelectTone> = {
     summaryTone: 'bg-[#fee2e2] text-[#991b1b] ring-[#fca5a5] focus:ring-[#f87171]',
     rowSelect:
       'border-[#fca5a5] bg-[#fee2e2] text-[#991b1b] hover:border-[#f87171] hover:bg-[#fecaca] focus:ring-[#f87171]',
+  },
+  refunded: {
+    summaryTone: 'bg-[#e2e8f0] text-[#334155] ring-[#cbd5e1] focus:ring-[#94a3b8]',
+    rowSelect:
+      'border-[#cbd5e1] bg-[#e2e8f0] text-[#334155] hover:border-[#94a3b8] hover:bg-[#cbd5e1] focus:ring-[#94a3b8]',
   },
 };
 

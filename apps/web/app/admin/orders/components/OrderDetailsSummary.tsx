@@ -158,6 +158,7 @@ export function OrderDetailsSummary({
               <option value="paid">{t('admin.orders.paid')}</option>
               <option value="pending">{t('admin.orders.pendingPayment')}</option>
               <option value="failed">{t('admin.orders.failed')}</option>
+              <option value="refunded">{t('admin.orders.refunded')}</option>
             </select>
           )}
         </div>

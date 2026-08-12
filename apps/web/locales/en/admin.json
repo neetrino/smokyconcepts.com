@@ -826,6 +826,7 @@
     "paid": "Paid",
     "pendingPayment": "pending",
     "failed": "Failed",
+    "refunded": "Refunded",
     "statusUpdated": "Status successfully updated",
     "paymentStatusUpdated": "Payment status successfully updated",
     "failedToUpdateStatus": "Failed to update status. Please try again.",

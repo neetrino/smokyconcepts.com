@@ -1,6 +1,82 @@
 import { db } from "@white-shop/db";
+import { Prisma } from "@prisma/client";
 import { logger } from "../../utils/logger";
+import {
+  reverseArcaPaymentForOrder,
+  shouldReverseArcaPayment,
+} from "./arca-payment-reversal";
 import type { UpdateOrderData } from "./types";
+
+const VALID_ORDER_STATUSES = ['pending', 'processing', 'completed', 'cancelled'] as const;
+const VALID_PAYMENT_STATUSES = ['pending', 'paid', 'failed', 'refunded'] as const;
+const VALID_FULFILLMENT_STATUSES = ['unfulfilled', 'fulfilled', 'shipped', 'delivered'] as const;
+
+type OrderUpdateFields = {
+  status?: string;
+  paymentStatus?: string;
+  fulfillmentStatus?: string;
+  fulfilledAt?: Date;
+  cancelledAt?: Date;
+  paidAt?: Date;
+};
+
+function assertValidOrderUpdate(data: UpdateOrderData): void {
+  if (data.status !== undefined && !VALID_ORDER_STATUSES.includes(data.status as typeof VALID_ORDER_STATUSES[number])) {
+    throw {
+      status: 400,
+      type: "https://api.shop.am/problems/validation-error",
+      title: "Validation Error",
+      detail: `Invalid status. Must be one of: ${VALID_ORDER_STATUSES.join(', ')}`,
+    };
+  }
+  if (
+    data.paymentStatus !== undefined &&
+    !VALID_PAYMENT_STATUSES.includes(data.paymentStatus as typeof VALID_PAYMENT_STATUSES[number])
+  ) {
+    throw {
+      status: 400,
+      type: "https://api.shop.am/problems/validation-error",
+      title: "Validation Error",
+      detail: `Invalid paymentStatus. Must be one of: ${VALID_PAYMENT_STATUSES.join(', ')}`,
+    };
+  }
+  if (
+    data.fulfillmentStatus !== undefined &&
+    !VALID_FULFILLMENT_STATUSES.includes(
+      data.fulfillmentStatus as typeof VALID_FULFILLMENT_STATUSES[number],
+    )
+  ) {
+    throw {
+      status: 400,
+      type: "https://api.shop.am/problems/validation-error",
+      title: "Validation Error",
+      detail: `Invalid fulfillmentStatus. Must be one of: ${VALID_FULFILLMENT_STATUSES.join(', ')}`,
+    };
+  }
+}
+
+function buildOrderUpdateData(
+  data: UpdateOrderData,
+  existing: { status: string; paymentStatus: string },
+  forceRefunded: boolean,
+): OrderUpdateFields {
+  const updateData: OrderUpdateFields = {};
+  if (data.status !== undefined) updateData.status = data.status;
+  if (data.paymentStatus !== undefined) updateData.paymentStatus = data.paymentStatus;
+  if (data.fulfillmentStatus !== undefined) updateData.fulfillmentStatus = data.fulfillmentStatus;
+  if (forceRefunded) updateData.paymentStatus = 'refunded';
+
+  if (data.status === 'completed' && existing.status !== 'completed') {
+    updateData.fulfilledAt = new Date();
+  }
+  if (data.status === 'cancelled' && existing.status !== 'cancelled') {
+    updateData.cancelledAt = new Date();
+  }
+  if (updateData.paymentStatus === 'paid' && existing.paymentStatus !== 'paid') {
+    updateData.paidAt = new Date();
+  }
+  return updateData;
+}
 
 /**
  * Delete order
@@ -124,13 +200,17 @@ export async function deleteOrder(orderId: string) {
 }
 
 /**
- * Update order
+ * Update order. Paid Arca/Ameria orders trigger bank Cancel/Refund before DB write.
  */
 export async function updateOrder(orderId: string, data: UpdateOrderData) {
   try {
-    // Check if order exists
     const existing = await db.order.findUnique({
       where: { id: orderId },
+      include: {
+        payments: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
     });
 
     if (!existing) {
@@ -142,94 +222,101 @@ export async function updateOrder(orderId: string, data: UpdateOrderData) {
       };
     }
 
-    // Validate status values
-    const validStatuses = ['pending', 'processing', 'completed', 'cancelled'];
-    const validPaymentStatuses = ['pending', 'paid', 'failed', 'refunded'];
-    const validFulfillmentStatuses = ['unfulfilled', 'fulfilled', 'shipped', 'delivered'];
+    assertValidOrderUpdate(data);
 
-    if (data.status !== undefined && !validStatuses.includes(data.status)) {
-      throw {
-        status: 400,
-        type: "https://api.shop.am/problems/validation-error",
-        title: "Validation Error",
-        detail: `Invalid status. Must be one of: ${validStatuses.join(', ')}`,
-      };
-    }
-
-    if (data.paymentStatus !== undefined && !validPaymentStatuses.includes(data.paymentStatus)) {
-      throw {
-        status: 400,
-        type: "https://api.shop.am/problems/validation-error",
-        title: "Validation Error",
-        detail: `Invalid paymentStatus. Must be one of: ${validPaymentStatuses.join(', ')}`,
-      };
-    }
-
-    if (data.fulfillmentStatus !== undefined && !validFulfillmentStatuses.includes(data.fulfillmentStatus)) {
-      throw {
-        status: 400,
-        type: "https://api.shop.am/problems/validation-error",
-        title: "Validation Error",
-        detail: `Invalid fulfillmentStatus. Must be one of: ${validFulfillmentStatuses.join(', ')}`,
-      };
-    }
-
-    // Prepare update data
-    const updateData: {
-      status?: string;
-      paymentStatus?: string;
-      fulfillmentStatus?: string;
-      fulfilledAt?: Date;
-      cancelledAt?: Date;
-      paidAt?: Date;
-    } = {};
-    
-    if (data.status !== undefined) updateData.status = data.status;
-    if (data.paymentStatus !== undefined) updateData.paymentStatus = data.paymentStatus;
-    if (data.fulfillmentStatus !== undefined) updateData.fulfillmentStatus = data.fulfillmentStatus;
-
-    // Update timestamps based on status changes
-    if (data.status === 'completed' && existing.status !== 'completed') {
-      updateData.fulfilledAt = new Date();
-    }
-    if (data.status === 'cancelled' && existing.status !== 'cancelled') {
-      updateData.cancelledAt = new Date();
-    }
-    if (data.paymentStatus === 'paid' && existing.paymentStatus !== 'paid') {
-      updateData.paidAt = new Date();
-    }
-
-    const order = await db.order.update({
-      where: { id: orderId },
-      data: updateData,
-      include: {
-        items: true,
-        payments: true,
-      },
+    const needsArcaReversal = shouldReverseArcaPayment({
+      existingPaymentStatus: existing.paymentStatus,
+      existingStatus: existing.status,
+      nextStatus: data.status,
+      nextPaymentStatus: data.paymentStatus,
     });
 
-    // Create order event
-    await db.orderEvent.create({
-      data: {
-        orderId: order.id,
-        type: 'order_updated',
-        data: {
-          updatedFields: Object.keys(updateData),
-          previousStatus: existing.status,
-          newStatus: data.status || existing.status,
+    let arcaReversal: Awaited<ReturnType<typeof reverseArcaPaymentForOrder>> | null = null;
+    if (needsArcaReversal) {
+      arcaReversal = await reverseArcaPaymentForOrder({
+        id: existing.id,
+        number: existing.number,
+        total: Number(existing.total),
+        currency: String(existing.currency ?? 'USD'),
+        paymentStatus: existing.paymentStatus,
+        payments: existing.payments.map((payment: {
+          id: string;
+          provider: string;
+          providerTransactionId: string | null;
+          status: string;
+          amount: number;
+          currency: string;
+        }) => ({
+          id: payment.id,
+          provider: payment.provider,
+          providerTransactionId: payment.providerTransactionId,
+          status: payment.status,
+          amount: Number(payment.amount),
+          currency: payment.currency,
+        })),
+      });
+    }
+
+    const updateData = buildOrderUpdateData(data, existing, Boolean(arcaReversal));
+
+    const order = await db.$transaction(async (tx: Prisma.TransactionClient) => {
+      const updated = await tx.order.update({
+        where: { id: orderId },
+        data: updateData,
+        include: {
+          items: true,
+          payments: true,
         },
-      },
+      });
+
+      if (arcaReversal) {
+        await tx.payment.update({
+          where: { id: arcaReversal.paymentId },
+          data: {
+            status: 'refunded',
+            providerResponse: arcaReversal.providerResponse as Prisma.InputJsonValue,
+            errorCode: null,
+            errorMessage: null,
+          },
+        });
+      }
+
+      await tx.orderEvent.create({
+        data: {
+          orderId: updated.id,
+          type: arcaReversal ? 'payment_reversed' : 'order_updated',
+          data: {
+            updatedFields: Object.keys(updateData),
+            previousStatus: existing.status,
+            newStatus: data.status || existing.status,
+            previousPaymentStatus: existing.paymentStatus,
+            newPaymentStatus: updateData.paymentStatus || existing.paymentStatus,
+            ...(arcaReversal
+              ? {
+                  arcaAction: arcaReversal.action,
+                  providerOrderId: arcaReversal.providerOrderId,
+                }
+              : {}),
+          },
+        },
+      });
+
+      return updated;
     });
 
     return order;
   } catch (error: unknown) {
-    // If it's already our custom error, re-throw it
     if (error && typeof error === 'object' && 'status' in error && 'type' in error) {
       throw error;
     }
 
-    // Log Prisma/database errors
-    const errorObj = error as { name?: string; message?: string; code?: string; meta?: { cause?: string }; stack?: string };
+    const errorObj = error as {
+      name?: string;
+      message?: string;
+      code?: string;
+      meta?: { cause?: string };
+      stack?: string;
+    };
     logger.error("updateOrder error", {
       orderId,
       error: {
@@ -241,9 +328,7 @@ export async function updateOrder(orderId: string, data: UpdateOrderData) {
       },
     });
 
-    // Handle specific Prisma errors
     if (errorObj?.code === 'P2025') {
-      // Record not found
       throw {
         status: 404,
         type: "https://api.shop.am/problems/not-found",
@@ -252,7 +337,6 @@ export async function updateOrder(orderId: string, data: UpdateOrderData) {
       };
     }
 
-    // Generic database error
     throw {
       status: 500,
       type: "https://api.shop.am/problems/internal-error",
@@ -261,7 +345,3 @@ export async function updateOrder(orderId: string, data: UpdateOrderData) {
     };
   }
 }
-
-
-
-

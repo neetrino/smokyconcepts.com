@@ -178,8 +178,7 @@ export async function POST(req: NextRequest) {
     }
 
     const config = getArcaConfig();
-    // Merchant test account can be AMD-only even when internal order currency is USD.
-    // Arca register.do accepts AMD numeric code `051`, which is the safest baseline.
+    // Classic ArCa: numeric ISO `051`. Ameria maps this to `AMD` inside the client.
     const currency: ArcaCurrencyCode = '051';
     const amountAmd = resolveOrderAmountForArcaAmd(
       Number(order.total),
@@ -239,6 +238,7 @@ export async function POST(req: NextRequest) {
         data: {
           provider: 'arca',
           orderId: registerResult.orderId,
+          gatewayOrderId: registerResult.gatewayOrderId ?? null,
           testMode: config.testMode,
         },
       },
