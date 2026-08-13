@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslation } from '../../../../lib/i18n-client';
+import { PRODUCT_FILTERS_DROPDOWN_LAYER_CLASS } from '../constants/productFilters.constants';
 import type { Category } from '../types';
 
 interface ProductFiltersProps {
@@ -45,7 +46,7 @@ export function ProductFilters({
   const { t } = useTranslation();
 
   return (
-    <div className="space-y-4 mb-6">
+    <div className={`relative space-y-4 mb-6 ${categoriesExpanded ? PRODUCT_FILTERS_DROPDOWN_LAYER_CLASS : ''}`}>
       {/* Search Fields */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
@@ -91,7 +92,10 @@ export function ProductFilters({
           <label className="block text-sm font-medium text-[#414141]/75 mb-1.5">
             {t('admin.products.filterByCategory')}
           </label>
-          <div className="relative" data-category-dropdown>
+          <div
+            className={`relative ${categoriesExpanded ? PRODUCT_FILTERS_DROPDOWN_LAYER_CLASS : ''}`}
+            data-category-dropdown
+          >
             <button
               type="button"
               onClick={() => setCategoriesExpanded(!categoriesExpanded)}
@@ -116,7 +120,7 @@ export function ProductFilters({
               </svg>
             </button>
             {categoriesExpanded && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-[#dcc090]/35 rounded-md shadow-lg max-h-60 overflow-y-auto">
+              <div className={`absolute ${PRODUCT_FILTERS_DROPDOWN_LAYER_CLASS} w-full mt-1 bg-white border border-[#dcc090]/35 rounded-md shadow-lg max-h-60 overflow-y-auto`}>
                 {categoriesLoading ? (
                   <div className="p-3 text-sm text-[#414141]/60 text-center">{t('admin.products.loadingCategories')}</div>
                 ) : categories.length === 0 ? (
@@ -124,6 +128,18 @@ export function ProductFilters({
                 ) : (
                   <div className="p-2">
                     <div className="space-y-1">
+                      <label className="flex items-center space-x-2 cursor-pointer hover:bg-[#dcc090]/10 p-2 rounded">
+                        <input
+                          type="checkbox"
+                          checked={selectedCategories.size === 0}
+                          onChange={() => {
+                            setSelectedCategories(new Set());
+                            setPage(1);
+                          }}
+                          className="w-4 h-4 text-[#122a26] border-[#dcc090]/40 rounded focus:ring-[#dcc090]"
+                        />
+                        <span className="text-sm text-[#414141]/75">{t('admin.products.allCategories')}</span>
+                      </label>
                       {categories.map((category) => (
                         <label
                           key={category.id}
