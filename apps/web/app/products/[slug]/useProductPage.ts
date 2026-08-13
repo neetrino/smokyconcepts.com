@@ -4,6 +4,7 @@ import { useState, useEffect, use, useMemo } from 'react';
 import { getStoredLanguage, type LanguageCode } from '../../../lib/language';
 import { useProductImages } from './hooks/useProductImages';
 import { useProductFetch } from './hooks/useProductFetch';
+import { useScrollWindowToTop } from './hooks/useScrollWindowToTop';
 import { useVariantSelection } from './hooks/useVariantSelection';
 import { useProductQuantity } from './hooks/useProductQuantity';
 import { useProductCalculations } from './hooks/useProductCalculations';
@@ -37,6 +38,7 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     slug,
     variantIdFromUrl,
   });
+  useScrollWindowToTop(slug, loading);
 
   const images = useProductImages(product);
   const galleryImages = variantImages.length > 0 ? variantImages : images;
