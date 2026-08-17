@@ -20,6 +20,7 @@ import type { ProductPageProps } from './types';
 import type { CustomOrderDraft } from './CustomizeSizeOrderFallback';
 import { PRODUCT_INFO_COLUMN_CLASS } from './productInfoTabContent.constants';
 import { PageLoadingCenter } from '../../../components/loading/PageLoadingCenter';
+import { ProductPageSkeleton } from './ProductPageSkeleton';
 
 const CUSTOMIZE_TEXT_MAX_LENGTH = 18;
 
@@ -176,7 +177,12 @@ export default function ProductPage({ params }: ProductPageProps) {
   });
 
   if (loading || !product) {
-    return <PageLoadingCenter />;
+    return (
+      <>
+        <ProductPageSkeleton />
+        <PageLoadingCenter reserveLayoutSpace={false} />
+      </>
+    );
   }
 
   return (
