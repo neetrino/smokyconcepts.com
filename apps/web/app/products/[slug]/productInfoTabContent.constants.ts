@@ -1,9 +1,16 @@
 /**
- * Mobile: page scrolls as one unit (no nested tab panel scroll).
+ * Below xl: tab panel keeps a fixed height so the purchase row (price) does not jump
+ * when switching tabs. Long copy scrolls inside the panel.
  * Desktop (xl): tab block grows to fill column; panel scrolls when copy is long.
  */
 export const PRODUCT_INFO_TAB_BLOCK_HEIGHT_CLASS =
   'xl:min-h-0 xl:flex-1';
+
+/**
+ * Shared mobile/tablet panel height (padding included). Tall enough for customize
+ * copy + format row; longer tabs scroll inside instead of pushing the price.
+ */
+export const PRODUCT_INFO_TAB_PANEL_FIXED_HEIGHT_CLASS = 'h-[180px]';
 
 /** Matches {@link GALLERY_TOP_OFFSET_CLASSES} in ProductImageGallery so title aligns with the white card top on xl+. */
 export const PRODUCT_INFO_ROOT_CLASS = [
@@ -23,22 +30,29 @@ export const PRODUCT_INFO_SCROLL_BODY_CUSTOMIZE_CLASS =
 export const PRODUCT_INFO_HEADER_CLASS = 'relative z-40 shrink-0 overflow-visible';
 
 export const PRODUCT_INFO_TABS_SECTION_CLASS = [
-  'mt-8 flex min-h-0 flex-col overflow-x-hidden overflow-y-visible',
-  'xl:mt-10 xl:min-h-0 xl:flex-1 xl:overflow-hidden xl:grid xl:grid-rows-[auto_minmax(0,1fr)]',
+  'mt-8 flex min-h-0 shrink-0 flex-col overflow-x-hidden overflow-y-visible',
+  'xl:mt-10 xl:min-h-0 xl:flex-1 xl:shrink xl:overflow-hidden xl:grid xl:grid-rows-[auto_minmax(0,1fr)]',
   PRODUCT_INFO_TAB_BLOCK_HEIGHT_CLASS,
 ].join(' ');
 
-export const PRODUCT_INFO_TAB_PANEL_CLASS =
-  'min-h-0 flex-1 overflow-visible pt-7 sm:pt-8 xl:overflow-y-auto xl:overscroll-y-contain xl:scrollbar-visible xl:[-webkit-overflow-scrolling:touch]';
+export const PRODUCT_INFO_TAB_PANEL_CLASS = [
+  PRODUCT_INFO_TAB_PANEL_FIXED_HEIGHT_CLASS,
+  'min-h-0 overflow-y-auto overscroll-y-contain pt-7 sm:pt-8',
+  'scrollbar-hide [-webkit-overflow-scrolling:touch]',
+  'xl:h-auto xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:overscroll-y-contain',
+].join(' ');
 
-/** Customize tab: natural height, no inner scroll — font menu uses the gap below. */
+/** Customize tab: same fixed height as other tabs; overflow visible for font menu. */
 export const PRODUCT_INFO_TABS_SECTION_CUSTOMIZE_CLASS = [
   'mt-8 flex min-h-0 shrink-0 flex-col overflow-visible',
   'xl:mt-10 xl:min-h-0 xl:flex-1',
 ].join(' ');
 
-export const PRODUCT_INFO_TAB_PANEL_CUSTOMIZE_CLASS =
-  'flex min-h-0 flex-1 flex-col overflow-visible pt-7 sm:pt-8';
+export const PRODUCT_INFO_TAB_PANEL_CUSTOMIZE_CLASS = [
+  PRODUCT_INFO_TAB_PANEL_FIXED_HEIGHT_CLASS,
+  'flex min-h-0 flex-col overflow-visible pt-7 sm:pt-8',
+  'xl:h-auto xl:min-h-0 xl:flex-1',
+].join(' ');
 
 export const PRODUCT_INFO_CUSTOMIZE_COPY_CLASS =
   'font-montserrat text-[16px] font-bold leading-[26px] text-[#414141]';
