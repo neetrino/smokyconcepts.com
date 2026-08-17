@@ -18,6 +18,7 @@ import { isCatalogSizeItemSelectable as resolveCatalogSizeItemSelectable } from 
 import { getOptionValues } from '../utils/variant-helpers';
 import { deriveProductAttributeSectionOrder } from '../utils/derive-product-attribute-section-order';
 import type { ProductInfoAndActionsProps, ProductTabKey } from '../productInfoAndActions.types';
+import { useApplyCatalogSizeFromUrl } from './useApplyCatalogSizeFromUrl';
 
 function normalizeCatalogSizeValue(value: string | null | undefined): string {
   return value?.trim().toLowerCase() ?? '';
@@ -41,6 +42,7 @@ export function useProductInfoAndActions({
   const [activeTab, setActiveTab] = useState<ProductTabKey>('description');
   const [isCustomizeSizeModalOpen, setIsCustomizeSizeModalOpen] = useState(false);
   const [sizeCatalogCategories, setSizeCatalogCategories] = useState<SizeCatalogCategoryDto[]>([]);
+  const [sizeCatalogReady, setSizeCatalogReady] = useState(false);
   const [selectedCatalogSize, setSelectedCatalogSize] = useState<SizeCatalogItemDto | null>(null);
   const [selectedCustomSizeRequest, setSelectedCustomSizeRequest] = useState<CustomOrderDraft | null>(null);
   const [showSizeRequired, setShowSizeRequired] = useState(false);
@@ -126,6 +128,10 @@ export function useProductInfoAndActions({
         if (!cancelled) {
           setSizeCatalogCategories([]);
         }
+      } finally {
+        if (!cancelled) {
+          setSizeCatalogReady(true);
+        }
       }
     })();
     return () => {
@@ -140,6 +146,41 @@ export function useProductInfoAndActions({
     setShowSizeRequired(false);
     setIsSizeShaking(false);
   }, [product.id]);
+
+  const handleSelectCatalogSizeItem = useCallback(
+    (item: SizeCatalogItemDto) => {
+      setSelectedCatalogSize(item);
+      setSelectedCustomSizeRequest(null);
+      onSelectedCatalogSizeChange?.(item);
+      onSelectedCustomSizeRequestChange?.(null);
+      if (onCatalogVariantSelect) {
+        onCatalogVariantSelect(item.categoryTitle, item.version);
+        return;
+      }
+      if (sizeOptions.length > 0) {
+        const matched = matchVariantSizeFromCatalogTitle(item.categoryTitle, sizeOptions);
+        if (matched) {
+          onSizeSelect(matched);
+        }
+      }
+    },
+    [
+      onCatalogVariantSelect,
+      onSelectedCatalogSizeChange,
+      onSelectedCustomSizeRequestChange,
+      onSizeSelect,
+      sizeOptions,
+    ]
+  );
+
+  useApplyCatalogSizeFromUrl({
+    productId: product.id,
+    sizeCatalogReady,
+    sizeCatalogCategories,
+    sizeOptions,
+    onSelectCatalogSizeItem: handleSelectCatalogSizeItem,
+    onSizeSelect,
+  });
 
   useEffect(() => {
     onSelectedCatalogSizeChange?.(selectedCatalogSize);
@@ -181,32 +222,6 @@ export function useProductInfoAndActions({
   const handleSizeShakeAnimationEnd = useCallback(() => {
     setIsSizeShaking(false);
   }, []);
-
-  const handleSelectCatalogSizeItem = useCallback(
-    (item: SizeCatalogItemDto) => {
-      setSelectedCatalogSize(item);
-      setSelectedCustomSizeRequest(null);
-      onSelectedCatalogSizeChange?.(item);
-      onSelectedCustomSizeRequestChange?.(null);
-      if (onCatalogVariantSelect) {
-        onCatalogVariantSelect(item.categoryTitle, item.version);
-        return;
-      }
-      if (sizeOptions.length > 0) {
-        const matched = matchVariantSizeFromCatalogTitle(item.categoryTitle, sizeOptions);
-        if (matched) {
-          onSizeSelect(matched);
-        }
-      }
-    },
-    [
-      onCatalogVariantSelect,
-      onSelectedCatalogSizeChange,
-      onSelectedCustomSizeRequestChange,
-      onSizeSelect,
-      sizeOptions,
-    ]
-  );
 
   const handleSelectCustomSizeRequest = useCallback(
     (draft: CustomOrderDraft) => {

@@ -19,6 +19,7 @@ interface CheckoutFormProps {
     name: string;
     description: string;
     logo: string | null;
+    disabled?: boolean;
   }>;
   logoErrors: Record<string, boolean>;
   setLogoErrors: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
@@ -175,94 +176,104 @@ export function CheckoutForm({
           </div>
         )}
         <div className="space-y-3">
-          {paymentMethods.map((method) => (
-            <label
-              key={method.id}
-              className={`flex items-start sm:items-center p-3 sm:p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                paymentMethod === method.id
-                  ? 'border-[#dcc090] bg-[#dcc090]/10'
-                  : 'border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              <input
-                type="radio"
-                {...register('paymentMethod', {
-                  onChange: (e) => {
-                    setValue(
-                      'paymentMethod',
-                      e.target.value as 'idram' | 'arca' | 'cash_on_delivery',
-                      {
-                        shouldDirty: true,
-                        shouldTouch: true,
-                        shouldValidate: true,
-                      },
-                    );
-                  },
-                })}
-                value={method.id}
-                checked={paymentMethod === method.id}
-                className="mr-3 mt-0.5 sm:mt-0 sm:mr-4"
-                disabled={isSubmitting}
-              />
-              <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                {method.id === 'arca' ? (
-                  <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-                    {ARCA_SUPPORTED_LOGOS.map((logo) => {
-                      const logoKey = `${method.id}-${logo.id}`;
+          {paymentMethods.map((method) => {
+            const isMethodDisabled = Boolean(method.disabled) || isSubmitting;
 
-                      return (
-                        <div
-                          key={logo.id}
-                          className="relative w-10 h-6 sm:w-14 sm:h-9 bg-white rounded border border-gray-200 flex items-center justify-center overflow-hidden"
-                        >
-                          {logoErrors[logoKey] ? (
-                            <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                          ) : (
-                            <img
-                              src={logo.src}
-                              alt={logo.alt}
-                              className="w-full h-full object-contain p-1"
-                              loading="lazy"
-                              onError={() => {
-                                setLogoErrors((prev) => ({ ...prev, [logoKey]: true }));
-                              }}
-                            />
-                          )}
-                        </div>
+            return (
+              <label
+                key={method.id}
+                aria-disabled={isMethodDisabled}
+                className={`flex items-start sm:items-center p-3 sm:p-4 border-2 rounded-xl transition-all ${
+                  isMethodDisabled
+                    ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                    : paymentMethod === method.id
+                      ? 'border-[#dcc090] bg-[#dcc090]/10 cursor-pointer'
+                      : 'border-gray-300 hover:bg-gray-50 cursor-pointer'
+                }`}
+              >
+                <input
+                  type="radio"
+                  {...register('paymentMethod', {
+                    onChange: (e) => {
+                      if (method.disabled) {
+                        return;
+                      }
+                      setValue(
+                        'paymentMethod',
+                        e.target.value as 'idram' | 'arca' | 'cash_on_delivery',
+                        {
+                          shouldDirty: true,
+                          shouldTouch: true,
+                          shouldValidate: true,
+                        },
                       );
-                    })}
+                    },
+                  })}
+                  value={method.id}
+                  checked={paymentMethod === method.id}
+                  className="mr-3 mt-0.5 sm:mt-0 sm:mr-4 disabled:cursor-not-allowed"
+                  disabled={isMethodDisabled}
+                />
+                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                  {method.id === 'arca' ? (
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                      {ARCA_SUPPORTED_LOGOS.map((logo) => {
+                        const logoKey = `${method.id}-${logo.id}`;
+
+                        return (
+                          <div
+                            key={logo.id}
+                            className="relative w-10 h-6 sm:w-14 sm:h-9 bg-white rounded border border-gray-200 flex items-center justify-center overflow-hidden"
+                          >
+                            {logoErrors[logoKey] ? (
+                              <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                              </svg>
+                            ) : (
+                              <img
+                                src={logo.src}
+                                alt={logo.alt}
+                                className="w-full h-full object-contain p-1"
+                                loading="lazy"
+                                onError={() => {
+                                  setLogoErrors((prev) => ({ ...prev, [logoKey]: true }));
+                                }}
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="relative w-16 h-10 sm:w-20 sm:h-12 flex-shrink-0 bg-white rounded border border-gray-200 flex items-center justify-center overflow-hidden">
+                      {!method.logo || logoErrors[method.id] ? (
+                        <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                      ) : (
+                        <img
+                          src={method.logo}
+                          alt={method.name}
+                          className="w-full h-full object-contain p-1.5"
+                          loading="lazy"
+                          onError={() => {
+                            setLogoErrors((prev) => ({ ...prev, [method.id]: true }));
+                          }}
+                        />
+                      )}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-gray-900 whitespace-nowrap text-sm sm:text-base">
+                      <span className="sm:hidden">{mobilePaymentLabels[method.id]}</span>
+                      <span className="hidden sm:inline">{method.name}</span>
+                    </div>
+                    <div className="hidden sm:block text-sm text-gray-600">{method.description}</div>
                   </div>
-                ) : (
-                  <div className="relative w-16 h-10 sm:w-20 sm:h-12 flex-shrink-0 bg-white rounded border border-gray-200 flex items-center justify-center overflow-hidden">
-                    {!method.logo || logoErrors[method.id] ? (
-                      <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                    ) : (
-                      <img
-                        src={method.logo}
-                        alt={method.name}
-                        className="w-full h-full object-contain p-1.5"
-                        loading="lazy"
-                        onError={() => {
-                          setLogoErrors((prev) => ({ ...prev, [method.id]: true }));
-                        }}
-                      />
-                    )}
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 whitespace-nowrap text-sm sm:text-base">
-                    <span className="sm:hidden">{mobilePaymentLabels[method.id]}</span>
-                    <span className="hidden sm:inline">{method.name}</span>
-                  </div>
-                  <div className="hidden sm:block text-sm text-gray-600">{method.description}</div>
                 </div>
-              </div>
-            </label>
-          ))}
+              </label>
+            );
+          })}
         </div>
       </Card>
     </div>
