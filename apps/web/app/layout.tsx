@@ -15,13 +15,45 @@ const montserrat = Montserrat({
   weight: ['400', '600', '700', '800', '900'],
 });
 
+const SITE_NAME = 'Smoky Concepts';
+const SITE_DESCRIPTION = 'Smoky Concepts is a premium shop.';
+const OG_IMAGE_PATH = '/og-image.png';
+const OG_IMAGE_WIDTH = 1200;
+const OG_IMAGE_HEIGHT = 1200;
+
 export const metadata: Metadata = {
-  title: 'Smoky Concepts',
-  description: 'Smoky Concepts is a premium  shop.',
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+      process.env.APP_URL?.trim() ||
+      'https://www.smokyconcepts.com'
+  ),
+  title: SITE_NAME,
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
   icons: {
     icon: '/assets/home/Asset%202@4x-8.webp',
     shortcut: '/assets/home/Asset%202@4x-8.webp',
     apple: '/assets/home/Asset%202@4x-8.webp',
+  },
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: OG_IMAGE_PATH,
+        width: OG_IMAGE_WIDTH,
+        height: OG_IMAGE_HEIGHT,
+        alt: SITE_NAME,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE_PATH],
   },
 };
 
