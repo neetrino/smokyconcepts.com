@@ -56,6 +56,7 @@
     "arca": "ArCa",
     "arcaShort": "By card",
     "arcaDescription": "Pay with Visa, Mastercard, ArCa card or Apple Pay",
+    "arcaUnavailable": "Temporarily unavailable",
     "paymentDetails": "Payment Details",
     "enterCardDetails": "Enter your card details to complete payment"
   },

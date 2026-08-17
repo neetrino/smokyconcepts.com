@@ -15,6 +15,7 @@ type ProductsCatalogCardViewProps = ReturnType<typeof useProductsCatalogCard>;
 export function ProductsCatalogCardView({
   presentation,
   product,
+  productHref,
   className,
   compactLayout,
   legacyHomeCartIcon,
@@ -89,7 +90,7 @@ export function ProductsCatalogCardView({
         >
           {activeImage && !imageError ? (
             <Link
-              href={`/products/${product.slug}`}
+              href={productHref}
               className={`flex h-full w-full justify-center ${heroLinkUsesItemsEnd ? 'items-end' : 'items-center'}`}
               onClick={handleProductLinkClick}
             >
@@ -165,7 +166,7 @@ export function ProductsCatalogCardView({
             <div className={`min-h-3 ${dotsMarginClassName}`} aria-hidden />
           )}
 
-          <Link href={`/products/${product.slug}`} className="block" onClick={handleProductLinkClick}>
+          <Link href={productHref} className="block" onClick={handleProductLinkClick}>
             <h3 className={`line-clamp-1 font-extrabold leading-tight text-[#414141] ${titleClassName}`}>
               {product.title}
             </h3>

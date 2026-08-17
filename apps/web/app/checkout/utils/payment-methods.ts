@@ -7,7 +7,12 @@ export interface PaymentMethod {
   name: string;
   description: string;
   logo: string | null;
+  /** When true, option is visible but not selectable (e.g. ArCa live not ready). */
+  disabled?: boolean;
 }
+
+/** Flip to false when ArCa live credentials are available. */
+const IS_ARCA_PAYMENT_ENABLED = false;
 
 export function usePaymentMethods(): PaymentMethod[] {
   const { t } = useTranslation();
@@ -28,8 +33,11 @@ export function usePaymentMethods(): PaymentMethod[] {
     {
       id: 'arca',
       name: t('checkout.payment.arca'),
-      description: t('checkout.payment.arcaDescription'),
+      description: IS_ARCA_PAYMENT_ENABLED
+        ? t('checkout.payment.arcaDescription')
+        : t('checkout.payment.arcaUnavailable'),
       logo: '/assets/payments/arca.svg',
+      disabled: !IS_ARCA_PAYMENT_ENABLED,
     },
   ];
 }

@@ -15,6 +15,7 @@ import { MAX_IMAGE_DOT_COUNT, resolveOpaqueCompensationScale } from '../products
 import {
   resolveCatalogCardSizeLabelFromVariant,
 } from '../catalogProductLabels';
+import { buildProductDetailHref } from '../catalogSizeFilterDraft';
 import type { CatalogProductVariantImages, ProductsCatalogCardProps } from '../productsCatalogCard.types';
 
 function normalizeCatalogText(value: string | null | undefined): string {
@@ -109,6 +110,15 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
     () =>
       resolveCatalogCardSizeLabelFromVariant(activeVariantEntry, props.selectedSize, sizeLabel),
     [activeVariantEntry, props.selectedSize, sizeLabel]
+  );
+
+  const productHref = useMemo(
+    () =>
+      buildProductDetailHref(product.slug, {
+        size: props.selectedSize,
+        sizeCat: props.selectedSizeCatalogCategoryId,
+      }),
+    [product.slug, props.selectedSize, props.selectedSizeCatalogCategoryId]
   );
 
   const productImages = useMemo(() => {
@@ -218,7 +228,7 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
     if (shouldBlockProductNavigation?.()) {
       return;
     }
-    router.push(`/products/${product.slug}`);
+    router.push(productHref);
   };
 
   const handleImageLoadComplete = (imageElement: HTMLImageElement) => {
@@ -240,6 +250,7 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
   return {
     presentation,
     product,
+    productHref,
     compactLayout,
     legacyHomeCartIcon,
     catalogStripMobilePeek,

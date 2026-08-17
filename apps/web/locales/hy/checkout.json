@@ -56,6 +56,7 @@
     "arca": "ArCa",
     "arcaShort": "Քարտով",
     "arcaDescription": "Ընդունեք Visa, Mastercard, ArCa քարտով կամ Apple Pay-ով",
+    "arcaUnavailable": "Ժամանակավորապես անհասանելի",
     "paymentDetails": "Վճարման մանրամասներ",
     "enterCardDetails": "Մուտքագրեք ձեր քարտի տվյալները՝ վճարումն ավարտելու համար"
   },

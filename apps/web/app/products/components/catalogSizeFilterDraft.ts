@@ -5,6 +5,8 @@ export type CatalogSizeQueryDraft = {
   sizeCat: string;
 };
 
+const ALL_SIZE_QUERY = 'all';
+
 /** Map a size-catalog item to catalog `size` / `sizeCat` query values. */
 export function catalogSizeQueryFromItem(item: SizeCatalogItemDto): CatalogSizeQueryDraft {
   const packTitle = item.title.trim();
@@ -12,9 +14,49 @@ export function catalogSizeQueryFromItem(item: SizeCatalogItemDto): CatalogSizeQ
   const sizeQueryValue = bandTitle || packTitle;
   const categoryId = item.categoryId.trim();
   return {
-    size: sizeQueryValue || 'all',
+    size: sizeQueryValue || ALL_SIZE_QUERY,
     sizeCat: categoryId,
   };
+}
+
+/**
+ * PDP href that carries the active catalog size filter so the product page
+ * can preselect the same size / variant shown on the card.
+ */
+export function buildProductDetailHref(
+  slug: string,
+  options?: { size?: string | null; sizeCat?: string | null }
+): string {
+  const base = `/products/${slug}`;
+  const size = (options?.size ?? '').trim();
+  if (!size || size.toLowerCase() === ALL_SIZE_QUERY) {
+    return base;
+  }
+  const params = new URLSearchParams();
+  params.set('size', size);
+  const sizeCat = (options?.sizeCat ?? '').trim();
+  if (sizeCat && sizeCat.toLowerCase() !== ALL_SIZE_QUERY) {
+    params.set('sizeCat', sizeCat);
+  }
+  return `${base}?${params.toString()}`;
+}
+
+/** Find a size-catalog item by id across categories. */
+export function findSizeCatalogItemById(
+  sizeCatalogCategories: SizeCatalogCategoryDto[],
+  itemId: string
+): SizeCatalogItemDto | null {
+  const needle = itemId.trim();
+  if (!needle) {
+    return null;
+  }
+  for (const category of sizeCatalogCategories) {
+    const hit = category.items.find((item) => item.id === needle);
+    if (hit) {
+      return hit;
+    }
+  }
+  return null;
 }
 
 /** Resolve size-catalog item id from applied or pending size query params. */

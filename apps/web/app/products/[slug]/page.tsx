@@ -65,8 +65,6 @@ export default function ProductPage({ params }: ProductPageProps) {
   const [isCustomizeTabActive, setIsCustomizeTabActive] = useState(false);
 
   useEffect(() => {
-    setSelectedCatalogSize(null);
-    setSelectedCustomSizeRequest(null);
     setCustomizeApplied(null);
     setCustomizeDraftText('');
     setCustomizeFormat(getDefaultCustomizeFormat());
