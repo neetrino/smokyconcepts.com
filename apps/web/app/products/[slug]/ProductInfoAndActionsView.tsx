@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { formatCatalogPrice } from '../../../lib/currency';
 import { t } from '../../../lib/i18n';
 import { useCurrency } from '../../../components/hooks/useCurrency';
@@ -83,6 +83,7 @@ export function ProductInfoAndActionsView({
   } = view;
 
   const sizeSectionRef = useRef<HTMLDivElement>(null);
+  const tabPanelRef = useRef<HTMLDivElement>(null);
   const isCustomizeTab = activeTab === 'customize';
   const tabsSectionClass = isCustomizeTab
     ? PRODUCT_INFO_TABS_SECTION_CUSTOMIZE_CLASS
@@ -93,6 +94,10 @@ export function ProductInfoAndActionsView({
   const scrollBodyClass = isCustomizeTab
     ? PRODUCT_INFO_SCROLL_BODY_CUSTOMIZE_CLASS
     : PRODUCT_INFO_SCROLL_BODY_CLASS;
+
+  useEffect(() => {
+    tabPanelRef.current?.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [activeTab]);
 
   const handleAddToCartClick = () => {
     if (showSizeSection && !isSizeSelected) {
@@ -264,7 +269,7 @@ export function ProductInfoAndActionsView({
             </div>
           </div>
 
-          <div role="tabpanel" className={tabPanelClass}>
+          <div ref={tabPanelRef} role="tabpanel" className={tabPanelClass}>
             <ProductInfoTabPanels
               activeTab={activeTab}
               language={language}
