@@ -5,6 +5,11 @@ import './globals.css';
 import { ClientProviders } from '../components/ClientProviders';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
+import {
+  CANONICAL_SITE_URL,
+  getMetadataBaseUrl,
+} from '../lib/seo/get-metadata-base-url';
+
 const inter = Inter({ subsets: ['latin'] });
 
 /** Geometric sans for homepage ritual steps (matches process / steps UI). */
@@ -20,13 +25,11 @@ const SITE_DESCRIPTION = 'Smoky Concepts is a premium shop.';
 const OG_IMAGE_PATH = '/og-image.png';
 const OG_IMAGE_WIDTH = 1200;
 const OG_IMAGE_HEIGHT = 1200;
+const metadataBase = getMetadataBaseUrl();
+const ogImageUrl = new URL(OG_IMAGE_PATH, metadataBase);
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
-      process.env.APP_URL?.trim() ||
-      'https://www.smokyconcepts.com'
-  ),
+  metadataBase,
   title: SITE_NAME,
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
@@ -37,15 +40,17 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: 'website',
+    url: CANONICAL_SITE_URL,
     siteName: SITE_NAME,
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
     images: [
       {
-        url: OG_IMAGE_PATH,
+        url: ogImageUrl,
         width: OG_IMAGE_WIDTH,
         height: OG_IMAGE_HEIGHT,
         alt: SITE_NAME,
+        type: 'image/png',
       },
     ],
   },
@@ -53,7 +58,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    images: [OG_IMAGE_PATH],
+    images: [ogImageUrl.toString()],
   },
 };
 
