@@ -42,7 +42,14 @@ export default function PrivacyPage() {
 
                     {Array.isArray(section.paragraphs) &&
                       section.paragraphs.map((paragraph) => (
-                        <p key={paragraph} className="text-gray-600">
+                        <p
+                          key={paragraph}
+                          className={
+                            paragraph.includes('\n')
+                              ? 'whitespace-pre-line text-gray-600 leading-snug'
+                              : 'text-gray-600'
+                          }
+                        >
                           {paragraph}
                         </p>
                       ))}
