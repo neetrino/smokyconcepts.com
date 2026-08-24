@@ -1,3 +1,6 @@
+import { CATALOG_PRODUCTS_FETCH_LIMIT } from '@/lib/constants/products-catalog.constants';
+import { productsService } from '@/lib/services/products.service';
+import { logger } from '@/lib/utils/logger';
 import { getStoredLanguage } from '../../lib/language';
 import { ProductsCatalogView } from './components/ProductsCatalogView';
 import {
@@ -7,17 +10,7 @@ import {
 
 export const revalidate = 60;
 
-function normalizeBaseUrl(rawUrl?: string): string {
-  if (!rawUrl) return '';
-  const trimmedUrl = rawUrl.trim();
-  if (!trimmedUrl) return '';
-
-  if (/^https?:\/\//i.test(trimmedUrl)) {
-    return trimmedUrl;
-  }
-
-  return `https://${trimmedUrl}`;
-}
+const DEFAULT_PRODUCTS_PAGE_LIMIT = 24;
 
 interface Product {
   id: string;
@@ -75,58 +68,41 @@ interface ProductsResponse {
   };
 }
 
+const EMPTY_PRODUCTS_RESPONSE: ProductsResponse = {
+  data: [],
+  meta: { total: 0, page: 1, limit: DEFAULT_PRODUCTS_PAGE_LIMIT, totalPages: 0 },
+};
+
+function isProductsResponse(value: unknown): value is ProductsResponse {
+  if (typeof value !== 'object' || value === null || !('data' in value)) {
+    return false;
+  }
+  return Array.isArray(value.data);
+}
+
 /**
- * Fetch products (PRODUCTION SAFE)
+ * Load catalog products in-process. Do not HTTP-fetch this app's own API —
+ * NEXT_PUBLIC_APP_URL often points at production and 404s locally.
  */
 async function getProducts(
   page: number = 1,
   search?: string,
   category?: string,
-  limit: number = 24
+  limit: number = DEFAULT_PRODUCTS_PAGE_LIMIT
 ): Promise<ProductsResponse> {
   try {
-    const language = getStoredLanguage();
-    const params: Record<string, string> = {
-      page: page.toString(),
-      limit: limit.toString(),
-      lang: language,
-    };
-
-    if (search?.trim()) params.search = search.trim();
-    if (category?.trim()) params.category = category.trim();
-
-    const queryString = new URLSearchParams(params).toString();
-
-    // Fallback chain: NEXT_PUBLIC_APP_URL -> VERCEL_URL -> localhost (for local dev)
-    const configuredBaseUrl = normalizeBaseUrl(process.env.NEXT_PUBLIC_APP_URL);
-    const vercelBaseUrl = normalizeBaseUrl(process.env.VERCEL_URL);
-    const baseUrl = configuredBaseUrl || vercelBaseUrl || 'http://localhost:3000';
-
-    const targetUrl = `${baseUrl}/api/v1/products?${queryString}`;
-    console.log("🌐 [PRODUCTS] Fetch products", { targetUrl, baseUrl });
-
-    const res = await fetch(targetUrl, {
-      next: { revalidate: 60, tags: ["products"] },
+    const result = await productsService.findAll({
+      page,
+      limit,
+      lang: getStoredLanguage(),
+      search: search?.trim() || undefined,
+      category: category?.trim() || undefined,
     });
 
-    if (!res.ok) throw new Error(`API failed: ${res.status}`);
-
-    const response = await res.json();
-    if (!response.data || !Array.isArray(response.data)) {
-      return {
-        data: [],
-        meta: { total: 0, page: 1, limit: 24, totalPages: 0 }
-      };
-    }
-
-    return response;
-
-  } catch (e) {
-    console.error("❌ PRODUCT ERROR", e);
-    return {
-      data: [],
-      meta: { total: 0, page: 1, limit: 24, totalPages: 0 }
-    };
+    return isProductsResponse(result) ? result : EMPTY_PRODUCTS_RESPONSE;
+  } catch (error) {
+    logger.error('Failed to load catalog products', { error });
+    return EMPTY_PRODUCTS_RESPONSE;
   }
 }
 
@@ -147,7 +123,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     1,
     typeof params.search === 'string' ? params.search : undefined,
     apiCategoryFilter,
-    9999
+    CATALOG_PRODUCTS_FETCH_LIMIT
   );
 
   const normalizedProducts: Product[] = productsData.data.map((p) => ({
