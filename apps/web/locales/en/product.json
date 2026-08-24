@@ -5,6 +5,7 @@
   "description_title": "Description",
   "shipping_title": "Shipping",
   "customize_title": "Customize",
+  "customize_text_placeholder": "custom text",
   "customize_apply": "SAVE",
   "customize_apply_cart_hint": "This text is included with your order when you add to cart.",
   "customize_applied_text_label": "Text added to your order",

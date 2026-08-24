@@ -5,6 +5,7 @@
   "description_title": "Նկարագրություն",
   "shipping_title": "Առաքում",
   "customize_title": "Անհատականացում",
+  "customize_text_placeholder": "անհատական տեքստ",
   "customize_apply": "ՊԱՀԵԼ",
   "customize_apply_cart_hint": "Պատվերը զամբյուղ ավելացնելիս տեքստը ավտոմատ կներառվի պատվերում։",
   "customize_applied_text_label": "Պատվերին ավելացված տեքստ",

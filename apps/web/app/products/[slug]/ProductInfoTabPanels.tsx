@@ -103,7 +103,8 @@ export function ProductInfoTabPanels({
               onChange={(e) => {
                 onCustomizeDraftTextChange(e.target.value);
               }}
-              className="w-full min-w-0 border-0 border-b border-[#dcc090] bg-transparent pb-0.5 text-[16px] leading-[26px] text-[#414141] outline-none"
+              placeholder={t(language, 'product.customize_text_placeholder')}
+              className="w-full min-w-0 border-0 border-b border-[#dcc090] bg-transparent pb-0.5 text-[16px] leading-[26px] text-[#414141] outline-none placeholder:text-[#898989]"
               style={getCustomizeInputStyle(customizeFormat)}
               aria-label={t(language, 'product.customize_title')}
               autoComplete="off"
