@@ -5,6 +5,7 @@
   "description_title": "Описание",
   "shipping_title": "Доставка",
   "customize_title": "Персонализация",
+  "customize_text_placeholder": "свой текст",
   "customize_apply": "СОХРАНИТЬ",
   "customize_apply_cart_hint": "Этот текст автоматически добавляется к заказу при добавлении в корзину.",
   "customize_applied_text_label": "Текст, добавленный к заказу",
