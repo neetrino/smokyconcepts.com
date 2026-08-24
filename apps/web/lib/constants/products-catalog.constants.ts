@@ -1,3 +1,6 @@
+/** Catalog page loads the full published set; client filters handle the rest. */
+export const CATALOG_PRODUCTS_FETCH_LIMIT = 9999;
+
 /**
  * Deep link from home “Check Availability” (pack fit): `/products?selectSize=1`
  * opens the size catalog modal once; the catalog strips this param after handling.
