@@ -106,17 +106,9 @@
     {
       "title": "10. Contact Us",
       "paragraphs": [
-        "For any refund, return, or product concern, please reach out to us directly:",
-        "We are committed to resolving every issue fairly and with respect for both sides."
+        "Email: smokyconcepts@gmail.com\nPhone: +374 43151551",
+        "“House of Khanos” LLC\nLegal Address: Sundukyan 7 str, apt. 81, Yerevan, RA"
       ]
     }
-  ],
-  "contact": {
-    "name": "\"HOUSE OF KHANOS\" LLC",
-    "emailLabel": "Email:",
-    "email": "smokyconcepts@gmail.com",
-    "phoneLabel": "Phone:",
-    "phone": "+37443151551",
-    "address": "Legal Address: apt. 81, 7 Sundukyan str., Yerevan, RA"
-  }
+  ]
 }

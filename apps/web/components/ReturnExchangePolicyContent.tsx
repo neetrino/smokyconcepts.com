@@ -46,7 +46,14 @@ export function ReturnExchangePolicyContent({ namespace }: ReturnExchangePolicyC
 
                 {Array.isArray(section.paragraphs) &&
                   section.paragraphs.map((paragraph) => (
-                    <p key={paragraph} className="mt-3 text-gray-600">
+                    <p
+                      key={paragraph}
+                      className={
+                        paragraph.includes('\n')
+                          ? 'mt-3 whitespace-pre-line text-gray-600 leading-snug'
+                          : 'mt-3 text-gray-600'
+                      }
+                    >
                       {paragraph}
                     </p>
                   ))}
@@ -67,17 +74,6 @@ export function ReturnExchangePolicyContent({ namespace }: ReturnExchangePolicyC
                   ))}
               </section>
             ))}
-
-            <section>
-              <p className="text-gray-600">{tp('contact.name')}</p>
-              <p className="text-gray-600">
-                {tp('contact.emailLabel')} {tp('contact.email')}
-              </p>
-              <p className="text-gray-600">
-                {tp('contact.phoneLabel')} {tp('contact.phone')}
-              </p>
-              <p className="text-gray-600">{tp('contact.address')}</p>
-            </section>
           </Card>
         </div>
       </>

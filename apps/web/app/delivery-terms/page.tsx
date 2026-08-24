@@ -8,6 +8,75 @@ import { useTranslation } from '../../lib/i18n-client';
  */
 export default function DeliveryTermsPage() {
   const { t } = useTranslation();
+  const intro = t('delivery-terms.intro');
+  const sectionsList = t('delivery-terms.sectionsList');
+  const hasStructuredPolicy = Array.isArray(sectionsList);
+
+  if (hasStructuredPolicy) {
+    return (
+      <div className="policy-page">
+        <div className="policy-page-inner">
+          <h1 className="text-4xl font-bold text-gray-900">{t('delivery-terms.title')}</h1>
+
+          <div className="mt-8">
+            <Card variant="default" className="p-6">
+              <div className="space-y-8">
+                {Array.isArray(intro) &&
+                  intro.map((paragraph) => (
+                    <section key={paragraph} className="space-y-3">
+                      <p className="text-gray-600">{paragraph}</p>
+                    </section>
+                  ))}
+
+                {(
+                  sectionsList as Array<{
+                    title: string;
+                    paragraphs?: string[];
+                    list?: string[];
+                    trailingParagraphs?: string[];
+                  }>
+                ).map((section) => (
+                  <section key={section.title} className="space-y-3">
+                    <h2 className="text-2xl font-semibold text-gray-900">{section.title}</h2>
+
+                    {Array.isArray(section.paragraphs) &&
+                      section.paragraphs.map((paragraph) => (
+                        <p
+                          key={paragraph}
+                          className={
+                            paragraph.includes('\n')
+                              ? 'whitespace-pre-line text-gray-600 leading-snug'
+                              : 'text-gray-600'
+                          }
+                        >
+                          {paragraph}
+                        </p>
+                      ))}
+
+                    {Array.isArray(section.list) && section.list.length > 0 ? (
+                      <ul className="ml-4 list-disc list-inside text-gray-600 space-y-1">
+                        {section.list.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+
+                    {Array.isArray(section.trailingParagraphs) &&
+                      section.trailingParagraphs.map((paragraph) => (
+                        <p key={paragraph} className="text-gray-600">
+                          {paragraph}
+                        </p>
+                      ))}
+                  </section>
+                ))}
+              </div>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="policy-page">
       <div className="policy-page-inner">
