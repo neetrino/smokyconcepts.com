@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState, type TouchEvent } from 'react';
 
 import { HomeActionButton } from './HomeActionButton';
+import { useHomeHeroCarouselLoop } from './useHomeHeroCarouselLoop';
 import { getHomeHeroSlideImageSrc, getHomeHeroSlideLines } from '@/lib/home-hero-display';
 import type { HomeHeroSlide } from '@/lib/types/home-hero.types';
 import { useTranslation } from '@/lib/i18n-client';
@@ -35,7 +36,6 @@ const INITIAL_HERO_TOUCH_STATE: HeroTouchState = {
  */
 export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
   const { t, lang } = useTranslation();
-  const [activeIndex, setActiveIndex] = useState(0);
   const [dragOffsetPx, setDragOffsetPx] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const touchStateRef = useRef<HeroTouchState>(INITIAL_HERO_TOUCH_STATE);
@@ -43,6 +43,17 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
   const isAutoSlidePausedRef = useRef(false);
   const autoSlideResumeTimeoutRef = useRef<number | null>(null);
   const safeSlides = slides.length > 0 ? slides : [];
+  const {
+    trackSlides,
+    displayIndex,
+    logicalIndex,
+    hasMultipleSlides,
+    suppressTransition,
+    goToPrevious,
+    goToNext,
+    goToLogicalIndex,
+    handleTrackTransitionEnd,
+  } = useHomeHeroCarouselLoop(safeSlides);
 
   const pauseAutoSlide = useCallback(() => {
     isAutoSlidePausedRef.current = true;
@@ -63,22 +74,8 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
     }, HERO_AUTO_SLIDE_RESUME_DELAY_MS);
   }, []);
 
-  const goToPrevious = useCallback(() => {
-    if (safeSlides.length <= 1) return;
-    setActiveIndex((prev) => (prev === 0 ? safeSlides.length - 1 : prev - 1));
-  }, [safeSlides.length]);
-
-  const goToNext = useCallback(() => {
-    if (safeSlides.length <= 1) return;
-    setActiveIndex((prev) => (prev + 1) % safeSlides.length);
-  }, [safeSlides.length]);
-
   useEffect(() => {
-    setActiveIndex((prev) => Math.min(prev, Math.max(0, safeSlides.length - 1)));
-  }, [safeSlides.length]);
-
-  useEffect(() => {
-    if (safeSlides.length <= 1) {
+    if (!hasMultipleSlides) {
       return;
     }
 
@@ -95,11 +92,11 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
         autoSlideResumeTimeoutRef.current = null;
       }
     };
-  }, [goToNext, safeSlides.length]);
+  }, [goToNext, hasMultipleSlides]);
 
   useEffect(() => {
     const heroNode = heroRef.current;
-    if (!heroNode || safeSlides.length <= 1) {
+    if (!heroNode || !hasMultipleSlides) {
       return;
     }
 
@@ -126,7 +123,7 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
     return () => {
       heroNode.removeEventListener('touchmove', lockVerticalScrollDuringHorizontalSwipe);
     };
-  }, [safeSlides.length]);
+  }, [hasMultipleSlides]);
 
   const resetTouchState = useCallback(() => {
     touchStateRef.current = INITIAL_HERO_TOUCH_STATE;
@@ -134,7 +131,7 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
     setDragOffsetPx(0);
   }, []);
 
-  const current = safeSlides[activeIndex] ?? safeSlides[0];
+  const current = safeSlides[logicalIndex] ?? safeSlides[0];
 
   if (!current) {
     return null;
@@ -143,7 +140,7 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
   const lines = getHomeHeroSlideLines(current, lang);
 
   const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
-    if (safeSlides.length <= 1) {
+    if (!hasMultipleSlides) {
       return;
     }
 
@@ -202,7 +199,7 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
 
   const handleDotClick = (index: number) => {
     pauseAutoSlide();
-    setActiveIndex(index);
+    goToLogicalIndex(index);
     scheduleAutoSlideResume();
   };
 
@@ -221,12 +218,15 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
       >
         <div className="h-full overflow-hidden">
           <div
-            className={`flex h-full ${isDragging ? '' : 'transition-transform duration-500 ease-in-out'}`}
+            className={`flex h-full ${
+              isDragging || suppressTransition ? '' : 'transition-transform duration-500 ease-in-out'
+            }`}
             style={{
-              transform: `translateX(calc(-${activeIndex * 100}% + ${dragOffsetPx}px))`,
+              transform: `translateX(calc(-${displayIndex * 100}% + ${dragOffsetPx}px))`,
             }}
+            onTransitionEnd={handleTrackTransitionEnd}
           >
-            {safeSlides.map((slide, index) => {
+            {trackSlides.map((slide, index) => {
               const alt =
                 getHomeHeroSlideLines(slide, lang).title || t('home.homepage.hero.imageAlt');
               const desktopSrc = getHomeHeroSlideImageSrc(slide, 'desktop');
@@ -240,7 +240,7 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
                     alt={alt}
                     fill
                     className="hidden object-cover md:block"
-                    priority={index === 0}
+                    priority={hasMultipleSlides ? index === 1 : index === 0}
                     sizes="1680px"
                     unoptimized={
                       desktopSrc.startsWith('http://') || desktopSrc.startsWith('https://')
@@ -251,7 +251,7 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
                     alt={alt}
                     fill
                     className="object-cover md:hidden"
-                    priority={index === 0}
+                    priority={hasMultipleSlides ? index === 1 : index === 0}
                     sizes="100vw"
                     unoptimized={
                       mobileSrc.startsWith('http://') || mobileSrc.startsWith('https://')
@@ -272,10 +272,10 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
             className="pointer-events-auto mt-6 sm:mt-7"
           />
         </div>
-        {safeSlides.length > 1 ? (
+        {hasMultipleSlides ? (
           <div className="absolute bottom-5 left-1/2 z-[3] flex -translate-x-1/2 gap-2 sm:bottom-4">
             {safeSlides.map((_, index) => {
-              const isActive = index === activeIndex;
+              const isActive = index === logicalIndex;
               return (
                 <button
                   key={index}
