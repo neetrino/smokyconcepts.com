@@ -23,7 +23,7 @@ const COVER_COLLECTION_DESKTOP_CARD_PADDING_BOTTOM_CLASS = 'sm:pb-4';
 /** Desktop: top padding grows the white panel upward behind the hero. */
 const COVER_COLLECTION_DESKTOP_CARD_PADDING_TOP_CLASS = 'sm:pt-8';
 /** Desktop: how far the hero hangs above the white panel top edge. */
-const COVER_COLLECTION_DESKTOP_IMAGE_PULL_UP_CLASS = 'sm:-mt-16';
+const COVER_COLLECTION_DESKTOP_IMAGE_PULL_UP_CLASS = 'sm:-mt-12';
 /** Desktop: slight title nudge; keep minimal to avoid empty band under label. */
 const COVER_COLLECTION_DESKTOP_TITLE_OFFSET_CLASS = 'sm:translate-y-1';
 /** Mobile: category titles centered under the hero image. */
