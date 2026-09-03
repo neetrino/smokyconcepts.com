@@ -138,6 +138,8 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
   }
 
   const lines = getHomeHeroSlideLines(current, lang);
+  const currentDesktopSrc = getHomeHeroSlideImageSrc(current, 'desktop');
+  const currentMobileSrc = getHomeHeroSlideImageSrc(current, 'mobile');
 
   const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     if (!hasMultipleSlides) {
@@ -216,9 +218,35 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
           scheduleAutoSlideResume();
         }}
       >
-        <div className="h-full overflow-hidden">
+        <div className="relative h-full overflow-hidden">
+          <div className="absolute inset-0 z-0">
+            <Image
+              src={currentDesktopSrc}
+              alt=""
+              fill
+              aria-hidden
+              className="hidden object-cover md:block"
+              priority
+              sizes="1680px"
+              unoptimized={
+                currentDesktopSrc.startsWith('http://') || currentDesktopSrc.startsWith('https://')
+              }
+            />
+            <Image
+              src={currentMobileSrc}
+              alt=""
+              fill
+              aria-hidden
+              className="object-cover md:hidden"
+              priority
+              sizes="100vw"
+              unoptimized={
+                currentMobileSrc.startsWith('http://') || currentMobileSrc.startsWith('https://')
+              }
+            />
+          </div>
           <div
-            className={`flex h-full ${
+            className={`relative z-[1] flex h-full ${
               isDragging || suppressTransition ? '' : 'transition-transform duration-500 ease-in-out'
             }`}
             style={{
