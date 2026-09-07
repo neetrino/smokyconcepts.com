@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateToken } from "@/lib/middleware/auth";
+import { getOrderAccessIdFromRequest } from "@/lib/orders/order-access-cookie.server";
 import { ordersService } from "@/lib/services/orders.service";
 
 export async function GET(
@@ -11,7 +12,9 @@ export async function GET(
     user = await authenticateToken(req);
 
     const { number } = await params;
-    const result = await ordersService.findByNumber(number, user?.id);
+    const result = await ordersService.findByNumber(number, {
+      allowedOrderId: getOrderAccessIdFromRequest(req),
+    });
     return NextResponse.json(result);
   } catch (error: any) {
     const { number } = await params;
@@ -39,4 +42,3 @@ export async function GET(
     );
   }
 }
-

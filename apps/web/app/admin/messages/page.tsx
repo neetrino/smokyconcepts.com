@@ -16,6 +16,7 @@ import {
   useSeedAdminLastSeenBaseline,
 } from '../hooks/useAdminLastSeen';
 import { getAdminNewBadgeLabel } from '../utils/adminNewBadgeLabel';
+import { readAdminLastSeenAt } from '../utils/adminLastSeen';
 import { formatAdminDateTime } from '../utils/formatAdminDate';
 import { MessageDetailsDrawer } from './components/MessageDetailsDrawer';
 
@@ -105,7 +106,7 @@ export default function AdminMessagesPage() {
   );
   const newBadgeLabel = getAdminNewBadgeLabel(t);
 
-  const { isNew: isMessageNew, lastSeenAt } = useAdminLastSeen('messages');
+  const { isNew: isMessageNew } = useAdminLastSeen('messages');
   useMarkAdminSectionSeenOnLeave('messages');
 
   useSeedAdminLastSeenBaseline(
@@ -129,7 +130,8 @@ export default function AdminMessagesPage() {
         search,
       };
       if (typeFilter === 'new') {
-        params.createdAfter = lastSeenAt ?? new Date().toISOString();
+        // Read at call time — avoid refetch when baseline seeds lastSeenAt.
+        params.createdAfter = readAdminLastSeenAt('messages') ?? new Date().toISOString();
       }
       const response = await apiClient.get<ContactMessagesResponse>('/api/v1/admin/messages', {
         params,
@@ -143,7 +145,7 @@ export default function AdminMessagesPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, typeFilter, lastSeenAt]);
+  }, [page, search, typeFilter]);
 
   useEffect(() => {
     if (isLoggedIn && isAdmin) {

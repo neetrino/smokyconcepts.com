@@ -4,6 +4,7 @@ import {
   parseHomeHeroConfigForAdmin,
   resolveHomeHeroInlineImagesForR2,
 } from "@/lib/services/home-hero.service";
+import { invalidateDiscountSettingsCache } from "@/lib/services/discount-settings-cache";
 import { homeHeroConfigSchema } from "@/lib/validation/home-hero.schema";
 
 class AdminSettingsService {
@@ -174,6 +175,10 @@ class AdminSettingsService {
         },
       });
       console.log("✅ [ADMIN SERVICE] Home hero updated:", parsed.slides.length, "slides");
+    }
+
+    if (data.globalDiscount !== undefined || data.categoryDiscounts !== undefined) {
+      invalidateDiscountSettingsCache();
     }
 
     return { success: true };

@@ -1,5 +1,8 @@
-/** Catalog page loads the full published set; client filters handle the rest. */
-export const CATALOG_PRODUCTS_FETCH_LIMIT = 9999;
+/**
+ * Catalog page loads the published set for client-side collection/color/size filters.
+ * Bounded so Prisma never over-fetches tens of thousands of rows.
+ */
+export const CATALOG_PRODUCTS_FETCH_LIMIT = 500;
 
 /**
  * Deep link from home “Check Availability” (pack fit): `/products?selectSize=1`

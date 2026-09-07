@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { dispatchCartDrawerOpen } from '../app/cart/constants';
-import { initializeCurrencyRates } from '../lib/currency';
 import { getCartCount } from '../lib/storageCounts';
 import { HeaderLocaleCurrencySwitcher } from './header/HeaderLocaleCurrencySwitcher';
 import {
@@ -107,11 +106,6 @@ export function Header() {
   const [cartCount, setCartCount] = useState(0);
   const [cartReady, setCartReady] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    if (isAdminPath) return;
-    void initializeCurrencyRates();
-  }, [isAdminPath]);
 
   useEffect(() => {
     if (isAdminPath) return;

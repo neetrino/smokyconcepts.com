@@ -3,9 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getProductText } from '../../../../lib/i18n';
 import { t } from '../../../../lib/i18n';
-import { apiClient } from '../../../../lib/api-client';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
-import { preloadSizeCatalogCategories } from '@/lib/size-catalog-image-cache';
+import { loadSizeCatalogCategories } from '@/lib/size-catalog-client-cache';
 import {
   getProductCollectionBadgeItems,
 } from '../../components/catalogProductLabels';
@@ -118,11 +117,9 @@ export function useProductInfoAndActions({
     let cancelled = false;
     void (async () => {
       try {
-        const res = await apiClient.get<{ data: SizeCatalogCategoryDto[] }>('/api/v1/size-catalog');
+        const data = await loadSizeCatalogCategories();
         if (!cancelled) {
-          const data = res.data ?? [];
           setSizeCatalogCategories(data);
-          void preloadSizeCatalogCategories(data);
         }
       } catch {
         if (!cancelled) {
@@ -237,7 +234,6 @@ export function useProductInfoAndActions({
   );
 
   const openSizeCatalogModal = () => {
-    void preloadSizeCatalogCategories(sizeCatalogCategories);
     setIsCustomizeSizeModalOpen(true);
   };
 

@@ -3,27 +3,10 @@ import { db } from "@white-shop/db";
 import { ensureProductVariantAttributesColumn } from "../utils/db-ensure";
 import { logger } from "../utils/logger";
 import type { ProductWithRelations } from "./types";
-
-/**
- * Base include configuration for product queries
- */
-const getBaseInclude = () => ({
-  translations: true,
-  variants: {
-    where: {
-      published: true,
-    },
-    orderBy: {
-      position: "asc" as const,
-    },
-  },
-  labels: true,
-  categories: {
-    include: {
-      translations: true,
-    },
-  },
-});
+import {
+  PRODUCT_LIST_QUERY_INCLUDE,
+  resolveProductListTake,
+} from "./list-query-include";
 
 /**
  * Check if error is related to product_variants.attributes column
@@ -45,21 +28,27 @@ function isAttributeValuesColorsError(error: unknown): boolean {
          errorMessage.includes('does not exist');
 }
 
+interface ExecuteProductQueryOptions {
+  needsPriceFilterOverfetch?: boolean;
+}
+
 /**
- * Execute product query with comprehensive error handling
+ * Execute product query with lean includes and bounded take.
  */
 export async function executeProductQuery(
   where: Prisma.ProductWhereInput,
-  limit: number
+  limit: number,
+  options: ExecuteProductQueryOptions = {}
 ): Promise<ProductWithRelations[]> {
-  const baseInclude = getBaseInclude();
+  const take = resolveProductListTake(limit, options.needsPriceFilterOverfetch === true);
+  const baseInclude = PRODUCT_LIST_QUERY_INCLUDE;
 
   try {
     const products = await db.product.findMany({
       where,
       include: baseInclude,
       skip: 0,
-      take: limit * 10, // Get more to filter in memory
+      take,
     });
     logger.info(`Found ${products.length} products from database`);
     return products as ProductWithRelations[];
@@ -72,12 +61,12 @@ export async function executeProductQuery(
           where,
           include: baseInclude,
           skip: 0,
-          take: limit * 10,
+          take,
         });
         logger.info(`Found ${products.length} products from database (after creating attributes column)`);
         return products as ProductWithRelations[];
       } catch (attributesError: unknown) {
-        return handleAttributesError(attributesError, where, limit);
+        return handleAttributesError(attributesError, where, take);
       }
     }
 
@@ -85,7 +74,7 @@ export async function executeProductQuery(
       logger.warn('attribute_values.colors column not found, fetching without attributeValue', { 
         error: error instanceof Error ? error.message : String(error) 
       });
-      return executeWithoutAttributeValue(where, limit);
+      return executeWithoutAttributeValue(where, take);
     }
 
     throw error;
@@ -98,13 +87,13 @@ export async function executeProductQuery(
 async function handleAttributesError(
   error: unknown,
   where: Prisma.ProductWhereInput,
-  limit: number
+  take: number
 ): Promise<ProductWithRelations[]> {
   if (isAttributeValuesColorsError(error)) {
     logger.warn('attribute_values.colors column not found, fetching without attributeValue', { 
       error: error instanceof Error ? error.message : String(error) 
     });
-    return executeWithoutAttributeValue(where, limit);
+    return executeWithoutAttributeValue(where, take);
   }
   throw error;
 }
@@ -114,16 +103,14 @@ async function handleAttributesError(
  */
 async function executeWithoutAttributeValue(
   where: Prisma.ProductWhereInput,
-  limit: number
+  take: number
 ): Promise<ProductWithRelations[]> {
-  const baseInclude = getBaseInclude();
   const products = await db.product.findMany({
     where,
-    include: baseInclude,
+    include: PRODUCT_LIST_QUERY_INCLUDE,
     skip: 0,
-    take: limit * 10,
+    take,
   });
   logger.info(`Found ${products.length} products from database (without attributeValue)`);
   return products as ProductWithRelations[];
 }
-

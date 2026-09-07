@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Card } from '@shop/ui';
 import { useTranslation } from '../../lib/i18n-client';
-import { PageLoadingCenter } from '../../components/loading/PageLoadingCenter';
 import { ResetPasswordForm } from './ResetPasswordForm';
 
 function ResetPasswordContent() {
@@ -31,7 +30,7 @@ function ResetPasswordContent() {
 export default function ResetPasswordPage() {
   return (
     <div className="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <Suspense fallback={<PageLoadingCenter />}>
+      <Suspense fallback={null}>
         <ResetPasswordContent />
       </Suspense>
     </div>

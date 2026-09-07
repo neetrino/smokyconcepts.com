@@ -8,6 +8,7 @@ import {
 import { logger } from "../utils/logger";
 import { getOutOfStockLabel } from "./utils";
 import type { ProductWithFullRelations, ProductVariantWithOptions } from "./types";
+import { getCachedDiscountSettings } from '../discount-settings-cache';
 import {
   extractSizeCatalogSelectionFromAttributes,
   isDefaultPricingVariant,
@@ -60,27 +61,6 @@ function collectSizeCatalogCategoryTitlesFromVariants(
     }
   }
   return Array.from(titles);
-}
-
-/**
- * Get discount settings from database
- */
-async function getDiscountSettings() {
-  const discountSettings = await db.settings.findMany({
-    where: {
-      key: {
-        in: ["globalDiscount", "categoryDiscounts"],
-      },
-    },
-  });
-
-  const globalDiscountSetting = discountSettings.find((s: { key: string; value: unknown }) => s.key === "globalDiscount");
-  const globalDiscount = Number(globalDiscountSetting?.value) || 0;
-  
-  const categoryDiscountsSetting = discountSettings.find((s: { key: string; value: unknown }) => s.key === "categoryDiscounts");
-  const categoryDiscounts = categoryDiscountsSetting ? (categoryDiscountsSetting.value as Record<string, number>) || {} : {};
-
-  return { globalDiscount, categoryDiscounts };
 }
 
 /**
@@ -441,7 +421,7 @@ export async function transformProduct(
   const translation = translations.find((t: { locale: string }) => t.locale === lang) || translations[0] || null;
   
   // Get discount settings
-  const { globalDiscount, categoryDiscounts } = await getDiscountSettings();
+  const { globalDiscount, categoryDiscounts } = await getCachedDiscountSettings();
   
   const productDiscount = product.discountPercent || 0;
   

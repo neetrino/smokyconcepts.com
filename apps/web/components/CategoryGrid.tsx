@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { apiClient } from '../lib/api-client';
+import { CATALOG_PRODUCTS_FETCH_LIMIT } from '../lib/constants/products-catalog.constants';
 import { getStoredLanguage } from '../lib/language';
 
 interface Category {
@@ -25,6 +26,7 @@ interface Product {
   slug: string;
   title: string;
   image: string | null;
+  categories?: Array<{ slug: string }>;
 }
 
 interface ProductsResponse {
@@ -158,7 +160,7 @@ export function CategoryGrid() {
   }, []);
 
   /**
-   * Fetch categories and product counts
+   * Fetch categories, then enrich counts/images with a single products request.
    */
   const fetchCategories = async () => {
     try {
@@ -169,98 +171,39 @@ export function CategoryGrid() {
       });
 
       const categoriesList = response.data || [];
-      // Get all categories including children (flatten the tree)
       const allCategories = flattenAllCategories(categoriesList);
-      
-      console.log('📦 [CategoryGrid] Root categories found:', categoriesList.length);
-      console.log('📦 [CategoryGrid] Root categories:', categoriesList.map(c => c.title));
-      console.log('📦 [CategoryGrid] Total categories (including children):', allCategories.length);
-      console.log('📦 [CategoryGrid] All categories:', allCategories.map(c => c.title));
-      
-      // Set categories immediately so they render
+
       setCategories(allCategories);
+      setLoading(false);
 
-      // Initialize counts and products for all categories
       const counts: Record<string, number> = {};
-      const products: Record<string, Product | null> = {};
-      
-      // Initialize all categories with 0 count and null product
-      allCategories.forEach(category => {
+      const productsByCategory: Record<string, Product | null> = {};
+      allCategories.forEach((category) => {
         counts[category.slug] = 0;
-        products[category.slug] = null;
+        productsByCategory[category.slug] = null;
       });
 
-      // Process all categories in parallel for better performance
-      const categoryPromises = allCategories.map(async (category) => {
-        try {
-          // Fetch products to get count and find one with image
-          console.log(`🔍 [CategoryGrid] Fetching products for category: "${category.title}" (slug: "${category.slug}")`);
-          const productsResponse = await apiClient.get<ProductsResponse>('/api/v1/products', {
-            params: {
-              category: category.slug,
-              limit: '10', // Get more products to find one with image
-              lang: language,
-            },
-          });
-          
-          console.log(`📦 [CategoryGrid] Response for "${category.title}":`, {
-            total: productsResponse.meta?.total || 0,
-            productsCount: productsResponse.data?.length || 0,
-            firstProductId: productsResponse.data?.[0]?.id,
-            firstProductImage: productsResponse.data?.[0]?.image,
-            allProductIds: productsResponse.data?.map(p => p.id),
-          });
-          
-          // If category has 0 products, it might mean category was not found
-          if (productsResponse.meta?.total === 0) {
-            console.warn(`⚠️ [CategoryGrid] Category "${category.title}" (${category.slug}) has 0 products - category might not exist in database`);
-          }
-          
-          counts[category.slug] = productsResponse.meta?.total || 0;
-          // Get first product with image, or first product if no image available
-          // Only assign product if we have products for this category
-          const productWithImage = productsResponse.data && productsResponse.data.length > 0
-            ? (productsResponse.data.find(p => p.image) || productsResponse.data[0] || null)
-            : null;
-          products[category.slug] = productWithImage;
-          
-          console.log(`✅ [CategoryGrid] Category "${category.title}" (${category.slug}): ${counts[category.slug]} products, selected product: ${productWithImage?.id} (image: ${productWithImage?.image ? 'yes' : 'no'})`);
-        } catch (err) {
-          console.error(`❌ [CategoryGrid] Error fetching products for category ${category.slug}:`, err);
-          // Keep default values (0 and null)
-        }
+      const productsResponse = await apiClient.get<ProductsResponse>('/api/v1/products', {
+        params: {
+          limit: String(CATALOG_PRODUCTS_FETCH_LIMIT),
+          lang: language,
+        },
       });
-      
-      // Wait for all category data to load
-      await Promise.all(categoryPromises);
-      
-      // Update state with all data
-      setProductCounts(counts);
-      setCategoryProducts(products);
-      
-      // Log final state to verify each category has unique product
-      console.log('✅ [CategoryGrid] All categories processed. Total:', allCategories.length);
-      console.log('📊 [CategoryGrid] Final category products mapping:', 
-        Object.entries(products).map(([slug, product]) => ({
-          slug,
-          productId: product?.id || 'null',
-          productImage: product?.image || 'null',
-        }))
-      );
-      
-      // Check for duplicate products
-      const productIds = Object.values(products).map(p => p?.id).filter(Boolean);
-      const uniqueProductIds = new Set(productIds);
-      if (productIds.length !== uniqueProductIds.size) {
-        console.warn('⚠️ [CategoryGrid] WARNING: Some categories have the same product!', {
-          totalProducts: productIds.length,
-          uniqueProducts: uniqueProductIds.size,
-          duplicates: productIds.filter((id, index) => productIds.indexOf(id) !== index)
-        });
+      const allProducts = productsResponse.data ?? [];
+
+      for (const category of allCategories) {
+        const inCategory = allProducts.filter((product) =>
+          (product.categories ?? []).some((item) => item.slug === category.slug)
+        );
+        counts[category.slug] = inCategory.length;
+        productsByCategory[category.slug] =
+          inCategory.find((product) => Boolean(product.image)) ?? inCategory[0] ?? null;
       }
-    } catch (err: any) {
+
+      setProductCounts(counts);
+      setCategoryProducts(productsByCategory);
+    } catch (err: unknown) {
       console.error('Error fetching categories:', err);
-    } finally {
       setLoading(false);
     }
   };

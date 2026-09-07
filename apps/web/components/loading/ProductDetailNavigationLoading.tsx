@@ -4,16 +4,19 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from '../../lib/i18n-client';
 import { PageLoadingOverlay } from './PageLoadingOverlay';
-import { shouldShowNavigationLoadingForAnchor } from './shouldShowNavigationLoadingForAnchor';
+import {
+  isProductDetailPathname,
+  shouldShowProductDetailNavigationLoading,
+} from './shouldShowProductDetailNavigationLoading';
 
-/** Clear overlay if URL never changed (preventDefault / cancelled soft-nav). */
-const STUCK_NAVIGATION_LOADING_MS = 400;
+/** Clear overlay if soft-nav was cancelled / URL never changed. */
+const STUCK_PRODUCT_NAVIGATION_LOADING_MS = 400;
 
 /**
- * Shows the shared glass overlay while navigating between pathnames.
- * Hides when the destination pathname becomes active (no fixed minimum duration).
+ * Glass overlay only when opening a product detail page (typically slow SSR).
+ * Other routes stay without global loading.
  */
-export function NavigationLoading() {
+export function ProductDetailNavigationLoading() {
   const pathname = usePathname();
   const { t } = useTranslation();
   const [pendingPathname, setPendingPathname] = useState<string | null>(null);
@@ -36,7 +39,7 @@ export function NavigationLoading() {
       if (!(anchor instanceof HTMLAnchorElement)) {
         return;
       }
-      if (!shouldShowNavigationLoadingForAnchor(anchor, event, pathname)) {
+      if (!shouldShowProductDetailNavigationLoading(anchor, event, pathname)) {
         return;
       }
 
@@ -47,7 +50,10 @@ export function NavigationLoading() {
         return;
       }
 
-      // Must set in capture (before Next.js Link preventDefault) so real navigations show overlay.
+      if (!isProductDetailPathname(nextPathname)) {
+        return;
+      }
+
       const pathnameAtClick = window.location.pathname;
       setPendingPathname(nextPathname);
 
@@ -56,18 +62,12 @@ export function NavigationLoading() {
           return;
         }
         setPendingPathname((current) => (current === nextPathname ? null : current));
-      }, STUCK_NAVIGATION_LOADING_MS);
-    };
-
-    const onPopState = () => {
-      setPendingPathname(window.location.pathname);
+      }, STUCK_PRODUCT_NAVIGATION_LOADING_MS);
     };
 
     document.addEventListener('click', onClickCapture, true);
-    window.addEventListener('popstate', onPopState);
     return () => {
       document.removeEventListener('click', onClickCapture, true);
-      window.removeEventListener('popstate', onPopState);
     };
   }, [pathname]);
 

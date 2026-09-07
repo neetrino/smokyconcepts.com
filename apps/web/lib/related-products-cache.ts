@@ -44,6 +44,7 @@ interface RelatedProductsCacheEntry {
 }
 
 const memoryCache = new Map<string, RelatedProductsCacheEntry>();
+const inflightLoads = new Map<string, Promise<RelatedProductCacheItem[]>>();
 
 function buildRelatedProductsCacheKey(
   categorySlug: string | undefined,
@@ -130,4 +131,36 @@ export function setRelatedProductsCache(
   };
   memoryCache.set(key, entry);
   writeSessionEntry(key, entry);
+}
+
+/**
+ * Dedupes concurrent related-product fetches (React Strict Mode / multiple mounts).
+ */
+export function loadRelatedProductsOnce(
+  categorySlug: string | undefined,
+  language: LanguageCode,
+  loader: () => Promise<RelatedProductCacheItem[]>
+): Promise<RelatedProductCacheItem[]> {
+  const cached = getRelatedProductsCache(categorySlug, language);
+  if (cached) {
+    return Promise.resolve(cached);
+  }
+
+  const key = buildRelatedProductsCacheKey(categorySlug, language);
+  const existing = inflightLoads.get(key);
+  if (existing) {
+    return existing;
+  }
+
+  const request = loader()
+    .then((products) => {
+      setRelatedProductsCache(categorySlug, language, products);
+      return products;
+    })
+    .finally(() => {
+      inflightLoads.delete(key);
+    });
+
+  inflightLoads.set(key, request);
+  return request;
 }

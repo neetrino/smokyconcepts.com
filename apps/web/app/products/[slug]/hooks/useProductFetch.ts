@@ -1,22 +1,26 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '../../../../lib/api-client';
-import { getStoredLanguage } from '../../../../lib/language';
+import { getStoredLanguage, type LanguageCode } from '../../../../lib/language';
 import { RESERVED_ROUTES } from '../types';
 import type { Product } from '../types';
 
 interface UseProductFetchProps {
   slug: string;
   variantIdFromUrl: string | null;
+  initialProduct?: Product | null;
+  initialLanguage?: LanguageCode;
 }
 
 export function useProductFetch({
   slug,
   variantIdFromUrl,
+  initialProduct = null,
+  initialLanguage,
 }: UseProductFetchProps) {
   const router = useRouter();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [product, setProduct] = useState<Product | null>(initialProduct);
+  const [loading, setLoading] = useState(initialProduct === null);
 
   const fetchProduct = useCallback(async () => {
     if (!slug || RESERVED_ROUTES.includes(slug.toLowerCase())) return;
@@ -65,7 +69,19 @@ export function useProductFetch({
 
   useEffect(() => {
     if (!slug || RESERVED_ROUTES.includes(slug.toLowerCase())) return;
-    fetchProduct();
+
+    const clientLang = getStoredLanguage();
+    const canUseInitial =
+      initialProduct !== null &&
+      initialProduct !== undefined &&
+      (!initialLanguage || initialLanguage === clientLang);
+
+    if (canUseInitial) {
+      setProduct(initialProduct);
+      setLoading(false);
+    } else {
+      void fetchProduct();
+    }
     
     const handleLanguageUpdate = () => {
       fetchProduct();
@@ -75,8 +91,7 @@ export function useProductFetch({
     return () => {
       window.removeEventListener('language-updated', handleLanguageUpdate);
     };
-  }, [slug, variantIdFromUrl, router, fetchProduct]);
+  }, [slug, variantIdFromUrl, router, fetchProduct, initialProduct, initialLanguage]);
 
   return { product, loading, fetchProduct };
 }
-

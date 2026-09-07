@@ -34,7 +34,7 @@ export default function CategoriesPage() {
   const router = useRouter();
   const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [treeLoading, setTreeLoading] = useState(true);
   const [productCounts, setProductCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function CategoriesPage() {
 
   const fetchCategories = async () => {
     try {
-      setLoading(true);
+      setTreeLoading(true);
       const language = getStoredLanguage();
       const response = await apiClient.get<CategoriesResponse>('/api/v1/categories/tree', {
         params: { lang: language },
@@ -51,29 +51,31 @@ export default function CategoriesPage() {
 
       const categoriesList = response.data || [];
       setCategories(categoriesList);
+      setTreeLoading(false);
 
-      // Fetch product counts for each category
+      // Fetch product counts after the tree is visible (do not block the page).
       const counts: Record<string, number> = {};
-      for (const category of categoriesList) {
-        try {
-          const productsResponse = await apiClient.get<ProductsResponse>('/api/v1/products', {
-            params: {
-              category: category.slug,
-              limit: '1',
-              lang: language,
-            },
-          });
-          counts[category.slug] = productsResponse.meta?.total || 0;
-        } catch (err) {
-          console.error(`Error fetching products for category ${category.slug}:`, err);
-          counts[category.slug] = 0;
-        }
-      }
+      await Promise.all(
+        categoriesList.map(async (category) => {
+          try {
+            const productsResponse = await apiClient.get<ProductsResponse>('/api/v1/products', {
+              params: {
+                category: category.slug,
+                limit: '1',
+                lang: language,
+              },
+            });
+            counts[category.slug] = productsResponse.meta?.total || 0;
+          } catch (err) {
+            console.error(`Error fetching products for category ${category.slug}:`, err);
+            counts[category.slug] = 0;
+          }
+        }),
+      );
       setProductCounts(counts);
     } catch (err: any) {
       console.error('Error fetching categories:', err);
-    } finally {
-      setLoading(false);
+      setTreeLoading(false);
     }
   };
 
@@ -95,7 +97,7 @@ export default function CategoriesPage() {
 
   const allCategories = flattenCategories(categories);
 
-  if (loading) {
+  if (treeLoading) {
     return <PageLoadingCenter label={t('categories.loading')} />;
   }
 
@@ -122,7 +124,9 @@ export default function CategoriesPage() {
                 {category.title}
               </h3>
               <p className="text-sm text-gray-500 mb-4">
-                {productCounts[category.slug] || 0} {t('categories.productsCount')}
+                {category.slug in productCounts
+                  ? `${productCounts[category.slug]} ${t('categories.productsCount')}`
+                  : '\u00a0'}
               </p>
             </Card>
           ))}

@@ -12,7 +12,9 @@ export default function ThankYouPage() {
   const searchParams = useSearchParams();
   const orderNumber = resolvePaymentReturnOrderNumber(searchParams);
   const shouldClearGuestCart = searchParams.get('clearCart') === '1';
-  const orderHref = orderNumber ? `/orders/${encodeURIComponent(orderNumber)}` : '/profile';
+  const orderHref = orderNumber
+    ? `/orders/${encodeURIComponent(orderNumber)}`
+    : '/profile';
 
   useEffect(() => {
     if (breakOutOfPaymentIframeIfNeeded()) {
@@ -35,7 +37,6 @@ export default function ThankYouPage() {
         <h1 className="text-3xl font-bold text-gray-900">Thank you for your order!</h1>
         <p className="mt-3 text-base text-gray-600">
           Your order has been placed successfully.
-          {orderNumber ? ` Order number: ${orderNumber}.` : ''}
         </p>
 
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">

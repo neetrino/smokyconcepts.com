@@ -1,7 +1,12 @@
 // Product page types and interfaces
 
+import type { LanguageCode } from '../../../lib/language';
+
 export interface ProductPageProps {
-  params: Promise<{ slug?: string }>;
+  slug: string;
+  variantIdFromUrl: string | null;
+  initialProduct: Product | null;
+  initialLanguage: LanguageCode;
 }
 
 export interface ProductMedia {
