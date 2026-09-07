@@ -42,18 +42,17 @@ export function getGuestQuantityForVariant(variantId: string): number {
 }
 
 /**
- * Returns false if adding `quantityToAdd` would exceed `variant.stock` given current guest lines.
+ * Returns false if adding `quantityToAdd` would exceed `variant.stock`.
+ * Out-of-stock variants are treated as backorder — no client-side quantity cap.
  */
 export function canAddVariantToGuestCart(variant: ProductVariant, quantityToAdd: number): boolean {
   if (quantityToAdd <= 0) {
     return false;
   }
-  const currentGuestQuantity = getGuestQuantityForVariant(variant.id);
   if (variant.stock <= 0) {
-    // Backorder flow: allow keeping one unit in guest cart for out-of-stock variants.
-    return currentGuestQuantity + quantityToAdd <= 1;
+    return true;
   }
-  const nextTotal = currentGuestQuantity + quantityToAdd;
+  const nextTotal = getGuestQuantityForVariant(variant.id) + quantityToAdd;
   return nextTotal <= variant.stock;
 }
 

@@ -22,9 +22,11 @@ export const PRODUCT_INFO_ROOT_CLASS = [
 export const PRODUCT_INFO_SCROLL_BODY_CLASS =
   'flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-visible xl:overflow-hidden';
 
-/** Customize tab: allow font menu to extend into the purchase-row gap without clipping. */
-export const PRODUCT_INFO_SCROLL_BODY_CUSTOMIZE_CLASS =
-  'flex min-h-0 flex-1 flex-col overflow-visible';
+/**
+ * Customize tab: same containment as other tabs so the page body does not grow a
+ * second scrollbar. Font menu is position:fixed (see CustomizeFontDropdown).
+ */
+export const PRODUCT_INFO_SCROLL_BODY_CUSTOMIZE_CLASS = PRODUCT_INFO_SCROLL_BODY_CLASS;
 
 /** Above gallery hero hover (`z-10`) and in-hero nav icons (`z-30` within that card). */
 export const PRODUCT_INFO_HEADER_CLASS = 'relative z-40 shrink-0 overflow-visible';
@@ -42,17 +44,10 @@ export const PRODUCT_INFO_TAB_PANEL_CLASS = [
   'xl:h-auto xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:overscroll-y-contain',
 ].join(' ');
 
-/** Customize tab: same fixed height as other tabs; overflow visible for font menu. */
-export const PRODUCT_INFO_TABS_SECTION_CUSTOMIZE_CLASS = [
-  'mt-8 flex min-h-0 shrink-0 flex-col overflow-visible',
-  'xl:mt-10 xl:min-h-0 xl:flex-1',
-].join(' ');
+/** Customize tab: same fixed height + hidden scrollbar; font menu uses fixed positioning. */
+export const PRODUCT_INFO_TABS_SECTION_CUSTOMIZE_CLASS = PRODUCT_INFO_TABS_SECTION_CLASS;
 
-export const PRODUCT_INFO_TAB_PANEL_CUSTOMIZE_CLASS = [
-  PRODUCT_INFO_TAB_PANEL_FIXED_HEIGHT_CLASS,
-  'flex min-h-0 flex-col overflow-visible pt-7 sm:pt-8',
-  'xl:h-auto xl:min-h-0 xl:flex-1',
-].join(' ');
+export const PRODUCT_INFO_TAB_PANEL_CUSTOMIZE_CLASS = PRODUCT_INFO_TAB_PANEL_CLASS;
 
 export const PRODUCT_INFO_CUSTOMIZE_COPY_CLASS =
   'font-montserrat text-[16px] font-bold leading-[26px] text-[#414141]';
