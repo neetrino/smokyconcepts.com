@@ -34,7 +34,7 @@ export const CUSTOMIZE_FONT_DROPDOWN_LAYOUT = {
 } as const;
 
 export const CUSTOMIZE_FONT_DROPDOWN_PANEL_CLASS = [
-  'absolute left-0 top-full z-50 mt-0.5 overflow-hidden rounded-[6px] bg-white shadow-[0px_4px_22.5px_rgba(0,0,0,0.1)]',
+  'fixed z-50 overflow-hidden rounded-[6px] bg-white shadow-[0px_4px_22.5px_rgba(0,0,0,0.1)]',
   CUSTOMIZE_FONT_CONTROL_WIDTH_CLASS,
 ].join(' ');
 

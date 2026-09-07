@@ -2,13 +2,17 @@
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
+/** Google Fonts — product customize (ArmAllegroU → Pacifico fallback). */
+const GOOGLE_FONTS_STYLE_ORIGIN = 'https://fonts.googleapis.com';
+const GOOGLE_FONTS_FONT_ORIGIN = 'https://fonts.gstatic.com';
+
 /** Baseline CSP — permissive enough for Next.js + Tailwind; tightens clickjacking and mixed content. */
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-  "style-src 'self' 'unsafe-inline'",
+  `style-src 'self' 'unsafe-inline' ${GOOGLE_FONTS_STYLE_ORIGIN}`,
   "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
+  `font-src 'self' data: ${GOOGLE_FONTS_FONT_ORIGIN}`,
   "connect-src 'self' https: wss:",
   "media-src 'self' blob: https:",
   "object-src 'none'",

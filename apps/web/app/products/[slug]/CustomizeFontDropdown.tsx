@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import {
   CUSTOMIZE_FONT_CONTROL_WIDTH_CLASS,
+  CUSTOMIZE_FONT_DROPDOWN_LAYOUT,
   CUSTOMIZE_FONT_DROPDOWN_OPTION_CLASS,
   CUSTOMIZE_FONT_DROPDOWN_PANEL_CLASS,
   CUSTOMIZE_FORMAT_ASSETS,
@@ -20,6 +22,15 @@ import {
 import { CUSTOMIZE_INPUT_FONT_STACK } from './utils/build-customize-preview-html';
 
 const FONT_DROPDOWN_DIVIDER_CLASS = 'mx-0 h-px border-0 bg-[#e8e8e8]';
+
+/** Gap between trigger bottom and fixed panel (matches former `mt-0.5`). */
+const FONT_DROPDOWN_PANEL_GAP_PX = 2;
+
+type FontDropdownPanelPosition = {
+  top: number;
+  left: number;
+  width: number;
+};
 
 function findFontOptionByStack(stack: string): CustomizeFontOption {
   const normalized = stack.trim().replace(/\s+/g, ' ').toLowerCase();
@@ -46,18 +57,57 @@ export function CustomizeFontDropdown({
   ariaLabel,
 }: CustomizeFontDropdownProps) {
   const [open, setOpen] = useState(false);
+  const [panelPosition, setPanelPosition] = useState<FontDropdownPanelPosition | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLUListElement>(null);
   const listboxId = useId();
   const selected = value ? findFontOptionByStack(value) : null;
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setPanelPosition(null);
+      return;
+    }
+
+    const updatePosition = () => {
+      const rect = rootRef.current?.getBoundingClientRect();
+      if (!rect) {
+        return;
+      }
+      const viewportHeight = window.innerHeight;
+      const panelHeight = CUSTOMIZE_FONT_DROPDOWN_LAYOUT.panelHeightPx;
+      const spaceBelow = viewportHeight - rect.bottom - FONT_DROPDOWN_PANEL_GAP_PX;
+      const openUpward = spaceBelow < panelHeight && rect.top > spaceBelow;
+      const top = openUpward
+        ? Math.max(FONT_DROPDOWN_PANEL_GAP_PX, rect.top - panelHeight - FONT_DROPDOWN_PANEL_GAP_PX)
+        : rect.bottom + FONT_DROPDOWN_PANEL_GAP_PX;
+
+      setPanelPosition({
+        top,
+        left: rect.left,
+        width: rect.width,
+      });
+    };
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) {
       return;
     }
     const handlePointerDown = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        setOpen(false);
+      const target = event.target as Node;
+      if (rootRef.current?.contains(target) || panelRef.current?.contains(target)) {
+        return;
       }
+      setOpen(false);
     };
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -85,6 +135,47 @@ export function CustomizeFontDropdown({
   const toggleOpen = () => {
     setOpen((previous) => !previous);
   };
+
+  const panel =
+    open && panelPosition && typeof document !== 'undefined'
+      ? createPortal(
+          <ul
+            ref={panelRef}
+            id={listboxId}
+            role="listbox"
+            aria-label={ariaLabel}
+            className={CUSTOMIZE_FONT_DROPDOWN_PANEL_CLASS}
+            style={{
+              top: panelPosition.top,
+              left: panelPosition.left,
+              width: panelPosition.width,
+            }}
+          >
+            {CUSTOMIZE_FONT_OPTIONS.map((option, index) => (
+              <li key={option.id} role="presentation">
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={option.id === selected?.id}
+                  onClick={() => {
+                    handleSelect(option);
+                  }}
+                  className={`${CUSTOMIZE_FONT_DROPDOWN_OPTION_CLASS} ${
+                    option.id === selected?.id ? 'bg-[#faf8f4]' : 'bg-white hover:bg-[#faf8f4]/60'
+                  }`}
+                  style={{ fontFamily: option.stack }}
+                >
+                  {option.label}
+                </button>
+                {index < CUSTOMIZE_FONT_OPTIONS.length - 1 ? (
+                  <hr className={FONT_DROPDOWN_DIVIDER_CLASS} />
+                ) : null}
+              </li>
+            ))}
+          </ul>,
+          document.body
+        )
+      : null;
 
   return (
     <div ref={rootRef} className={`relative shrink-0 ${CUSTOMIZE_FONT_CONTROL_WIDTH_CLASS}`}>
@@ -146,36 +237,7 @@ export function CustomizeFontDropdown({
           />
         </button>
       </div>
-      {open ? (
-        <ul
-          id={listboxId}
-          role="listbox"
-          aria-label={ariaLabel}
-          className={CUSTOMIZE_FONT_DROPDOWN_PANEL_CLASS}
-        >
-          {CUSTOMIZE_FONT_OPTIONS.map((option, index) => (
-            <li key={option.id} role="presentation">
-              <button
-                type="button"
-                role="option"
-                aria-selected={option.id === selected?.id}
-                onClick={() => {
-                  handleSelect(option);
-                }}
-                className={`${CUSTOMIZE_FONT_DROPDOWN_OPTION_CLASS} ${
-                  option.id === selected?.id ? 'bg-[#faf8f4]' : 'bg-white hover:bg-[#faf8f4]/60'
-                }`}
-                style={{ fontFamily: option.stack }}
-              >
-                {option.label}
-              </button>
-              {index < CUSTOMIZE_FONT_OPTIONS.length - 1 ? (
-                <hr className={FONT_DROPDOWN_DIVIDER_CLASS} />
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      ) : null}
+      {panel}
     </div>
   );
 }
