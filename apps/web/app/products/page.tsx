@@ -1,7 +1,10 @@
-import { CATALOG_PRODUCTS_FETCH_LIMIT } from '@/lib/constants/products-catalog.constants';
-import { productsService } from '@/lib/services/products.service';
 import { logger } from '@/lib/utils/logger';
-import { getStoredLanguage } from '../../lib/language';
+import { getCachedCatalogProducts } from '@/lib/services/storefront-product-cache';
+import { cookies } from 'next/headers';
+import {
+  LANGUAGE_STORAGE_KEY,
+  parseLanguageCode,
+} from '../../lib/language';
 import { ProductsCatalogView } from './components/ProductsCatalogView';
 import {
   isClientSideCollectionFilterValue,
@@ -80,24 +83,25 @@ function isProductsResponse(value: unknown): value is ProductsResponse {
   return Array.isArray(value.data);
 }
 
+async function getCatalogLanguage(): Promise<string> {
+  const cookieStore = await cookies();
+  return parseLanguageCode(cookieStore.get(LANGUAGE_STORAGE_KEY)?.value) ?? 'en';
+}
+
 /**
- * Load catalog products in-process. Do not HTTP-fetch this app's own API —
+ * Load catalog products in-process (cached). Do not HTTP-fetch this app's own API —
  * NEXT_PUBLIC_APP_URL often points at production and 404s locally.
  */
 async function getProducts(
-  page: number = 1,
   search?: string,
-  category?: string,
-  limit: number = DEFAULT_PRODUCTS_PAGE_LIMIT
+  category?: string
 ): Promise<ProductsResponse> {
   try {
-    const result = await productsService.findAll({
-      page,
-      limit,
-      lang: getStoredLanguage(),
-      search: search?.trim() || undefined,
-      category: category?.trim() || undefined,
-    });
+    const result = await getCachedCatalogProducts(
+      await getCatalogLanguage(),
+      search,
+      category
+    );
 
     return isProductsResponse(result) ? result : EMPTY_PRODUCTS_RESPONSE;
   } catch (error) {
@@ -120,10 +124,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     categoryParam && !isClientSideCollectionFilterValue(categoryParam) ? categoryParam : undefined;
 
   const productsData = await getProducts(
-    1,
     typeof params.search === 'string' ? params.search : undefined,
-    apiCategoryFilter,
-    CATALOG_PRODUCTS_FETCH_LIMIT
+    apiCategoryFilter
   );
 
   const normalizedProducts: Product[] = productsData.data.map((p) => ({

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { apiClient } from '@/lib/api-client';
+import { loadSizeCatalogCategories } from '@/lib/size-catalog-client-cache';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
 import type { Product, ProductVariant } from '../types';
 import {
@@ -34,9 +34,9 @@ export function useProductSizeCatalogCollectionPrice({
     let cancelled = false;
     void (async () => {
       try {
-        const res = await apiClient.get<{ data: SizeCatalogCategoryDto[] }>('/api/v1/size-catalog');
+        const data = await loadSizeCatalogCategories();
         if (!cancelled) {
-          setSizeCatalogCategories(res.data ?? []);
+          setSizeCatalogCategories(data);
         }
       } catch {
         if (!cancelled) {

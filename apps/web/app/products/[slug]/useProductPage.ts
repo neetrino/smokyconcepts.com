@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getStoredLanguage, type LanguageCode } from '../../../lib/language';
 import { useProductImages } from './hooks/useProductImages';
 import { useProductFetch } from './hooks/useProductFetch';
@@ -9,15 +9,27 @@ import { useVariantSelection } from './hooks/useVariantSelection';
 import { useProductQuantity } from './hooks/useProductQuantity';
 import { useProductCalculations } from './hooks/useProductCalculations';
 import { useAttributeGroups } from './useAttributeGroups';
-import type { ProductVariant } from './types';
+import type { Product, ProductVariant } from './types';
 import { getOptionValue, getOptionValues, normalizeVersionToken, variantHasColor, variantHasOptionValue } from './utils/variant-helpers';
 import { findVariantByAllAttributes } from './utils/variant-finders';
 import { resolveVariantGalleryUrls } from './utils/image-switching';
 
-export function useProductPage(params: Promise<{ slug?: string }>) {
+interface UseProductPageArgs {
+  slug: string;
+  variantIdFromUrl: string | null;
+  initialProduct: Product | null;
+  initialLanguage: LanguageCode;
+}
+
+export function useProductPage({
+  slug,
+  variantIdFromUrl,
+  initialProduct,
+  initialLanguage,
+}: UseProductPageArgs) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [variantImages, setVariantImages] = useState<string[]>([]);
-  const [language, setLanguage] = useState<LanguageCode>('en');
+  const [language, setLanguage] = useState<LanguageCode>(initialLanguage);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [showMessage, setShowMessage] = useState<string | null>(null);
   const [thumbnailStartIndex, setThumbnailStartIndex] = useState(0);
@@ -25,18 +37,14 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedSizeVersion, setSelectedSizeVersion] = useState<string | null>(null);
 
-  const resolvedParams = use(params);
-  const rawSlug = resolvedParams?.slug ?? '';
-  const slugParts = rawSlug.includes(':') ? rawSlug.split(':') : [rawSlug];
-  const slug = slugParts[0];
-  const variantIdFromUrl = slugParts.length > 1 ? slugParts[1] : null;
-
   const {
     product,
     loading,
   } = useProductFetch({
     slug,
     variantIdFromUrl,
+    initialProduct,
+    initialLanguage,
   });
   useScrollWindowToTop(slug, loading);
 

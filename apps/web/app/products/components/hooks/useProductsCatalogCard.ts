@@ -121,6 +121,10 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
     [product.slug, props.selectedSize, props.selectedSizeCatalogCategoryId]
   );
 
+  useEffect(() => {
+    router.prefetch(productHref);
+  }, [productHref, router]);
+
   const productImages = useMemo(() => {
     const variantImages = resolveActiveVariantImages(props);
     const rawImages = variantImages.length > 0

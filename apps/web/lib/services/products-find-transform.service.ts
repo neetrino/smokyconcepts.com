@@ -3,6 +3,7 @@ import { buildCatalogGalleryImages } from "./products-list-gallery-images";
 import { t } from "../i18n";
 import { ProductWithRelations } from "./products-find-query.service";
 import { cleanImageUrls, processImageUrl, smartSplitUrls } from "./utils/image-utils";
+import { getCachedDiscountSettings } from "./discount-settings-cache";
 import {
   extractSizeCatalogSelectionFromAttributes,
   isDefaultPricingVariant,
@@ -264,21 +265,7 @@ class ProductsFindTransformService {
     lang: string = "en"
   ): Promise<any[]> {
     // Get discount settings
-    const discountSettings = await db.settings.findMany({
-      where: {
-        key: {
-          in: ["globalDiscount", "categoryDiscounts"],
-        },
-      },
-    });
-
-    const globalDiscount =
-      Number(
-        discountSettings.find((s: { key: string; value: unknown }) => s.key === "globalDiscount")?.value
-      ) || 0;
-    
-    const categoryDiscountsSetting = discountSettings.find((s: { key: string; value: unknown }) => s.key === "categoryDiscounts");
-    const categoryDiscounts = categoryDiscountsSetting ? (categoryDiscountsSetting.value as Record<string, number>) || {} : {};
+    const { globalDiscount, categoryDiscounts } = await getCachedDiscountSettings();
 
     // Build category fallback map from scalar category references on product.
     // This keeps catalog/category filtering correct even when relation data is partial.

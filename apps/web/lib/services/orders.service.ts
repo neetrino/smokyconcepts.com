@@ -953,15 +953,24 @@ class OrdersService {
   }
 
   /**
-   * Get order by number
+   * Get order by number.
+   * Access only when the order-access cookie matches this order's unique id.
+   * Ownership alone must not allow hopping between orders by changing the URL number.
    */
-  async findByNumber(orderNumber: string, userId?: string) {
-    const orderAccessFilter = userId ? { userId } : { userId: null };
+  async findByNumber(
+    orderNumber: string,
+    options: { allowedOrderId?: string | null } = {},
+  ) {
+    const notFoundError = {
+      status: 404,
+      type: "https://api.shop.am/problems/not-found",
+      title: "Order not found",
+      detail: `Order with number '${orderNumber}' not found`,
+    };
 
     const order = await db.order.findFirst({
       where: {
         number: orderNumber,
-        ...orderAccessFilter,
       },
       include: {
         items: {
@@ -975,12 +984,12 @@ class OrdersService {
     });
 
     if (!order) {
-      throw {
-        status: 404,
-        type: "https://api.shop.am/problems/not-found",
-        title: "Order not found",
-        detail: `Order with number '${orderNumber}' not found`,
-      };
+      throw notFoundError;
+    }
+
+    const allowedOrderId = options.allowedOrderId?.trim() || '';
+    if (!allowedOrderId || allowedOrderId !== order.id) {
+      throw notFoundError;
     }
 
     const sizeCatalogTitles = Array.from(

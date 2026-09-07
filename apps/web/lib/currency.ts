@@ -135,25 +135,38 @@ export function clearCurrencyRatesCache(): void {
 
 /**
  * Load exchange rates from admin settings.
+ * Dedupes concurrent callers (Strict Mode / multiple mounts).
  */
+let currencyRatesInflight: Promise<void> | null = null;
+
 export async function initializeCurrencyRates(_forceReload: boolean = false): Promise<void> {
   if (typeof window === 'undefined') {
     return;
   }
 
-  try {
-    const response = await fetch('/api/v1/currency-rates', {
-      method: 'GET',
-      cache: 'no-store',
-    });
-    if (!response.ok) {
-      return;
-    }
-    const data = (await response.json()) as Partial<Record<CurrencyCode, number>>;
-    setStoredCurrencyRates(data);
-  } catch {
-    // Keep defaults on network failure.
+  if (!_forceReload && currencyRatesInflight) {
+    return currencyRatesInflight;
   }
+
+  currencyRatesInflight = (async () => {
+    try {
+      const response = await fetch('/api/v1/currency-rates', {
+        method: 'GET',
+        cache: 'default',
+      });
+      if (!response.ok) {
+        return;
+      }
+      const data = (await response.json()) as Partial<Record<CurrencyCode, number>>;
+      setStoredCurrencyRates(data);
+    } catch {
+      // Keep defaults on network failure.
+    } finally {
+      currencyRatesInflight = null;
+    }
+  })();
+
+  return currencyRatesInflight;
 }
 
 export function convertPrice(price: number, fromCurrency: CurrencyCode, toCurrency: CurrencyCode): number {

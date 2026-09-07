@@ -91,8 +91,11 @@ async function handleErrorResponse(
   throw createApiError(response, errorText, errorData);
 }
 
+/** Coalesce identical in-flight GETs (React Strict Mode remounts, duplicate callers). */
+const inflightGetRequests = new Map<string, Promise<unknown>>();
+
 /**
- * GET request
+ * GET request — concurrent identical URLs share one network call.
  */
 export async function getRequest<T>(
   baseUrl: string,
@@ -101,25 +104,52 @@ export async function getRequest<T>(
   retryCount = 0
 ): Promise<T> {
   const url = buildUrl(baseUrl, endpoint, options?.params);
+
+  if (retryCount === 0) {
+    const existing = inflightGetRequests.get(url);
+    if (existing) {
+      return existing as Promise<T>;
+    }
+  }
+
+  const requestPromise = executeGetRequest<T>(baseUrl, endpoint, options, retryCount).finally(() => {
+    if (retryCount === 0 && inflightGetRequests.get(url) === requestPromise) {
+      inflightGetRequests.delete(url);
+    }
+  });
+
+  if (retryCount === 0) {
+    inflightGetRequests.set(url, requestPromise);
+  }
+
+  return requestPromise;
+}
+
+async function executeGetRequest<T>(
+  baseUrl: string,
+  endpoint: string,
+  options?: RequestOptions,
+  retryCount = 0
+): Promise<T> {
+  const url = buildUrl(baseUrl, endpoint, options?.params);
   const maxRetries = 3;
-  const retryDelay = 1000; // 1 second
-  const timeout = 30000; // 30 seconds timeout
-  
+  const retryDelay = 1000;
+  const timeout = 30000;
+
   console.log('🌐 [API CLIENT] GET request:', { url, endpoint, baseUrl });
-  
+
   let response: Response;
   try {
-    // Create timeout controller
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
-    
+
     try {
       response = await fetch(url, {
         ...options,
         method: 'GET',
         headers: getHeaders(options),
         credentials: options?.credentials ?? 'include',
-        cache: 'no-store', // Disable caching for server components
+        cache: 'no-store',
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
@@ -131,8 +161,7 @@ export async function getRequest<T>(
       }
       throw fetchError;
     }
-    
-    // Log response status safely
+
     try {
       console.log('🌐 [API CLIENT] GET response status:', response.status, response.statusText || '');
     } catch {
@@ -143,11 +172,10 @@ export async function getRequest<T>(
   }
 
   if (!response.ok) {
-    // Retry on 429 (Too Many Requests) errors
     if (response.status === 429 && retryCount < maxRetries) {
-      const delay = retryDelay * (retryCount + 1); // Exponential backoff
+      const delay = retryDelay * (retryCount + 1);
       console.warn(`⚠️ [API CLIENT] Rate limited, retrying in ${delay}ms... (attempt ${retryCount + 1}/${maxRetries})`);
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
       return getRequest<T>(baseUrl, endpoint, options, retryCount + 1);
     }
 
@@ -161,25 +189,25 @@ export async function getRequest<T>(
 
     const contentType = response.headers?.get('content-type');
     console.log('🌐 [API CLIENT] Response content-type:', contentType);
-    
+
     if (!contentType || !contentType.includes('application/json')) {
       const text = await response.text();
       console.error('❌ [API CLIENT] GET Non-JSON response:', {
         contentType,
         status: response.status,
-        text: text?.substring(0, 200) || '', // First 200 chars
+        text: text?.substring(0, 200) || '',
       });
       throw new Error(`Expected JSON response but got ${contentType}. Status: ${response.status}`);
     }
-    
+
     const jsonData = await response.json();
     console.log('✅ [API CLIENT] GET Response parsed successfully');
-    
+
     if (!jsonData) {
       console.warn('⚠️ [API CLIENT] Response data is null or undefined');
       return null as T;
     }
-    
+
     return jsonData;
   } catch (parseError: unknown) {
     const error = parseError as { message?: string; stack?: string };

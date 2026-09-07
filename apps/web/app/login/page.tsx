@@ -8,7 +8,6 @@ import { useAuth } from '../../lib/auth/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../lib/i18n-client';
 import { Eye, EyeOff } from 'lucide-react';
-import { PageLoadingCenter } from '../../components/loading/PageLoadingCenter';
 
 /** Lets in-flight soft navigations (header links) update the URL before we redirect. */
 const LOGIN_ALREADY_AUTHENTICATED_REDIRECT_DELAY_MS = 50;
@@ -185,7 +184,7 @@ function LoginPageContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<PageLoadingCenter />}>
+    <Suspense fallback={null}>
       <LoginPageContent />
     </Suspense>
   );

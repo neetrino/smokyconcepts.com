@@ -268,7 +268,7 @@ function ProfilePageContent() {
 
 export default function ProfilePage() {
   return (
-    <Suspense fallback={<PageLoadingCenter />}>
+    <Suspense fallback={null}>
       <ProfilePageContent />
     </Suspense>
   );

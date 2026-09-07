@@ -26,8 +26,13 @@ class ProductsFindQueryService {
       };
     }
 
-    // Execute query with comprehensive error handling
-    const products = await executeProductQuery(where, limit);
+    const needsPriceFilterOverfetch =
+      filters.minPrice !== undefined || filters.maxPrice !== undefined;
+
+    // Execute query with lean includes and bounded take
+    const products = await executeProductQuery(where, limit, {
+      needsPriceFilterOverfetch,
+    });
 
     return {
       products,

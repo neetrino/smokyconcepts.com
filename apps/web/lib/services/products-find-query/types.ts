@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { PRODUCT_LIST_QUERY_INCLUDE } from "./list-query-include";
 
 /**
  * Product filters interface
@@ -16,21 +17,8 @@ export interface ProductFilters {
 }
 
 /**
- * Type for product with all relations needed for find query service
+ * Type for product with lean relations used by list/transform.
  */
 export type ProductWithRelations = Prisma.ProductGetPayload<{
-  include: {
-    translations: true;
-    variants: true;
-    labels: true;
-    categories: {
-      include: {
-        translations: true;
-      };
-    };
-  };
+  include: typeof PRODUCT_LIST_QUERY_INCLUDE;
 }>;
-
-
-
-

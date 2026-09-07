@@ -26,7 +26,9 @@ class ProductsFindService {
 
     // Step 3: Apply pagination
     const total = filteredProducts.length;
-    const paginatedProducts = filteredProducts.slice(0, limit);
+    const pageIndex = Math.max(1, page);
+    const start = (pageIndex - 1) * limit;
+    const paginatedProducts = filteredProducts.slice(start, start + limit);
 
     // Step 4: Transform products to response format
     const data = await productsFindTransformService.transformProducts(paginatedProducts, lang);
@@ -35,7 +37,7 @@ class ProductsFindService {
       data,
       meta: {
         total,
-        page,
+        page: pageIndex,
         limit,
         totalPages: Math.ceil(total / limit),
       },

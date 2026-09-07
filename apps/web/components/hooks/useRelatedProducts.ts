@@ -5,7 +5,7 @@ import { apiClient } from '../../lib/api-client';
 import { type LanguageCode } from '../../lib/language';
 import {
   getRelatedProductsCache,
-  setRelatedProductsCache,
+  loadRelatedProductsOnce,
   type RelatedProductCacheItem,
 } from '../../lib/related-products-cache';
 import { preloadCatalogProductImages } from '../../lib/home/catalog-product-image-cache';
@@ -64,30 +64,33 @@ export function useRelatedProducts({ categorySlug, currentProductId, language }:
 
     const fetchRelatedProducts = async () => {
       try {
-        const params: Record<string, string> = {
-          limit: String(RELATED_PRODUCTS_MAX + 8),
-          lang: language,
-        };
-
-        if (categorySlug) {
-          params.category = categorySlug;
-        }
-
-        const response = await apiClient.get<{
-          data: RelatedProduct[];
-          meta: {
-            total: number;
+        const data = await loadRelatedProductsOnce(categorySlug, language, async () => {
+          const params: Record<string, string> = {
+            limit: String(RELATED_PRODUCTS_MAX + 8),
+            lang: language,
           };
-        }>('/api/v1/products', {
-          params,
+
+          if (categorySlug) {
+            params.category = categorySlug;
+          }
+
+          const response = await apiClient.get<{
+            data: RelatedProduct[];
+            meta: {
+              total: number;
+            };
+          }>('/api/v1/products', {
+            params,
+          });
+
+          return response.data ?? [];
         });
 
         if (cancelled) {
           return;
         }
 
-        setRelatedProductsCache(categorySlug, language, response.data);
-        const filtered = pickRelatedProducts(response.data, currentProductId);
+        const filtered = pickRelatedProducts(data, currentProductId);
         setProducts(filtered);
         void preloadCatalogProductImages(filtered);
       } catch (error) {

@@ -9,7 +9,10 @@ function resolveRedirectBaseUrl(baseUrl?: string): string {
   return getPaymentAppUrl();
 }
 
-export function buildIdramSuccessRedirect(orderNumber?: string, baseUrl?: string): string {
+export function buildIdramSuccessRedirect(
+  orderNumber?: string,
+  baseUrl?: string,
+): string {
   const appUrl = resolveRedirectBaseUrl(baseUrl);
   const query = new URLSearchParams({
     clearCart: '1',

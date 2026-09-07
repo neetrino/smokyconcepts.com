@@ -18,7 +18,7 @@ function CategoryNavigationContent() {
   const currentCategory = searchParams?.get('category');
   
   const { categories, loading: categoriesLoading } = useCategories();
-  const { categoryProducts, loading: productsLoading } = useCategoryProducts(categories, t);
+  const { categoryProducts } = useCategoryProducts(categories);
   const {
     scrollContainerRef,
     canScrollLeft,
@@ -26,8 +26,6 @@ function CategoryNavigationContent() {
     scrollByAmount,
     updateScrollButtons,
   } = useCategoryScroll();
-
-  const loading = categoriesLoading || productsLoading;
 
   const handleCategoryClick = (categorySlug: string | null) => {
     const params = new URLSearchParams(searchParams?.toString() || '');
@@ -46,14 +44,14 @@ function CategoryNavigationContent() {
 
   useEffect(() => {
     // Обновляем состояние кнопок после загрузки категорий и продуктов
-    if (!loading && categories.length > 0) {
+    if (!categoriesLoading && categories.length > 0) {
       setTimeout(() => {
         updateScrollButtons();
       }, 200);
     }
-  }, [categories.length, Object.keys(categoryProducts).length, loading, updateScrollButtons]);
+  }, [categories.length, Object.keys(categoryProducts).length, categoriesLoading, updateScrollButtons]);
 
-  if (loading) {
+  if (categoriesLoading) {
     return <CategoryNavigationLoading />;
   }
 
@@ -109,7 +107,7 @@ function CategoryNavigationContent() {
 
 export function CategoryNavigation() {
   return (
-    <Suspense fallback={<CategoryNavigationLoading />}>
+    <Suspense fallback={null}>
       <CategoryNavigationContent />
     </Suspense>
   );

@@ -93,11 +93,28 @@ export function useOrders({
     setOrderDetailsLoading(false);
   }, []);
 
+  const grantOrderAccess = async (orderNumber: string): Promise<boolean> => {
+    try {
+      await apiClient.post(`/api/v1/orders/${encodeURIComponent(orderNumber)}/access`);
+      return true;
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      logger.error('Failed to grant order access', { error: err, orderNumber });
+      onError(errorMessage || t('profile.orderDetails.failedToLoad'));
+      return false;
+    }
+  };
+
   const loadOrderDetails = async (orderNumber: string) => {
     try {
       setOrderDetailsLoading(true);
       setOrderDetailsError(null);
       setSelectedOrder(null);
+      const granted = await grantOrderAccess(orderNumber);
+      if (!granted) {
+        setOrderDetailsError(t('profile.orderDetails.failedToLoad'));
+        return;
+      }
       const data = await apiClient.get<OrderDetails>(`/api/v1/orders/${orderNumber}`);
       setSelectedOrder(data);
     } catch (err: unknown) {
@@ -110,10 +127,15 @@ export function useOrders({
     }
   };
 
-  const handleOrderClick = (orderNumber: string, e: MouseEvent<HTMLAnchorElement>) => {
+  const handleOrderClick = async (orderNumber: string, e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
     if (window.innerWidth >= 1024) {
-      e.preventDefault();
-      loadOrderDetails(orderNumber);
+      await loadOrderDetails(orderNumber);
+      return;
+    }
+    const granted = await grantOrderAccess(orderNumber);
+    if (granted) {
+      router.push(`/orders/${encodeURIComponent(orderNumber)}`);
     }
   };
 

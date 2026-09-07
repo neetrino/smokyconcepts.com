@@ -221,8 +221,10 @@ export function useOrderSubmission({
         clearGuestCart();
       }
 
-      const orderNumber = encodeURIComponent(response.order.number);
-      router.replace(`/checkout/thank-you?orderNumber=${orderNumber}`);
+      const thankYouQuery = new URLSearchParams({
+        orderNumber: response.order.number,
+      });
+      router.replace(`/checkout/thank-you?${thankYouQuery.toString()}`);
     } catch (err: unknown) {
       setIsPlacingOrder(false);
       const error = err as { message?: string };

@@ -48,10 +48,16 @@ interface ProductImageGalleryProps {
 const GALLERY_TOP_OFFSET_CLASSES = 'pt-5 sm:pt-14 lg:pt-16';
 
 /**
- * Pulls the product hero slightly above the card top (skipped for customize preview so the 3D badge stays inside the card).
+ * Pulls the product hero slightly above the card top.
+ * Kept for customize preview too so the white card height matches the description tab.
+ * The 3D badge is positioned on the card (not the pulled hero) so it stays inside.
  * Pairs with {@link GALLERY_TOP_OFFSET_CLASSES} for header clearance.
  */
 const HERO_PULL_ABOVE_CARD = 'max-sm:-mt-7 sm:-mt-12 lg:-mt-14';
+
+/** Customize 3D badge — anchored to the white card (Figma 1:8797), not the pulled hero frame. */
+const CUSTOMIZE_HERO_3D_BADGE_CLASS =
+  'pointer-events-none absolute z-20 h-auto max-w-[95px] object-contain';
 
 /** Mobile hero height (px) — fits typical phone viewport without clipping below the fold. */
 const MOBILE_HERO_IMAGE_HEIGHT_CLASS = 'h-[270px]';
@@ -441,21 +447,24 @@ export function ProductImageGallery({
     <div
       className={`relative mx-auto flex w-full max-w-full items-center justify-center overflow-visible ${HERO_IMAGE_BOX_SIZE_CLASSES}`}
     >
-      <img
-        src={CUSTOMIZE_HERO_PREVIEW_ASSETS.productBadgeSrc}
-        alt=""
-        decoding="async"
-        draggable={false}
-        aria-hidden
-        className="pointer-events-none absolute z-20 h-auto max-w-[95px] object-contain"
-        style={{
-          top: `${CUSTOMIZE_HERO_PREVIEW_3D_TOP_RATIO * 100}%`,
-          right: `${CUSTOMIZE_HERO_PREVIEW_3D_RIGHT_RATIO * 100}%`,
-          width: `${CUSTOMIZE_HERO_PREVIEW_3D_WIDTH_RATIO * 100}%`,
-        }}
-      />
       <CustomizeHeroPreview overlayHtml={resolvedHeroPreviewHtml ?? ''} />
     </div>
+  );
+
+  const renderCustomizeHero3dBadge = () => (
+    <img
+      src={CUSTOMIZE_HERO_PREVIEW_ASSETS.productBadgeSrc}
+      alt=""
+      decoding="async"
+      draggable={false}
+      aria-hidden
+      className={CUSTOMIZE_HERO_3D_BADGE_CLASS}
+      style={{
+        top: `${CUSTOMIZE_HERO_PREVIEW_3D_TOP_RATIO * 100}%`,
+        right: `${CUSTOMIZE_HERO_PREVIEW_3D_RIGHT_RATIO * 100}%`,
+        width: `${CUSTOMIZE_HERO_PREVIEW_3D_WIDTH_RATIO * 100}%`,
+      }}
+    />
   );
 
   const renderProductHeroImage = () => {
@@ -508,13 +517,12 @@ export function ProductImageGallery({
   return (
     <div className={`overflow-visible ${GALLERY_TOP_OFFSET_CLASSES}`}>
       <div className="relative z-0 mx-auto w-full max-w-[520px] overflow-visible rounded-[20px] bg-white px-3 pb-4 pt-3 shadow-none transition-shadow duration-200 has-[.product-hero:hover]:z-10 sm:max-w-[540px] sm:overflow-x-clip sm:overflow-y-visible sm:rounded-[24px] sm:px-5 sm:pb-5 sm:pt-4 sm:shadow-[0_1px_0_rgba(18,42,38,0.04)] sm:has-[.product-hero:hover]:shadow-[0_12px_32px_rgba(18,42,38,0.12)] lg:max-w-[580px]">
+        {showHeroPreviewInGallery ? renderCustomizeHero3dBadge() : null}
         <div className={`flex flex-col items-center overflow-visible ${GALLERY_SECTION_GAP_CLASSES}`}>
           <div
             className={`flex w-full justify-center ${
               hasHeroContent
-                ? `product-hero group relative z-10 ${
-                    showHeroPreviewInGallery ? '' : HERO_PULL_ABOVE_CARD
-                  }`
+                ? `product-hero group relative z-10 ${HERO_PULL_ABOVE_CARD}`
                 : 'min-h-[240px] items-center sm:min-h-[260px]'
             }`}
           >

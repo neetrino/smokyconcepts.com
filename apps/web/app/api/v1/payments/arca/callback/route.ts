@@ -3,6 +3,7 @@ import { db } from '@white-shop/db';
 import { Prisma } from '@prisma/client';
 import { getArcaOrderStatus, isArcaStatusPaid } from '@/lib/payments/arca/client';
 import { getArcaConfig } from '@/lib/payments/arca/config';
+import { appendOrderAccessCookie } from '@/lib/orders/order-access-cookie.server';
 import { logger } from '@/lib/utils/logger';
 
 const PAYMENT_PROVIDER = 'arca';
@@ -15,6 +16,15 @@ function buildSuccessRedirect(orderNumber: string): string {
     payment: 'paid',
   });
   return `${appUrl}/checkout/thank-you?${query.toString()}`;
+}
+
+function buildSuccessResponse(
+  req: NextRequest,
+  order: { id: string; number: string },
+): NextResponse {
+  const response = NextResponse.redirect(buildSuccessRedirect(order.number));
+  appendOrderAccessCookie(response, req, order.id);
+  return response;
 }
 
 function buildFailureRedirect(orderNumber?: string): string {
@@ -127,7 +137,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (order.paymentStatus === 'paid' || payment.status === 'completed') {
-      return NextResponse.redirect(buildSuccessRedirect(order.number));
+      return buildSuccessResponse(req, order);
     }
 
     const statusOrderId = providerOrderId || payment.providerTransactionId?.trim() || '';
@@ -184,7 +194,7 @@ export async function GET(req: NextRequest) {
         });
       });
 
-      return NextResponse.redirect(buildSuccessRedirect(order.number));
+      return buildSuccessResponse(req, order);
     }
 
     await db.$transaction(async (tx: Prisma.TransactionClient) => {

@@ -1,11 +1,18 @@
 /**
- * Returns true when an anchor click should show route navigation loading
- * (same-origin, different pathname, left-click without modifiers).
+ * True when pathname is a product detail route: `/products/:slug` (not `/products`).
  */
-export function shouldShowNavigationLoadingForAnchor(
+export function isProductDetailPathname(pathname: string): boolean {
+  const segments = pathname.split('/').filter(Boolean);
+  return segments[0] === 'products' && segments.length >= 2 && Boolean(segments[1]);
+}
+
+/**
+ * Show glass loading only when navigating into a PDP (slow Neon SSR).
+ */
+export function shouldShowProductDetailNavigationLoading(
   anchor: HTMLAnchorElement,
   event: MouseEvent,
-  currentPathname: string,
+  currentPathname: string
 ): boolean {
   if (event.defaultPrevented) {
     return false;
@@ -22,7 +29,6 @@ export function shouldShowNavigationLoadingForAnchor(
   if (anchor.hasAttribute('download')) {
     return false;
   }
-  // Opt out for in-page actions that use <Link> + preventDefault (e.g. order modal).
   if (anchor.hasAttribute('data-no-navigation-loading')) {
     return false;
   }
@@ -40,6 +46,10 @@ export function shouldShowNavigationLoadingForAnchor(
   }
 
   if (nextUrl.origin !== window.location.origin) {
+    return false;
+  }
+
+  if (!isProductDetailPathname(nextUrl.pathname)) {
     return false;
   }
 
