@@ -1,4 +1,5 @@
 import { db } from "@white-shop/db";
+import { revalidateCategoriesCache } from "@/lib/services/storefront-category-cache";
 
 function extractCategoryImage(media: unknown): string | undefined {
   if (!Array.isArray(media) || media.length === 0) {
@@ -129,6 +130,8 @@ class AdminCategoriesService {
     // Безопасное получение translation с проверкой на существование массива
     const categoryTranslations = Array.isArray(category.translations) ? category.translations : [];
     const translation = categoryTranslations.find((t: { locale: string }) => t.locale === locale) || categoryTranslations[0] || null;
+
+    revalidateCategoriesCache();
 
     return {
       data: {
@@ -362,6 +365,8 @@ class AdminCategoriesService {
     const categoryTranslations = Array.isArray(updatedCategory.translations) ? updatedCategory.translations : [];
     const translation = categoryTranslations.find((t: { locale: string }) => t.locale === locale) || categoryTranslations[0] || null;
 
+    revalidateCategoriesCache();
+
     return {
       data: {
         id: updatedCategory.id,
@@ -468,6 +473,8 @@ class AdminCategoriesService {
         published: false,
       },
     });
+
+    revalidateCategoriesCache();
 
     console.log('✅ [ADMIN SERVICE] Category deleted:', categoryId);
     return { success: true };

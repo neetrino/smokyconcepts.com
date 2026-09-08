@@ -7,6 +7,12 @@ const loadedImages = new Map<string, HTMLImageElement>();
 const inflightPreloads = new Map<string, Promise<void>>();
 
 /**
+ * The catalog holds well over a hundred thumbnails; firing them all at once starves
+ * the requests the visible page still needs. Loading order is preserved.
+ */
+const PRELOAD_CONCURRENCY = 6;
+
+/**
  * Unique image URLs from published size-catalog categories (order preserved).
  */
 export function collectSizeCatalogImageUrls(
@@ -72,7 +78,18 @@ export function preloadSizeCatalogImageUrls(urls: readonly string[]): Promise<vo
   if (urls.length === 0) {
     return Promise.resolve();
   }
-  return Promise.all(urls.map(preloadSingleUrl)).then(() => undefined);
+
+  const queue = [...urls];
+  const workers = Array.from(
+    { length: Math.min(PRELOAD_CONCURRENCY, queue.length) },
+    async () => {
+      for (let url = queue.shift(); url !== undefined; url = queue.shift()) {
+        await preloadSingleUrl(url);
+      }
+    }
+  );
+
+  return Promise.all(workers).then(() => undefined);
 }
 
 export function preloadSizeCatalogCategories(

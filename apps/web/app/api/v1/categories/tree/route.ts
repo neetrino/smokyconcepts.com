@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { categoriesService } from "@/lib/services/categories.service";
-
-export const revalidate = 60;
+import { getCachedCategoryTree } from "@/lib/services/storefront-category-cache";
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const lang = searchParams.get("lang") || "en";
-    const result = await categoriesService.getTree(lang);
+    const result = await getCachedCategoryTree(lang);
     return NextResponse.json(result);
   } catch (error: any) {
     console.error("❌ [CATEGORIES] Error:", error);

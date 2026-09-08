@@ -56,6 +56,13 @@ export const CUSTOMIZE_FORMAT_CONTROL_ACTIVE_CLASS = 'bg-[#122a26]';
 export const CUSTOMIZE_FORMAT_CONTROL_ACTIVE_FG_CLASS = 'text-[#faf8f4]';
 export const CUSTOMIZE_FORMAT_CONTROL_ACTIVE_ICON_CLASS =
   'brightness-0 invert';
+/** Font trigger outline while a mandatory font pick is missing. */
+export const CUSTOMIZE_FORMAT_CONTROL_INVALID_CLASS = 'ring-1 ring-red-600';
+export const CUSTOMIZE_FONT_REQUIRED_HINT_CLASS =
+  'mt-1 font-montserrat text-[12px] font-medium leading-4 text-red-600';
+
+/** Toolbar + font validation hint stacked, so the hint stays under the font control. */
+export const CUSTOMIZE_FORMAT_TOOLBAR_COLUMN_CLASS = 'flex min-w-0 shrink-0 flex-col';
 
 /** Font dropdown + B/I — single row (Figma node 1:8510). */
 export const CUSTOMIZE_FORMAT_TOOLBAR_CLASS =

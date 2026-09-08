@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { productsService } from "@/lib/services/products.service";
-
-export const revalidate = 60;
+import { getCachedProductsList } from "@/lib/services/storefront-product-cache";
 
 export async function GET(req: NextRequest) {
   try {
@@ -26,7 +24,7 @@ export async function GET(req: NextRequest) {
       lang: searchParams.get("lang") || "en",
     };
 
-    const result = await productsService.findAll(filters);
+    const result = await getCachedProductsList(filters);
     return NextResponse.json(result);
   } catch (error: any) {
     console.error("❌ [PRODUCTS] Error:", error);

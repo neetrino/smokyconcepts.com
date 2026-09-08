@@ -80,6 +80,12 @@ export function ProductInfoAndActionsView({
     triggerSizeValidation,
     handleSizeShakeAnimationEnd,
     isCatalogSizeItemSelectable,
+    isCustomizeFontRequired,
+    isCustomizeFontMissing,
+    showCustomizeFontRequired,
+    isCustomizeFontShaking,
+    triggerCustomizeFontValidation,
+    handleCustomizeFontShakeAnimationEnd,
   } = view;
 
   const sizeSectionRef = useRef<HTMLDivElement>(null);
@@ -103,6 +109,11 @@ export function ProductInfoAndActionsView({
     if (showSizeSection && !isSizeSelected) {
       triggerSizeValidation();
       sizeSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      return;
+    }
+    if (isCustomizeFontMissing) {
+      triggerCustomizeFontValidation();
+      tabPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       return;
     }
     if (!canAddToCart || isAddingToCart) {
@@ -283,6 +294,10 @@ export function ProductInfoAndActionsView({
               onCustomizeDraftTextChange={onCustomizeDraftTextChange}
               customizeFormat={customizeFormat}
               onCustomizeFormatChange={onCustomizeFormatChange}
+              isCustomizeFontRequired={isCustomizeFontRequired}
+              showCustomizeFontRequired={showCustomizeFontRequired}
+              isCustomizeFontShaking={isCustomizeFontShaking}
+              onCustomizeFontShakeAnimationEnd={handleCustomizeFontShakeAnimationEnd}
             />
           </div>
         </div>

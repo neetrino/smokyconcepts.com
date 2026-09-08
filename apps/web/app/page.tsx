@@ -1,15 +1,18 @@
 import { HomePageContent } from '../components/home/HomePageContent';
 import type { HomeCoverCollectionItem } from '../components/home/homePage.types';
-import { categoriesService } from '../lib/services/categories.service';
-import { getHomeHeroSlidesForStorefront } from '../lib/services/home-hero.service';
+import { getCachedHomeCollections } from '../lib/services/storefront-category-cache';
+import { getCachedHomeHeroSlides } from '../lib/services/storefront-home-cache';
 
-/** Hero and collections must reflect admin/DB changes immediately (avoid stale SSG on Vercel). */
+/**
+ * Hero and collections must reflect admin/DB changes immediately (avoid stale SSG on Vercel).
+ * The render stays dynamic; the DB reads are cached and purged by tag on admin writes.
+ */
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
   const [rawCoverCollections, heroSlides] = await Promise.all([
-    categoriesService.getHomeCollections(),
-    getHomeHeroSlidesForStorefront(),
+    getCachedHomeCollections(),
+    getCachedHomeHeroSlides(),
   ]);
   const coverCollections: HomeCoverCollectionItem[] = rawCoverCollections
     .filter((item): item is NonNullable<(typeof rawCoverCollections)[number]> => item !== null)

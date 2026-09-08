@@ -68,6 +68,14 @@ const r2PublicProtocol = getProtocolFromUrl(r2PublicBaseUrl);
 
 const nextConfig = {
   reactStrictMode: true,
+  // Reuse prefetched RSC payloads on repeat/back-forward navigation instead of
+  // re-rendering every route on the server for each click.
+  experimental: {
+    staleTimes: {
+      dynamic: 30,
+      static: 180,
+    },
+  },
   async headers() {
     return [
       {

@@ -15,6 +15,7 @@
   "customize_format_underline": "Գծված",
   "customize_font_label": "Տառատեսակ",
   "customize_font_clear": "Վերադառնալ սովորական",
+  "customize_font_required": "Խնդրում ենք ընտրել տառատեսակը։",
   "customize_modal_title": "Չափի ընտրություն",
   "customize_modal_close_aria": "Փակել",
   "customize_search_default": "Marlboro",

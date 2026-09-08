@@ -17,6 +17,11 @@ export type CustomizeFormatToolbarProps = {
   language: LanguageCode;
   format: CustomizeFormatState;
   onFormatChange: (next: CustomizeFormatState) => void;
+  /** Font pick is mandatory once customize text is entered. */
+  isFontRequired: boolean;
+  isFontInvalid: boolean;
+  isFontShaking: boolean;
+  onFontShakeAnimationEnd: () => void;
 };
 
 type FormatToggleKey = keyof Pick<CustomizeFormatState, 'bold' | 'italic'>;
@@ -34,6 +39,10 @@ export function CustomizeFormatToolbar({
   language,
   format,
   onFormatChange,
+  isFontRequired,
+  isFontInvalid,
+  isFontShaking,
+  onFontShakeAnimationEnd,
 }: CustomizeFormatToolbarProps) {
   const toggle = (key: FormatToggleKey) => {
     onFormatChange({ ...format, [key]: !format[key] });
@@ -46,6 +55,10 @@ export function CustomizeFormatToolbar({
         fontLabel={t(language, 'product.customize_font_label')}
         clearLabel={t(language, 'product.customize_font_clear')}
         ariaLabel={t(language, 'product.customize_font_label')}
+        isRequired={isFontRequired}
+        isInvalid={isFontInvalid}
+        isShaking={isFontShaking}
+        onShakeAnimationEnd={onFontShakeAnimationEnd}
         onChange={(fontStack) => {
           onFormatChange({ ...format, fontStack });
         }}
