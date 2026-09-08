@@ -1,5 +1,6 @@
 import { apiClient } from './api-client';
 import { preloadSizeCatalogCategories } from './size-catalog-image-cache';
+import { scheduleWhenIdle } from './utils/schedule-when-idle';
 import type { SizeCatalogCategoryDto } from '@/lib/types/size-catalog';
 
 let cachedCategories: SizeCatalogCategoryDto[] | null = null;
@@ -10,7 +11,11 @@ async function fetchAndCacheSizeCatalogCategories(): Promise<SizeCatalogCategory
     const res = await apiClient.get<{ data: SizeCatalogCategoryDto[] }>('/api/v1/size-catalog');
     const data = Array.isArray(res.data) ? res.data : [];
     cachedCategories = data;
-    void preloadSizeCatalogCategories(data);
+    // Thumbnails are only visible once the size modal opens, so warm them after the
+    // current view is done loading. Opening the modal preloads them directly.
+    scheduleWhenIdle(() => {
+      void preloadSizeCatalogCategories(data);
+    });
     return data;
   } catch {
     cachedCategories = [];

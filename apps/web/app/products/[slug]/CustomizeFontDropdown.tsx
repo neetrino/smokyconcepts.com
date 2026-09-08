@@ -13,6 +13,7 @@ import {
   CUSTOMIZE_FORMAT_CONTROL_ACTIVE_FG_CLASS,
   CUSTOMIZE_FORMAT_CONTROL_ACTIVE_ICON_CLASS,
   CUSTOMIZE_FORMAT_CONTROL_IDLE_CLASS,
+  CUSTOMIZE_FORMAT_CONTROL_INVALID_CLASS,
   CUSTOMIZE_FORMAT_FONT_TRIGGER_CLASS,
 } from './customize-format.constants';
 import {
@@ -47,6 +48,12 @@ export type CustomizeFontDropdownProps = {
   fontLabel: string;
   clearLabel: string;
   ariaLabel: string;
+  /** Marks the control as mandatory (asterisk on the label). */
+  isRequired?: boolean;
+  /** Renders the invalid outline after a failed add-to-cart attempt. */
+  isInvalid?: boolean;
+  isShaking?: boolean;
+  onShakeAnimationEnd?: () => void;
 };
 
 export function CustomizeFontDropdown({
@@ -55,6 +62,10 @@ export function CustomizeFontDropdown({
   fontLabel,
   clearLabel,
   ariaLabel,
+  isRequired = false,
+  isInvalid = false,
+  isShaking = false,
+  onShakeAnimationEnd,
 }: CustomizeFontDropdownProps) {
   const [open, setOpen] = useState(false);
   const [panelPosition, setPanelPosition] = useState<FontDropdownPanelPosition | null>(null);
@@ -178,17 +189,25 @@ export function CustomizeFontDropdown({
       : null;
 
   return (
-    <div ref={rootRef} className={`relative shrink-0 ${CUSTOMIZE_FONT_CONTROL_WIDTH_CLASS}`}>
+    <div
+      ref={rootRef}
+      className={`relative shrink-0 ${CUSTOMIZE_FONT_CONTROL_WIDTH_CLASS} ${
+        isShaking ? 'animate-size-shake' : ''
+      }`}
+      onAnimationEnd={onShakeAnimationEnd}
+    >
       <div
         className={`${CUSTOMIZE_FORMAT_FONT_TRIGGER_CLASS} ${
           open ? CUSTOMIZE_FORMAT_CONTROL_ACTIVE_CLASS : CUSTOMIZE_FORMAT_CONTROL_IDLE_CLASS
-        }`}
+        } ${isInvalid ? CUSTOMIZE_FORMAT_CONTROL_INVALID_CLASS : ''}`}
       >
         <button
           type="button"
           aria-haspopup="listbox"
           aria-expanded={open}
           aria-controls={listboxId}
+          aria-required={isRequired}
+          aria-invalid={isInvalid}
           onClick={toggleOpen}
           className="flex min-w-0 flex-1 items-center"
         >
@@ -200,6 +219,11 @@ export function CustomizeFontDropdown({
           >
             {selected?.label ?? fontLabel}
           </span>
+          {isRequired && !selected ? (
+            <span className="ml-1 shrink-0 text-red-600" aria-hidden>
+              *
+            </span>
+          ) : null}
         </button>
         {selected ? (
           <button

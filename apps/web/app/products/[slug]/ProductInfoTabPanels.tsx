@@ -9,9 +9,11 @@ import {
   type CustomizeFormatState,
 } from './utils/build-customize-preview-html';
 import {
+  CUSTOMIZE_FONT_REQUIRED_HINT_CLASS,
   CUSTOMIZE_FORMAT_INPUT_WRAPPER_CLASS,
   CUSTOMIZE_FORMAT_ROW_CLASS,
   CUSTOMIZE_FORMAT_ROW_SPACER_CLASS,
+  CUSTOMIZE_FORMAT_TOOLBAR_COLUMN_CLASS,
 } from './customize-format.constants';
 import {
   PRODUCT_INFO_CUSTOMIZE_COPY_CLASS,
@@ -39,6 +41,11 @@ export interface ProductInfoTabPanelsProps {
   onCustomizeDraftTextChange: (value: string) => void;
   customizeFormat: CustomizeFormatState;
   onCustomizeFormatChange: (next: CustomizeFormatState) => void;
+  /** Font pick is mandatory once customize text is entered. */
+  isCustomizeFontRequired: boolean;
+  showCustomizeFontRequired: boolean;
+  isCustomizeFontShaking: boolean;
+  onCustomizeFontShakeAnimationEnd: () => void;
 }
 
 export function ProductInfoTabPanels({
@@ -54,6 +61,10 @@ export function ProductInfoTabPanels({
   onCustomizeDraftTextChange,
   customizeFormat,
   onCustomizeFormatChange,
+  isCustomizeFontRequired,
+  showCustomizeFontRequired,
+  isCustomizeFontShaking,
+  onCustomizeFontShakeAnimationEnd,
 }: ProductInfoTabPanelsProps) {
   if (activeTab === 'description') {
     if (!productDescription) {
@@ -117,12 +128,23 @@ export function ProductInfoTabPanels({
             </p>
           </div>
           <div className={CUSTOMIZE_FORMAT_ROW_SPACER_CLASS} aria-hidden />
-          <CustomizeFormatToolbar
-            key={product.id}
-            language={language}
-            format={customizeFormat}
-            onFormatChange={onCustomizeFormatChange}
-          />
+          <div className={CUSTOMIZE_FORMAT_TOOLBAR_COLUMN_CLASS}>
+            <CustomizeFormatToolbar
+              key={product.id}
+              language={language}
+              format={customizeFormat}
+              onFormatChange={onCustomizeFormatChange}
+              isFontRequired={isCustomizeFontRequired}
+              isFontInvalid={showCustomizeFontRequired}
+              isFontShaking={isCustomizeFontShaking}
+              onFontShakeAnimationEnd={onCustomizeFontShakeAnimationEnd}
+            />
+            {showCustomizeFontRequired ? (
+              <p className={CUSTOMIZE_FONT_REQUIRED_HINT_CLASS} role="alert">
+                {t(language, 'product.customize_font_required')}
+              </p>
+            ) : null}
+          </div>
         </div>
       </div>
     );

@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
+import { revalidateHomeHeroCache } from "@/lib/services/storefront-home-cache";
 
 export async function GET(req: NextRequest) {
   try {
@@ -60,6 +61,7 @@ export async function PUT(req: NextRequest) {
       "homeHero" in data &&
       (data as { homeHero?: unknown }).homeHero !== undefined
     ) {
+      revalidateHomeHeroCache();
       revalidatePath("/");
     }
     return NextResponse.json(result);

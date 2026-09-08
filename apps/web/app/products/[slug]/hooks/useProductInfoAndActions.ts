@@ -18,6 +18,7 @@ import { getOptionValues } from '../utils/variant-helpers';
 import { deriveProductAttributeSectionOrder } from '../utils/derive-product-attribute-section-order';
 import type { ProductInfoAndActionsProps, ProductTabKey } from '../productInfoAndActions.types';
 import { useApplyCatalogSizeFromUrl } from './useApplyCatalogSizeFromUrl';
+import { useCustomizeFontValidation } from './useCustomizeFontValidation';
 
 function normalizeCatalogSizeValue(value: string | null | undefined): string {
   return value?.trim().toLowerCase() ?? '';
@@ -37,6 +38,8 @@ export function useProductInfoAndActions({
   onSelectedCatalogSizeChange,
   onSelectedCustomSizeRequestChange,
   onCustomizeTabActiveChange,
+  customizeDraftText,
+  customizeFormat,
 }: ProductInfoAndActionsProps) {
   const [activeTab, setActiveTab] = useState<ProductTabKey>('description');
   const [isCustomizeSizeModalOpen, setIsCustomizeSizeModalOpen] = useState(false);
@@ -220,6 +223,17 @@ export function useProductInfoAndActions({
     setIsSizeShaking(false);
   }, []);
 
+  const focusCustomizeTab = useCallback(() => {
+    setActiveTab('customize');
+  }, []);
+
+  const customizeFontValidation = useCustomizeFontValidation({
+    productId: product.id,
+    customizeDraftText,
+    customizeFormat,
+    onFocusCustomizeTab: focusCustomizeTab,
+  });
+
   const handleSelectCustomSizeRequest = useCallback(
     (draft: CustomOrderDraft) => {
       setSelectedCatalogSize(null);
@@ -318,5 +332,6 @@ export function useProductInfoAndActions({
     triggerSizeValidation,
     handleSizeShakeAnimationEnd,
     isCatalogSizeItemSelectable,
+    ...customizeFontValidation,
   };
 }
