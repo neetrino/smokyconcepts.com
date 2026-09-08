@@ -1,29 +1,22 @@
-import type { FormEvent } from 'react';
 import { apiClient } from '../../../../lib/api-client';
 import { useTranslation } from '../../../../lib/i18n-client';
-import type { Product, ProductsResponse } from '../types';
+import type { Product } from '../types';
 import type { ProductData } from '../add/types';
 
 interface UseProductHandlersProps {
   products: Product[];
-  setProducts: (products: Product[]) => void;
   fetchProducts: () => Promise<void>;
   selectedIds: Set<string>;
   setSelectedIds: (ids: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
-  setPage: (page: number | ((prev: number) => number)) => void;
   setBulkDeleting: (deleting: boolean) => void;
-  setTogglingAllFeatured: (toggling: boolean) => void;
 }
 
 export function useProductHandlers({
   products,
-  setProducts,
   fetchProducts,
   selectedIds,
   setSelectedIds,
-  setPage,
   setBulkDeleting,
-  setTogglingAllFeatured,
 }: UseProductHandlersProps) {
   const { t } = useTranslation();
 
@@ -37,12 +30,6 @@ export function useProductHandlers({
     const baseSku = sku?.trim() || duplicateSlug.toUpperCase().replace(/[^A-Z0-9]+/g, '-');
     const suffix = Date.now().toString().slice(-6);
     return `${baseSku}-COPY-${suffix}-${index + 1}`;
-  };
-
-  const handleSearch = (e: FormEvent) => {
-    e.preventDefault();
-    setPage(1);
-    fetchProducts();
   };
 
   const toggleSelect = (id: string) => {
@@ -90,11 +77,11 @@ export function useProductHandlers({
 
     try {
       await apiClient.delete(`/api/v1/admin/products/${productId}`);
-      console.log('✅ [ADMIN] Product deleted successfully');
-      
+
       // Refresh products list
-      fetchProducts();
-      
+      void fetchProducts();
+
+
       alert(t('admin.products.deletedSuccess'));
     } catch (err: any) {
       console.error('❌ [ADMIN] Error deleting product:', err);
@@ -159,15 +146,12 @@ export function useProductHandlers({
         published: newStatus,
       };
       
-      console.log(`🔄 [ADMIN] Updating product status to ${newStatus ? 'published' : 'draft'}`);
-      
       await apiClient.put(`/api/v1/admin/products/${productId}`, updateData);
-      
-      console.log(`✅ [ADMIN] Product ${newStatus ? 'published' : 'unpublished'} successfully`);
-      
+
       // Refresh products list
-      fetchProducts();
-      
+      void fetchProducts();
+
+
       if (newStatus) {
         alert(t('admin.products.productPublished').replace('{title}', productTitle));
       } else {
@@ -187,14 +171,10 @@ export function useProductHandlers({
         featured: newStatus,
       };
       
-      console.log(`⭐ [ADMIN] Updating product featured status to ${newStatus ? 'featured' : 'not featured'}`);
-      
       await apiClient.put(`/api/v1/admin/products/${productId}`, updateData);
-      
-      console.log(`✅ [ADMIN] Product ${newStatus ? 'marked as featured' : 'removed from featured'} successfully`);
-      
+
       // Refresh products list
-      fetchProducts();
+      void fetchProducts();
     } catch (err: any) {
       console.error('❌ [ADMIN] Error updating product featured status:', err);
       alert(t('admin.products.errorUpdatingFeatured').replace('{message}', err.message || t('admin.common.unknownErrorFallback')));
@@ -212,42 +192,7 @@ export function useProductHandlers({
     }
   };
 
-  const handleToggleAllFeatured = async () => {
-    if (products.length === 0) return;
-
-    // Check if all products are featured
-    const allFeatured = products.every(p => p.featured);
-    const newStatus = !allFeatured;
-
-    setTogglingAllFeatured(true);
-    try {
-      const results = await Promise.allSettled(
-        products.map(product => 
-          apiClient.put(`/api/v1/admin/products/${product.id}`, { featured: newStatus })
-        )
-      );
-      
-      const failed = results.filter(r => r.status === 'rejected');
-      const successCount = products.length - failed.length;
-      
-      console.log(`✅ [ADMIN] Toggle all featured completed: ${successCount}/${products.length} successful`);
-      
-      // Refresh products list
-      await fetchProducts();
-      
-      if (failed.length > 0) {
-        alert(t('admin.products.featuredToggleFinished').replace('{success}', successCount.toString()).replace('{total}', products.length.toString()));
-      }
-    } catch (err) {
-      console.error('❌ [ADMIN] Toggle all featured error:', err);
-      alert(t('admin.products.failedToUpdateFeatured'));
-    } finally {
-      setTogglingAllFeatured(false);
-    }
-  };
-
   return {
-    handleSearch,
     toggleSelect,
     toggleSelectAll,
     handleBulkDelete,
@@ -256,7 +201,6 @@ export function useProductHandlers({
     handleTogglePublished,
     handleToggleFeatured,
     handleToggleUpcoming,
-    handleToggleAllFeatured,
   };
 }
 

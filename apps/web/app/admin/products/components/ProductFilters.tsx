@@ -2,7 +2,7 @@
 
 import { useTranslation } from '../../../../lib/i18n-client';
 import { PRODUCT_FILTERS_DROPDOWN_LAYER_CLASS } from '../constants/productFilters.constants';
-import type { Category } from '../types';
+import type { Category, StockFilter } from '../types';
 
 interface ProductFiltersProps {
   search: string;
@@ -15,8 +15,8 @@ interface ProductFiltersProps {
   categoriesLoading: boolean;
   categoriesExpanded: boolean;
   setCategoriesExpanded: (expanded: boolean) => void;
-  stockFilter: 'all' | 'inStock' | 'outOfStock';
-  setStockFilter: (filter: 'all' | 'inStock' | 'outOfStock') => void;
+  stockFilter: StockFilter;
+  setStockFilter: (filter: StockFilter) => void;
   minPrice: string;
   setMinPrice: (price: string) => void;
   maxPrice: string;
@@ -56,11 +56,13 @@ export function ProductFilters({
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
-                setPage(1);
               }
             }}
             placeholder={t('admin.products.searchPlaceholder')}
@@ -179,7 +181,7 @@ export function ProductFilters({
           <select
             value={stockFilter}
             onChange={(e) => {
-              setStockFilter(e.target.value as 'all' | 'inStock' | 'outOfStock');
+              setStockFilter(e.target.value as StockFilter);
               setPage(1);
             }}
             className="w-full px-4 py-2.5 border border-[#dcc090]/35 rounded-md focus:outline-none focus:ring-2 focus:ring-[#dcc090] focus:border-[#dcc090] bg-white text-sm"

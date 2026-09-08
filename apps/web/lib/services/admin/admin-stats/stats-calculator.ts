@@ -1,60 +1,50 @@
+import type { Prisma } from "@prisma/client";
 import { db } from "@white-shop/db";
+
+const LOW_STOCK_THRESHOLD = 10;
+const RECENT_ORDERS_WINDOW_DAYS = 7;
+const DEFAULT_CURRENCY = "USD";
+
+function recentOrdersSince(): Date {
+  const since = new Date();
+  since.setDate(since.getDate() - RECENT_ORDERS_WINDOW_DAYS);
+  return since;
+}
+
+/** Orders that count towards revenue: explicitly completed or already paid. */
+const REVENUE_ORDERS: Prisma.OrderWhereInput = {
+  OR: [{ status: "completed" }, { paymentStatus: "paid" }],
+};
 
 /**
  * Get dashboard stats
+ *
+ * All counters are independent, so they run as one parallel batch instead of
+ * seven sequential round-trips, and revenue is summed by the database rather
+ * than by loading every paid order into memory.
  */
 export async function getStats() {
-  // Count users
-  const totalUsers = await db.user.count({
-    where: { deletedAt: null },
-  });
-
-  // Count products
-  const totalProducts = await db.product.count({
-    where: { deletedAt: null },
-  });
-
-  // Count products with low stock (stock < 10)
-  const lowStockProducts = await db.productVariant.count({
-    where: {
-      stock: { lt: 10 },
-      published: true,
-    },
-  });
-
-  // Count orders
-  const totalOrders = await db.order.count();
-
-  // Count recent orders (last 7 days)
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  const recentOrders = await db.order.count({
-    where: {
-      createdAt: { gte: sevenDaysAgo },
-    },
-  });
-
-  // Count pending orders
-  const pendingOrders = await db.order.count({
-    where: { status: "pending" },
-  });
-
-  // Calculate total revenue from completed/paid orders
-  const completedOrders = await db.order.findMany({
-    where: {
-      OR: [
-        { status: "completed" },
-        { paymentStatus: "paid" },
-      ],
-    },
-    select: {
-      total: true,
-      currency: true,
-    },
-  });
-
-  const totalRevenue = completedOrders.reduce((sum: number, order: { total: number; currency: string | null }) => sum + order.total, 0);
-  const currency = completedOrders[0]?.currency || "USD";
+  const [
+    totalUsers,
+    totalProducts,
+    lowStockProducts,
+    totalOrders,
+    recentOrders,
+    pendingOrders,
+    revenue,
+    revenueSample,
+  ] = await Promise.all([
+    db.user.count({ where: { deletedAt: null } }),
+    db.product.count({ where: { deletedAt: null } }),
+    db.productVariant.count({
+      where: { stock: { lt: LOW_STOCK_THRESHOLD }, published: true },
+    }),
+    db.order.count(),
+    db.order.count({ where: { createdAt: { gte: recentOrdersSince() } } }),
+    db.order.count({ where: { status: "pending" } }),
+    db.order.aggregate({ where: REVENUE_ORDERS, _sum: { total: true } }),
+    db.order.findFirst({ where: REVENUE_ORDERS, select: { currency: true } }),
+  ]);
 
   return {
     users: {
@@ -70,12 +60,8 @@ export async function getStats() {
       pending: pendingOrders,
     },
     revenue: {
-      total: totalRevenue,
-      currency,
+      total: revenue._sum.total ?? 0,
+      currency: revenueSample?.currency || DEFAULT_CURRENCY,
     },
   };
 }
-
-
-
-

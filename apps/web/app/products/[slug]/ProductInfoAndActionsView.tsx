@@ -14,10 +14,25 @@ import { getSwatchColors } from './utils/productInfoAndActions.helpers';
 import type { ProductInfoAndActionsProps, ProductOptionValue } from './productInfoAndActions.types';
 import type { useProductInfoAndActions } from './hooks/useProductInfoAndActions';
 import {
+  PRODUCT_INFO_ADD_TO_CART_BUTTON_CLASS,
+  PRODUCT_INFO_BADGE_BASE_CLASS,
+  PRODUCT_INFO_BADGE_ROW_CLASS,
+  PRODUCT_INFO_FIRST_SECTION_SPACING_CLASS,
+  PRODUCT_INFO_FIRST_SECTION_SPACING_WITH_BADGES_CLASS,
   PRODUCT_INFO_HEADER_CLASS,
+  PRODUCT_INFO_PRICE_CLASS,
   PRODUCT_INFO_PURCHASE_ROW_CLASS,
+  PRODUCT_INFO_PURCHASE_ROW_LAYOUT_CLASS,
   PRODUCT_INFO_ROOT_CLASS,
   PRODUCT_INFO_SCROLL_BODY_CLASS,
+  PRODUCT_INFO_SECTION_LABEL_CLASS,
+  PRODUCT_INFO_SIZE_BUTTON_CLASS,
+  PRODUCT_INFO_SIZE_SECTION_CLASS,
+  PRODUCT_INFO_TAB_LABEL_KEYS,
+  PRODUCT_INFO_TAB_KEYS,
+  PRODUCT_INFO_TABLIST_CLASS,
+  PRODUCT_INFO_TABS_SCROLLER_CLASS,
+  PRODUCT_INFO_TITLE_CLASS,
   PRODUCT_INFO_SCROLL_BODY_CUSTOMIZE_CLASS,
   PRODUCT_INFO_TAB_INDICATOR_BASE_CLASS,
   PRODUCT_INFO_TAB_PANEL_CLASS,
@@ -133,15 +148,15 @@ export function ProductInfoAndActionsView({
     <>
       <div className={PRODUCT_INFO_ROOT_CLASS}>
         <div className={PRODUCT_INFO_HEADER_CLASS}>
-          <h1 className="min-w-0 font-montserrat text-[26px] font-black leading-tight text-[#414141] sm:text-[30px]">
+          <h1 className={PRODUCT_INFO_TITLE_CLASS}>
             {productTitle}
           </h1>
           {hasTitleRowBadges ? (
-            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <div className={PRODUCT_INFO_BADGE_ROW_CLASS}>
               {collectionBadgeItems.map((item, index) => (
                 <span
                   key={`${item.sectionLabel}-${item.text}-${index}`}
-                  className={`inline-flex items-center rounded-full px-2.5 py-1 font-montserrat text-xs font-medium leading-none sm:text-[13px] ${
+                  className={`${PRODUCT_INFO_BADGE_BASE_CLASS} ${
                     PRODUCT_SECTION_BADGE_CLASS_NAMES[item.sectionLabel] ??
                     PRODUCT_SECTION_BADGE_CLASS_NAMES.Classic
                   }`}
@@ -152,7 +167,7 @@ export function ProductInfoAndActionsView({
               {labelBadgeItems.map((item) => (
                 <span
                   key={item.id}
-                  className={`inline-flex items-center rounded-full px-2.5 py-1 font-montserrat text-xs font-medium leading-none text-white sm:text-[13px] ${
+                  className={`${PRODUCT_INFO_BADGE_BASE_CLASS} text-white ${
                     item.color ? '' : 'bg-[#122a26]'
                   }`}
                   style={item.color ? { backgroundColor: item.color } : undefined}
@@ -165,12 +180,14 @@ export function ProductInfoAndActionsView({
 
           {attributeSectionOrder.map((sectionKey, sectionIndex) => {
             const sectionSpacingClass =
-              sectionIndex === 0 ? (hasTitleRowBadges ? 'mt-6' : 'mt-8') : 'mt-6';
+              sectionIndex === 0 && !hasTitleRowBadges
+                ? PRODUCT_INFO_FIRST_SECTION_SPACING_CLASS
+                : PRODUCT_INFO_FIRST_SECTION_SPACING_WITH_BADGES_CLASS;
 
             if (sectionKey === 'color' && colorOptions.length > 0) {
               return (
                 <div key="color" className={sectionSpacingClass}>
-                  <p className="font-montserrat text-[18px] font-extrabold leading-none text-[#414141]">
+                  <p className={PRODUCT_INFO_SECTION_LABEL_CLASS}>
                     {t(language, 'product.color')}
                   </p>
                   <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -214,9 +231,9 @@ export function ProductInfoAndActionsView({
                 <div
                   key="size"
                   ref={sizeSectionRef}
-                  className={`relative z-40 overflow-visible px-1 ${sectionSpacingClass}`}
+                  className={`${PRODUCT_INFO_SIZE_SECTION_CLASS} ${sectionSpacingClass}`}
                 >
-                  <p className="font-montserrat text-[18px] font-extrabold leading-none text-[#414141]">
+                  <p className={PRODUCT_INFO_SECTION_LABEL_CLASS}>
                     {t(language, 'product.size')}
                     {showSizeAsterisk ? (
                       <span className="relative z-10 ml-1 text-red-600" aria-hidden>
@@ -228,7 +245,7 @@ export function ProductInfoAndActionsView({
                     type="button"
                     onClick={openSizeCatalogModal}
                     onAnimationEnd={handleSizeShakeAnimationEnd}
-                    className={`relative z-40 mt-3 flex w-full min-h-9 items-center justify-center gap-2 overflow-visible rounded-[6px] bg-[#dcc090] px-3 py-2 text-center font-montserrat text-[16px] font-bold leading-normal tracking-normal text-neutral-700 sm:inline-flex sm:w-auto sm:min-w-[160px] ${
+                    className={`${PRODUCT_INFO_SIZE_BUTTON_CLASS} ${
                       isSizeShaking ? 'animate-size-shake' : ''
                     }`}
                   >
@@ -244,18 +261,9 @@ export function ProductInfoAndActionsView({
 
         <div className={scrollBodyClass}>
         <div className={tabsSectionClass}>
-          <div className="w-full min-w-0 shrink-0 overflow-x-auto overscroll-x-contain scroll-px-1 pb-2 scrollbar-hide [-webkit-overflow-scrolling:touch] sm:pb-0">
-            <div
-              className="flex w-max max-w-none snap-x snap-mandatory flex-nowrap items-end gap-5 pr-4 sm:snap-none sm:gap-7 sm:pr-5"
-              role="tablist"
-            >
-              {(['description', 'details', 'shipping', 'customize'] as const).map((tabKey) => {
-                const tabLabels: Record<typeof tabKey, string> = {
-                  description: t(language, 'product.description_title'),
-                  details: t(language, 'product.details_title'),
-                  shipping: t(language, 'product.shipping_title'),
-                  customize: t(language, 'product.customize_title'),
-                };
+          <div className={PRODUCT_INFO_TABS_SCROLLER_CLASS}>
+            <div className={PRODUCT_INFO_TABLIST_CLASS} role="tablist">
+              {PRODUCT_INFO_TAB_KEYS.map((tabKey) => {
                 return (
                   <button
                     key={tabKey}
@@ -267,7 +275,7 @@ export function ProductInfoAndActionsView({
                       activeTab === tabKey ? 'text-[#414141]' : 'text-[#414141]/70'
                     }`}
                   >
-                    {tabLabels[tabKey]}
+                    {t(language, PRODUCT_INFO_TAB_LABEL_KEYS[tabKey])}
                     <span
                       className={`${PRODUCT_INFO_TAB_INDICATOR_BASE_CLASS} ${
                         activeTab === tabKey ? 'bg-[#122a26]' : 'bg-transparent'
@@ -302,15 +310,15 @@ export function ProductInfoAndActionsView({
           </div>
         </div>
 
-        <div className={`flex w-full min-w-0 items-end justify-between gap-4 sm:gap-6 ${PRODUCT_INFO_PURCHASE_ROW_CLASS}`}>
-          <p className="font-montserrat text-[30px] font-extrabold leading-none text-black sm:text-[32px]">
+        <div className={`${PRODUCT_INFO_PURCHASE_ROW_LAYOUT_CLASS} ${PRODUCT_INFO_PURCHASE_ROW_CLASS}`}>
+          <p className={PRODUCT_INFO_PRICE_CLASS}>
             {formatCatalogPrice(price, displayCurrency)}
           </p>
           <Button
             type="button"
             disabled={isAddingToCart}
             onClick={handleAddToCartClick}
-            className="h-10 shrink-0 rounded-[8px] !bg-[#dcc090] px-4 text-[16px] font-bold capitalize tracking-normal !text-[#122a26] hover:!bg-[#d3b67f] disabled:cursor-wait disabled:!opacity-100 sm:px-5 sm:text-[20px]"
+            className={PRODUCT_INFO_ADD_TO_CART_BUTTON_CLASS}
           >
             {addToCartLabel}
           </Button>

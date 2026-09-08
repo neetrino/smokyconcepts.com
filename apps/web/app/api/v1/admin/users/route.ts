@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
 
+function parsePositiveInt(value: string | null): number | undefined {
+  if (value == null || value === "") {
+    return undefined;
+  }
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed >= 1 ? parsed : undefined;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const user = await authenticateToken(req);
@@ -23,14 +31,16 @@ export async function GET(req: NextRequest) {
     const roleRaw = searchParams.get("role");
     const role =
       roleRaw === "admin" || roleRaw === "customer" || roleRaw === "all" ? roleRaw : undefined;
-    const takeRaw = searchParams.get("take");
-    const takeParsed = takeRaw != null ? Number.parseInt(takeRaw, 10) : Number.NaN;
-    const take = Number.isFinite(takeParsed) ? takeParsed : undefined;
+    const take = parsePositiveInt(searchParams.get("take"));
+    const page = parsePositiveInt(searchParams.get("page"));
+    const limit = parsePositiveInt(searchParams.get("limit"));
 
     const result = await adminService.getUsers({
       ...(search != null && search !== "" ? { search } : {}),
       ...(role != null ? { role } : {}),
       ...(take != null ? { take } : {}),
+      ...(page != null ? { page } : {}),
+      ...(limit != null ? { limit } : {}),
     });
     return NextResponse.json(result);
   } catch (error: unknown) {

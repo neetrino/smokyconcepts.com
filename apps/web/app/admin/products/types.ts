@@ -18,6 +18,9 @@ export interface Product {
   createdAt: string;
 }
 
+/** Stock availability filter applied on the loaded page of products. */
+export type StockFilter = 'all' | 'inStock' | 'outOfStock';
+
 export interface ProductsResponse {
   data: Product[];
   meta: {

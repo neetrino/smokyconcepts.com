@@ -79,7 +79,7 @@ export default function AdminPanel() {
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8 lg:flex-row">
           <div className="hidden lg:contents">
-            <AdminSidebar currentPath={currentPath} router={router} t={t} />
+            <AdminSidebar currentPath={currentPath} t={t} />
           </div>
 
           <div className="hidden min-w-0 flex-1 lg:block">

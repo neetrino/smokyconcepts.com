@@ -3,30 +3,51 @@ import { db } from "@white-shop/db";
 import { logger } from "../../utils/logger";
 
 /**
- * Base include configuration for product list queries
+ * Field selection for product list queries.
+ *
+ * Narrowed to exactly what `formatProductForList` reads: the previous `include`
+ * pulled every column of every published variant (including the `attributes`
+ * JSON) plus unused labels, which dominated the payload of each list request.
  */
-const getProductListInclude = () => ({
+const getProductListSelect = () => ({
+  id: true,
+  published: true,
+  featured: true,
+  upcoming: true,
+  discountPercent: true,
+  createdAt: true,
+  primaryCategoryId: true,
+  categoryIds: true,
+  media: true,
   translations: {
     where: { locale: "en" },
     take: 1,
+    select: { slug: true, title: true },
   },
   categories: {
-    include: {
+    select: {
       translations: {
         where: { locale: "en" },
         take: 1,
+        select: { title: true },
       },
     },
   },
   variants: {
     where: { published: true },
     orderBy: [{ position: "asc" as const }, { createdAt: "asc" as const }],
+    select: {
+      price: true,
+      stock: true,
+      compareAtPrice: true,
+      imageUrl: true,
+      attributes: true,
+    },
   },
-  labels: true,
 });
 
 export type AdminProductListRecord = Prisma.ProductGetPayload<{
-  include: ReturnType<typeof getProductListInclude>;
+  select: ReturnType<typeof getProductListSelect>;
 }>;
 
 /**
@@ -55,49 +76,33 @@ export async function executeProductListQuery(
   take: number
 ): Promise<{ products: AdminProductListRecord[]; total: number }> {
   const queryStartTime = Date.now();
-  
+
   try {
-    // Test database connection first
-    logger.debug('Testing database connection...');
-    await db.$queryRaw`SELECT 1`;
-    logger.debug('Database connection OK');
+    // Rows and count run in parallel: sequential awaits doubled the round-trip
+    // latency against the remote (pooled) database on every admin list request.
+    const [products, countedTotal] = await Promise.all([
+      db.product.findMany({
+        where,
+        skip,
+        take,
+        orderBy,
+        select: getProductListSelect(),
+      }),
+      db.product.count({ where }).catch((countError: unknown): null => {
+        logger.warn('Count query failed, using estimated total', {
+          error: countError instanceof Error ? countError.message : String(countError),
+        });
+        return null;
+      }),
+    ]);
 
-    // Fetch products
-    logger.debug('Fetching products...');
-    const products = await db.product.findMany({
-      where,
-      skip,
-      take,
-      orderBy,
-      include: getProductListInclude(),
-    });
-    
-    const productsTime = Date.now() - queryStartTime;
-    logger.debug(`Products fetched in ${productsTime}ms. Found ${products.length} products`);
+    const total = countedTotal ?? products.length;
 
-    // Get count with timeout
-    logger.debug('Counting total products...');
-    const countStartTime = Date.now();
-    
-    const countPromise = db.product.count({ where });
-    const timeoutPromise = new Promise<number>((_, reject) => 
-      setTimeout(() => reject(new Error("Count query timeout")), 10000)
-    );
-    
-    let total: number;
-    try {
-      total = await Promise.race([countPromise, timeoutPromise]) as number;
-      const countTime = Date.now() - countStartTime;
-      logger.debug(`Count completed in ${countTime}ms. Total: ${total}`);
-    } catch (countError: unknown) {
-      logger.warn('Count query failed, using estimated total', { 
-        error: countError instanceof Error ? countError.message : String(countError) 
-      });
-      total = products.length || take;
-    }
-    
     const queryTime = Date.now() - queryStartTime;
-    logger.debug(`All database queries completed in ${queryTime}ms`);
+    logger.debug(`Product list queries completed in ${queryTime}ms`, {
+      found: products.length,
+      total,
+    });
 
     return { products, total };
   } catch (error: unknown) {

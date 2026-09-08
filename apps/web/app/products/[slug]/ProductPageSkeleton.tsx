@@ -1,9 +1,14 @@
+import { GALLERY_TOP_OFFSET_CLASSES, HERO_IMAGE_BOX_SIZE_CLASSES } from './gallery/galleryFrame.constants';
 import { PRODUCT_INFO_COLUMN_CLASS } from './productInfoTabContent.constants';
+import {
+  PRODUCT_PAGE_BACKDROP_CLASS,
+  PRODUCT_PAGE_CONTAINER_CLASS,
+  PRODUCT_PAGE_GALLERY_COLUMN_CLASS,
+  PRODUCT_PAGE_GRID_CLASS,
+  SKELETON_PULSE_CLASS,
+} from './productPageShell.constants';
 
-/** Matches gallery hero height while product data is loading. */
-const SKELETON_HERO_HEIGHT_CLASS = 'h-[270px] w-full sm:h-[440px] lg:h-[480px]';
-
-const SKELETON_PULSE_CLASS = 'animate-pulse rounded-lg bg-[#e4e2dc]';
+const SKELETON_THUMBNAIL_COUNT = 4;
 
 /**
  * PDP layout shell shown while the product is fetched from the API.
@@ -11,14 +16,14 @@ const SKELETON_PULSE_CLASS = 'animate-pulse rounded-lg bg-[#e4e2dc]';
  */
 export function ProductPageSkeleton() {
   return (
-    <div className="overflow-x-hidden overflow-y-visible bg-[#efefef]" aria-hidden>
-      <div className="mx-auto max-w-[1920px] overflow-x-hidden overflow-y-visible px-4 pb-16 pt-2 sm:px-6 lg:px-[120px] lg:pb-24 lg:pt-5">
-        <div className="grid min-h-0 items-start gap-8 overflow-visible xl:grid-cols-[minmax(0,640px)_minmax(0,1fr)] xl:items-stretch xl:gap-11">
-          <div className="flex min-h-0 min-w-0 flex-col gap-5 overflow-visible pt-5 sm:gap-6 sm:pt-14 lg:pt-16">
+    <div className={PRODUCT_PAGE_BACKDROP_CLASS} aria-hidden>
+      <div className={PRODUCT_PAGE_CONTAINER_CLASS}>
+        <div className={PRODUCT_PAGE_GRID_CLASS}>
+          <div className={`${PRODUCT_PAGE_GALLERY_COLUMN_CLASS} ${GALLERY_TOP_OFFSET_CLASSES}`}>
             <div className="rounded-[12px] bg-white p-4 shadow-[0_4px_22.5px_rgba(0,0,0,0.06)] sm:p-5">
-              <div className={`${SKELETON_HERO_HEIGHT_CLASS} ${SKELETON_PULSE_CLASS}`} />
+              <div className={`${HERO_IMAGE_BOX_SIZE_CLASSES} ${SKELETON_PULSE_CLASS}`} />
               <div className="mt-3 flex justify-center gap-2 sm:mt-4 sm:gap-3">
-                {Array.from({ length: 4 }).map((_, index) => (
+                {Array.from({ length: SKELETON_THUMBNAIL_COUNT }).map((_, index) => (
                   <div key={index} className={`size-9 ${SKELETON_PULSE_CLASS} sm:size-10`} />
                 ))}
               </div>

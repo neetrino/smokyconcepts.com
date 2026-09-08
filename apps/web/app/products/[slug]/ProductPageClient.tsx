@@ -19,7 +19,13 @@ import { useCustomizeGoogleFontLinks } from './useCustomizeGoogleFontLinks';
 import type { LanguageCode } from '../../../lib/language';
 import type { CustomOrderDraft } from './CustomizeSizeOrderFallback';
 import { PRODUCT_INFO_COLUMN_CLASS } from './productInfoTabContent.constants';
-import { ProductPageSkeleton } from './ProductPageSkeleton';
+import {
+  PRODUCT_PAGE_BACKDROP_CLASS,
+  PRODUCT_PAGE_CONTAINER_CLASS,
+  PRODUCT_PAGE_GALLERY_COLUMN_CLASS,
+  PRODUCT_PAGE_GRID_CLASS,
+} from './productPageShell.constants';
+import { ProductPagePreview } from './ProductPagePreview';
 import type { Product } from './types';
 
 const CUSTOMIZE_TEXT_MAX_LENGTH = 18;
@@ -194,14 +200,14 @@ export function ProductPageClient({
   });
 
   if (loading || !product) {
-    return <ProductPageSkeleton />;
+    return <ProductPagePreview slug={slug} />;
   }
 
   return (
-    <div className="overflow-x-hidden overflow-y-visible bg-[#efefef]">
-      <div className="mx-auto max-w-[1920px] overflow-x-hidden overflow-y-visible px-4 pb-16 pt-2 sm:px-6 lg:px-[120px] lg:pb-24 lg:pt-5">
-        <div className="grid min-h-0 items-start gap-8 overflow-visible xl:grid-cols-[minmax(0,640px)_minmax(0,1fr)] xl:items-stretch xl:gap-11">
-          <div className="flex min-h-0 min-w-0 flex-col gap-5 overflow-visible sm:gap-6">
+    <div className={PRODUCT_PAGE_BACKDROP_CLASS}>
+      <div className={PRODUCT_PAGE_CONTAINER_CLASS}>
+        <div className={PRODUCT_PAGE_GRID_CLASS}>
+          <div className={PRODUCT_PAGE_GALLERY_COLUMN_CLASS}>
             <ProductImageGallery
               images={images}
               heroImageSrc={heroImageSrc}

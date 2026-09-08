@@ -31,8 +31,6 @@ export async function getProducts(filters: ProductFilters) {
   const where = buildProductWhereClause(filters);
   const orderBy = buildProductOrderByClause(filters);
 
-  logger.debug('Executing database queries...', { where: JSON.stringify(where, null, 2) });
-
   const { products, total } = await executeProductListQuery(where, orderBy, skip, limit);
   const fallbackCategoryIds = [
     ...new Set(

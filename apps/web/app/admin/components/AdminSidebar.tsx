@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { getAdminMenuTABS } from '../admin-menu.config';
+import { AdminNavLink } from './AdminNavLink';
 import { AdminMobileNavigation } from './AdminMobileNavigation';
 import {
   adminNavContainerClass,
@@ -22,7 +22,6 @@ import { getAdminSidebarNavIndentClass } from '../utils/adminMenuIndent';
 
 interface AdminSidebarProps {
   currentPath: string;
-  router: ReturnType<typeof useRouter>;
   t: ReturnType<typeof import('../../../lib/i18n-client').useTranslation>['t'];
 }
 
@@ -36,7 +35,7 @@ function getNavBadgeCount(tabId: string, counts: { orders: number; messages: num
   return 0;
 }
 
-export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
+export function AdminSidebar({ currentPath, t }: AdminSidebarProps) {
   const { theme } = useAdminTheme();
   const adminTabs = getAdminMenuTABS(t);
   const newCounts = useAdminNewCounts();
@@ -109,25 +108,26 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
             const isExpanded = expandedGroups.has(tab.id);
             const navBadgeCount = getNavBadgeCount(tab.id, newCounts);
 
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => {
-                  if (isParent) {
-                    toggleGroup(tab.id);
-                    return;
-                  }
-                  router.push(tab.path);
-                }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-all ${getAdminSidebarNavIndentClass(tab)} ${isActive ? adminNavItemActiveClass(theme) : adminNavItemInactiveClass(theme)}`}
-              >
+            const itemClass = `w-full flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-all ${getAdminSidebarNavIndentClass(tab)} ${isActive ? adminNavItemActiveClass(theme) : adminNavItemInactiveClass(theme)}`;
+            const itemContent = (
+              <>
                 {tab.icon ? (
                   <span className={adminNavIconClass(isActive, theme)}>{tab.icon}</span>
                 ) : null}
                 <span className="flex-1 text-left">{tab.label}</span>
                 {navBadgeCount > 0 ? <AdminNavCountBadge count={navBadgeCount} /> : null}
-                {isParent && (
+              </>
+            );
+
+            if (isParent) {
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => toggleGroup(tab.id)}
+                  className={itemClass}
+                >
+                  {itemContent}
                   <svg
                     className={`h-3.5 w-3.5 flex-shrink-0 transition-transform duration-200 ${
                       isExpanded ? 'rotate-90' : ''
@@ -139,8 +139,14 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
-                )}
-              </button>
+                </button>
+              );
+            }
+
+            return (
+              <AdminNavLink key={tab.id} href={tab.path} className={itemClass}>
+                {itemContent}
+              </AdminNavLink>
             );
           })}
         </nav>

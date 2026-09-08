@@ -28,14 +28,21 @@ class AdminCategoriesService {
    * Get categories for admin
    */
   async getCategories() {
+    // Selected explicitly: this list is refetched by several admin screens, and
+    // the full row carried unused JSON media metadata plus whole translations.
     const categories = await db.category.findMany({
       where: {
         deletedAt: null,
       },
-      include: {
+      select: {
+        id: true,
+        parentId: true,
+        requiresSizes: true,
+        media: true,
         translations: {
           where: { locale: "en" },
           take: 1,
+          select: { title: true, slug: true },
         },
       },
       orderBy: {

@@ -149,7 +149,7 @@ export default function VotingPage() {
     <div className="min-h-screen bg-[#efefef] pt-[3.75rem] pb-8">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8 lg:flex-row">
-          <AdminSidebar currentPath={pathname || '/supersudo/voting'} router={router} t={t} />
+          <AdminSidebar currentPath={pathname || '/supersudo/voting'} t={t} />
 
           <div className="min-w-0 flex-1 space-y-6">
             <Card className="border-[#dcc090]/30 bg-white/90 p-4 shadow-[0_8px_30px_rgba(18,42,38,0.06)] sm:p-6">
