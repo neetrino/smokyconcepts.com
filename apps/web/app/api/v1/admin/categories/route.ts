@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
+import { getCachedAdminCategories } from "@/lib/services/admin/admin-categories-cache";
 
 /**
  * GET /api/v1/admin/categories
@@ -22,7 +23,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const result = await adminService.getCategories();
+    const result = await getCachedAdminCategories();
     return NextResponse.json(result);
   } catch (error: any) {
     console.error("❌ [ADMIN CATEGORIES] GET Error:", error);

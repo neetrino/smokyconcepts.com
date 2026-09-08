@@ -16,6 +16,7 @@ import {
 import { isCatalogSizeItemSelectable as resolveCatalogSizeItemSelectable } from '../utils/is-catalog-size-item-selectable';
 import { getOptionValues } from '../utils/variant-helpers';
 import { deriveProductAttributeSectionOrder } from '../utils/derive-product-attribute-section-order';
+import { getProductTabLabelClass } from '../productInfoTabContent.constants';
 import type { ProductInfoAndActionsProps, ProductTabKey } from '../productInfoAndActions.types';
 import { useApplyCatalogSizeFromUrl } from './useApplyCatalogSizeFromUrl';
 import { useCustomizeFontValidation } from './useCustomizeFontValidation';
@@ -255,10 +256,7 @@ export function useProductInfoAndActions({
     setIsCustomizeSizeModalOpen(false);
   };
 
-  const productTabLabelClass =
-    language === 'en'
-      ? 'pb-3 font-montserrat text-[17px] font-black leading-none sm:text-[18px] md:text-[19px]'
-      : 'pb-3 font-montserrat text-[16px] font-black leading-none sm:text-[17px] md:text-[18px]';
+  const productTabLabelClass = getProductTabLabelClass(language);
 
   const collectionBadgeItems = useMemo(() => getProductCollectionBadgeItems(product), [product]);
 

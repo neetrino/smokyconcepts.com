@@ -1,5 +1,8 @@
 import { db } from "@white-shop/db";
 
+const UNKNOWN_PRODUCT_TITLE = "Unknown Product";
+const UNKNOWN_SKU = "N/A";
+
 /**
  * Extract image from product media
  */
@@ -9,11 +12,11 @@ function extractImageFromMedia(media: unknown[] | undefined): string | null {
   }
 
   const firstMedia = media[0];
-  
+
   if (typeof firstMedia === "string") {
     return firstMedia;
   }
-  
+
   if (firstMedia && typeof firstMedia === "object" && "url" in firstMedia) {
     const mediaObj = firstMedia as { url?: string };
     return mediaObj.url || null;
@@ -22,102 +25,108 @@ function extractImageFromMedia(media: unknown[] | undefined): string | null {
   return null;
 }
 
-/**
- * Get top products for dashboard
- */
-export async function getTopProducts(limit: number = 5) {
-  // Get all order items with their variants
-  const orderItems = await db.orderItem.findMany({
+interface VariantDetails {
+  productId: string;
+  sku: string | null;
+  title: string;
+  image: string | null;
+}
+
+/** `db` is loosely typed at the client boundary, so query shapes are declared here. */
+interface RankedVariantGroup {
+  variantId: string | null;
+  _sum: { quantity: number | null; total: number | null };
+  _count: { _all: number };
+}
+
+interface VariantWithProduct {
+  id: string;
+  productId: string;
+  sku: string | null;
+  product?: {
+    media?: unknown[];
+    translations: Array<{ title: string }>;
+  } | null;
+}
+
+/** Loads presentation data for the already-ranked variants only. */
+async function loadVariantDetails(variantIds: string[]): Promise<Map<string, VariantDetails>> {
+  const variants: VariantWithProduct[] = await db.productVariant.findMany({
+    where: { id: { in: variantIds } },
     select: {
-      variantId: true,
-      quantity: true,
-      total: true,
-      variant: {
+      id: true,
+      productId: true,
+      sku: true,
+      product: {
         select: {
-          id: true,
-          productId: true,
-          sku: true,
-          product: {
-            select: {
-              media: true,
-              translations: {
-                where: { locale: "en" },
-                take: 1,
-              },
-            },
+          media: true,
+          translations: {
+            where: { locale: "en" },
+            take: 1,
           },
         },
       },
     },
   });
 
-  // Group by variant and calculate stats
-  const productStats = new Map<
-    string,
-    {
-      variantId: string;
-      productId: string;
-      title: string;
-      sku: string;
-      totalQuantity: number;
-      totalRevenue: number;
-      orderCount: number;
-      image?: string | null;
-    }
-  >();
-
-  orderItems.forEach((item: { 
-    variantId: string | null; 
-    quantity: number; 
-    total: number; 
-    variant?: { 
-      id: string; 
-      productId: string; 
-      sku: string | null; 
-      product?: { 
-        translations?: Array<{ title: string }>; 
-        media?: unknown[] 
-      } 
-    } 
-  }) => {
-    if (!item.variant) return;
-
-    const variantId = item.variantId || item.variant.id;
-    const productId = item.variant.productId;
-    const product = item.variant.product;
-    const translations = product?.translations || [];
-    const translation = translations[0];
-    const title = translation?.title || "Unknown Product";
-    const sku = item.variant.sku || "N/A";
-    const image = extractImageFromMedia(product?.media);
-
-    if (!productStats.has(variantId)) {
-      productStats.set(variantId, {
-        variantId,
-        productId,
-        title,
-        sku,
-        totalQuantity: 0,
-        totalRevenue: 0,
-        orderCount: 0,
-        image,
-      });
-    }
-
-    const stats = productStats.get(variantId)!;
-    stats.totalQuantity += item.quantity;
-    stats.totalRevenue += item.total;
-    stats.orderCount += 1;
-  });
-
-  // Convert to array and sort by revenue
-  const topProducts = Array.from(productStats.values())
-    .sort((a, b) => b.totalRevenue - a.totalRevenue)
-    .slice(0, limit);
-
-  return topProducts;
+  return new Map<string, VariantDetails>(
+    variants.map((variant: VariantWithProduct) => [
+      variant.id,
+      {
+        productId: variant.productId,
+        sku: variant.sku,
+        title: variant.product?.translations[0]?.title || UNKNOWN_PRODUCT_TITLE,
+        image: extractImageFromMedia(variant.product?.media),
+      },
+    ])
+  );
 }
 
+/**
+ * Get top products for dashboard.
+ *
+ * Ranking is done by the database via `groupBy`, so only the `limit` winning
+ * variants are hydrated instead of streaming every order item into memory.
+ */
+export async function getTopProducts(limit: number = 5) {
+  const rankedVariants: RankedVariantGroup[] = await db.orderItem.groupBy({
+    by: ["variantId"],
+    where: { variantId: { not: null } },
+    _sum: { quantity: true, total: true },
+    _count: { _all: true },
+    orderBy: { _sum: { total: "desc" } },
+    take: limit,
+  });
 
+  const variantIds = rankedVariants
+    .map((group: RankedVariantGroup) => group.variantId)
+    .filter((variantId: string | null): variantId is string => Boolean(variantId));
 
+  if (variantIds.length === 0) {
+    return [];
+  }
 
+  const detailsByVariantId = await loadVariantDetails(variantIds);
+
+  return variantIds.flatMap((variantId: string, index: number) => {
+    const details = detailsByVariantId.get(variantId);
+    if (!details) {
+      return [];
+    }
+
+    const group = rankedVariants[index];
+
+    return [
+      {
+        variantId,
+        productId: details.productId,
+        title: details.title,
+        sku: details.sku || UNKNOWN_SKU,
+        totalQuantity: group._sum.quantity ?? 0,
+        totalRevenue: group._sum.total ?? 0,
+        orderCount: group._count._all,
+        image: details.image,
+      },
+    ];
+  });
+}

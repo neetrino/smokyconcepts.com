@@ -15,7 +15,6 @@ import { formatAdminDate } from '../../utils/formatAdminDate';
 
 interface ProductsTableProps {
   loading: boolean;
-  sortedProducts: Product[];
   products: Product[];
   selectedIds: Set<string>;
   toggleSelect: (id: string) => void;
@@ -47,7 +46,6 @@ const processImageUrl = (url: string | null) => {
 
 export function ProductsTable({
   loading,
-  sortedProducts,
   products,
   selectedIds,
   toggleSelect,
@@ -65,20 +63,22 @@ export function ProductsTable({
 }: ProductsTableProps) {
   const { t } = useTranslation();
   const router = useRouter();
+  const isInitialLoading = loading && products.length === 0;
 
   return (
     <Card className="border-[#dcc090]/30 bg-white/90 shadow-[0_8px_30px_rgba(18,42,38,0.06)]">
-      {loading ? (
+      {isInitialLoading ? (
         <div className="p-8 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#122a26] mx-auto mb-4"></div>
           <p className="text-[#414141]/70">{t('admin.products.loadingProducts')}</p>
         </div>
-      ) : sortedProducts.length === 0 ? (
+      ) : products.length === 0 ? (
         <div className="p-8 text-center">
           <p className="text-[#414141]/70">{t('admin.products.noProducts')}</p>
         </div>
       ) : (
-        <>
+        // Rows stay on screen while refetching so filtering/paging never blanks the table.
+        <div className={loading ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
           <table className="min-w-full border-separate border-spacing-0 divide-y divide-[#dcc090]/25">
               <thead className="bg-[#122a26]">
                 <tr>
@@ -254,7 +254,7 @@ export function ProductsTable({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-[#dcc090]/25">
-                {sortedProducts.map((product) => (
+                {products.map((product) => (
                   <tr key={product.id} className="hover:bg-[#dcc090]/10">
                     <td className="px-4 py-4">
                       <input
@@ -465,7 +465,7 @@ export function ProductsTable({
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
     </Card>
   );

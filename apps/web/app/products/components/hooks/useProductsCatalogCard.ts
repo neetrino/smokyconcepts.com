@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAddToCart } from '../../../../components/hooks/useAddToCart';
 import { useCurrency } from '../../../../components/hooks/useCurrency';
 import { formatCatalogPrice } from '../../../../lib/currency';
+import { saveProductPreview } from '../../../../lib/product-preview-cache';
+import { scheduleWhenIdle } from '../../../../lib/utils/schedule-when-idle';
 import {
   getCatalogProductsSmViewportSnapshot,
   getServerCatalogProductsSmViewportSnapshot,
@@ -122,7 +124,7 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
   );
 
   useEffect(() => {
-    router.prefetch(productHref);
+    scheduleWhenIdle(() => router.prefetch(productHref));
   }, [productHref, router]);
 
   const productImages = useMemo(() => {
@@ -220,10 +222,26 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
     router.push('/checkout');
   };
 
+  /** Hands the rendered card data to the PDP so it can paint before the server payload. */
+  const storeProductPagePreview = () => {
+    saveProductPreview({
+      slug: product.slug,
+      title: product.title,
+      price: displayPrice,
+      image: activeImage ?? null,
+      images: productImages,
+      inStock: product.inStock,
+      sectionLabel: props.sectionLabel,
+      categoryLabel,
+    });
+  };
+
   const handleProductLinkClick = (event: MouseEvent<HTMLAnchorElement>) => {
     if (shouldBlockProductNavigation?.()) {
       event.preventDefault();
+      return;
     }
+    storeProductPagePreview();
   };
 
   const handleShopNavigate = (event: MouseEvent<HTMLButtonElement>) => {
@@ -232,6 +250,7 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
     if (shouldBlockProductNavigation?.()) {
       return;
     }
+    storeProductPagePreview();
     router.push(productHref);
   };
 

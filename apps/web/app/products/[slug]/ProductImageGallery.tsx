@@ -13,6 +13,16 @@ import {
   CUSTOMIZE_HERO_PREVIEW_ASSETS,
 } from './customize-tab-preview.constants';
 import { CustomizeProductOverlay, type CustomizeOverlayPosition } from './CustomizeProductOverlay';
+import {
+  GALLERY_CARD_BASE_CLASS,
+  GALLERY_CARD_HOVER_CLASS,
+  GALLERY_IMAGE_FIT_CLASSES,
+  GALLERY_SECTION_GAP_CLASSES,
+  GALLERY_TOP_OFFSET_CLASSES,
+  HERO_IMAGE_BOX_SIZE_CLASSES,
+  HERO_PULL_ABOVE_CARD,
+  THUMBNAIL_IMAGE_BOX_SIZE_CLASSES,
+} from './gallery/galleryFrame.constants';
 import { MobileGalleryHeroSlider } from './gallery/MobileGalleryHeroSlider';
 import { MobileGalleryThumbnailTrack } from './gallery/MobileGalleryThumbnailTrack';
 import { useMobileGalleryViewport } from './gallery/useMobileGalleryViewport';
@@ -42,46 +52,15 @@ interface ProductImageGalleryProps {
   customizePackPreviewHtml?: string | null;
 }
 
-/**
- * Space below the site header before the white card (pairs with {@link HERO_PULL_ABOVE_CARD}).
- */
-const GALLERY_TOP_OFFSET_CLASSES = 'pt-5 sm:pt-14 lg:pt-16';
-
-/**
- * Pulls the product hero slightly above the card top.
- * Kept for customize preview too so the white card height matches the description tab.
- * The 3D badge is positioned on the card (not the pulled hero) so it stays inside.
- * Pairs with {@link GALLERY_TOP_OFFSET_CLASSES} for header clearance.
- */
-const HERO_PULL_ABOVE_CARD = 'max-sm:-mt-7 sm:-mt-12 lg:-mt-14';
-
 /** Customize 3D badge — anchored to the white card (Figma 1:8797), not the pulled hero frame. */
 const CUSTOMIZE_HERO_3D_BADGE_CLASS =
   'pointer-events-none absolute z-20 h-auto max-w-[95px] object-contain';
-
-/** Mobile hero height (px) — fits typical phone viewport without clipping below the fold. */
-const MOBILE_HERO_IMAGE_HEIGHT_CLASS = 'h-[270px]';
-
-/** Fixed hero frame — small sources scale up, large sources scale down (no crop). */
-const HERO_IMAGE_BOX_SIZE_CLASSES = `${MOBILE_HERO_IMAGE_HEIGHT_CLASS} w-full max-w-full shrink-0 sm:h-[440px] lg:h-[480px]`;
-
-/** Compact thumbnail frame — fixed square, does not stretch with flex. */
-const THUMBNAIL_IMAGE_BOX_SIZE_CLASSES = 'size-[36px] shrink-0 sm:size-[40px]';
 
 /** Thumbnail strip nav control — flanks the thumbnail row on all breakpoints. */
 const THUMBNAIL_NAV_BUTTON_CLASSES =
   'flex size-9 shrink-0 items-center justify-center rounded-full text-[#122a26] transition-opacity disabled:cursor-not-allowed disabled:opacity-30 sm:size-10';
 
 const THUMBNAIL_NAV_ICON_CLASSES = 'size-5 sm:size-6';
-
-/**
- * Fills the fixed hero/thumb frame without layout jump from intrinsic image size.
- * `absolute inset-0` keeps the CSS box stable before decode; object-contain scales the bitmap.
- */
-const GALLERY_IMAGE_FIT_CLASSES = 'absolute inset-0 size-full object-contain object-center';
-
-/** Vertical rhythm between hero and thumbnail strip inside the card. */
-const GALLERY_SECTION_GAP_CLASSES = 'gap-3 sm:gap-4';
 
 /** Thumbnail underline — desktop/tablet only. */
 const THUMBNAIL_ACTIVE_INDICATOR_CLASSES =
@@ -516,7 +495,7 @@ export function ProductImageGallery({
 
   return (
     <div className={`overflow-visible ${GALLERY_TOP_OFFSET_CLASSES}`}>
-      <div className="relative z-0 mx-auto w-full max-w-[520px] overflow-visible rounded-[20px] bg-white px-3 pb-4 pt-3 shadow-none transition-shadow duration-200 has-[.product-hero:hover]:z-10 sm:max-w-[540px] sm:overflow-x-clip sm:overflow-y-visible sm:rounded-[24px] sm:px-5 sm:pb-5 sm:pt-4 sm:shadow-[0_1px_0_rgba(18,42,38,0.04)] sm:has-[.product-hero:hover]:shadow-[0_12px_32px_rgba(18,42,38,0.12)] lg:max-w-[580px]">
+      <div className={`${GALLERY_CARD_BASE_CLASS} ${GALLERY_CARD_HOVER_CLASS}`}>
         {showHeroPreviewInGallery ? renderCustomizeHero3dBadge() : null}
         <div className={`flex flex-col items-center overflow-visible ${GALLERY_SECTION_GAP_CLASSES}`}>
           <div

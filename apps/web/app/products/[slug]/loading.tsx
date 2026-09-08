@@ -1,15 +1,10 @@
-import { ProductPageSkeleton } from './ProductPageSkeleton';
-import { PageLoadingCenter } from '../../../components/loading/PageLoadingCenter';
+import { ProductPagePreview } from './ProductPagePreview';
 
 /**
  * Instant Loading UI while the PDP server payload is prepared.
- * Skeleton keeps layout; glass overlay matches storefront loading language.
+ * Paints the catalog card snapshot (title, hero, price, badges) when the visitor
+ * arrived from a card; otherwise falls back to the skeleton + glass overlay.
  */
 export default function ProductLoading() {
-  return (
-    <>
-      <ProductPageSkeleton />
-      <PageLoadingCenter reserveLayoutSpace={false} />
-    </>
-  );
+  return <ProductPagePreview />;
 }

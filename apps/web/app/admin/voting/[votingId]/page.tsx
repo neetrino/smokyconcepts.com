@@ -85,7 +85,7 @@ export default function VotingDetailPage() {
         </div>
 
         <div className="flex flex-col gap-8 lg:flex-row">
-          <AdminSidebar currentPath={pathname || '/supersudo/voting'} router={router} t={t} />
+          <AdminSidebar currentPath={pathname || '/supersudo/voting'} t={t} />
 
           <div className="min-w-0 flex-1" />
         </div>

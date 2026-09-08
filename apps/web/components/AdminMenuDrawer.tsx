@@ -3,7 +3,6 @@
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
   adminDrawerChevronClass,
   adminDrawerCloseButtonClass,
@@ -18,6 +17,7 @@ import {
 import { useAdminTheme } from '@/app/admin/context/AdminThemeContext';
 import { getAdminDrawerNavIndentClass } from '@/app/admin/utils/adminMenuIndent';
 import { AdminNavCountBadge } from '@/app/admin/components/AdminNavCountBadge';
+import { AdminNavLink } from '@/app/admin/components/AdminNavLink';
 import { useAdminNewCounts } from '@/app/admin/hooks/useAdminNewCounts';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { useTranslation } from '@/lib/i18n-client';
@@ -59,7 +59,6 @@ export function AdminMenuDrawer({
   initialOpen = false,
   showLogout = false,
 }: AdminMenuDrawerProps) {
-  const router = useRouter();
   const { theme } = useAdminTheme();
   const [open, setOpen] = useState(initialOpen);
 
@@ -92,11 +91,6 @@ export function AdminMenuDrawer({
       if (next.has(id)) { next.delete(id); } else { next.add(id); }
       return next;
     });
-  };
-
-  const handleNavigate = (path: string) => {
-    router.push(path);
-    setOpen(false);
   };
 
   const { logout } = useAuth();
@@ -176,37 +170,52 @@ export function AdminMenuDrawer({
                 const isExpanded = expandedGroups.has(tab.id);
                 const navBadgeCount = getNavBadgeCount(tab.id, newCounts);
 
+                const rowClass = `flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium ${getAdminDrawerNavIndentClass(tab)} ${isActive ? adminDrawerRowActiveClass(theme) : adminDrawerRowInactiveClass(theme)}`;
+                const rowLabel = (
+                  <span className="flex items-center gap-3">
+                    {tab.icon ? (
+                      <span className={adminDrawerRowIconClass(isActive, theme)}>{tab.icon}</span>
+                    ) : null}
+                    {tab.label}
+                  </span>
+                );
+                const rowBadge =
+                  navBadgeCount > 0 ? <AdminNavCountBadge count={navBadgeCount} /> : null;
+
+                if (isParent) {
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => toggleGroup(tab.id)}
+                      className={rowClass}
+                    >
+                      {rowLabel}
+                      <span className="flex items-center gap-2">
+                        {rowBadge}
+                        <svg
+                          className={`h-4 w-4 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''} ${adminDrawerChevronClass(isActive, theme)}`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </span>
+                    </button>
+                  );
+                }
+
                 return (
-                  <button
+                  <AdminNavLink
                     key={tab.id}
-                    type="button"
-                    onClick={() => {
-                      if (isParent) {
-                        toggleGroup(tab.id);
-                        return;
-                      }
-                      handleNavigate(tab.path);
-                    }}
-                    className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium ${getAdminDrawerNavIndentClass(tab)} ${isActive ? adminDrawerRowActiveClass(theme) : adminDrawerRowInactiveClass(theme)}`}
+                    href={tab.path}
+                    className={rowClass}
+                    onNavigate={() => setOpen(false)}
                   >
-                    <span className="flex items-center gap-3">
-                      {tab.icon ? (
-                        <span className={adminDrawerRowIconClass(isActive, theme)}>{tab.icon}</span>
-                      ) : null}
-                      {tab.label}
-                    </span>
+                    {rowLabel}
                     <span className="flex items-center gap-2">
-                      {navBadgeCount > 0 ? <AdminNavCountBadge count={navBadgeCount} /> : null}
-                      {isParent ? (
-                      <svg
-                        className={`h-4 w-4 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''} ${adminDrawerChevronClass(isActive, theme)}`}
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    ) : (
+                      {rowBadge}
                       <svg
                         className={adminDrawerChevronClass(isActive, theme)}
                         fill="none"
@@ -215,9 +224,8 @@ export function AdminMenuDrawer({
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
-                    )}
                     </span>
-                  </button>
+                  </AdminNavLink>
                 );
               })}
             </div>

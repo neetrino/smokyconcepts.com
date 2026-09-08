@@ -3,6 +3,7 @@ import * as jwt from "jsonwebtoken";
 import { Prisma } from "@prisma/client";
 import { db } from "@white-shop/db";
 import { getTokenFromRequest } from "@/lib/auth/auth-cookie.server";
+import { resolveCachedAuthUser } from "./auth-user-cache";
 
 export interface AuthUser {
   id: string;
@@ -23,6 +24,33 @@ function isPrismaInitializationError(error: unknown): boolean {
 
   const maybePrismaError = error as { name?: string };
   return maybePrismaError.name === "PrismaClientInitializationError";
+}
+
+async function loadAuthUser(userId: string): Promise<AuthUser | null> {
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      phone: true,
+      locale: true,
+      roles: true,
+      blocked: true,
+      deletedAt: true,
+    },
+  });
+
+  if (!user || user.blocked || user.deletedAt) {
+    return null;
+  }
+
+  return {
+    id: user.id,
+    email: user.email,
+    phone: user.phone,
+    locale: user.locale,
+    roles: user.roles,
+  };
 }
 
 /**
@@ -47,30 +75,7 @@ export async function authenticateToken(
       userId: string;
     };
 
-    const user = await db.user.findUnique({
-      where: { id: decoded.userId },
-      select: {
-        id: true,
-        email: true,
-        phone: true,
-        locale: true,
-        roles: true,
-        blocked: true,
-        deletedAt: true,
-      },
-    });
-
-    if (!user || user.blocked || user.deletedAt) {
-      return null;
-    }
-
-    return {
-      id: user.id,
-      email: user.email,
-      phone: user.phone,
-      locale: user.locale,
-      roles: user.roles,
-    };
+    return await resolveCachedAuthUser(token, () => loadAuthUser(decoded.userId));
   } catch (error) {
     if (
       error instanceof jwt.JsonWebTokenError ||
