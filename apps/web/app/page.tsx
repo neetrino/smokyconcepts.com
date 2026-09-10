@@ -4,8 +4,8 @@ import { getCachedHomeCollections } from '../lib/services/storefront-category-ca
 import { getCachedHomeHeroSlides } from '../lib/services/storefront-home-cache';
 
 /**
- * Hero and collections must reflect admin/DB changes immediately (avoid stale SSG on Vercel).
- * The render stays dynamic; the DB reads are cached and purged by tag on admin writes.
+ * Hero and collections must reflect admin/DB changes on the first visit
+ * (avoid stale SSG / stale-while-revalidate on Vercel).
  */
 export const dynamic = 'force-dynamic';
 

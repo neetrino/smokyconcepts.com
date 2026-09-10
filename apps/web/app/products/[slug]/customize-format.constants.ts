@@ -34,7 +34,7 @@ export const CUSTOMIZE_FONT_DROPDOWN_LAYOUT = {
 } as const;
 
 export const CUSTOMIZE_FONT_DROPDOWN_PANEL_CLASS = [
-  'fixed z-50 overflow-hidden rounded-[6px] bg-white shadow-[0px_4px_22.5px_rgba(0,0,0,0.1)]',
+  'fixed z-[130] overflow-hidden rounded-[6px] bg-white shadow-[0px_4px_22.5px_rgba(0,0,0,0.1)]',
   CUSTOMIZE_FONT_CONTROL_WIDTH_CLASS,
 ].join(' ');
 
@@ -49,9 +49,17 @@ export const CUSTOMIZE_FORMAT_FONT_TRIGGER_CLASS = [
 export const CUSTOMIZE_FORMAT_BUTTON_CLASS =
   'flex h-[42px] w-[43px] shrink-0 items-center justify-center rounded-[6px] transition-colors';
 /** Idle surface — mutually exclusive with active (avoid bg-white winning over active). */
-export const CUSTOMIZE_FORMAT_CONTROL_IDLE_CLASS = 'bg-white';
-/** Filled brand surface so pressed/open state reads clearly against white idle. */
-export const CUSTOMIZE_FORMAT_CONTROL_ACTIVE_CLASS = 'bg-[#122a26]';
+export const CUSTOMIZE_FORMAT_CONTROL_IDLE_CLASS =
+  'border border-transparent bg-white';
+/** Font trigger / filled controls — gold outline when open (matches Save / B·I). */
+export const CUSTOMIZE_FORMAT_CONTROL_ACTIVE_CLASS =
+  'border border-[#dcc090] bg-white';
+/** B/I idle — transparent border keeps size stable vs selected outline. */
+export const CUSTOMIZE_FORMAT_TOGGLE_IDLE_CLASS =
+  'border border-transparent bg-white';
+/** B/I selected — gold outline like Save (no filled green). */
+export const CUSTOMIZE_FORMAT_TOGGLE_ACTIVE_CLASS =
+  'border border-[#dcc090] bg-white';
 /** Light foreground for labels/icons on the filled active surface. */
 export const CUSTOMIZE_FORMAT_CONTROL_ACTIVE_FG_CLASS = 'text-[#faf8f4]';
 export const CUSTOMIZE_FORMAT_CONTROL_ACTIVE_ICON_CLASS =

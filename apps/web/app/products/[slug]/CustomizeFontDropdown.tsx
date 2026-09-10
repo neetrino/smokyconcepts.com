@@ -5,13 +5,10 @@ import { createPortal } from 'react-dom';
 
 import {
   CUSTOMIZE_FONT_CONTROL_WIDTH_CLASS,
-  CUSTOMIZE_FONT_DROPDOWN_LAYOUT,
   CUSTOMIZE_FONT_DROPDOWN_OPTION_CLASS,
   CUSTOMIZE_FONT_DROPDOWN_PANEL_CLASS,
   CUSTOMIZE_FORMAT_ASSETS,
   CUSTOMIZE_FORMAT_CONTROL_ACTIVE_CLASS,
-  CUSTOMIZE_FORMAT_CONTROL_ACTIVE_FG_CLASS,
-  CUSTOMIZE_FORMAT_CONTROL_ACTIVE_ICON_CLASS,
   CUSTOMIZE_FORMAT_CONTROL_IDLE_CLASS,
   CUSTOMIZE_FORMAT_CONTROL_INVALID_CLASS,
   CUSTOMIZE_FORMAT_FONT_TRIGGER_CLASS,
@@ -85,16 +82,9 @@ export function CustomizeFontDropdown({
       if (!rect) {
         return;
       }
-      const viewportHeight = window.innerHeight;
-      const panelHeight = CUSTOMIZE_FONT_DROPDOWN_LAYOUT.panelHeightPx;
-      const spaceBelow = viewportHeight - rect.bottom - FONT_DROPDOWN_PANEL_GAP_PX;
-      const openUpward = spaceBelow < panelHeight && rect.top > spaceBelow;
-      const top = openUpward
-        ? Math.max(FONT_DROPDOWN_PANEL_GAP_PX, rect.top - panelHeight - FONT_DROPDOWN_PANEL_GAP_PX)
-        : rect.bottom + FONT_DROPDOWN_PANEL_GAP_PX;
 
       setPanelPosition({
-        top,
+        top: rect.bottom + FONT_DROPDOWN_PANEL_GAP_PX,
         left: rect.left,
         width: rect.width,
       });
@@ -212,9 +202,7 @@ export function CustomizeFontDropdown({
           className="flex min-w-0 flex-1 items-center"
         >
           <span
-            className={`min-w-0 flex-1 truncate text-left text-[16px] font-medium leading-[26px] ${
-              open ? CUSTOMIZE_FORMAT_CONTROL_ACTIVE_FG_CLASS : 'text-[#414141]'
-            }`}
+            className="min-w-0 flex-1 truncate text-left text-[16px] font-medium leading-[26px] text-[#414141]"
             style={{ fontFamily: selected?.stack ?? CUSTOMIZE_INPUT_FONT_STACK }}
           >
             {selected?.label ?? fontLabel}
@@ -229,11 +217,7 @@ export function CustomizeFontDropdown({
           <button
             type="button"
             aria-label={clearLabel}
-            className={`ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded ${
-              open
-                ? 'text-[#faf8f4]/80 hover:bg-white/15 hover:text-[#faf8f4]'
-                : 'text-[#898989] hover:bg-[#122a26]/8 hover:text-[#414141]'
-            }`}
+            className="ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded text-[#898989] hover:bg-[#122a26]/8 hover:text-[#414141]"
             onClick={handleClear}
           >
             <span aria-hidden className="text-[14px] leading-none">
@@ -254,7 +238,7 @@ export function CustomizeFontDropdown({
             alt=""
             width={9}
             height={16}
-            className={`block transition-transform ${open ? `rotate-180 ${CUSTOMIZE_FORMAT_CONTROL_ACTIVE_ICON_CLASS}` : ''}`}
+            className={`block transition-transform ${open ? 'rotate-90' : ''}`}
             decoding="async"
             draggable={false}
             aria-hidden

@@ -88,17 +88,6 @@ export function matchVariantSizeFromCatalogTitle(title: string, options: Product
   return byValue?.value ?? null;
 }
 
-export function getCustomizeCopy(language: LanguageCode): string {
-  switch (language) {
-    case 'hy':
-      return 'Ընտրեք գույնը և չափը այս էջում՝ պատվերը անհատականացնելու համար։ Հատուկ ցանկությունների դեպքում կարող եք կապվել մեզ հետ պատվերը ձևակերպելուց հետո։';
-    case 'ru':
-      return 'Выберите цвет и размер на этой странице, чтобы персонализировать заказ. Для особых пожеланий свяжитесь с нами после оформления.';
-    default:
-      return 'Personalize your cover with custom text.';
-  }
-}
-
 /** Matches auto-generated or manual "out of stock" product labels across locales. */
 export function isOutOfStockProductLabel(labelText: string): boolean {
   const normalized = labelText.toLowerCase().trim();

@@ -1,9 +1,11 @@
 'use client';
 
+import { useCallback, useEffect, useState } from 'react';
 import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import type { Product } from './types';
 import { CustomizeFormatToolbar } from './CustomizeFormatToolbar';
+import { CustomizeTextModal } from './CustomizeTextModal';
 import {
   getCustomizeInputStyle,
   type CustomizeFormatState,
@@ -16,11 +18,16 @@ import {
   CUSTOMIZE_FORMAT_TOOLBAR_COLUMN_CLASS,
 } from './customize-format.constants';
 import {
-  PRODUCT_INFO_CUSTOMIZE_COPY_CLASS,
+  PRODUCT_INFO_CUSTOMIZE_CTA_CLASS,
+  PRODUCT_INFO_CUSTOMIZE_DESKTOP_COPY_CLASS,
+  PRODUCT_INFO_CUSTOMIZE_EDITOR_CLASS,
+  PRODUCT_INFO_CUSTOMIZE_HEADING_CLASS,
+  PRODUCT_INFO_CUSTOMIZE_INTRO_CLASS,
   PRODUCT_INFO_CUSTOMIZE_PANEL_CLASS,
+  PRODUCT_INFO_CUSTOMIZE_SAVED_TEXT_CLASS,
+  PRODUCT_INFO_CUSTOMIZE_TEASER_CLASS,
 } from './productInfoTabContent.constants';
 import {
-  getCustomizeCopy,
   getShippingCopy,
   hasRenderableTabHtml,
   normalizeProductTabHtmlForDisplay,
@@ -101,10 +108,140 @@ export function ProductInfoTabPanels({
 
   if (activeTab === 'customize') {
     return (
-      <div className={PRODUCT_INFO_CUSTOMIZE_PANEL_CLASS}>
-        <p className={PRODUCT_INFO_CUSTOMIZE_COPY_CLASS}>
-          {getCustomizeCopy(language)}
+      <CustomizeTabPanel
+        language={language}
+        product={product}
+        customizeDraftText={customizeDraftText}
+        customizeTextMaxLength={customizeTextMaxLength}
+        onCustomizeDraftTextChange={onCustomizeDraftTextChange}
+        customizeFormat={customizeFormat}
+        onCustomizeFormatChange={onCustomizeFormatChange}
+        isCustomizeFontRequired={isCustomizeFontRequired}
+        showCustomizeFontRequired={showCustomizeFontRequired}
+        isCustomizeFontShaking={isCustomizeFontShaking}
+        onCustomizeFontShakeAnimationEnd={onCustomizeFontShakeAnimationEnd}
+      />
+    );
+  }
+
+  if (hasRenderableTabHtml(productTabHtml)) {
+    return (
+      <div
+        className={PRODUCT_TAB_HTML_PROSE_CLASS}
+        dangerouslySetInnerHTML={{ __html: normalizeProductTabHtmlForDisplay(productTabHtml) }}
+      />
+    );
+  }
+
+  if (productDetails.length === 0) {
+    return (
+      <p className="text-[15px] leading-[24px] text-[#414141] sm:text-[16px] sm:leading-[26px]">
+        {t(language, 'product.product_tab_empty')}
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {productDetails.map((item) => (
+        <p key={item} className="text-[15px] leading-[24px] text-[#414141] sm:text-[16px] sm:leading-[26px]">
+          {item}
         </p>
+      ))}
+    </div>
+  );
+}
+
+interface CustomizeTabPanelProps {
+  language: LanguageCode;
+  product: Product;
+  customizeDraftText: string;
+  customizeTextMaxLength: number;
+  onCustomizeDraftTextChange: (value: string) => void;
+  customizeFormat: CustomizeFormatState;
+  onCustomizeFormatChange: (next: CustomizeFormatState) => void;
+  isCustomizeFontRequired: boolean;
+  showCustomizeFontRequired: boolean;
+  isCustomizeFontShaking: boolean;
+  onCustomizeFontShakeAnimationEnd: () => void;
+}
+
+function CustomizeTabPanel({
+  language,
+  product,
+  customizeDraftText,
+  customizeTextMaxLength,
+  onCustomizeDraftTextChange,
+  customizeFormat,
+  onCustomizeFormatChange,
+  isCustomizeFontRequired,
+  showCustomizeFontRequired,
+  isCustomizeFontShaking,
+  onCustomizeFontShakeAnimationEnd,
+}: CustomizeTabPanelProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!showCustomizeFontRequired || typeof window === 'undefined') {
+      return;
+    }
+    const isMobileViewport = window.matchMedia('(max-width: 639px)').matches;
+    if (isMobileViewport) {
+      setIsModalOpen(true);
+    }
+  }, [showCustomizeFontRequired]);
+
+  const handleSave = useCallback(
+    (text: string, format: CustomizeFormatState) => {
+      onCustomizeDraftTextChange(text);
+      onCustomizeFormatChange(format);
+    },
+    [onCustomizeDraftTextChange, onCustomizeFormatChange]
+  );
+
+  const handleCloseModal = useCallback(() => {
+    setIsModalOpen(false);
+  }, []);
+
+  const savedText = customizeDraftText.trim();
+  const hasSavedText = savedText.length > 0;
+
+  return (
+    <div className={PRODUCT_INFO_CUSTOMIZE_PANEL_CLASS}>
+      <div className={PRODUCT_INFO_CUSTOMIZE_TEASER_CLASS}>
+        <h3 className={PRODUCT_INFO_CUSTOMIZE_HEADING_CLASS}>
+          {t(language, 'product.customize_heading')}
+        </h3>
+        <p className={PRODUCT_INFO_CUSTOMIZE_INTRO_CLASS}>
+          {t(language, 'product.customize_intro')}
+        </p>
+        {hasSavedText ? (
+          <p
+            className={PRODUCT_INFO_CUSTOMIZE_SAVED_TEXT_CLASS}
+            style={getCustomizeInputStyle(customizeFormat)}
+          >
+            {savedText}
+          </p>
+        ) : null}
+        <button
+          type="button"
+          className={PRODUCT_INFO_CUSTOMIZE_CTA_CLASS}
+          onClick={() => setIsModalOpen(true)}
+        >
+          {t(language, 'product.customize_cta')}
+        </button>
+      </div>
+
+      <div className={`${PRODUCT_INFO_CUSTOMIZE_EDITOR_CLASS} hidden sm:flex`}>
+        <div className={PRODUCT_INFO_CUSTOMIZE_DESKTOP_COPY_CLASS}>
+          <h3 className={PRODUCT_INFO_CUSTOMIZE_HEADING_CLASS}>
+            {t(language, 'product.customize_heading')}
+          </h3>
+          <p className={PRODUCT_INFO_CUSTOMIZE_INTRO_CLASS}>
+            {t(language, 'product.customize_intro')}
+          </p>
+        </div>
+
         <div className={CUSTOMIZE_FORMAT_ROW_CLASS}>
           <div className={CUSTOMIZE_FORMAT_INPUT_WRAPPER_CLASS}>
             <input
@@ -147,33 +284,17 @@ export function ProductInfoTabPanels({
           </div>
         </div>
       </div>
-    );
-  }
 
-  if (hasRenderableTabHtml(productTabHtml)) {
-    return (
-      <div
-        className={PRODUCT_TAB_HTML_PROSE_CLASS}
-        dangerouslySetInnerHTML={{ __html: normalizeProductTabHtmlForDisplay(productTabHtml) }}
+      <CustomizeTextModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        language={language}
+        initialText={customizeDraftText}
+        initialFormat={customizeFormat}
+        textMaxLength={customizeTextMaxLength}
+        onSave={handleSave}
+        forceFontValidation={showCustomizeFontRequired}
       />
-    );
-  }
-
-  if (productDetails.length === 0) {
-    return (
-      <p className="text-[15px] leading-[24px] text-[#414141] sm:text-[16px] sm:leading-[26px]">
-        {t(language, 'product.product_tab_empty')}
-      </p>
-    );
-  }
-
-  return (
-    <div className="space-y-2">
-      {productDetails.map((item) => (
-        <p key={item} className="text-[15px] leading-[24px] text-[#414141] sm:text-[16px] sm:leading-[26px]">
-          {item}
-        </p>
-      ))}
     </div>
   );
 }

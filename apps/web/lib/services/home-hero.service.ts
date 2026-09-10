@@ -1,6 +1,5 @@
 import { db } from '@white-shop/db';
 
-import { HOME_HERO_DEFAULT_SLIDES } from '@/lib/constants/home-hero.constants';
 import { isR2Configured, uploadHomeHeroImageToR2 } from '@/lib/services/r2.service';
 import { parseDataImageUrl } from '@/lib/services/utils/data-url-image';
 import type { HomeHeroConfig, HomeHeroSlide } from '@/lib/types/home-hero.types';
@@ -71,7 +70,9 @@ function normalizeSlides(value: unknown): HomeHeroSlide[] | null {
 }
 
 /**
- * Slides for the public homepage hero. Falls back to built-in defaults if unset or invalid.
+ * Slides for the public homepage hero.
+ * Returns only what is saved in Settings — never the built-in default art
+ * (those files are often removed after the first admin upload).
  */
 export async function getHomeHeroSlidesForStorefront(): Promise<HomeHeroSlide[]> {
   try {
@@ -79,15 +80,11 @@ export async function getHomeHeroSlidesForStorefront(): Promise<HomeHeroSlide[]>
       where: { key: SETTINGS_KEY },
     });
     if (!row?.value) {
-      return [...HOME_HERO_DEFAULT_SLIDES];
+      return [];
     }
-    const slides = normalizeSlides(row.value);
-    if (!slides) {
-      return [...HOME_HERO_DEFAULT_SLIDES];
-    }
-    return slides;
+    return normalizeSlides(row.value) ?? [];
   } catch (error) {
-    logger.warn('Failed to load home hero slides from database; using defaults', { error });
-    return [...HOME_HERO_DEFAULT_SLIDES];
+    logger.warn('Failed to load home hero slides from database', { error });
+    return [];
   }
 }
