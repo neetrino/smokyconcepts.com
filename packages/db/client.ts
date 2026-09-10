@@ -6,16 +6,29 @@ function isPostgresUrl(value: string) {
   return value.startsWith('postgresql://') || value.startsWith('postgres://');
 }
 
+/** Neon's transaction-mode pooler cannot keep Prisma's prepared statements alive. */
+function isTransactionPoolerUrl(value: string) {
+  return value.includes('-pooler.');
+}
+
+function withQueryParam(url: string, param: string) {
+  return url.includes('?') ? `${url}&${param}` : `${url}?${param}`;
+}
+
 // Ensure UTF-8 encoding for PostgreSQL connection
 // This fixes encoding issues with Armenian and other UTF-8 characters
 const databaseUrl = process.env.DATABASE_URL || '';
 let urlWithEncoding = databaseUrl;
 
-if (isPostgresUrl(databaseUrl) && !databaseUrl.includes('client_encoding')) {
-  urlWithEncoding = databaseUrl.includes('?') 
-    ? `${databaseUrl}&client_encoding=UTF8`
-    : `${databaseUrl}?client_encoding=UTF8`;
-  
+if (isPostgresUrl(databaseUrl)) {
+  if (!databaseUrl.includes('client_encoding')) {
+    urlWithEncoding = withQueryParam(urlWithEncoding, 'client_encoding=UTF8');
+  }
+
+  if (isTransactionPoolerUrl(databaseUrl) && !databaseUrl.includes('pgbouncer=')) {
+    urlWithEncoding = withQueryParam(urlWithEncoding, 'pgbouncer=true');
+  }
+
   // Temporarily override DATABASE_URL for Prisma Client
   process.env.DATABASE_URL = urlWithEncoding;
 }

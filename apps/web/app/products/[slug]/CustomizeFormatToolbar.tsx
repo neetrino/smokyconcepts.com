@@ -6,9 +6,8 @@ import { CustomizeFontDropdown } from './CustomizeFontDropdown';
 import {
   CUSTOMIZE_FORMAT_ASSETS,
   CUSTOMIZE_FORMAT_BUTTON_CLASS,
-  CUSTOMIZE_FORMAT_CONTROL_ACTIVE_CLASS,
-  CUSTOMIZE_FORMAT_CONTROL_ACTIVE_ICON_CLASS,
-  CUSTOMIZE_FORMAT_CONTROL_IDLE_CLASS,
+  CUSTOMIZE_FORMAT_TOGGLE_ACTIVE_CLASS,
+  CUSTOMIZE_FORMAT_TOGGLE_IDLE_CLASS,
   CUSTOMIZE_FORMAT_TOOLBAR_CLASS,
 } from './customize-format.constants';
 import type { CustomizeFormatState } from './utils/build-customize-preview-html';
@@ -74,8 +73,8 @@ export function CustomizeFormatToolbar({
               aria-label={t(language, labelKey)}
               className={`${CUSTOMIZE_FORMAT_BUTTON_CLASS} ${
                 isActive
-                  ? CUSTOMIZE_FORMAT_CONTROL_ACTIVE_CLASS
-                  : CUSTOMIZE_FORMAT_CONTROL_IDLE_CLASS
+                  ? CUSTOMIZE_FORMAT_TOGGLE_ACTIVE_CLASS
+                  : CUSTOMIZE_FORMAT_TOGGLE_IDLE_CLASS
               }`}
               onClick={() => {
                 toggle(key);
@@ -86,7 +85,7 @@ export function CustomizeFormatToolbar({
                 alt=""
                 width={18}
                 height={18}
-                className={`block ${isActive ? CUSTOMIZE_FORMAT_CONTROL_ACTIVE_ICON_CLASS : ''}`}
+                className="block"
                 decoding="async"
                 draggable={false}
               />

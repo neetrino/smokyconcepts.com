@@ -8,9 +8,9 @@ export const PRODUCT_INFO_TAB_BLOCK_HEIGHT_CLASS =
 
 /**
  * Shared mobile/tablet panel height (padding included). Tall enough for customize
- * copy + format row; longer tabs scroll inside instead of pushing the price.
+ * saved text + CTA + delete without an inner scrollbar; longer tabs still scroll.
  */
-export const PRODUCT_INFO_TAB_PANEL_FIXED_HEIGHT_CLASS = 'h-[180px]';
+export const PRODUCT_INFO_TAB_PANEL_FIXED_HEIGHT_CLASS = 'h-[220px]';
 
 /** Matches {@link GALLERY_TOP_OFFSET_CLASSES} in ProductImageGallery so title aligns with the white card top on xl+. */
 export const PRODUCT_INFO_ROOT_CLASS = [
@@ -54,12 +54,38 @@ export const PRODUCT_INFO_TABS_SECTION_CUSTOMIZE_CLASS = PRODUCT_INFO_TABS_SECTI
 
 export const PRODUCT_INFO_TAB_PANEL_CUSTOMIZE_CLASS = PRODUCT_INFO_TAB_PANEL_CLASS;
 
-export const PRODUCT_INFO_CUSTOMIZE_COPY_CLASS =
-  'font-montserrat text-[16px] font-bold leading-[26px] text-[#414141]';
+/** Mobile teaser (Figma): heading + intro + outline CTA before the editor opens. */
+export const PRODUCT_INFO_CUSTOMIZE_HEADING_CLASS =
+  'font-montserrat text-[14px] font-extrabold leading-[22px] text-[#414141]';
 
-/** Mobile: text input + toolbar above copy; desktop keeps copy first (Figma). */
+export const PRODUCT_INFO_CUSTOMIZE_INTRO_CLASS =
+  'mt-1 font-montserrat text-[12px] font-semibold leading-[18px] text-[#414141]';
+
+export const PRODUCT_INFO_CUSTOMIZE_CTA_CLASS = [
+  'mt-3 inline-flex h-9 items-center justify-center self-center rounded-[6px]',
+  'border border-[#dcc090] bg-[#faf8f4] px-5',
+  'font-montserrat text-[14px] font-semibold leading-none text-[#dcc090]',
+  'transition-colors hover:bg-[#f3efe6]',
+].join(' ');
+
+/** Saved customize line shown between intro and Customize CTA (mobile). */
+export const PRODUCT_INFO_CUSTOMIZE_SAVED_TEXT_CLASS = [
+  'mt-3 w-full break-words text-center font-montserrat text-[16px]',
+  'leading-[24px] tracking-normal text-[#414141]',
+].join(' ');
+
+export const PRODUCT_INFO_CUSTOMIZE_TEASER_CLASS =
+  'flex flex-col items-start sm:hidden';
+
+/** Desktop: copy first then format row. Mobile editor: input + toolbar only. */
 export const PRODUCT_INFO_CUSTOMIZE_PANEL_CLASS =
-  'flex min-h-0 flex-1 flex-col gap-5 max-sm:flex-col-reverse';
+  'flex min-h-0 flex-1 flex-col gap-5';
+
+export const PRODUCT_INFO_CUSTOMIZE_EDITOR_CLASS =
+  'flex min-h-0 flex-1 flex-col gap-5';
+
+/** Desktop copy block inside the always-desktop editor column. */
+export const PRODUCT_INFO_CUSTOMIZE_DESKTOP_COPY_CLASS = 'block';
 
 export const PRODUCT_INFO_TAB_INDICATOR_BASE_CLASS =
   'absolute bottom-0 left-0 right-0 h-0.5 rounded-[2px]';

@@ -257,7 +257,7 @@ export function ProductPageClient({
           </div>
         </div>
 
-        <div className="mt-16 lg:mt-[128px]">
+        <div className="mt-20 lg:mt-[128px]">
           <RelatedProducts categorySlug={product.categories?.[0]?.slug} currentProductId={product.id} />
         </div>
       </div>
