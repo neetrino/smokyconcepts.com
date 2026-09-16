@@ -292,15 +292,26 @@ class ProductsFindTransformService {
             include: { translations: true },
           })
         : [];
-    type CategoryOutput = { id: string; slug: string; title: string };
+    type CategoryOutput = { id: string; slug: string; title: string; position: number; priceAmd: number };
     const fallbackCategoryById = new Map<string, CategoryOutput>(
-      fallbackCategories.map((cat: { id: string; translations?: Array<{ locale: string; slug: string; title: string }> }) => {
+      fallbackCategories.map((cat: {
+        id: string;
+        position: number;
+        priceAmd?: number;
+        translations?: Array<{ locale: string; slug: string; title: string }>;
+      }) => {
         const catTranslations = Array.isArray(cat.translations) ? cat.translations : [];
         const catTranslation =
           catTranslations.find((t: { locale: string }) => t.locale === lang) || catTranslations[0] || null;
         return [
           cat.id,
-          { id: cat.id, slug: catTranslation?.slug ?? "", title: catTranslation?.title ?? "" },
+          {
+            id: cat.id,
+            slug: catTranslation?.slug ?? "",
+            title: catTranslation?.title ?? "",
+            position: cat.position,
+            priceAmd: typeof cat.priceAmd === "number" && Number.isFinite(cat.priceAmd) ? Math.max(0, Math.round(cat.priceAmd)) : 0,
+          },
         ];
       })
     );
@@ -469,13 +480,20 @@ class ProductsFindTransformService {
 
       // Merge relation categories with scalar category references to avoid missing memberships.
       const relationCategories = Array.isArray(product.categories)
-        ? product.categories.map((cat: { id: string; translations?: Array<{ locale: string; slug: string; title: string }> }) => {
+        ? product.categories.map((cat: {
+            id: string;
+            position?: number;
+            priceAmd?: number;
+            translations?: Array<{ locale: string; slug: string; title: string }>;
+          }) => {
             const catTranslations = Array.isArray(cat.translations) ? cat.translations : [];
             const catTranslation = catTranslations.find((t: { locale: string }) => t.locale === lang) || catTranslations[0] || null;
             return {
               id: cat.id,
               slug: catTranslation?.slug || "",
               title: catTranslation?.title || "",
+              position: typeof cat.position === "number" ? cat.position : 0,
+              priceAmd: typeof cat.priceAmd === "number" && Number.isFinite(cat.priceAmd) ? Math.max(0, Math.round(cat.priceAmd)) : 0,
             };
           })
         : [];

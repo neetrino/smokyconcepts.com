@@ -7,6 +7,10 @@ import { executeProductListQuery, executeProductDetailQuery } from "./query-exec
 import { formatProductForList } from "./product-formatter";
 import { formatVariantForAdmin } from "./variant-formatter";
 import { sanitizeProductRichHtmlFields } from "@/lib/security/sanitize-product-html.server";
+import {
+  getProductCollectionOrderMap,
+  sortItemsByExplicitIdOrder,
+} from "@/lib/services/product-collection-order.service";
 
 type CategoryWithEnTranslations = Prisma.CategoryGetPayload<{
   include: {
@@ -32,9 +36,18 @@ export async function getProducts(filters: ProductFilters) {
   const orderBy = buildProductOrderByClause(filters);
 
   const { products, total } = await executeProductListQuery(where, orderBy, skip, limit);
+  let orderedProducts = products;
+  if (filters.categories?.length === 1 && (!filters.sort || filters.sort.startsWith("createdAt"))) {
+    const categoryId = filters.categories[0];
+    if (categoryId) {
+      const orderMap = await getProductCollectionOrderMap();
+      const collectionOrder = orderMap[categoryId] ?? [];
+      orderedProducts = sortItemsByExplicitIdOrder(products, collectionOrder);
+    }
+  }
   const fallbackCategoryIds = [
     ...new Set(
-      products.flatMap((product) => {
+      orderedProducts.flatMap((product) => {
         const relationCategories = Array.isArray(product.categories) ? product.categories : [];
         if (relationCategories.length > 0) {
           return [];
@@ -61,7 +74,7 @@ export async function getProducts(filters: ProductFilters) {
     fallbackCategories.map((category) => [category.id, category.translations[0]?.title || ""])
   );
 
-  const data = products.map((product) => formatProductForList(product, fallbackCategoryTitlesById));
+  const data = orderedProducts.map((product) => formatProductForList(product, fallbackCategoryTitlesById));
 
   const totalTime = Date.now() - startTime;
   logger.info(`getProducts completed in ${totalTime}ms. Returning ${data.length} products`);

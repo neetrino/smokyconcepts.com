@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
@@ -29,6 +30,10 @@ interface ProductsTableProps {
   meta: ProductsResponse['meta'] | null;
   page: number;
   setPage: (page: number | ((prev: number) => number)) => void;
+  showCollectionReorderColumn: boolean;
+  isCollectionReorderEnabled: boolean;
+  reorderSaving: boolean;
+  onReorderInCollection: (orderedIds: string[]) => Promise<void>;
 }
 
 /**
@@ -60,10 +65,51 @@ export function ProductsTable({
   meta,
   page,
   setPage,
+  showCollectionReorderColumn,
+  isCollectionReorderEnabled,
+  reorderSaving,
+  onReorderInCollection,
 }: ProductsTableProps) {
   const { t } = useTranslation();
   const router = useRouter();
   const isInitialLoading = loading && products.length === 0;
+  const [orderedProducts, setOrderedProducts] = useState<Product[]>(products);
+  const [draggingProductId, setDraggingProductId] = useState<string | null>(null);
+  const [dropTargetProductId, setDropTargetProductId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setOrderedProducts(products);
+  }, [products]);
+
+  const reorderRows = async (targetId: string) => {
+    if (!isCollectionReorderEnabled || !draggingProductId || draggingProductId === targetId) {
+      return;
+    }
+
+    const sourceIndex = orderedProducts.findIndex((item) => item.id === draggingProductId);
+    const targetIndex = orderedProducts.findIndex((item) => item.id === targetId);
+    if (sourceIndex < 0 || targetIndex < 0) {
+      return;
+    }
+
+    const next = [...orderedProducts];
+    const [moved] = next.splice(sourceIndex, 1);
+    if (!moved) {
+      return;
+    }
+    next.splice(targetIndex, 0, moved);
+
+    const previous = orderedProducts;
+    setOrderedProducts(next);
+    try {
+      await onReorderInCollection(next.map((item) => item.id));
+    } catch {
+      setOrderedProducts(previous);
+    } finally {
+      setDraggingProductId(null);
+      setDropTargetProductId(null);
+    }
+  };
 
   return (
     <Card className="border-[#dcc090]/30 bg-white/90 shadow-[0_8px_30px_rgba(18,42,38,0.06)]">
@@ -82,6 +128,7 @@ export function ProductsTable({
           <table className="min-w-full border-separate border-spacing-0 divide-y divide-[#dcc090]/25">
               <thead className="bg-[#122a26]">
                 <tr>
+                  {showCollectionReorderColumn ? <th className="px-2 py-3" /> : null}
                   <th className={`${PRODUCTS_TABLE_HEADER_TH_STICKY_FIRST_CLASS} px-4 py-3`}>
                     <input
                       type="checkbox"
@@ -254,8 +301,65 @@ export function ProductsTable({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-[#dcc090]/25">
-                {products.map((product) => (
-                  <tr key={product.id} className="hover:bg-[#dcc090]/10">
+                {orderedProducts.map((product) => (
+                  <tr
+                    key={product.id}
+                    className={`hover:bg-[#dcc090]/10 ${
+                      dropTargetProductId === product.id ? 'bg-[#dcc090]/15' : ''
+                    }`}
+                    onDragOver={(event) => {
+                      if (!isCollectionReorderEnabled) {
+                        return;
+                      }
+                      event.preventDefault();
+                      setDropTargetProductId(product.id);
+                    }}
+                    onDrop={(event) => {
+                      if (!isCollectionReorderEnabled) {
+                        return;
+                      }
+                      event.preventDefault();
+                      void reorderRows(product.id);
+                    }}
+                  >
+                    {showCollectionReorderColumn ? (
+                      <td className="px-2 py-4">
+                        <div
+                          role="button"
+                          tabIndex={isCollectionReorderEnabled ? 0 : -1}
+                          draggable={isCollectionReorderEnabled && !reorderSaving}
+                          title={t('admin.categories.dragToSort')}
+                          aria-label={t('admin.categories.dragToSort')}
+                          className={`flex h-8 w-6 shrink-0 items-center justify-center rounded text-[#414141]/45 transition-colors ${
+                            isCollectionReorderEnabled
+                              ? 'cursor-grab hover:bg-[#dcc090]/20 hover:text-[#122a26] active:cursor-grabbing'
+                              : 'cursor-not-allowed opacity-35'
+                          }`}
+                          onDragStart={(event) => {
+                            if (!isCollectionReorderEnabled || reorderSaving) {
+                              event.preventDefault();
+                              return;
+                            }
+                            event.dataTransfer.effectAllowed = 'move';
+                            event.dataTransfer.setData('text/plain', product.id);
+                            setDraggingProductId(product.id);
+                          }}
+                          onDragEnd={() => {
+                            setDraggingProductId(null);
+                            setDropTargetProductId(null);
+                          }}
+                        >
+                          <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+                            <circle cx="5" cy="3.5" r="1.25" />
+                            <circle cx="11" cy="3.5" r="1.25" />
+                            <circle cx="5" cy="8" r="1.25" />
+                            <circle cx="11" cy="8" r="1.25" />
+                            <circle cx="5" cy="12.5" r="1.25" />
+                            <circle cx="11" cy="12.5" r="1.25" />
+                          </svg>
+                        </div>
+                      </td>
+                    ) : null}
                     <td className="px-4 py-4">
                       <input
                         type="checkbox"

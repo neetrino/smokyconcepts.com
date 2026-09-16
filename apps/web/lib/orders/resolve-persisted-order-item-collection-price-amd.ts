@@ -1,9 +1,8 @@
 import { adminInputAmdToUsd } from '@/lib/currency';
-import { orderItemHasSavedCustomize } from './order-item-has-saved-customize';
 
 /**
- * Collection/customize surcharge AMD for a persisted order line.
- * Prefers charged unit price delta; title mapping only when customize text was saved.
+ * Collection surcharge AMD for a persisted order line.
+ * Prefers charged unit price delta, then mapped collection price.
  */
 export function resolvePersistedOrderItemCollectionPriceAmd(params: {
   unitPriceUsd: number;
@@ -25,11 +24,7 @@ export function resolvePersistedOrderItemCollectionPriceAmd(params: {
     return inferredCollectionPriceAmd;
   }
 
-  if (
-    orderItemHasSavedCustomize(params) &&
-    params.mappedCollectionPriceAmd != null &&
-    params.mappedCollectionPriceAmd > 0
-  ) {
+  if (params.mappedCollectionPriceAmd != null && params.mappedCollectionPriceAmd > 0) {
     return params.mappedCollectionPriceAmd;
   }
 

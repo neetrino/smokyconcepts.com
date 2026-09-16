@@ -12,6 +12,13 @@ export interface CatalogProductCardItem {
   defaultVariantId?: string | null;
   defaultVariantStock?: number;
   defaultSku?: string;
+  categories?: Array<{
+    id: string;
+    slug: string;
+    title: string;
+    position?: number;
+    priceAmd?: number;
+  }>;
 }
 
 export interface CatalogProductVariantImages {

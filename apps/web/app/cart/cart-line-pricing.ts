@@ -1,5 +1,4 @@
 import { adminInputAmdToUsd } from '@/lib/currency';
-import { orderItemHasSavedCustomize } from '@/lib/orders/order-item-has-saved-customize';
 import {
   normalizeSizeCatalogCategoryTitleKey,
   resolveSizeCatalogCategoryPriceAmd,
@@ -18,17 +17,13 @@ function resolveCartLineCategoryTitle(variant: CartLineVariant): string | undefi
 }
 
 /**
- * Customize surcharge AMD for a cart line — only when PDP customize text was saved.
+ * Collection surcharge AMD for a cart line.
  * Uses persisted line snapshot first, then category title lookup when needed.
  */
 export function resolveCartLineCollectionPriceAmd(
   item: CartItem,
   categoryPriceByTitle?: Map<string, number>
 ): number {
-  if (!orderItemHasSavedCustomize(item.variant)) {
-    return 0;
-  }
-
   const stored = item.variant.sizeCatalogCategoryPriceAmd;
   if (typeof stored === 'number' && Number.isFinite(stored) && stored > 0) {
     return Math.round(stored);
@@ -46,7 +41,7 @@ export function resolveCartLineCollectionPriceAmd(
   });
 }
 
-/** Size-catalog / customize collection surcharge per unit (USD). */
+/** Collection surcharge per unit (USD). */
 export function getCartLineCollectionUnitUsd(
   item: CartItem,
   categoryPriceByTitle?: Map<string, number>
@@ -66,7 +61,7 @@ export function getCartLineUnitPriceUsd(
   return item.price + getCartLineCollectionUnitUsd(item, categoryPriceByTitle);
 }
 
-/** Line total for storefront display (matches PDP when customize surcharge applies). */
+/** Line total for storefront display (base variant + collection surcharge). */
 export function getCartLineTotalUsd(
   item: CartItem,
   categoryPriceByTitle?: Map<string, number>
@@ -81,13 +76,42 @@ export function getCartDisplaySubtotalUsd(
   return items.reduce((sum, item) => sum + getCartLineTotalUsd(item, categoryPriceByTitle), 0);
 }
 
-/** Normalized category title keys present on cart lines with saved customize. */
+const FALLBACK_COLLECTION_SUMMARY_TITLE = 'Collection';
+
+/** Line total without collection surcharge (product row display). */
+export function getCartLineMerchandiseTotalUsd(item: CartItem): number {
+  return item.price * item.quantity;
+}
+
+/** Merchandise subtotal without collection surcharge. */
+export function getCartMerchandiseDisplayUsd(items: CartItem[]): number {
+  return items.reduce((sum, item) => sum + getCartLineMerchandiseTotalUsd(item), 0);
+}
+
+/** Collection surcharge rows for cart summary (title + USD). */
+export function getCartCollectionSummaryRows(
+  items: CartItem[],
+  categoryPriceByTitle?: Map<string, number>
+): Array<{ title: string; usd: number }> {
+  const usdByTitle = new Map<string, number>();
+  for (const item of items) {
+    const unitUsd = getCartLineCollectionUnitUsd(item, categoryPriceByTitle);
+    if (unitUsd <= 0) {
+      continue;
+    }
+    const title =
+      item.variant.sizeCatalogCategoryTitle?.trim() ||
+      item.variant.product.categoryLabel?.trim() ||
+      FALLBACK_COLLECTION_SUMMARY_TITLE;
+    usdByTitle.set(title, (usdByTitle.get(title) ?? 0) + unitUsd * item.quantity);
+  }
+  return Array.from(usdByTitle, ([title, usd]) => ({ title, usd }));
+}
+
+/** Normalized category title keys present on cart lines with a collection surcharge context. */
 export function getCartCustomizeCategoryTitleKeys(items: CartItem[]): string[] {
   const keys = new Set<string>();
   for (const item of items) {
-    if (!orderItemHasSavedCustomize(item.variant)) {
-      continue;
-    }
     const title = resolveCartLineCategoryTitle(item.variant);
     const key = normalizeSizeCatalogCategoryTitleKey(title);
     if (key) {

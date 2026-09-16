@@ -224,6 +224,7 @@
     "backToAdmin": "Back to Admin Dashboard",
     "loadingCategories": "Loading collections...",
     "noCategories": "No collections found",
+    "subcategories": "Subcategories",
     "addCategory": "Add Collection",
     "editCategory": "Edit Collection",
     "createCategory": "Create Collection",
@@ -233,6 +234,7 @@
     "parentCategory": "Parent Collection",
     "rootCategory": "None (Root Collection)",
     "requiresSizes": "This collection requires sizes (e.g., clothing, shoes)",
+    "categoryPriceAmd": "Collection price (AMD)",
     "image": "Collection image",
     "imagePlaceholder": "Paste image URL or upload a file",
     "uploadImage": "Upload image",
@@ -253,7 +255,11 @@
     "errorDeleting": "Error deleting collection: {message}",
     "showingPage": "Showing page {page} of {totalPages} ({total} total)",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "dragToSort": "Drag to reorder",
+    "dragToSortHint": "Drag the dots to reorder collections. This order is used on /products.",
+    "reorderSuccess": "Collection order saved",
+    "reorderFailed": "Failed to save collection order"
   },
   "voting": {
     "title": "Voting",

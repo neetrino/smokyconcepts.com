@@ -100,14 +100,14 @@ export function useOrderSubmission({
                 ...(version ? { sizeCatalogVersion: version } : {}),
                 ...(img ? { sizeCatalogImageUrl: img } : {}),
                 ...(categoryTitle ? { sizeCatalogCategoryTitle: categoryTitle } : {}),
-                ...(hasSavedCustomize && resolvedCategoryPriceAmd > 0
+                ...(resolvedCategoryPriceAmd > 0
                   ? { sizeCatalogCategoryPriceAmd: resolvedCategoryPriceAmd }
                   : {}),
               }
             : hasCollectionContext
               ? {
                   ...(categoryTitle ? { sizeCatalogCategoryTitle: categoryTitle } : {}),
-                  ...(hasSavedCustomize && resolvedCategoryPriceAmd > 0
+                  ...(resolvedCategoryPriceAmd > 0
                     ? { sizeCatalogCategoryPriceAmd: resolvedCategoryPriceAmd }
                     : {}),
                 }

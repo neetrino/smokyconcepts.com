@@ -27,10 +27,7 @@ import {
 import { logger } from "./utils/logger";
 import { adminDeliveryService } from "./admin/admin-delivery.service";
 import { tryApplyCoupon } from "./coupon.service";
-import {
-  buildSizeCatalogPriceAmdByTitle,
-  resolveSizeCatalogCategoryPriceAmd,
-} from "@/lib/size-catalog/resolve-size-catalog-category-price-amd";
+import { loadCollectionPriceAmdByTitle, resolveCheckoutCollectionPriceAmd } from "@/lib/services/collection-price.service";
 import { signPaymentInitToken } from "@/lib/payments/payment-init-token";
 
 type ProductVariantWithProduct = Prisma.ProductVariantGetPayload<{
@@ -38,6 +35,14 @@ type ProductVariantWithProduct = Prisma.ProductVariantGetPayload<{
     product: {
       include: {
         translations: true;
+        categories: {
+          select: {
+            priceAmd: true;
+            translations: {
+              select: { title: true };
+            };
+          };
+        };
       };
     };
   };
@@ -248,15 +253,6 @@ class OrdersService {
         earlyAccess: boolean;
       }> = [];
 
-      const sizeCatalogPriceAmdByTitle =
-        guestItems && guestItems.length > 0
-          ? buildSizeCatalogPriceAmdByTitle(
-              await db.sizeCatalogCategory.findMany({
-                select: { title: true, priceAmd: true },
-              })
-            )
-          : new Map<string, number>();
-
       if (guestItems && Array.isArray(guestItems) && guestItems.length > 0) {
         // Get items from checkout request (localStorage cart)
         cartItems = await Promise.all(
@@ -300,6 +296,13 @@ class OrdersService {
                 product: {
                   include: {
                     translations: true,
+                    categories: {
+                      where: { deletedAt: null },
+                      select: {
+                        priceAmd: true,
+                        translations: { select: { title: true } },
+                      },
+                    },
                   },
                 },
               },
@@ -411,17 +414,8 @@ class OrdersService {
               }
             }
 
-            const hasSavedCustomize = Boolean(customizePlain || customizeHtml);
-            const sizeCatalogCategoryPriceAmd = hasSavedCustomize
-              ? resolveSizeCatalogCategoryPriceAmd({
-                  categoryTitle:
-                    typeof item.sizeCatalogCategoryTitle === 'string'
-                      ? item.sizeCatalogCategoryTitle
-                      : undefined,
-                  clientPriceAmd: item.sizeCatalogCategoryPriceAmd,
-                  priceAmdByCategoryTitle: sizeCatalogPriceAmdByTitle,
-                })
-              : 0;
+            const collectionResolved = await resolveCheckoutCollectionPriceAmd(variant.product);
+            const sizeCatalogCategoryPriceAmd = collectionResolved.priceAmd;
 
             if (rawCustomRequest) {
               const name = typeof rawCustomRequest.name === 'string' ? rawCustomRequest.name.trim() : '';
@@ -878,20 +872,8 @@ class OrdersService {
         )
       )
     );
-    const sizeCatalogPriceByTitle = new Map<string, number>();
-    if (sizeCatalogTitles.length > 0) {
-      const categories = await db.sizeCatalogCategory.findMany({
-        select: { title: true, priceAmd: true },
-      });
-      for (const category of categories) {
-        const title = normalizeSizeCatalogTitleLookup(category.title);
-        if (!title || !sizeCatalogTitles.includes(title)) continue;
-        const existing = sizeCatalogPriceByTitle.get(title);
-        if (existing === undefined || category.priceAmd > existing) {
-          sizeCatalogPriceByTitle.set(title, category.priceAmd);
-        }
-      }
-    }
+    const sizeCatalogPriceByTitle =
+      sizeCatalogTitles.length > 0 ? await loadCollectionPriceAmdByTitle() : new Map<string, number>();
 
     return {
       data: orders.map((order: {
@@ -999,20 +981,8 @@ class OrdersService {
           .filter((title: string) => title !== '')
       )
     );
-    const sizeCatalogPriceByTitle = new Map<string, number>();
-    if (sizeCatalogTitles.length > 0) {
-      const categories = await db.sizeCatalogCategory.findMany({
-        select: { title: true, priceAmd: true },
-      });
-      for (const category of categories) {
-        const title = normalizeSizeCatalogTitleLookup(category.title);
-        if (!title || !sizeCatalogTitles.includes(title)) continue;
-        const existing = sizeCatalogPriceByTitle.get(title);
-        if (existing === undefined || category.priceAmd > existing) {
-          sizeCatalogPriceByTitle.set(title, category.priceAmd);
-        }
-      }
-    }
+    const sizeCatalogPriceByTitle =
+      sizeCatalogTitles.length > 0 ? await loadCollectionPriceAmdByTitle() : new Map<string, number>();
 
     // Parse shipping address if it's a JSON string
     let shippingAddress = order.shippingAddress;

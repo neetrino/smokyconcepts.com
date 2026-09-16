@@ -8,15 +8,15 @@ import { useCategories } from './hooks/useCategories';
 import { useCategoryActions } from './hooks/useCategoryActions';
 import { AdminShell } from '../components/AdminShell';
 import { CategoriesList } from './components/CategoriesList';
-import { AddCategoryModal } from './components/AddCategoryModal';
-import { EditCategoryModal } from './components/EditCategoryModal';
+import { AddCategoryDrawer } from './components/AddCategoryDrawer';
+import { EditCategoryDrawer } from './components/EditCategoryDrawer';
 import { ADMIN_CENTERED_LOADING_CLASS, ADMIN_PAGE_SHELL_CLASS } from '../constants/adminShell.constants';
 
 export default function CategoriesPage() {
   const { t } = useTranslation();
   const { isLoggedIn, isAdmin, isLoading } = useAuth();
   const router = useRouter();
-  const { categories, loading, fetchCategories } = useCategories();
+  const { categories, loading, reordering, fetchCategories, reorderSiblings } = useCategories();
   const {
     showAddModal,
     showEditModal,
@@ -87,10 +87,12 @@ export default function CategoriesPage() {
               ) : (
                 <CategoriesList
                   categories={categories}
+                  reordering={reordering}
                   onEdit={handleEditCategory}
                   onDelete={(categoryId, categoryTitle) =>
                     handleDeleteCategory(categoryId, categoryTitle, fetchCategories)
                   }
+                  onReorderSiblings={reorderSiblings}
                 />
               )}
             </div>
@@ -98,7 +100,7 @@ export default function CategoriesPage() {
         </AdminShell>
       </div>
 
-      <AddCategoryModal
+      <AddCategoryDrawer
         isOpen={showAddModal}
         formData={formData}
         categories={categories}
@@ -108,7 +110,7 @@ export default function CategoriesPage() {
         onSubmit={() => handleAddCategory(fetchCategories)}
       />
 
-      <EditCategoryModal
+      <EditCategoryDrawer
         isOpen={showEditModal}
         editingCategory={editingCategory}
         formData={formData}

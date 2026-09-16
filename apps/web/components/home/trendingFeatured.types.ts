@@ -10,7 +10,7 @@ export interface ApiProduct {
   image: string | null;
   images?: string[];
   inStock?: boolean;
-  categories?: Array<{ id: string; slug: string; title: string }>;
+  categories?: Array<{ id: string; slug: string; title: string; priceAmd?: number }>;
   brand?: { id: string; name: string } | null;
   skus?: string[];
   colors?: string[];

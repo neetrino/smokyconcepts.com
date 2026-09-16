@@ -29,7 +29,7 @@ interface UseProductCartActionsParams {
   selectedCustomSizeRequest: CustomOrderDraft | null;
   /** Last applied PDP customize (Apply) — attached to guest cart lines */
   customizeApplied: { plain: string; html: string | null } | null;
-  /** Collection surcharge from admin sizes (modal pick or product template + customize). */
+  /** Collection surcharge from the product's collection price. */
   collectionPriceAmd: number;
   collectionCategoryTitle: string | null;
   setIsAddingToCart: (value: boolean) => void;
@@ -69,13 +69,8 @@ export function useProductCartActions({
 
       setIsAddingToCart(true);
       try {
-        const hasCustomize =
-          customizeApplied != null &&
-          (customizeApplied.plain.trim() !== '' ||
-            (customizeApplied.html != null && customizeApplied.html.trim() !== ''));
-
-        const customizeCollectionPrice =
-          hasCustomize && collectionPriceAmd > 0
+        const collectionSnapshot =
+          collectionPriceAmd > 0
             ? {
                 categoryTitle: collectionCategoryTitle?.trim() ?? '',
                 categoryPriceAmd: collectionPriceAmd,
@@ -89,16 +84,16 @@ export function useProductCartActions({
                 version: selectedCatalogSize.version,
                 imageUrl: selectedCatalogSize.imageUrl,
                 categoryTitle:
-                  customizeCollectionPrice?.categoryTitle ?? selectedCatalogSize.categoryTitle,
-                categoryPriceAmd: customizeCollectionPrice?.categoryPriceAmd ?? 0,
+                  collectionSnapshot?.categoryTitle || selectedCatalogSize.categoryTitle,
+                categoryPriceAmd: collectionSnapshot?.categoryPriceAmd ?? 0,
               }
-            : customizeCollectionPrice != null
+            : collectionSnapshot != null
               ? {
                   title: '',
                   version: '',
                   imageUrl: '',
-                  categoryTitle: customizeCollectionPrice.categoryTitle,
-                  categoryPriceAmd: customizeCollectionPrice.categoryPriceAmd,
+                  categoryTitle: collectionSnapshot.categoryTitle,
+                  categoryPriceAmd: collectionSnapshot.categoryPriceAmd,
                 }
               : null;
         const customSizeRequest =

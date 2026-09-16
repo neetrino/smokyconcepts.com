@@ -68,6 +68,7 @@ model Category {
   position      Int                   @default(0)
   published     Boolean               @default(false)
   requiresSizes Boolean               @default(false)
+  priceAmd      Int                   @default(0)
   media         Json[]                @default([])
   translations  CategoryTranslation[]
   deletedAt     DateTime?

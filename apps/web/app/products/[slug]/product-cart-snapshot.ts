@@ -101,7 +101,15 @@ export function buildCatalogGuestCartSnapshot(params: {
   categoryLabel: string | null;
   quantity: number;
   earlyAccess?: boolean;
+  sizeCatalogCategoryTitle?: string | null;
+  sizeCatalogCategoryPriceAmd?: number | null;
 }): GuestCartItem {
+  const categoryTitle = params.sizeCatalogCategoryTitle?.trim() ?? '';
+  const categoryPriceRaw = params.sizeCatalogCategoryPriceAmd;
+  const hasCollectionPrice =
+    typeof categoryPriceRaw === 'number' &&
+    Number.isFinite(categoryPriceRaw) &&
+    categoryPriceRaw > 0;
   return {
     productId: params.productId,
     productSlug: params.productSlug.trim(),
@@ -115,6 +123,8 @@ export function buildCatalogGuestCartSnapshot(params: {
     sku: params.sku,
     sizeLabel: params.sizeLabel,
     categoryLabel: params.categoryLabel,
+    sizeCatalogCategoryTitle: categoryTitle !== '' ? categoryTitle : null,
+    sizeCatalogCategoryPriceAmd: hasCollectionPrice ? Math.round(categoryPriceRaw) : null,
     ...(params.earlyAccess === true ? { earlyAccess: true } : {}),
   };
 }
@@ -159,9 +169,7 @@ export function buildGuestCartLineSnapshot(
     categoryPriceRaw > 0;
   const plain = customize?.plain?.trim() ?? '';
   const html = customize?.html?.trim() ?? '';
-  const hasSavedCustomize = plain !== '' || html !== '';
-  const sizeCatalogCategoryPriceAmd =
-    hasSavedCustomize && hasCollectionPrice ? Math.round(categoryPriceRaw) : null;
+  const sizeCatalogCategoryPriceAmd = hasCollectionPrice ? Math.round(categoryPriceRaw) : null;
   const customRequest =
     customSizeRequest != null
       ? {

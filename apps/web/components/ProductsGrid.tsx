@@ -18,6 +18,7 @@ interface Product {
     id: string;
     slug: string;
     title: string;
+    priceAmd?: number;
   }>;
   brand?: {
     id: string;

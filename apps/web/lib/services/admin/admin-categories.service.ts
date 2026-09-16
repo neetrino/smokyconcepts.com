@@ -1,6 +1,18 @@
 import { db } from "@white-shop/db";
 import { revalidateCategoriesCache } from "@/lib/services/storefront-category-cache";
 
+function normalizeCategoryPriceAmd(value: unknown, fallback = 0): number {
+  if (value === undefined || value === null) {
+    return fallback;
+  }
+  const parsed = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+  const rounded = Math.round(parsed);
+  return rounded >= 0 ? rounded : 0;
+}
+
 function extractCategoryImage(media: unknown): string | undefined {
   if (!Array.isArray(media) || media.length === 0) {
     return undefined;
@@ -37,7 +49,9 @@ class AdminCategoriesService {
       select: {
         id: true,
         parentId: true,
+        position: true,
         requiresSizes: true,
+        priceAmd: true,
         media: true,
         translations: {
           where: { locale: "en" },
@@ -51,7 +65,15 @@ class AdminCategoriesService {
     });
 
     return {
-      data: categories.map((category: { id: string; parentId: string | null; requiresSizes: boolean | null; media: unknown; translations?: Array<{ title: string; slug: string }> }) => {
+      data: categories.map((category: {
+        id: string;
+        parentId: string | null;
+        position: number;
+        requiresSizes: boolean | null;
+        priceAmd: number;
+        media: unknown;
+        translations?: Array<{ title: string; slug: string }>;
+      }) => {
         const translations = Array.isArray(category.translations) ? category.translations : [];
         const translation = translations[0] || null;
         return {
@@ -59,11 +81,100 @@ class AdminCategoriesService {
           title: translation?.title || "",
           slug: translation?.slug || "",
           parentId: category.parentId,
+          position: category.position,
           requiresSizes: category.requiresSizes || false,
+          priceAmd: category.priceAmd || 0,
           imageUrl: extractCategoryImage(category.media),
         };
       }),
     };
+  }
+
+  /**
+   * Persist sibling order after admin drag-and-drop.
+   * All ids must belong to the same parent (roots share parentId null).
+   */
+  async reorderCategories(orderedIds: string[]) {
+    if (!Array.isArray(orderedIds) || orderedIds.length === 0) {
+      throw {
+        status: 400,
+        type: "https://api.shop.am/problems/bad-request",
+        title: "Invalid reorder payload",
+        detail: "orderedIds must be a non-empty array of category ids",
+      };
+    }
+
+    const uniqueIds = Array.from(new Set(orderedIds));
+    if (uniqueIds.length !== orderedIds.length) {
+      throw {
+        status: 400,
+        type: "https://api.shop.am/problems/bad-request",
+        title: "Invalid reorder payload",
+        detail: "orderedIds must not contain duplicates",
+      };
+    }
+
+    const categories = await db.category.findMany({
+      where: {
+        id: { in: orderedIds },
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        parentId: true,
+      },
+    });
+
+    if (categories.length !== orderedIds.length) {
+      throw {
+        status: 404,
+        type: "https://api.shop.am/problems/not-found",
+        title: "Category not found",
+        detail: "One or more categories in orderedIds do not exist",
+      };
+    }
+
+    const parentKey = categories[0]?.parentId ?? null;
+    const mismatchedParent = categories.some(
+      (category: { parentId: string | null }) => (category.parentId ?? null) !== parentKey
+    );
+    if (mismatchedParent) {
+      throw {
+        status: 400,
+        type: "https://api.shop.am/problems/bad-request",
+        title: "Invalid reorder payload",
+        detail: "All reordered categories must share the same parent",
+      };
+    }
+
+    const siblingCount = await db.category.count({
+      where: {
+        parentId: parentKey,
+        deletedAt: null,
+      },
+    });
+
+    if (siblingCount !== orderedIds.length) {
+      throw {
+        status: 400,
+        type: "https://api.shop.am/problems/bad-request",
+        title: "Invalid reorder payload",
+        detail: "orderedIds must include every sibling under the same parent",
+      };
+    }
+
+    await db.$transaction(
+      orderedIds.map((id, index) =>
+        db.category.update({
+          where: { id },
+          data: { position: index },
+        })
+      )
+    );
+
+    revalidateCategoriesCache();
+
+    return { success: true };
   }
 
   /**
@@ -74,6 +185,7 @@ class AdminCategoriesService {
     locale?: string;
     parentId?: string;
     requiresSizes?: boolean;
+    priceAmd?: number;
     imageUrl?: string;
   }) {
     const locale = data.locale || "en";
@@ -118,6 +230,7 @@ class AdminCategoriesService {
         parentId: data.parentId || undefined,
         position: (lastSiblingCategory?.position ?? -1) + 1,
         requiresSizes: data.requiresSizes || false,
+        priceAmd: normalizeCategoryPriceAmd(data.priceAmd, 0),
         media: data.imageUrl ? [data.imageUrl] : [],
         published: true,
         translations: {
@@ -147,6 +260,7 @@ class AdminCategoriesService {
         slug: translation?.slug || "",
         parentId: category.parentId,
         requiresSizes: category.requiresSizes || false,
+        priceAmd: category.priceAmd || 0,
         imageUrl: extractCategoryImage(category.media),
       },
     };
@@ -187,8 +301,9 @@ class AdminCategoriesService {
       slug: translation?.slug || "",
       parentId: category.parentId,
       requiresSizes: category.requiresSizes || false,
+      priceAmd: category.priceAmd || 0,
       imageUrl: extractCategoryImage(category.media),
-      children: category.children.map((child: { id: string; parentId: string | null; requiresSizes: boolean | null; translations?: Array<{ title: string; slug: string }> }) => {
+      children: category.children.map((child: { id: string; parentId: string | null; requiresSizes: boolean | null; priceAmd?: number | null; translations?: Array<{ title: string; slug: string }> }) => {
         const childTranslations = Array.isArray(child.translations) ? child.translations : [];
         const childTranslation = childTranslations[0] || null;
         return {
@@ -197,6 +312,7 @@ class AdminCategoriesService {
           slug: childTranslation?.slug || "",
           parentId: child.parentId,
           requiresSizes: child.requiresSizes || false,
+          priceAmd: child.priceAmd || 0,
           imageUrl: extractCategoryImage((child as { media?: unknown }).media),
         };
       }),
@@ -211,6 +327,7 @@ class AdminCategoriesService {
     locale?: string;
     parentId?: string | null;
     requiresSizes?: boolean;
+    priceAmd?: number;
     imageUrl?: string;
     subcategoryIds?: string[];
   }) {
@@ -313,7 +430,12 @@ class AdminCategoriesService {
       }
     }
 
-    const updateData: any = {};
+    const updateData: {
+      parentId?: string | null;
+      requiresSizes?: boolean;
+      priceAmd?: number;
+      media?: string[];
+    } = {};
     
     if (data.parentId !== undefined) {
       updateData.parentId = data.parentId || null;
@@ -321,6 +443,10 @@ class AdminCategoriesService {
     
     if (data.requiresSizes !== undefined) {
       updateData.requiresSizes = data.requiresSizes;
+    }
+
+    if (data.priceAmd !== undefined) {
+      updateData.priceAmd = normalizeCategoryPriceAmd(data.priceAmd, category.priceAmd);
     }
 
     if (data.imageUrl !== undefined) {
@@ -381,6 +507,7 @@ class AdminCategoriesService {
         slug: translation?.slug || "",
         parentId: updatedCategory.parentId,
         requiresSizes: updatedCategory.requiresSizes || false,
+        priceAmd: updatedCategory.priceAmd || 0,
         imageUrl: extractCategoryImage(updatedCategory.media),
       },
     };

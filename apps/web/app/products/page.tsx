@@ -10,6 +10,7 @@ import {
   isClientSideCollectionFilterValue,
   normalizeCatalogColorLabels,
 } from './components/catalogProductLabels';
+import { getProductCollectionOrderMap } from '@/lib/services/product-collection-order.service';
 
 export const revalidate = 60;
 
@@ -40,6 +41,8 @@ interface Product {
     id: string;
     slug: string;
     title: string;
+    position?: number;
+    priceAmd?: number;
   }>;
   skus: string[];
   brand?: { id: string; name: string } | null;
@@ -127,6 +130,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     typeof params.search === 'string' ? params.search : undefined,
     apiCategoryFilter
   );
+  const collectionOrderByCategoryId = await getProductCollectionOrderMap();
 
   const normalizedProducts: Product[] = productsData.data.map((p) => ({
     id: p.id,
@@ -159,7 +163,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   }));
 
   return (
-    <ProductsCatalogView products={normalizedProducts} />
+    <ProductsCatalogView
+      products={normalizedProducts}
+      collectionOrderByCategoryId={collectionOrderByCategoryId}
+    />
   );
 }
 

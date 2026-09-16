@@ -18,6 +18,10 @@ const SECTION_NAME_BY_CATEGORY_SLUG: Record<string, string> = {
   premium: 'Premium',
 };
 
+export function getSectionLabelForCategory(category: { slug: string; title: string }): string {
+  return SECTION_NAME_BY_CATEGORY_SLUG[category.slug] ?? category.title;
+}
+
 const CLIENT_SIDE_COLLECTION_VALUES = new Set<string>([
   'all',
   'Classic',
@@ -32,6 +36,8 @@ export interface CatalogProduct extends CatalogProductCardItem {
     id: string;
     slug: string;
     title: string;
+    position?: number;
+    priceAmd?: number;
   }>;
   skus: string[];
   colors?: string[];
@@ -58,7 +64,7 @@ export function toCatalogProduct(input: {
   defaultVariantId?: string | null;
   defaultVariantStock?: number;
   defaultSku?: string;
-  categories?: Array<{ id: string; slug: string; title: string }>;
+  categories?: Array<{ id: string; slug: string; title: string; position?: number; priceAmd?: number }>;
   skus?: string[];
   colors?: string[];
   sizeLabel?: string | null;
@@ -97,7 +103,7 @@ export function getProductSectionLabelsForCategories(
   categories: CatalogProduct['categories']
 ): string[] {
   const labels = categories
-    .map((category) => SECTION_NAME_BY_CATEGORY_SLUG[category.slug] ?? category.title)
+    .map((category) => getSectionLabelForCategory(category))
     .filter((label): label is string => Boolean(label?.trim()));
 
   return Array.from(new Set(labels));
@@ -109,6 +115,58 @@ export function getProductSectionLabels(product: CatalogProduct): string[] {
     return ['Classic'];
   }
   return labels;
+}
+
+const FALLBACK_SECTION_ORDER = ['Classic', 'Premium', 'Atelier', 'Special'] as const;
+const MAX_SAFE_POSITION = Number.MAX_SAFE_INTEGER;
+
+/**
+ * Collection/section order for `/products`, driven by admin category `position`.
+ */
+export function resolveCatalogSectionOrder(
+  products: CatalogProduct[],
+  fallbackOrder: readonly string[] = FALLBACK_SECTION_ORDER
+): string[] {
+  const positionByLabel = new Map<string, number>();
+
+  for (const product of products) {
+    for (const category of product.categories) {
+      const label = SECTION_NAME_BY_CATEGORY_SLUG[category.slug] ?? category.title;
+      if (!label?.trim()) {
+        continue;
+      }
+      const position =
+        typeof category.position === 'number' ? category.position : MAX_SAFE_POSITION;
+      const existing = positionByLabel.get(label);
+      if (existing === undefined || position < existing) {
+        positionByLabel.set(label, position);
+      }
+    }
+  }
+
+  const labelsFromProducts = Array.from(positionByLabel.keys());
+  labelsFromProducts.sort((a, b) => {
+    const positionDiff =
+      (positionByLabel.get(a) ?? MAX_SAFE_POSITION) -
+      (positionByLabel.get(b) ?? MAX_SAFE_POSITION);
+    if (positionDiff !== 0) {
+      return positionDiff;
+    }
+    const fallbackIndexA = fallbackOrder.indexOf(a);
+    const fallbackIndexB = fallbackOrder.indexOf(b);
+    const normalizedA = fallbackIndexA >= 0 ? fallbackIndexA : MAX_SAFE_POSITION;
+    const normalizedB = fallbackIndexB >= 0 ? fallbackIndexB : MAX_SAFE_POSITION;
+    if (normalizedA !== normalizedB) {
+      return normalizedA - normalizedB;
+    }
+    return a.localeCompare(b);
+  });
+
+  if (labelsFromProducts.length > 0) {
+    return labelsFromProducts;
+  }
+
+  return [...fallbackOrder];
 }
 
 /**

@@ -49,6 +49,13 @@ export function buildProductWhereClause(filters: ProductFilters): Prisma.Product
     categoryIds.forEach((categoryId) => {
       categoryConditions.push(
         {
+          categories: {
+            some: {
+              id: categoryId,
+            },
+          },
+        },
+        {
           primaryCategoryId: categoryId,
         },
         {
