@@ -103,10 +103,9 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
     ]
   );
 
-  const basePrice = activeVariantEntry?.price ?? product.price ?? 0;
+  const displayPrice = activeVariantEntry?.price ?? product.price ?? 0;
   const collectionResolved = resolveProductCollectionPriceAmd(product.categories);
   const collectionPriceAmd = collectionResolved.priceAmd > 0 ? collectionResolved.priceAmd : 0;
-  const displayPrice = collectionPriceAmd > 0 ? basePrice + collectionPriceAmd : basePrice;
   const displayOriginalPrice = activeVariantEntry?.originalPrice ?? product.originalPrice ?? null;
   const displayVariantId = activeVariantEntry?.variantId ?? product.defaultVariantId ?? null;
   const displayVariantStock = activeVariantEntry?.stock ?? product.defaultVariantStock ?? 0;
@@ -189,7 +188,7 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
     productId: product.id,
     productSlug: product.slug,
     title: product.title,
-    price: basePrice,
+    price: displayPrice,
     image: activeImage,
     originalPrice: displayOriginalPrice,
     inStock: product.inStock,

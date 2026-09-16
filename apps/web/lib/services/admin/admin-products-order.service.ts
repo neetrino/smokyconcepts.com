@@ -61,7 +61,7 @@ class AdminProductsOrderService {
       orderBy: { createdAt: "desc" },
     });
 
-    const productIdsInCategory = productsInCategory.map((product) => product.id);
+    const productIdsInCategory = productsInCategory.map((product: { id: string }) => product.id);
     if (productIdsInCategory.length !== orderedIds.length) {
       throw {
         status: 400,
