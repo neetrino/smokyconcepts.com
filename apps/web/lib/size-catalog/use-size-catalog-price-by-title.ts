@@ -1,10 +1,35 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { loadSizeCatalogCategories } from '@/lib/size-catalog-client-cache';
+import { apiClient } from '@/lib/api-client';
 import { buildSizeCatalogPriceAmdByTitle } from './resolve-size-catalog-category-price-amd';
 
-/** Client-side AMD customize surcharge lookup by normalized category title. */
+interface CollectionTreeNode {
+  title?: string;
+  priceAmd?: number;
+  children?: CollectionTreeNode[];
+}
+
+function collectCollectionPriceRows(
+  nodes: CollectionTreeNode[],
+  rows: Array<{ title: string; priceAmd: number }>
+): void {
+  for (const node of nodes) {
+    const title = typeof node.title === 'string' ? node.title.trim() : '';
+    const priceAmd =
+      typeof node.priceAmd === 'number' && Number.isFinite(node.priceAmd)
+        ? Math.max(0, Math.round(node.priceAmd))
+        : 0;
+    if (title) {
+      rows.push({ title, priceAmd });
+    }
+    if (node.children?.length) {
+      collectCollectionPriceRows(node.children, rows);
+    }
+  }
+}
+
+/** Client-side AMD customize surcharge lookup by normalized collection title. */
 export function useSizeCatalogPriceByTitle(): Map<string, number> {
   const [priceByTitle, setPriceByTitle] = useState<Map<string, number>>(() => new Map());
 
@@ -12,18 +37,13 @@ export function useSizeCatalogPriceByTitle(): Map<string, number> {
     let cancelled = false;
     void (async () => {
       try {
-        const categories = await loadSizeCatalogCategories();
+        const res = await apiClient.get<{ data: CollectionTreeNode[] }>('/api/v1/categories/tree');
         if (cancelled) {
           return;
         }
-        setPriceByTitle(
-          buildSizeCatalogPriceAmdByTitle(
-            categories.map((category) => ({
-              title: category.title,
-              priceAmd: category.priceAmd,
-            }))
-          )
-        );
+        const rows: Array<{ title: string; priceAmd: number }> = [];
+        collectCollectionPriceRows(Array.isArray(res.data) ? res.data : [], rows);
+        setPriceByTitle(buildSizeCatalogPriceAmdByTitle(rows));
       } catch {
         if (!cancelled) {
           setPriceByTitle(new Map());

@@ -17,7 +17,6 @@ import {
   CATALOG_PRODUCTS_PAGE_MOBILE_CARDS_PER_PAGE,
   CATALOG_SCROLL_IDLE_UPDATE_DELAY_MS,
 } from '../catalogProductCardMobilePresentation';
-import { SECTION_ORDER } from '../productsCatalogView.constants';
 import {
   clearSectionScrollSettleTimers,
   waitForSectionScrollToSettle,
@@ -59,7 +58,7 @@ export function useProductsCatalogSectionScroll({
       let hasChanges = false;
       const nextPages: Record<string, number> = {};
 
-      SECTION_ORDER.forEach((title) => {
+      catalogStripSectionTitles.forEach((title) => {
         const items = sectionItemsByTitle[title] ?? [];
         if (items.length === 0) {
           return;
@@ -80,13 +79,13 @@ export function useProductsCatalogSectionScroll({
 
       return hasChanges ? nextPages : currentPages;
     });
-  }, [cardsPerPage, sectionItemsByTitle]);
+  }, [cardsPerPage, catalogStripSectionTitles, sectionItemsByTitle]);
 
   const sections = useMemo((): CatalogSectionViewModel[] => {
     const orderedSectionTitles =
       selectedCollection !== 'all' && selectedSectionTitle
         ? [selectedSectionTitle]
-        : SECTION_ORDER;
+        : [...catalogStripSectionTitles];
 
     return orderedSectionTitles
       .map((title) => {
@@ -108,7 +107,7 @@ export function useProductsCatalogSectionScroll({
         };
       })
       .filter((section): section is CatalogSectionViewModel => Boolean(section));
-  }, [cardsPerPage, sectionItemsByTitle, sectionPages, selectedCollection, selectedSectionTitle]);
+  }, [cardsPerPage, catalogStripSectionTitles, sectionItemsByTitle, sectionPages, selectedCollection, selectedSectionTitle]);
 
   useEffect(() => {
     setSectionPages({});

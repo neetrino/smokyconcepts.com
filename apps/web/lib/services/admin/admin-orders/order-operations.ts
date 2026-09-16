@@ -3,6 +3,7 @@ import { logger } from "../../utils/logger";
 import type { OrderFilters } from "./types";
 import { buildOrderWhereClause, buildOrderByClause } from "./query-builder";
 import { formatOrderForList, formatOrderForDetail } from "./order-formatter";
+import { loadCollectionPriceAmdByTitle } from "@/lib/services/collection-price.service";
 
 type OrderListItem = Parameters<typeof formatOrderForList>[0]["items"][number] & {
   variant?: (NonNullable<Parameters<typeof formatOrderForList>[0]["items"][number]["variant"]> & {
@@ -135,22 +136,10 @@ export async function getOrderById(orderId: string) {
         .filter((title: string) => title !== '')
     )
   );
-  const sizeCatalogPriceByTitle = new Map<string, number>();
-  if (sizeCatalogTitles.length > 0) {
-    const categories = await db.sizeCatalogCategory.findMany({
-      select: { title: true, priceAmd: true },
-    });
-    for (const category of categories) {
-      const title = category.title.trim().toLocaleLowerCase();
-      if (!title || !sizeCatalogTitles.includes(title)) continue;
-      const existing = sizeCatalogPriceByTitle.get(title);
-      if (existing === undefined || category.priceAmd > existing) {
-        sizeCatalogPriceByTitle.set(title, category.priceAmd);
-      }
-    }
-  }
+    const sizeCatalogPriceByTitle =
+      sizeCatalogTitles.length > 0 ? await loadCollectionPriceAmdByTitle() : new Map<string, number>();
 
-  return formatOrderForDetail(order, sizeCatalogPriceByTitle);
+    return formatOrderForDetail(order, sizeCatalogPriceByTitle);
 }
 
 

@@ -36,4 +36,7 @@ export const getCachedCategoryTree = unstable_cache(
 export function revalidateCategoriesCache(): void {
   // @ts-expect-error - revalidateTag type issue in Next.js (same call style as product cache purges)
   revalidateTag(CATEGORIES_CACHE_TAG);
+  // Collection priceAmd is embedded on product payloads.
+  // @ts-expect-error - revalidateTag type issue in Next.js (same call style as product cache purges)
+  revalidateTag('products');
 }

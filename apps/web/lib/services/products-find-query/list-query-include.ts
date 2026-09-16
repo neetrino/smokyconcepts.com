@@ -33,6 +33,8 @@ export const PRODUCT_LIST_QUERY_INCLUDE = {
   categories: {
     select: {
       id: true,
+      position: true,
+      priceAmd: true,
       translations: {
         select: {
           locale: true,

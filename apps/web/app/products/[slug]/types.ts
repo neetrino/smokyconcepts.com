@@ -92,6 +92,7 @@ export interface Product {
     id: string;
     slug: string;
     title: string;
+    priceAmd?: number;
   }>;
   productAttributes?: ProductAttribute[];
   productDiscount?: number | null;

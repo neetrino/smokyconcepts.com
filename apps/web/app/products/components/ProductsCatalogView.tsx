@@ -20,14 +20,17 @@ export type { ProductsCatalogViewProps } from './productsCatalogView.types';
 /**
  * Figma-faithful catalog layout for the products landing page.
  */
-export function ProductsCatalogView({ products }: ProductsCatalogViewProps) {
+export function ProductsCatalogView({
+  products,
+  collectionOrderByCategoryId,
+}: ProductsCatalogViewProps) {
   const isSmUp = useSyncExternalStore(
     subscribeCatalogProductsSmViewport,
     getCatalogProductsSmViewportSnapshot,
     getServerCatalogProductsSmViewportSnapshot
   );
   const cardsPerPage = useProductsCatalogCardsPerPage(isSmUp);
-  const filters = useProductsCatalogFilters(products);
+  const filters = useProductsCatalogFilters(products, collectionOrderByCategoryId ?? {});
   const scroll = useProductsCatalogSectionScroll({
     isSmUp,
     cardsPerPage,

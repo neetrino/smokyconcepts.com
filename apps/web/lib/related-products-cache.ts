@@ -25,6 +25,7 @@ export interface RelatedProductCacheItem {
     id: string;
     slug: string;
     title: string;
+    priceAmd?: number;
   }>;
   skus?: string[];
   defaultVariantId?: string | null;

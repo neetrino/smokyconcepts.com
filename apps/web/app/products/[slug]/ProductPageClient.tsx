@@ -161,21 +161,8 @@ export function ProductPageClient({
     ? getProductText(language, product.id, 'title') || product.title
     : '';
 
-  const hasCustomizeForPricing = Boolean(
-    customizeDraftText.trim() ||
-      customizeApplied?.plain?.trim() ||
-      customizeApplied?.html?.trim()
-  );
-
-  const hasExplicitCatalogSizePick = selectedCatalogSize != null;
-
   const { collectionPriceAmd, collectionCategoryTitle } = useProductSizeCatalogCollectionPrice({
     product,
-    currentVariant,
-    selectedSizeLabel: selectedSize,
-    selectedCatalogSize,
-    hasExplicitCatalogSizePick,
-    hasAppliedCustomize: hasCustomizeForPricing,
   });
 
   const displayPrice =

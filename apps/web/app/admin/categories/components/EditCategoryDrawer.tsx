@@ -2,9 +2,11 @@
 
 import { useTranslation } from '../../../../lib/i18n-client';
 import type { Category, CategoryFormData } from '../types';
+import { CategoryFormDrawer } from './CategoryFormDrawer';
 import { CategoryImageField } from './CategoryImageField';
+import { CategoryPriceAmdField } from './CategoryPriceAmdField';
 
-interface EditCategoryModalProps {
+interface EditCategoryDrawerProps {
   isOpen: boolean;
   editingCategory: Category | null;
   formData: CategoryFormData;
@@ -15,7 +17,7 @@ interface EditCategoryModalProps {
   onSubmit: () => Promise<void>;
 }
 
-export function EditCategoryModal({
+export function EditCategoryDrawer({
   isOpen,
   editingCategory,
   formData,
@@ -24,30 +26,40 @@ export function EditCategoryModal({
   onClose,
   onFormDataChange,
   onSubmit,
-}: EditCategoryModalProps) {
+}: EditCategoryDrawerProps) {
   const { t } = useTranslation();
 
-  if (!isOpen || !editingCategory) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-md mx-4 overflow-hidden rounded-2xl border border-[#dcc090]/30 bg-white shadow-[0_24px_60px_rgba(18,42,38,0.18)] max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between border-b border-[#dcc090]/20 bg-[#122a26] px-6 py-4">
-          <h3 className="text-base font-black uppercase tracking-[0.1em] text-[#dcc090]">
-            {t('admin.categories.editCategory')}
-          </h3>
+    <CategoryFormDrawer
+      isOpen={isOpen && editingCategory != null}
+      title={t('admin.categories.editCategory')}
+      titleId="edit-category-drawer-title"
+      closeLabel={t('admin.common.cancel')}
+      canClose={!saving}
+      onClose={onClose}
+      footer={(
+        <>
+          <button
+            type="button"
+            onClick={() => void onSubmit()}
+            disabled={saving || !formData.title.trim()}
+            className="flex-1 rounded-lg bg-[#122a26] py-2.5 text-sm font-bold text-[#dcc090] shadow-[0_4px_14px_rgba(18,42,38,0.18)] transition-all hover:bg-[#18352f] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {saving ? t('admin.categories.updating') : t('admin.categories.updateCategory')}
+          </button>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-[#dcc090]/60 transition-colors hover:bg-white/10 hover:text-[#dcc090]"
+            disabled={saving}
+            className="rounded-lg border border-[#dcc090]/30 px-5 py-2.5 text-sm font-bold text-[#414141]/70 transition-all hover:border-[#dcc090]/50 hover:bg-[#dcc090]/10 disabled:opacity-50"
           >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            {t('admin.common.cancel')}
           </button>
-        </div>
-
-        <div className="overflow-y-auto space-y-4 p-6">
+        </>
+      )}
+    >
+      {editingCategory ? (
+        <>
           <div>
             <label className="mb-1.5 block text-xs font-bold uppercase tracking-[0.08em] text-[#414141]/70">
               {t('admin.categories.categoryTitle')} *
@@ -89,6 +101,12 @@ export function EditCategoryModal({
             <span className="text-sm text-[#414141]/75">{t('admin.categories.requiresSizes')}</span>
           </label>
 
+          <CategoryPriceAmdField
+            value={formData.priceAmd}
+            disabled={saving}
+            onChange={(priceAmd) => onFormDataChange({ ...formData, priceAmd })}
+          />
+
           <CategoryImageField
             value={formData.imageUrl}
             onChange={(imageUrl) => onFormDataChange({ ...formData, imageUrl })}
@@ -97,11 +115,11 @@ export function EditCategoryModal({
 
           <div>
             <label className="mb-2 block text-xs font-bold uppercase tracking-[0.08em] text-[#414141]/70">
-              Subcategories
+              {t('admin.categories.subcategories')}
             </label>
             <div className="max-h-48 overflow-y-auto rounded-xl border border-[#dcc090]/25 bg-[#dcc090]/5 p-2 space-y-1">
               {categories.filter((cat) => cat.id !== editingCategory.id).length === 0 ? (
-                <p className="px-2 py-1 text-sm text-[#414141]/45">No available categories</p>
+                <p className="px-2 py-1 text-sm text-[#414141]/45">{t('admin.categories.noCategories')}</p>
               ) : (
                 categories
                   .filter((cat) => cat.id !== editingCategory.id)
@@ -129,27 +147,8 @@ export function EditCategoryModal({
               )}
             </div>
           </div>
-        </div>
-
-        <div className="flex gap-3 border-t border-[#dcc090]/20 px-6 py-4">
-          <button
-            type="button"
-            onClick={() => void onSubmit()}
-            disabled={saving || !formData.title.trim()}
-            className="flex-1 rounded-lg bg-[#122a26] py-2.5 text-sm font-bold text-[#dcc090] shadow-[0_4px_14px_rgba(18,42,38,0.18)] transition-all hover:bg-[#18352f] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {saving ? t('admin.categories.updating') : t('admin.categories.updateCategory')}
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={saving}
-            className="rounded-lg border border-[#dcc090]/30 px-5 py-2.5 text-sm font-bold text-[#414141]/70 transition-all hover:border-[#dcc090]/50 hover:bg-[#dcc090]/10 disabled:opacity-50"
-          >
-            {t('admin.common.cancel')}
-          </button>
-        </div>
-      </div>
-    </div>
+        </>
+      ) : null}
+    </CategoryFormDrawer>
   );
 }

@@ -4,11 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 
 import { apiClient } from '@/lib/api-client';
-import { formatPriceInCurrency } from '@/lib/currency';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
 import { useTranslation } from '@/lib/i18n-client';
 import { showToast } from '@/components/Toast';
-import { parsePriceAmd } from '../utils/parsePriceAmd';
 import { initialSizeItemModal, SizeItemModal, type SizeItemModalState } from './SizeItemModal';
 
 const ADMIN_LIST_ENDPOINT = '/api/v1/admin/size-catalog/categories';
@@ -20,11 +18,9 @@ export function SizeCatalogAdmin() {
   const [loading, setLoading] = useState(true);
   const [newCategoryTitle, setNewCategoryTitle] = useState('');
   const [newCategoryTitleSelection, setNewCategoryTitleSelection] = useState('');
-  const [newCategoryPriceAmd, setNewCategoryPriceAmd] = useState('0');
   const [savingCategory, setSavingCategory] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [editingCategoryTitle, setEditingCategoryTitle] = useState('');
-  const [editingCategoryPriceAmd, setEditingCategoryPriceAmd] = useState('0');
   const [expandedCategoryId, setExpandedCategoryId] = useState<string | null>(null);
   const [itemModal, setItemModal] = useState<SizeItemModalState>(initialSizeItemModal);
 
@@ -39,27 +35,6 @@ export function SizeCatalogAdmin() {
     }
     return titles.sort((a, b) => a.localeCompare(b));
   }, [categories]);
-
-  const collectionPriceByTitle = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const category of categories) {
-      const title = category.title.trim();
-      if (!title) continue;
-      const existingPrice = map.get(title);
-      if (existingPrice === undefined || category.priceAmd > existingPrice) {
-        map.set(title, category.priceAmd);
-      }
-    }
-    return map;
-  }, [categories]);
-
-  const formatCollectionOptionLabel = useCallback(
-    (title: string, priceAmd: number) =>
-      t('admin.sizes.collectionOptionWithPrice')
-        .replace('{title}', title)
-        .replace('{price}', formatPriceInCurrency(priceAmd, 'AMD')),
-    [t],
-  );
 
   const fetchCatalog = useCallback(async (options?: { showLoading?: boolean }) => {
     const showLoading = options?.showLoading ?? true;
@@ -96,43 +71,20 @@ export function SizeCatalogAdmin() {
   const handleAddCategory = async () => {
     const title = newCategoryTitle.trim();
     if (!title) { showToast(t('admin.sizes.titleRequired'), 'warning'); return; }
-    const priceAmd = parsePriceAmd(newCategoryPriceAmd);
-    const titleKey = title.toLocaleLowerCase();
-    const existingWithTitle = categories.filter(
-      (cat) => cat.title.trim().toLocaleLowerCase() === titleKey,
-    );
     setSavingCategory(true);
     try {
-      if (existingWithTitle.length > 0) {
-        await Promise.all(
-          existingWithTitle.map((cat) =>
-            apiClient.patch(`/api/v1/admin/size-catalog/categories/${cat.id}`, {
-              title: cat.title,
-              priceAmd,
-            }),
-          ),
-        );
-        setNewCategoryTitle('');
-        setNewCategoryTitleSelection('');
-        setNewCategoryPriceAmd('0');
-        showToast(t('admin.sizes.categoryUpdated'), 'success');
-        setExpandedCategoryId(existingWithTitle[0]?.id ?? null);
-      } else {
-        const created = await apiClient.post<{ data: SizeCatalogCategoryDto }>(ADMIN_LIST_ENDPOINT, {
-          title,
-          priceAmd,
-        });
-        setNewCategoryTitle('');
-        setNewCategoryTitleSelection('');
-        setNewCategoryPriceAmd('0');
-        showToast(t('admin.sizes.categoryCreated'), 'success');
-        if (created.data) {
-          setCategories((prev) => [
-            ...prev,
-            { ...created.data, items: Array.isArray(created.data.items) ? created.data.items : [] },
-          ]);
-          setExpandedCategoryId(created.data.id);
-        }
+      const created = await apiClient.post<{ data: SizeCatalogCategoryDto }>(ADMIN_LIST_ENDPOINT, {
+        title,
+      });
+      setNewCategoryTitle('');
+      setNewCategoryTitleSelection('');
+      showToast(t('admin.sizes.categoryCreated'), 'success');
+      if (created.data) {
+        setCategories((prev) => [
+          ...prev,
+          { ...created.data, items: Array.isArray(created.data.items) ? created.data.items : [] },
+        ]);
+        setExpandedCategoryId(created.data.id);
       }
       await fetchCatalog({ showLoading: false });
     } catch {
@@ -145,7 +97,6 @@ export function SizeCatalogAdmin() {
   const startEditCategory = (cat: SizeCatalogCategoryDto) => {
     setEditingCategoryId(cat.id);
     setEditingCategoryTitle(cat.title);
-    setEditingCategoryPriceAmd(String(cat.priceAmd));
     setExpandedCategoryId(cat.id);
   };
 
@@ -153,24 +104,10 @@ export function SizeCatalogAdmin() {
     if (!editingCategoryId) return;
     const title = editingCategoryTitle.trim();
     if (!title) { showToast(t('admin.sizes.titleRequired'), 'warning'); return; }
-    const priceAmd = parsePriceAmd(editingCategoryPriceAmd);
-    const editingCat = categories.find((cat) => cat.id === editingCategoryId);
-    const previousTitleKey = editingCat?.title.trim().toLocaleLowerCase() ?? '';
-    const targets =
-      previousTitleKey !== ''
-        ? categories.filter(
-            (cat) => cat.title.trim().toLocaleLowerCase() === previousTitleKey,
-          )
-        : categories.filter((cat) => cat.id === editingCategoryId);
     try {
-      await Promise.all(
-        targets.map((cat) =>
-          apiClient.patch(`/api/v1/admin/size-catalog/categories/${cat.id}`, {
-            title: cat.id === editingCategoryId ? title : cat.title,
-            priceAmd,
-          }),
-        ),
-      );
+      await apiClient.patch(`/api/v1/admin/size-catalog/categories/${editingCategoryId}`, {
+        title,
+      });
       setEditingCategoryId(null);
       showToast(t('admin.sizes.categoryUpdated'), 'success');
       await fetchCatalog({ showLoading: false });
@@ -256,11 +193,9 @@ export function SizeCatalogAdmin() {
                   setNewCategoryTitleSelection(selected);
                   if (selected === CUSTOM_COLLECTION_TITLE_VALUE || selected === '') {
                     setNewCategoryTitle('');
-                    setNewCategoryPriceAmd('0');
                     return;
                   }
                   setNewCategoryTitle(selected);
-                  setNewCategoryPriceAmd(String(collectionPriceByTitle.get(selected) ?? 0));
                 }}
                 disabled={savingCategory}
                 className="w-full rounded-lg border border-[#dcc090]/35 bg-white px-3 py-2.5 text-sm text-[#122a26] outline-none transition-all focus:border-[#dcc090] focus:ring-2 focus:ring-[#dcc090]/30 disabled:opacity-50"
@@ -268,10 +203,7 @@ export function SizeCatalogAdmin() {
                 <option value="">{t('admin.sizes.categoryTitlePlaceholder')}</option>
                 {availableCollectionTitles.map((titleOption) => (
                   <option key={titleOption} value={titleOption}>
-                    {formatCollectionOptionLabel(
-                      titleOption,
-                      collectionPriceByTitle.get(titleOption) ?? 0,
-                    )}
+                    {titleOption}
                   </option>
                 ))}
                 <option value={CUSTOM_COLLECTION_TITLE_VALUE}>{t('admin.sizes.customize')}</option>
@@ -288,20 +220,6 @@ export function SizeCatalogAdmin() {
                 />
               )}
             </div>
-          </div>
-          <div className="sm:w-48">
-            <label className="mb-1.5 block text-xs font-bold uppercase tracking-[0.08em] text-[#414141]/70">
-              {t('admin.sizes.customize')}
-            </label>
-            <input
-              type="number"
-              min={0}
-              step={1}
-              value={newCategoryPriceAmd}
-              onChange={(e) => setNewCategoryPriceAmd(e.target.value)}
-              disabled={savingCategory}
-              className="w-full rounded-lg border border-[#dcc090]/35 bg-white px-3 py-2.5 text-sm text-[#122a26] outline-none transition-all focus:border-[#dcc090] focus:ring-2 focus:ring-[#dcc090]/30 disabled:opacity-50"
-            />
           </div>
           <button
             type="button"
@@ -343,19 +261,6 @@ export function SizeCatalogAdmin() {
                 <div className="min-w-0 flex-1">
                   {editingCategoryId === cat.id ? (
                     <div className="flex flex-wrap items-center gap-2">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#414141]/55">
-                          {t('admin.sizes.customize')}
-                        </span>
-                        <input
-                          type="number"
-                          min={0}
-                          step={1}
-                          value={editingCategoryPriceAmd}
-                          onChange={(e) => setEditingCategoryPriceAmd(e.target.value)}
-                          className="w-32 rounded-lg border border-[#dcc090]/35 bg-white px-3 py-2 text-sm text-[#122a26] outline-none focus:border-[#dcc090] focus:ring-2 focus:ring-[#dcc090]/30"
-                        />
-                      </div>
                       <input
                         value={editingCategoryTitle}
                         onChange={(e) => setEditingCategoryTitle(e.target.value)}
@@ -384,9 +289,6 @@ export function SizeCatalogAdmin() {
                       className="text-left"
                     >
                       <h3 className="text-sm font-black text-[#122a26]">{cat.title}</h3>
-                      <p className="mt-0.5 text-xs font-semibold text-[#122a26]/70">
-                        {t('admin.sizes.customize')}: {formatPriceInCurrency(cat.priceAmd, 'AMD')}
-                      </p>
                       {expandedCategoryId !== cat.id && (
                         <p className="mt-0.5 text-xs text-[#414141]/45">
                           {cat.items?.[0]?.title ?? t('admin.sizes.noItems')}

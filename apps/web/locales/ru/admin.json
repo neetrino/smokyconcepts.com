@@ -224,6 +224,7 @@
     "backToAdmin": "Вернуться в панель администратора",
     "loadingCategories": "Загрузка категорий...",
     "noCategories": "Категории не найдены",
+    "subcategories": "Подкатегории",
     "addCategory": "Добавить категорию",
     "editCategory": "Редактировать категорию",
     "createCategory": "Создать категорию",
@@ -233,6 +234,7 @@
     "parentCategory": "категория",
     "rootCategory": "Нет (Корневая категория)",
     "requiresSizes": "Эта категория требует размеры (например, одежда, обувь)",
+    "categoryPriceAmd": "Цена коллекции (AMD)",
     "image": "Изображение коллекции",
     "imagePlaceholder": "Вставьте URL изображения или загрузите файл",
     "uploadImage": "Загрузить изображение",
@@ -253,7 +255,11 @@
     "errorDeleting": "Ошибка при удалении категории: {message}",
     "showingPage": "Показана страница {page} из {totalPages} (всего {total})",
     "previous": "Предыдущая",
-    "next": "Следующая"
+    "next": "Следующая",
+    "dragToSort": "Перетащите для сортировки",
+    "dragToSortHint": "Перетаскивайте точки, чтобы изменить порядок коллекций. Этот порядок используется на /products.",
+    "reorderSuccess": "Порядок коллекций сохранён",
+    "reorderFailed": "Не удалось сохранить порядок коллекций"
   },
   "voting": {
     "title": "Voting",

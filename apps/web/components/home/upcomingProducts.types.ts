@@ -7,7 +7,7 @@ export interface UpcomingApiProduct {
   images?: string[];
   inStock?: boolean;
   skus?: string[];
-  categories?: Array<{ id: string; slug: string; title: string }>;
+  categories?: Array<{ id: string; slug: string; title: string; priceAmd?: number }>;
   brand?: { id: string; name: string } | null;
   originalPrice?: number | null;
   defaultVariantId?: string | null;

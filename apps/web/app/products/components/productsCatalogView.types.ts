@@ -4,6 +4,7 @@ export type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name-asc' | '
 
 export interface ProductsCatalogViewProps {
   products: CatalogProduct[];
+  collectionOrderByCategoryId?: Record<string, string[]>;
 }
 
 export interface CatalogSectionViewModel {

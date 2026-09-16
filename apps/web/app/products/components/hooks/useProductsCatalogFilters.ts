@@ -13,10 +13,12 @@ import {
 import {
   type CatalogProduct,
   filterSizeCatalogByProducts,
+  getSectionLabelForCategory,
   getProductSectionLabels,
   getProductColorLabels,
   productMatchesCategoryFilter,
   productMatchesSizeFilter,
+  resolveCatalogSectionOrder,
   resolveSectionLabelFromCollectionValue,
 } from '../catalogProductLabels';
 import {
@@ -27,7 +29,10 @@ import { SECTION_ORDER } from '../productsCatalogView.constants';
 import { sortProducts } from '../productsCatalogView.helpers';
 import type { SortOption } from '../productsCatalogView.types';
 
-export function useProductsCatalogFilters(products: CatalogProduct[]) {
+export function useProductsCatalogFilters(
+  products: CatalogProduct[],
+  collectionOrderByCategoryId: Record<string, string[]>
+) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [catalogSizeModalOpen, setCatalogSizeModalOpen] = useState(false);
@@ -122,12 +127,17 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
     };
   }, []);
 
+  const sectionOrder = useMemo(
+    () => resolveCatalogSectionOrder(products, SECTION_ORDER),
+    [products]
+  );
+
   const collectionOptions = useMemo(() => {
-    const items = SECTION_ORDER.filter((section) =>
+    const items = sectionOrder.filter((section) =>
       products.some((product) => getProductSectionLabels(product).includes(section))
     );
     return ['all', ...items];
-  }, [products]);
+  }, [products, sectionOrder]);
 
   const colorOptions = useMemo(() => {
     const labels = products.flatMap((product) => getProductColorLabels(product));
@@ -219,7 +229,7 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
   ]);
 
   const sectionItemsByTitle = useMemo(() => {
-    return visibleProducts.reduce<Record<string, CatalogProduct[]>>((accumulator, product) => {
+    const grouped = visibleProducts.reduce<Record<string, CatalogProduct[]>>((accumulator, product) => {
       getProductSectionLabels(product).forEach((title) => {
         if (!accumulator[title]) {
           accumulator[title] = [];
@@ -228,13 +238,27 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
       });
       return accumulator;
     }, {});
-  }, [visibleProducts]);
+    return Object.fromEntries(
+      Object.entries(grouped).map(([sectionTitle, sectionProducts]) => {
+        const ordered = [...sectionProducts];
+        ordered.sort((a, b) => {
+          const rankA = getCollectionOrderRank(a, sectionTitle, collectionOrderByCategoryId);
+          const rankB = getCollectionOrderRank(b, sectionTitle, collectionOrderByCategoryId);
+          if (rankA !== rankB) {
+            return rankA - rankB;
+          }
+          return 0;
+        });
+        return [sectionTitle, ordered];
+      })
+    );
+  }, [collectionOrderByCategoryId, visibleProducts]);
 
   const catalogStripSectionTitles = useMemo(() => {
     return selectedCollection !== 'all' && selectedSectionTitle
       ? [selectedSectionTitle]
-      : [...SECTION_ORDER];
-  }, [selectedCollection, selectedSectionTitle]);
+      : [...sectionOrder];
+  }, [selectedCollection, selectedSectionTitle, sectionOrder]);
 
   const updateQuery = useCallback(
     (updates: Record<string, string>) => {
@@ -346,4 +370,27 @@ export function useProductsCatalogFilters(products: CatalogProduct[]) {
     handleCatalogSizeItemSelect,
     clearFilters,
   };
+}
+
+function getCollectionOrderRank(
+  product: CatalogProduct,
+  sectionTitle: string,
+  collectionOrderByCategoryId: Record<string, string[]>
+): number {
+  const matchingCategoryIds = product.categories
+    .filter((category) => getSectionLabelForCategory(category) === sectionTitle)
+    .map((category) => category.id);
+  if (matchingCategoryIds.length === 0) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  let bestRank = Number.MAX_SAFE_INTEGER;
+  for (const categoryId of matchingCategoryIds) {
+    const orderList = collectionOrderByCategoryId[categoryId] ?? [];
+    const rank = orderList.indexOf(product.id);
+    if (rank >= 0 && rank < bestRank) {
+      bestRank = rank;
+    }
+  }
+  return bestRank;
 }

@@ -4,6 +4,7 @@ import { logger } from '../../../../lib/utils/logger';
 import { showToast } from '../../../../components/Toast';
 import { useTranslation } from '../../../../lib/i18n-client';
 import type { Category, CategoryFormData } from '../types';
+import { parsePriceAmd } from '../utils';
 
 interface UseCategoryActionsReturn {
   showAddModal: boolean;
@@ -25,6 +26,7 @@ const initialFormData: CategoryFormData = {
   title: '',
   parentId: '',
   requiresSizes: false,
+  priceAmd: '0',
   imageUrl: '',
   subcategoryIds: [],
 };
@@ -56,6 +58,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         title: formData.title.trim(),
         parentId: formData.parentId || undefined,
         requiresSizes: formData.requiresSizes,
+        priceAmd: parsePriceAmd(formData.priceAmd),
         imageUrl: formData.imageUrl.trim() || undefined,
         locale: 'en',
       });
@@ -87,6 +90,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         title: category.title,
         parentId: category.parentId || '',
         requiresSizes: category.requiresSizes || false,
+        priceAmd: String(categoryWithChildren.priceAmd ?? category.priceAmd ?? 0),
         imageUrl: categoryWithChildren.imageUrl || '',
         subcategoryIds: categoryWithChildren.children?.map(child => child.id) || [],
       });
@@ -96,6 +100,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         title: category.title,
         parentId: category.parentId || '',
         requiresSizes: category.requiresSizes || false,
+        priceAmd: String(category.priceAmd ?? 0),
         imageUrl: category.imageUrl || '',
         subcategoryIds: [],
       });
@@ -116,6 +121,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         title: formData.title.trim(),
         parentId: formData.parentId || null,
         requiresSizes: formData.requiresSizes,
+        priceAmd: parsePriceAmd(formData.priceAmd),
         imageUrl: formData.imageUrl.trim(),
         subcategoryIds: formData.subcategoryIds,
         locale: 'en',

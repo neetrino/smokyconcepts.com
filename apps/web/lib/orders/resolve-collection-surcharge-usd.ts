@@ -3,7 +3,6 @@ import {
   catalogPriceToUsd,
   persistedOrderMoneyToUsd,
 } from '@/lib/currency';
-import { orderItemHasSavedCustomize } from './order-item-has-saved-customize';
 
 export function resolveCollectionSurchargeUsd(
   item: {
@@ -32,13 +31,11 @@ export function resolveCollectionSurchargeUsd(
     }
   }
 
-  if (orderItemHasSavedCustomize(item)) {
-    const normalizedTitle = item.sizeCatalogTitle?.trim().toLocaleLowerCase() ?? '';
-    const mappedSurchargeAmd =
-      normalizedTitle !== '' ? (sizeCatalogPriceByTitle.get(normalizedTitle) ?? 0) : 0;
-    if (mappedSurchargeAmd > 0) {
-      return adminInputAmdToUsd(mappedSurchargeAmd) * quantity;
-    }
+  const normalizedTitle = item.sizeCatalogTitle?.trim().toLocaleLowerCase() ?? '';
+  const mappedSurchargeAmd =
+    normalizedTitle !== '' ? (sizeCatalogPriceByTitle.get(normalizedTitle) ?? 0) : 0;
+  if (mappedSurchargeAmd > 0) {
+    return adminInputAmdToUsd(mappedSurchargeAmd) * quantity;
   }
 
   const itemTotal = persistedOrderMoneyToUsd(Number(item.total ?? 0), orderCurrency);

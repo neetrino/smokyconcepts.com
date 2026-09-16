@@ -37,8 +37,15 @@ class CategoriesService {
       include: {
         translations: true,
         children: {
+          where: {
+            published: true,
+            deletedAt: null,
+          },
           include: {
             translations: true,
+          },
+          orderBy: {
+            position: "asc",
           },
         },
       },
@@ -54,6 +61,7 @@ class CategoriesService {
     categories.forEach((category: {
       id: string;
       parentId: string | null;
+      priceAmd: number;
       translations: Array<{ locale: string; slug: string; title: string; fullPath: string }>;
     }) => {
       const translation =
@@ -66,6 +74,7 @@ class CategoriesService {
         slug: translation.slug,
         title: translation.title,
         fullPath: translation.fullPath,
+        priceAmd: category.priceAmd || 0,
         children: [] as any[],
       };
 

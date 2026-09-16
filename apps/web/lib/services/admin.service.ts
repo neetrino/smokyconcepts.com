@@ -52,6 +52,7 @@ class AdminService {
   createCategory = adminCategoriesService.createCategory.bind(adminCategoriesService);
   getCategoryById = adminCategoriesService.getCategoryById.bind(adminCategoriesService);
   updateCategory = adminCategoriesService.updateCategory.bind(adminCategoriesService);
+  reorderCategories = adminCategoriesService.reorderCategories.bind(adminCategoriesService);
   deleteCategory = adminCategoriesService.deleteCategory.bind(adminCategoriesService);
 
   getGlobalAttributes = adminGlobalAttributesService.getGlobalAttributes.bind(adminGlobalAttributesService);
@@ -69,6 +70,7 @@ class AdminService {
   updateProduct = adminProductsService.updateProduct.bind(adminProductsService);
   deleteProduct = adminProductsService.deleteProduct.bind(adminProductsService);
   updateProductDiscount = adminProductsService.updateProductDiscount.bind(adminProductsService);
+  reorderProductsInCategory = adminProductsService.reorderProductsInCategory.bind(adminProductsService);
 
   // Voting methods
   listVotings = adminVotingService.listVotings.bind(adminVotingService);

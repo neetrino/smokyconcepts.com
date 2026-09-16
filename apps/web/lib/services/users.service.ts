@@ -9,6 +9,7 @@ import {
 import { hashPassword, validateNewPasswordPolicy, verifyPassword } from "@/lib/security/password";
 import { isValidPhoneNumber } from "@/lib/utils/phone-validation";
 import { logger } from "@/lib/utils/logger";
+import { loadCollectionPriceAmdByTitle } from "@/lib/services/collection-price.service";
 
 function normalizeSizeCatalogTitleLookup(value: string | null | undefined): string {
   return value?.trim().toLocaleLowerCase() ?? "";
@@ -527,20 +528,8 @@ class UsersService {
         )
       )
     );
-    const sizeCatalogPriceByTitle = new Map<string, number>();
-    if (sizeCatalogTitles.length > 0) {
-      const categories = await db.sizeCatalogCategory.findMany({
-        select: { title: true, priceAmd: true },
-      });
-      for (const category of categories) {
-        const title = normalizeSizeCatalogTitleLookup(category.title);
-        if (!title || !sizeCatalogTitles.includes(title)) continue;
-        const existing = sizeCatalogPriceByTitle.get(title);
-        if (existing === undefined || category.priceAmd > existing) {
-          sizeCatalogPriceByTitle.set(title, category.priceAmd);
-        }
-      }
-    }
+    const sizeCatalogPriceByTitle =
+      sizeCatalogTitles.length > 0 ? await loadCollectionPriceAmdByTitle() : new Map<string, number>();
 
     const mappedOrders: DashboardMappedOrder[] = orders.map(
       (order: DashboardOrderRow) => mapDashboardOrder(order, sizeCatalogPriceByTitle)

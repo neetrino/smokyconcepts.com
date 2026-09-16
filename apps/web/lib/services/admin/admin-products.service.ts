@@ -7,6 +7,7 @@ import { adminProductsReadService } from "./admin-products-read.service";
 import { adminProductsCreateService } from "./admin-products-create.service";
 import { adminProductsUpdateService } from "./admin-products-update.service";
 import { adminProductsDeleteService } from "./admin-products-delete.service";
+import { adminProductsOrderService } from "./admin-products-order.service";
 
 class AdminProductsService {
   // Delegate to specialized services
@@ -24,6 +25,9 @@ class AdminProductsService {
   // Delete/Discount methods
   deleteProduct = adminProductsDeleteService.deleteProduct.bind(adminProductsDeleteService);
   updateProductDiscount = adminProductsDeleteService.updateProductDiscount.bind(adminProductsDeleteService);
+  reorderProductsInCategory = adminProductsOrderService.reorderProductsInCategory.bind(
+    adminProductsOrderService
+  );
 }
 
 export const adminProductsService = new AdminProductsService();

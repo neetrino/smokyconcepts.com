@@ -25,8 +25,10 @@ import { useTranslation } from '../lib/i18n-client';
 import { CART_DRAWER_OPEN_EVENT } from '../app/cart/constants';
 import { readGuestCartFromStorage } from '../app/cart/cart-fetcher';
 import {
+  getCartCollectionSummaryRows,
   getCartDisplaySubtotalUsd,
-  getCartLineTotalUsd,
+  getCartLineMerchandiseTotalUsd,
+  getCartMerchandiseDisplayUsd,
 } from '../app/cart/cart-line-pricing';
 import { handleRemoveItem, handleUpdateQuantity } from '../app/cart/cart-handlers';
 import type { Cart, CartItem } from '../app/cart/types';
@@ -174,7 +176,15 @@ export function CartDrawer() {
     return `( ${count} ${itemLabel} )`;
   }, [cart?.itemsCount]);
 
-  const displaySubtotalUsd = useMemo(
+  const merchandiseSubtotalUsd = useMemo(
+    () => (cart?.items.length ? getCartMerchandiseDisplayUsd(cart.items) : 0),
+    [cart?.items]
+  );
+  const collectionSummaryRows = useMemo(
+    () => (cart?.items.length ? getCartCollectionSummaryRows(cart.items) : []),
+    [cart?.items]
+  );
+  const displayTotalUsd = useMemo(
     () => (cart?.items.length ? getCartDisplaySubtotalUsd(cart.items) : 0),
     [cart?.items]
   );
@@ -330,7 +340,7 @@ export function CartDrawer() {
                       </div>
 
                       <div className="justify-self-end self-center -translate-y-0.5 text-[1.125rem] font-extrabold leading-none text-black">
-                        {formatStorePriceForDisplay(getCartLineTotalUsd(item))}
+                        {formatStorePriceForDisplay(getCartLineMerchandiseTotalUsd(item))}
                       </div>
                     </div>
                   </div>
@@ -351,7 +361,7 @@ export function CartDrawer() {
             <div className="mt-6 space-y-3 text-[1rem] leading-none text-[#414141]">
               <div className="flex items-center justify-between font-medium">
                 <span>Subtotal</span>
-                <span>{formatStorePriceForDisplay(displaySubtotalUsd)}</span>
+                <span>{formatStorePriceForDisplay(merchandiseSubtotalUsd)}</span>
               </div>
               <div className="flex items-center justify-between font-medium">
                 <span>Shipping</span>
@@ -361,13 +371,19 @@ export function CartDrawer() {
                     : 'Not Calculated'}
                 </span>
               </div>
+              {collectionSummaryRows.map((row) => (
+                <div key={row.title} className="flex items-center justify-between font-medium">
+                  <span>{row.title}</span>
+                  <span>{formatStorePriceForDisplay(row.usd)}</span>
+                </div>
+              ))}
             </div>
 
             <div className="mt-5 h-[2px] bg-[#d9d9d9]" />
 
             <div className="mt-4 flex items-center justify-between text-[1.375rem] font-extrabold leading-none text-[#414141]">
               <span>TOTAL</span>
-              <span>{formatStorePriceForDisplay(displaySubtotalUsd)}</span>
+              <span>{formatStorePriceForDisplay(displayTotalUsd)}</span>
             </div>
 
             <button

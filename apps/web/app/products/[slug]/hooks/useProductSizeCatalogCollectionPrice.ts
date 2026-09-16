@@ -1,96 +1,25 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { loadSizeCatalogCategories } from '@/lib/size-catalog-client-cache';
-import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
-import type { Product, ProductVariant } from '../types';
-import {
-  resolveCollectionPriceAmdFromCategories,
-  resolveCustomizeCollectionSelection,
-} from '../utils/product-size-catalog-collection-price';
+import { useMemo } from 'react';
+import { useCollectionPrices } from '@/lib/collections/use-collection-prices';
+import { resolveProductCollectionPriceAmd } from '@/lib/collections/resolve-product-collection-price-amd';
+import type { Product } from '../types';
 
 interface UseProductSizeCatalogCollectionPriceParams {
   product: Product | null;
-  currentVariant: ProductVariant | null;
-  selectedSizeLabel: string | null;
-  selectedCatalogSize: SizeCatalogItemDto | null;
-  /** Catalog modal pick — blocks default template surcharge after size is chosen. */
-  hasExplicitCatalogSizePick: boolean;
-  /** Applied customize text (Save on Customize tab) — triggers collection surcharge display. */
-  hasAppliedCustomize: boolean;
 }
 
 export function useProductSizeCatalogCollectionPrice({
   product,
-  currentVariant,
-  selectedSizeLabel,
-  selectedCatalogSize,
-  hasExplicitCatalogSizePick,
-  hasAppliedCustomize,
 }: UseProductSizeCatalogCollectionPriceParams) {
-  const [sizeCatalogCategories, setSizeCatalogCategories] = useState<SizeCatalogCategoryDto[]>([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const data = await loadSizeCatalogCategories();
-        if (!cancelled) {
-          setSizeCatalogCategories(data);
-        }
-      } catch {
-        if (!cancelled) {
-          setSizeCatalogCategories([]);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const livePrices = useCollectionPrices();
 
   const resolved = useMemo(() => {
-    if (!product || !hasAppliedCustomize) {
+    if (!product) {
       return { priceAmd: 0, categoryTitle: null as string | null };
     }
-
-    const selection = resolveCustomizeCollectionSelection({
-      product,
-      currentVariant,
-      categories: sizeCatalogCategories,
-      selectedCatalogSize:
-        selectedCatalogSize != null
-          ? {
-              categoryId: selectedCatalogSize.categoryId,
-              categoryTitle: selectedCatalogSize.categoryTitle,
-              categoryPriceAmd: selectedCatalogSize.categoryPriceAmd,
-            }
-          : null,
-      selectedSizeLabel,
-      hasExplicitCatalogSizePick,
-    });
-
-    const resolved = resolveCollectionPriceAmdFromCategories(sizeCatalogCategories, selection);
-    if (resolved.priceAmd > 0) {
-      return resolved;
-    }
-    const embeddedPrice = selectedCatalogSize?.categoryPriceAmd ?? 0;
-    if (embeddedPrice > 0 && selectedCatalogSize != null) {
-      return {
-        priceAmd: embeddedPrice,
-        categoryTitle: selectedCatalogSize.categoryTitle,
-      };
-    }
-    return resolved;
-  }, [
-    product,
-    currentVariant,
-    hasAppliedCustomize,
-    hasExplicitCatalogSizePick,
-    sizeCatalogCategories,
-    selectedCatalogSize,
-    selectedSizeLabel,
-  ]);
+    return resolveProductCollectionPriceAmd(product.categories, livePrices);
+  }, [product, livePrices]);
 
   const collectionPriceAmd = resolved.priceAmd > 0 ? resolved.priceAmd : 0;
 

@@ -347,6 +347,7 @@ function transformProductAttributes(
 type CategoryTranslationRow = { locale: string; slug: string; title: string };
 type CategoryWithTranslations = {
   id: string;
+  priceAmd?: number;
   translations?: CategoryTranslationRow[];
 };
 
@@ -354,6 +355,7 @@ function mapCategoryToOutput(cat: CategoryWithTranslations, lang: string): {
   id: string;
   slug: string;
   title: string;
+  priceAmd: number;
 } {
   const catTranslations = Array.isArray(cat.translations) ? cat.translations : [];
   const catTranslation =
@@ -362,6 +364,7 @@ function mapCategoryToOutput(cat: CategoryWithTranslations, lang: string): {
     id: cat.id,
     slug: catTranslation?.slug || "",
     title: catTranslation?.title || "",
+    priceAmd: typeof cat.priceAmd === "number" && Number.isFinite(cat.priceAmd) ? Math.max(0, Math.round(cat.priceAmd)) : 0,
   };
 }
 
@@ -372,7 +375,7 @@ function mapCategoryToOutput(cat: CategoryWithTranslations, lang: string): {
 async function buildMergedCategoriesForResponse(
   product: ProductWithFullRelations,
   lang: string
-): Promise<Array<{ id: string; slug: string; title: string }>> {
+): Promise<Array<{ id: string; slug: string; title: string; priceAmd: number }>> {
   const relationCategories = Array.isArray(product.categories)
     ? product.categories.map((cat: CategoryWithTranslations) =>
         mapCategoryToOutput(cat, lang),

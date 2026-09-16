@@ -13,6 +13,7 @@ import { useAdminProductsList } from './hooks/useAdminProductsList';
 import type { Category } from './types';
 import { AdminShell } from '../components/AdminShell';
 import { ADMIN_CENTERED_LOADING_CLASS, ADMIN_PAGE_SHELL_CLASS } from '../constants/adminShell.constants';
+import { showToast } from '../../../components/Toast';
 
 export default function ProductsPage() {
   const { t } = useTranslation();
@@ -23,6 +24,7 @@ export default function ProductsPage() {
   const [categoriesExpanded, setCategoriesExpanded] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [reorderSaving, setReorderSaving] = useState(false);
 
   const isAdminSession = Boolean(isLoggedIn && isAdmin);
 
@@ -100,6 +102,43 @@ export default function ProductsPage() {
     setSelectedIds,
     setBulkDeleting,
   });
+
+  const canReorderBySingleCollection =
+    list.selectedCategories.size === 1 &&
+    list.search.trim().length === 0 &&
+    list.skuSearch.trim().length === 0 &&
+    list.stockFilter === 'all' &&
+    list.minPrice.trim().length === 0 &&
+    list.maxPrice.trim().length === 0 &&
+    list.sortBy === 'createdAt-desc' &&
+    (list.meta?.total ?? 0) > 0 &&
+    (list.meta?.total ?? 0) <= list.visibleProducts.length;
+  const showCollectionReorderColumn = list.selectedCategories.size === 1;
+
+  const handleReorderInCollection = useCallback(
+    async (orderedIds: string[]) => {
+      const categoryId = Array.from(list.selectedCategories)[0];
+      if (!categoryId) {
+        return;
+      }
+
+      try {
+        setReorderSaving(true);
+        await apiClient.put('/api/v1/admin/products/reorder', {
+          categoryId,
+          orderedIds,
+        });
+        showToast(t('admin.categories.reorderSuccess'), 'success');
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : t('admin.common.unknownErrorFallback');
+        showToast(t('admin.products.errorLoading').replace('{message}', message), 'error');
+        throw error;
+      } finally {
+        setReorderSaving(false);
+      }
+    },
+    [list.selectedCategories, t],
+  );
 
   if (isLoading) {
     return (
@@ -191,6 +230,10 @@ export default function ProductsPage() {
               meta={list.meta}
               page={list.page}
               setPage={list.setPage}
+              showCollectionReorderColumn={showCollectionReorderColumn}
+              isCollectionReorderEnabled={canReorderBySingleCollection}
+              reorderSaving={reorderSaving}
+              onReorderInCollection={handleReorderInCollection}
             />
         </AdminShell>
       </div>
