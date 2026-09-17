@@ -207,7 +207,7 @@ export function ProductsCatalogCardView({
               <button
                 type="button"
                 onClick={handleBuyNow}
-                disabled={!product.inStock || isAddingToCart}
+                disabled={isAddingToCart}
                 className={buyButtonClassName}
               >
                 {catalogBuyLabel}
@@ -216,10 +216,10 @@ export function ProductsCatalogCardView({
               <button
                 type="button"
                 onClick={handleAddToCart}
-                disabled={!product.inStock || isAddingToCart}
+                disabled={isAddingToCart}
                 className="inline-flex h-7 w-7 shrink-0 items-center justify-center transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50 sm:h-8 sm:w-8"
-                aria-label={product.inStock ? 'Add to cart' : 'Out of stock'}
-                title={product.inStock ? 'Add to cart' : 'Out of stock'}
+                aria-label="Add to cart"
+                title="Add to cart"
               >
                 {isAddingToCart ? (
                   <svg

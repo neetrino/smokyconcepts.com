@@ -11,8 +11,7 @@ export interface PaymentMethod {
   disabled?: boolean;
 }
 
-/** Flip to false when ArCa live credentials are available. */
-const IS_ARCA_PAYMENT_ENABLED = false;
+const IS_ARCA_PAYMENT_ENABLED = true;
 
 export function usePaymentMethods(): PaymentMethod[] {
   const { t } = useTranslation();

@@ -10,7 +10,6 @@ import type { CustomOrderDraft } from './CustomizeSizeOrderFallback';
 import { dispatchCartDrawerOpen } from '@/app/cart/constants';
 import {
   buildGuestCartLineSnapshot,
-  canAddVariantToGuestCart,
   upsertGuestCartLineSnapshot,
 } from './product-cart-snapshot';
 
@@ -61,11 +60,6 @@ export function useProductCartActions({
         return;
       }
       const quantityToAdd = Math.max(1, quantity);
-      if (!canAddVariantToGuestCart(currentVariant, quantityToAdd)) {
-        setShowMessage(t(language, 'product.errorAddingToCart'));
-        setTimeout(() => setShowMessage(null), 2000);
-        return;
-      }
 
       setIsAddingToCart(true);
       try {

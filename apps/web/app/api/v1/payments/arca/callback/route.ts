@@ -2,40 +2,41 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@white-shop/db';
 import { Prisma } from '@prisma/client';
 import { getArcaOrderStatus, isArcaStatusPaid } from '@/lib/payments/arca/client';
-import { getArcaConfig } from '@/lib/payments/arca/config';
 import { appendOrderAccessCookie } from '@/lib/orders/order-access-cookie.server';
 import { logger } from '@/lib/utils/logger';
 
 const PAYMENT_PROVIDER = 'arca';
 
-function buildSuccessRedirect(orderNumber: string): string {
-  const { appUrl } = getArcaConfig();
+function originFromRequest(req: NextRequest): string {
+  return req.nextUrl.origin.replace(/\/$/, '');
+}
+
+function buildSuccessRedirect(req: NextRequest, orderNumber: string): string {
   const query = new URLSearchParams({
     orderNumber,
     clearCart: '1',
     payment: 'paid',
   });
-  return `${appUrl}/checkout/thank-you?${query.toString()}`;
+  return `${originFromRequest(req)}/checkout/thank-you?${query.toString()}`;
 }
 
 function buildSuccessResponse(
   req: NextRequest,
   order: { id: string; number: string },
 ): NextResponse {
-  const response = NextResponse.redirect(buildSuccessRedirect(order.number));
+  const response = NextResponse.redirect(buildSuccessRedirect(req, order.number));
   appendOrderAccessCookie(response, req, order.id);
   return response;
 }
 
-function buildFailureRedirect(orderNumber?: string): string {
-  const { appUrl } = getArcaConfig();
+function buildFailureRedirect(req: NextRequest, orderNumber?: string): string {
   const query = new URLSearchParams({
     payment: 'failed',
   });
   if (orderNumber) {
     query.set('orderNumber', orderNumber);
   }
-  return `${appUrl}/checkout/payment-failed?${query.toString()}`;
+  return `${originFromRequest(req)}/checkout/payment-failed?${query.toString()}`;
 }
 
 function resolveProviderOrderId(query: URLSearchParams): string {
@@ -110,11 +111,11 @@ async function findOrderForCallback(orderNumber: string | null, providerOrderId:
 
 export async function GET(req: NextRequest) {
   const query = req.nextUrl.searchParams;
-  const orderNumber = query.get('order');
+  const orderNumber = query.get('order') ?? query.get('opaque') ?? query.get('Opaque');
   const providerOrderId = resolveProviderOrderId(query);
 
   if (!providerOrderId && !(orderNumber?.trim() ?? '')) {
-    return NextResponse.redirect(buildFailureRedirect(orderNumber ?? undefined));
+    return NextResponse.redirect(buildFailureRedirect(req, orderNumber ?? undefined));
   }
 
   try {
@@ -124,7 +125,7 @@ export async function GET(req: NextRequest) {
         providerOrderId,
         orderNumber,
       });
-      return NextResponse.redirect(buildFailureRedirect(orderNumber ?? undefined));
+      return NextResponse.redirect(buildFailureRedirect(req, orderNumber ?? undefined));
     }
 
     const payment = order.payments.find((item: { provider: string }) => item.provider === PAYMENT_PROVIDER);
@@ -133,7 +134,7 @@ export async function GET(req: NextRequest) {
         orderId: order.id,
         orderNumber: order.number,
       });
-      return NextResponse.redirect(buildFailureRedirect(order.number));
+      return NextResponse.redirect(buildFailureRedirect(req, order.number));
     }
 
     if (order.paymentStatus === 'paid' || payment.status === 'completed') {
@@ -145,7 +146,7 @@ export async function GET(req: NextRequest) {
       logger.warn('Arca callback missing provider order id after order lookup', {
         orderNumber: order.number,
       });
-      return NextResponse.redirect(buildFailureRedirect(order.number));
+      return NextResponse.redirect(buildFailureRedirect(req, order.number));
     }
 
     const statusResponse = await getArcaOrderStatus(statusOrderId);
@@ -228,13 +229,17 @@ export async function GET(req: NextRequest) {
       });
     });
 
-    return NextResponse.redirect(buildFailureRedirect(order.number));
+    return NextResponse.redirect(buildFailureRedirect(req, order.number));
   } catch (error: unknown) {
     logger.error('Arca callback error', {
       error,
       providerOrderId,
       orderNumber,
     });
-    return NextResponse.redirect(buildFailureRedirect(orderNumber ?? undefined));
+    return NextResponse.redirect(buildFailureRedirect(req, orderNumber ?? undefined));
   }
+}
+
+export async function POST(req: NextRequest) {
+  return GET(req);
 }

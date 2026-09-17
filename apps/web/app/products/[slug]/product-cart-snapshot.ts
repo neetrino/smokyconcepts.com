@@ -32,30 +32,6 @@ function readGuestCart(): GuestCartItem[] {
   }
 }
 
-/**
- * Sum of quantities already in guest storage for this variant (client-side cap vs PDP stock).
- */
-export function getGuestQuantityForVariant(variantId: string): number {
-  return readGuestCart()
-    .filter((line) => line.variantId === variantId)
-    .reduce((sum, line) => sum + line.quantity, 0);
-}
-
-/**
- * Returns false if adding `quantityToAdd` would exceed `variant.stock`.
- * Out-of-stock variants are treated as backorder — no client-side quantity cap.
- */
-export function canAddVariantToGuestCart(variant: ProductVariant, quantityToAdd: number): boolean {
-  if (quantityToAdd <= 0) {
-    return false;
-  }
-  if (variant.stock <= 0) {
-    return true;
-  }
-  const nextTotal = getGuestQuantityForVariant(variant.id) + quantityToAdd;
-  return nextTotal <= variant.stock;
-}
-
 function resolvePrimaryImage(product: Product, variant: ProductVariant): string | null {
   const variantImage = resolveFirstImageUrl(variant.imageUrl);
   if (variantImage) {

@@ -1,3 +1,5 @@
+import { getPublicSiteAppUrl } from '@/lib/payments/get-payment-app-url';
+
 export type IdramConfig = {
   recAccount: string;
   secretKey: string;
@@ -11,23 +13,9 @@ export type IdramPaymentUrls = {
   failUrl: string;
 };
 
-function normalizeAppUrl(url: string): string {
-  return url.endsWith('/') ? url.slice(0, -1) : url;
-}
-
-/** Public app base URL for redirects; does not require Idram merchant credentials. */
+/** Public app base URL for Idram server callbacks; does not require merchant credentials. */
 export function getPaymentAppUrl(): string {
-  const explicitUrl = process.env.APP_URL?.trim() || process.env.NEXT_PUBLIC_APP_URL?.trim() || '';
-  if (explicitUrl.length > 0) {
-    return normalizeAppUrl(explicitUrl);
-  }
-
-  const vercelHost = process.env.VERCEL_URL?.trim() || '';
-  if (vercelHost.length > 0) {
-    return normalizeAppUrl(`https://${vercelHost}`);
-  }
-
-  return 'http://localhost:3000';
+  return getPublicSiteAppUrl();
 }
 
 function requireEnvValue(value: string | undefined, key: string): string {

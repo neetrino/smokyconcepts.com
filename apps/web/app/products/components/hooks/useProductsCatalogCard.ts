@@ -191,7 +191,6 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
     price: displayPrice,
     image: activeImage,
     originalPrice: displayOriginalPrice,
-    inStock: product.inStock,
     defaultVariantId: displayVariantId,
     defaultVariantStock: displayVariantStock,
     defaultSku: displaySku,
