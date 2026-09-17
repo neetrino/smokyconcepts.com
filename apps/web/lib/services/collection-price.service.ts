@@ -40,6 +40,7 @@ export async function loadCollectionPriceAmdByTitle(): Promise<Map<string, numbe
   return buildSizeCatalogPriceAmdByTitle(rows);
 }
 
+/** Raw collection surcharge for a product. Callers must apply only with customize text. */
 export async function resolveCheckoutCollectionPriceAmd(product: {
   categoryIds: string[];
   primaryCategoryId: string | null;

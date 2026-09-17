@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { useSizeModalExitAnimation } from '@/hooks/useSizeModalExitAnimation';
 import {
@@ -144,6 +145,8 @@ export function CartDrawer() {
     router.prefetch('/checkout');
   }, [isMounted, router]);
 
+  useBodyScrollLock(isMounted);
+
   useEffect(() => {
     if (!isMounted) {
       return;
@@ -156,19 +159,6 @@ export function CartDrawer() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isMounted, handleClose]);
-
-  useEffect(() => {
-    if (!isMounted) {
-      return;
-    }
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [isMounted]);
 
   const itemCountLabel = useMemo(() => {
     const count = cart?.itemsCount ?? 0;

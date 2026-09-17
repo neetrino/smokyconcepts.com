@@ -80,6 +80,10 @@ export function useProductPage({
       return defaultVariantFromList;
     }
 
+    if ((product.variants?.length ?? 0) > 0) {
+      return null;
+    }
+
     const stock = Math.max(0, product.defaultVariantStock ?? 0);
     return {
       id: defaultVariantId,
@@ -289,10 +293,19 @@ export function useProductPage({
 
     const colorPreferredMatch =
       selectedColor != null
-        ? candidateMatches.find((variant) => variantHasColor(variant, selectedColor))
+        ? candidateMatches.find(
+            (variant) => !variant.isDisplayVariant && variantHasColor(variant, selectedColor)
+          ) ??
+          candidateMatches.find((variant) => variantHasColor(variant, selectedColor))
         : null;
-    const inStockMatch = candidateMatches.find((variant) => variant.stock > 0);
-    const nextVariant = colorPreferredMatch || inStockMatch || candidateMatches[0];
+    const inStockMatch = candidateMatches.find(
+      (variant) => !variant.isDisplayVariant && variant.stock > 0
+    );
+    const nextVariant =
+      colorPreferredMatch ||
+      inStockMatch ||
+      candidateMatches.find((variant) => !variant.isDisplayVariant) ||
+      candidateMatches[0];
     const nextVariantSize =
       variantHasOptionValue(nextVariant, 'size', normalizedSize)
         ? normalizedSize

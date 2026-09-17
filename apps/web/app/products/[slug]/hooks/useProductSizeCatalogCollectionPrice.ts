@@ -7,10 +7,13 @@ import type { Product } from '../types';
 
 interface UseProductSizeCatalogCollectionPriceParams {
   product: Product | null;
+  /** Collection surcharge applies only after the shopper enters customize text. */
+  hasCustomizeText: boolean;
 }
 
 export function useProductSizeCatalogCollectionPrice({
   product,
+  hasCustomizeText,
 }: UseProductSizeCatalogCollectionPriceParams) {
   const livePrices = useCollectionPrices();
 
@@ -21,7 +24,8 @@ export function useProductSizeCatalogCollectionPrice({
     return resolveProductCollectionPriceAmd(product.categories, livePrices);
   }, [product, livePrices]);
 
-  const collectionPriceAmd = resolved.priceAmd > 0 ? resolved.priceAmd : 0;
+  const catalogPriceAmd = resolved.priceAmd > 0 ? resolved.priceAmd : 0;
+  const collectionPriceAmd = hasCustomizeText ? catalogPriceAmd : 0;
 
   return {
     collectionPriceAmd,

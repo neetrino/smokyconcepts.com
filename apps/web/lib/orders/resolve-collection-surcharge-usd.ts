@@ -3,6 +3,7 @@ import {
   catalogPriceToUsd,
   persistedOrderMoneyToUsd,
 } from '@/lib/currency';
+import { orderItemHasSavedCustomize } from '@/lib/orders/order-item-has-saved-customize';
 
 export function resolveCollectionSurchargeUsd(
   item: {
@@ -34,7 +35,7 @@ export function resolveCollectionSurchargeUsd(
   const normalizedTitle = item.sizeCatalogTitle?.trim().toLocaleLowerCase() ?? '';
   const mappedSurchargeAmd =
     normalizedTitle !== '' ? (sizeCatalogPriceByTitle.get(normalizedTitle) ?? 0) : 0;
-  if (mappedSurchargeAmd > 0) {
+  if (mappedSurchargeAmd > 0 && orderItemHasSavedCustomize(item)) {
     return adminInputAmdToUsd(mappedSurchargeAmd) * quantity;
   }
 

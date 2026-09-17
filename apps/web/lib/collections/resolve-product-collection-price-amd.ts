@@ -21,6 +21,7 @@ function toAmd(value: number | null | undefined): number {
 /**
  * Highest collection surcharge among a product's collections.
  * Live admin tree prices win over a stale product payload.
+ * Apply the result only when the shopper entered customize text.
  */
 export function resolveProductCollectionPriceAmd(
   collections: ProductCollectionPriceSource[] | undefined,

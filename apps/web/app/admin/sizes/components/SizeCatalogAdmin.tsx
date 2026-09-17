@@ -7,6 +7,7 @@ import { apiClient } from '@/lib/api-client';
 import type { SizeCatalogCategoryDto, SizeCatalogItemDto } from '@/lib/types/size-catalog';
 import { useTranslation } from '@/lib/i18n-client';
 import { showToast } from '@/components/Toast';
+import { SizeCatalogItemsPanel } from './SizeCatalogItemsPanel';
 import { initialSizeItemModal, SizeItemModal, type SizeItemModalState } from './SizeItemModal';
 
 const ADMIN_LIST_ENDPOINT = '/api/v1/admin/size-catalog/categories';
@@ -325,81 +326,16 @@ export function SizeCatalogAdmin() {
                 )}
               </div>
 
-              {/* Items grid */}
               {expandedCategoryId === cat.id && (
                 <div className="border-t border-[#dcc090]/20 px-5 pb-5 pt-4">
-                  {(cat.items?.length ?? 0) === 0 ? (
-                    <p className="text-sm text-[#414141]/45">{t('admin.sizes.noItems')}</p>
-                  ) : (
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                      {(cat.items ?? []).map((item) => (
-                        <div
-                          key={item.id}
-                          className={`flex gap-3 rounded-xl border p-3 transition-all ${
-                            item.published
-                              ? 'border-[#dcc090]/20 bg-white'
-                              : 'border-amber-300/60 bg-amber-50/50'
-                          }`}
-                        >
-                          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-[#dcc090]/20 bg-[#dcc090]/5">
-                            <img src={item.imageUrl} alt="" className="h-full w-full object-contain" />
-                            {item.version && (
-                              <span className="absolute bottom-1 right-1 rounded-full bg-[#122a26]/85 px-1.5 py-0.5 text-[10px] font-bold uppercase text-[#dcc090]">
-                                {item.version}
-                              </span>
-                            )}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center gap-1.5">
-                              <p className="text-sm font-bold text-[#122a26]">{item.title}</p>
-                              {!item.published && (
-                                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
-                                  {t('admin.sizes.draftLabel')}
-                                </span>
-                              )}
-                            </div>
-                            <div className="mt-2 flex flex-wrap gap-1.5">
-                              <button
-                                type="button"
-                                onClick={() => openItemModal(cat.id, 'edit', item)}
-                                className="rounded-lg border border-[#dcc090]/35 bg-[#dcc090]/10 px-2.5 py-1 text-xs font-bold text-[#122a26] transition-all hover:bg-[#dcc090]/25"
-                              >
-                                {t('admin.sizes.editItem')}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => openDuplicateModal(cat.id, item)}
-                                title={t('admin.sizes.duplicateItem')}
-                                className="rounded-lg border border-[#dcc090]/35 bg-[#dcc090]/10 px-2 py-1 text-[#122a26] transition-all hover:bg-[#dcc090]/25"
-                              >
-                                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                                  <rect x="7" y="7" width="12" height="12" rx="2" strokeWidth={2} />
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15H4a1 1 0 01-1-1V5a1 1 0 011-1h9a1 1 0 011 1v1" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10v6M10 13h6" />
-                                </svg>
-                              </button>
-                              {!item.published && (
-                                <button
-                                  type="button"
-                                  onClick={() => void publishDraftItem(item.id)}
-                                  className="rounded-lg bg-[#122a26] px-2.5 py-1 text-xs font-bold text-[#dcc090] transition-all hover:bg-[#18352f]"
-                                >
-                                  {t('admin.sizes.activateItem')}
-                                </button>
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => void deleteItem(item.id)}
-                                className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-bold text-red-700 transition-all hover:bg-red-100"
-                              >
-                                {t('admin.sizes.deleteItem')}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <SizeCatalogItemsPanel
+                    key={cat.id}
+                    items={cat.items ?? []}
+                    onEdit={(item) => openItemModal(cat.id, 'edit', item)}
+                    onDuplicate={(item) => openDuplicateModal(cat.id, item)}
+                    onPublish={(itemId) => void publishDraftItem(itemId)}
+                    onDelete={(itemId) => void deleteItem(itemId)}
+                  />
                 </div>
               )}
             </div>

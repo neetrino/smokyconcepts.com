@@ -3,6 +3,7 @@ import { db } from '@white-shop/db';
 import { Prisma } from '@prisma/client';
 import { getArcaOrderStatus, isArcaStatusPaid } from '@/lib/payments/arca/client';
 import { appendOrderAccessCookie } from '@/lib/orders/order-access-cookie.server';
+import { restoreOrderStock, shouldRestoreOrderStock } from '@/lib/services/order-stock';
 import { logger } from '@/lib/utils/logger';
 
 const PAYMENT_PROVIDER = 'arca';
@@ -198,6 +199,12 @@ export async function GET(req: NextRequest) {
       return buildSuccessResponse(req, order);
     }
 
+    const shouldRestoreStock = shouldRestoreOrderStock({
+      existingStatus: order.status,
+      existingPaymentStatus: order.paymentStatus,
+      nextPaymentStatus: 'failed',
+    });
+
     await db.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.order.update({
         where: { id: order.id },
@@ -216,6 +223,9 @@ export async function GET(req: NextRequest) {
           errorMessage: statusResponse.errorMessage ?? 'Arca returned non-success payment state',
         },
       });
+      if (shouldRestoreStock) {
+        await restoreOrderStock(tx, order.id);
+      }
       await tx.orderEvent.create({
         data: {
           orderId: order.id,
@@ -224,6 +234,7 @@ export async function GET(req: NextRequest) {
             provider: PAYMENT_PROVIDER,
             status: 'failed',
             providerOrderId: statusOrderId,
+            stockRestored: shouldRestoreStock,
           },
         },
       });

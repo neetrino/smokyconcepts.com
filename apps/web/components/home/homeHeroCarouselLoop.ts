@@ -25,11 +25,11 @@ export function getHomeHeroLogicalIndex(displayIndex: number, slideCount: number
     return 0;
   }
 
-  if (displayIndex === 0) {
+  if (displayIndex <= 0) {
     return slideCount - 1;
   }
 
-  if (displayIndex === slideCount + 1) {
+  if (displayIndex >= slideCount + 1) {
     return 0;
   }
 
@@ -46,11 +46,11 @@ export function normalizeHomeHeroCloneDisplayIndex(
   }
 
   const lastRealIndex = slideCount;
-  if (displayIndex === 0) {
+  if (displayIndex <= 0) {
     return lastRealIndex;
   }
 
-  if (displayIndex === slideCount + 1) {
+  if (displayIndex >= slideCount + 1) {
     return 1;
   }
 

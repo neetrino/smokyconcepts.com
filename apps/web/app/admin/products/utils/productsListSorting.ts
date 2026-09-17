@@ -1,10 +1,7 @@
 import type { Product } from '../types';
 
-/** Total stock across colors, falling back to the product-level stock. */
+/** Total sellable stock. List `stock` is already the sum of real variants. */
 export function getProductTotalStock(product: Product): number {
-  if (product.colorStocks && product.colorStocks.length > 0) {
-    return product.colorStocks.reduce((sum, colorStock) => sum + (colorStock.stock || 0), 0);
-  }
   return product.stock ?? 0;
 }
 

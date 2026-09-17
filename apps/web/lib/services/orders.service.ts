@@ -8,6 +8,7 @@ import {
 } from "@/lib/currency";
 import { resolveCollectionSurchargeUsd } from "@/lib/orders/resolve-collection-surcharge-usd";
 import { resolveOrderShippingPriceAmd, buildOrderSummaryLinesFromPersistedItems } from "@/lib/orders/order-summary-display";
+import { orderItemHasSavedCustomize } from "@/lib/orders/order-item-has-saved-customize";
 import { resolvePersistedOrderItemCollectionPriceAmd } from "@/lib/orders/resolve-persisted-order-item-collection-price-amd";
 import { filterDisplayableVariantOptions } from "@/lib/default-pricing-variant";
 import type { CheckoutData } from "../types/checkout";
@@ -414,7 +415,12 @@ class OrdersService {
               }
             }
 
-            const collectionResolved = await resolveCheckoutCollectionPriceAmd(variant.product);
+            const collectionResolved = orderItemHasSavedCustomize({
+              customizePlain,
+              customizeHtml,
+            })
+              ? await resolveCheckoutCollectionPriceAmd(variant.product)
+              : { priceAmd: 0, categoryTitle: null };
             const sizeCatalogCategoryPriceAmd = collectionResolved.priceAmd;
 
             if (rawCustomRequest) {

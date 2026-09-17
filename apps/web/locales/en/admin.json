@@ -208,6 +208,8 @@
     "cancel": "Cancel",
     "noCategories": "No size collections yet. Create one above.",
     "noItems": "No items in this collection.",
+    "searchPlaceholder": "Search by name",
+    "noSearchResults": "No items match this name.",
     "titleRequired": "Title is required",
     "itemFieldsRequired": "Title and image are required",
     "categoryCreated": "Collection created",

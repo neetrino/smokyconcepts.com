@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useAddToCart } from '../../../../components/hooks/useAddToCart';
 import { useCurrency } from '../../../../components/hooks/useCurrency';
 import { formatCatalogPrice } from '../../../../lib/currency';
-import { resolveProductCollectionPriceAmd } from '../../../../lib/collections/resolve-product-collection-price-amd';
 import { saveProductPreview } from '../../../../lib/product-preview-cache';
 import { scheduleWhenIdle } from '../../../../lib/utils/schedule-when-idle';
 import {
@@ -104,12 +103,12 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
   );
 
   const displayPrice = activeVariantEntry?.price ?? product.price ?? 0;
-  const collectionResolved = resolveProductCollectionPriceAmd(product.categories);
-  const collectionPriceAmd = collectionResolved.priceAmd > 0 ? collectionResolved.priceAmd : 0;
   const displayOriginalPrice = activeVariantEntry?.originalPrice ?? product.originalPrice ?? null;
-  const displayVariantId = activeVariantEntry?.variantId ?? product.defaultVariantId ?? null;
-  const displayVariantStock = activeVariantEntry?.stock ?? product.defaultVariantStock ?? 0;
-  const displaySku = activeVariantEntry?.sku ?? product.defaultSku ?? '';
+  const hasSelectableVariants = (product.variantImages?.length ?? 0) > 0;
+  const displayVariantId =
+    activeVariantEntry?.variantId ?? (hasSelectableVariants ? null : product.defaultVariantId) ?? null;
+  const displayVariantStock = activeVariantEntry?.stock ?? (hasSelectableVariants ? 0 : product.defaultVariantStock) ?? 0;
+  const displaySku = activeVariantEntry?.sku ?? (hasSelectableVariants ? '' : product.defaultSku) ?? '';
 
   const displaySizeLabel = useMemo(
     () =>
@@ -196,8 +195,6 @@ export function useProductsCatalogCard(props: ProductsCatalogCardProps) {
     defaultSku: displaySku,
     sizeLabel: displaySizeLabel,
     categoryLabel,
-    collectionCategoryTitle: collectionResolved.categoryTitle,
-    collectionPriceAmd,
   });
   const activeImageMeasureKey = `${product.id}-${activeImageIndex}-${activeImage ?? ''}`;
   const activeImageMeasureKeyRef = useRef(activeImageMeasureKey);

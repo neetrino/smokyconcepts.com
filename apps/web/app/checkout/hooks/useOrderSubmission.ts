@@ -82,12 +82,15 @@ export function useOrderSubmission({
         const version = item.variant.sizeCatalogVersion?.trim();
         const img = item.variant.sizeCatalogImageUrl?.trim();
         const categoryTitle = item.variant.sizeCatalogCategoryTitle?.trim();
-        const resolvedCategoryPriceAmd = resolveCartLineCollectionPriceAmd(item, categoryPriceByTitle);
-        const hasSizeCatalogPick = Boolean(title);
-        const hasCollectionContext = Boolean(categoryTitle) || resolvedCategoryPriceAmd > 0;
         const cPlain = item.variant.customizePlain?.trim();
         const cHtml = item.variant.customizeHtml?.trim();
         const hasSavedCustomize = Boolean(cPlain || cHtml);
+        const resolvedCategoryPriceAmd = hasSavedCustomize
+          ? resolveCartLineCollectionPriceAmd(item, categoryPriceByTitle)
+          : 0;
+        const hasSizeCatalogPick = Boolean(title);
+        const hasCollectionContext =
+          hasSavedCustomize && (Boolean(categoryTitle) || resolvedCategoryPriceAmd > 0);
         const customSizeRequest = item.variant.customSizeRequest;
         return {
           productId: item.variant.product.id,

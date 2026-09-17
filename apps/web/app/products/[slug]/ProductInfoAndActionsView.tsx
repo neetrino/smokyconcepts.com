@@ -128,7 +128,9 @@ export function ProductInfoAndActionsView({
     }
     if (isCustomizeFontMissing) {
       triggerCustomizeFontValidation();
-      tabPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      if (!isCustomizeTab) {
+        tabPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
       return;
     }
     if (!canAddToCart || isAddingToCart) {
