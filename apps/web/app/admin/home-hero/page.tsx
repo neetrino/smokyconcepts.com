@@ -16,6 +16,7 @@ import { useTranslation } from '@/lib/i18n-client';
 import { processImageFile } from '@/lib/services/utils/image-utils';
 import type { HomeHeroSlide } from '@/lib/types/home-hero.types';
 import { ADMIN_PAGE_SHELL_CLASS } from '../constants/adminShell.constants';
+import { persistHomeHeroSlides, useHomeHeroSlideReorder } from './useHomeHeroSlideReorder';
 
 const UPLOAD_IMAGES_ENDPOINT = '/api/v1/admin/home-hero/upload-images';
 
@@ -55,6 +56,23 @@ export default function AdminHomeHeroPage() {
   } | null>(null);
   const [expandedSlideIndex, setExpandedSlideIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const {
+    draggingIndex,
+    dropTargetIndex,
+    reordering,
+    setDraggingIndex,
+    setDropTargetIndex,
+    clearDragState,
+    handleSlideDrop,
+  } = useHomeHeroSlideReorder({
+    slides,
+    setSlides,
+    expandedSlideIndex,
+    setExpandedSlideIndex,
+    uploadingTarget,
+    setUploadingTarget,
+    t,
+  });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -126,9 +144,7 @@ export default function AdminHomeHeroPage() {
     setSaving(true);
     setError(null);
     try {
-      await apiClient.put('/api/v1/admin/settings', {
-        homeHero: { slides },
-      });
+      await persistHomeHeroSlides(slides);
       alert(t('admin.homeHero.saved'));
     } catch (err: unknown) {
       const detail =
@@ -210,33 +226,42 @@ export default function AdminHomeHeroPage() {
               </div>
 
               <div className="p-6 space-y-3">
-                {slides.map((slide, index) => (
-                  <HomeHeroSlideEditor
-                    key={index}
-                    slide={slide}
-                    index={index}
-                    isExpanded={expandedSlideIndex === index}
-                    slidesCount={slides.length}
-                    isUploading={
-                      uploadingTarget?.index === index && uploadingTarget.field === 'imageUrl'
-                    }
-                    isUploadingMobile={
-                      uploadingTarget?.index === index &&
-                      uploadingTarget.field === 'mobileImageUrl'
-                    }
-                    onToggle={() => toggleSlideExpanded(index)}
-                    onRemove={() => removeSlideAt(index)}
-                    onUpdate={(patch) => updateSlide(index, patch)}
-                    onImageFile={(field, e) => void handleImageFile(index, field, e)}
-                  />
-                ))}
+                <p className="text-xs text-[#414141]/55">{t('admin.homeHero.dragToSortHint')}</p>
+                <div className={reordering ? 'pointer-events-none space-y-3 opacity-70' : 'space-y-3'}>
+                  {slides.map((slide, index) => (
+                    <HomeHeroSlideEditor
+                      key={`${slide.imageUrl}-${slide.ctaHref}-${index}`}
+                      slide={slide}
+                      index={index}
+                      isExpanded={expandedSlideIndex === index}
+                      isDragging={draggingIndex === index}
+                      isDropTarget={dropTargetIndex === index && draggingIndex !== index}
+                      slidesCount={slides.length}
+                      isUploading={
+                        uploadingTarget?.index === index && uploadingTarget.field === 'imageUrl'
+                      }
+                      isUploadingMobile={
+                        uploadingTarget?.index === index &&
+                        uploadingTarget.field === 'mobileImageUrl'
+                      }
+                      onToggle={() => toggleSlideExpanded(index)}
+                      onRemove={() => removeSlideAt(index)}
+                      onUpdate={(patch) => updateSlide(index, patch)}
+                      onImageFile={(field, e) => void handleImageFile(index, field, e)}
+                      onDragStart={setDraggingIndex}
+                      onDragOver={setDropTargetIndex}
+                      onDragEnd={clearDragState}
+                      onDrop={handleSlideDrop}
+                    />
+                  ))}
+                </div>
               </div>
 
               <div className="flex justify-end border-t border-[#dcc090]/20 px-6 py-4">
                 <button
                   type="button"
                   onClick={() => void handleSave()}
-                  disabled={saving}
+                  disabled={saving || reordering}
                   className="rounded-lg bg-[#122a26] px-6 py-2.5 text-sm font-bold text-[#dcc090] shadow-[0_4px_14px_rgba(18,42,38,0.18)] transition-all hover:bg-[#18352f] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {saving ? t('admin.common.saving') : t('admin.homeHero.save')}

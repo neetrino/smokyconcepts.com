@@ -3,45 +3,29 @@ import type { ProductVariant } from '../types';
 
 interface UseProductQuantityProps {
   currentVariant: ProductVariant | null;
-  isOutOfStock: boolean;
   isVariationRequired: boolean;
 }
 
+const MIN_LINE_QUANTITY = 1;
+
 export function useProductQuantity({
   currentVariant,
-  isOutOfStock,
   isVariationRequired,
 }: UseProductQuantityProps) {
-  const [quantity, setQuantity] = useState(1);
-  const maxQuantity = currentVariant?.stock && currentVariant.stock > 0 ? currentVariant.stock : 0;
+  const [quantity, setQuantity] = useState(MIN_LINE_QUANTITY);
 
   useEffect(() => {
-    if (!currentVariant || currentVariant.stock <= 0) {
-      setQuantity(0);
-      return;
-    }
-    
-    setQuantity(prev => {
-      const currentStock = currentVariant.stock;
-      if (prev > currentStock) return currentStock;
-      if (prev <= 0 && currentStock > 0) return 1;
-      return prev;
-    });
-  }, [currentVariant?.id, currentVariant?.stock]);
+    setQuantity((prev) => (prev < MIN_LINE_QUANTITY ? MIN_LINE_QUANTITY : prev));
+  }, [currentVariant?.id]);
 
   const adjustQuantity = useCallback((delta: number) => {
-    if (isOutOfStock || isVariationRequired) return;
-    
-    setQuantity(prev => {
+    if (isVariationRequired) return;
+
+    setQuantity((prev) => {
       const next = prev + delta;
-      if (next < 1) return currentVariant && currentVariant.stock > 0 ? 1 : 0;
-      return next > maxQuantity ? maxQuantity : next;
+      return next < MIN_LINE_QUANTITY ? MIN_LINE_QUANTITY : next;
     });
-  }, [isOutOfStock, isVariationRequired, currentVariant, maxQuantity]);
+  }, [isVariationRequired]);
 
-  return { quantity, setQuantity, maxQuantity, adjustQuantity };
+  return { quantity, setQuantity, adjustQuantity };
 }
-
-
-
-

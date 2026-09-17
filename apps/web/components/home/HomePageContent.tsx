@@ -43,7 +43,10 @@ export function HomePageContent({ coverCollections, heroSlides }: HomePageConten
               tail: t('home.homepage.hero.tagline.tail'),
             }}
           />
-          <HomeHeroSection slides={heroSlides} />
+          <HomeHeroSection
+            key={heroSlides.map((slide, index) => `${index}:${slide.imageUrl}`).join('|')}
+            slides={heroSlides}
+          />
         </section>
 
         <HomePackFitSection />

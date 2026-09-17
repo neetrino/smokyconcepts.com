@@ -16,7 +16,6 @@ interface UseAddToCartProps {
   price: number;
   image: string | null;
   originalPrice: number | null;
-  inStock: boolean;
   defaultVariantId: string | null;
   defaultVariantStock: number;
   defaultSku: string;
@@ -40,7 +39,6 @@ export function useAddToCart({
   price,
   image,
   originalPrice,
-  inStock,
   defaultVariantId,
   defaultVariantStock,
   defaultSku,
@@ -53,8 +51,6 @@ export function useAddToCart({
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const addToCart = async ({ openDrawer = true }: AddToCartOptions = {}) => {
-    if (!inStock) return;
-
     if (!productId || !productSlug || productSlug.trim() === '' || productSlug.includes(' ')) {
       logger.warn('Invalid product id or slug for add to cart', { productId, productSlug });
       alert(t('common.alerts.invalidProduct'));

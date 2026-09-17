@@ -1,3 +1,4 @@
+import { getPaymentReturnAppUrl } from '@/lib/payments/get-payment-app-url';
 import type { ArcaBank } from './types';
 
 const ARCA_BASE_URLS: Record<ArcaBank, { test: string; live: string }> = {
@@ -25,30 +26,16 @@ export type ArcaConfig = {
   testMode: boolean;
 };
 
-function normalizeAppUrl(url: string): string {
-  return url.endsWith('/') ? url.slice(0, -1) : url;
-}
-
-function resolveAppUrl(): string {
-  const explicitUrl = process.env.APP_URL?.trim() || process.env.NEXT_PUBLIC_APP_URL?.trim() || '';
-  if (explicitUrl.length > 0) {
-    return normalizeAppUrl(explicitUrl);
-  }
-
-  const vercelHost = process.env.VERCEL_URL?.trim() || '';
-  if (vercelHost.length > 0) {
-    return normalizeAppUrl(`https://${vercelHost}`);
-  }
-
-  return 'http://localhost:3000';
-}
-
 function readArcaBank(): ArcaBank {
-  const raw = (process.env.ARCA_BANK ?? 'idbank').trim().toLowerCase();
+  const raw = (process.env.ARCA_BANK ?? 'ameriabank').trim().toLowerCase();
   if (raw === 'idbank' || raw === 'inecobank' || raw === 'ameriabank') {
     return raw;
   }
   throw new Error('Invalid ARCA_BANK. Allowed values: idbank, inecobank, ameriabank.');
+}
+
+function isTestMode(): boolean {
+  return (process.env.AMERIA_TEST_MODE ?? '').trim().toLowerCase() === 'true';
 }
 
 function requireEnvValue(value: string | undefined, key: string): string {
@@ -75,33 +62,18 @@ function resolveCredentials(
   testMode: boolean,
 ): { username: string; password: string; clientId: string | null } {
   if (bank === 'ameriabank') {
-    const username = testMode
-      ? requireEnvValue(
-          process.env.AMERIA_USERNAME ?? process.env.ARCA_USERNAME,
-          'AMERIA_USERNAME (or ARCA_USERNAME)',
-        )
-      : requireEnvValue(
-          process.env.AMERIA_LIVE_USERNAME ?? process.env.ARCA_LIVE_USERNAME,
-          'AMERIA_LIVE_USERNAME (or ARCA_LIVE_USERNAME)',
-        );
-    const password = testMode
-      ? requireEnvValue(
-          process.env.AMERIA_PASSWORD ?? process.env.ARCA_PASSWORD,
-          'AMERIA_PASSWORD (or ARCA_PASSWORD)',
-        )
-      : requireEnvValue(
-          process.env.AMERIA_LIVE_PASSWORD ?? process.env.ARCA_LIVE_PASSWORD,
-          'AMERIA_LIVE_PASSWORD (or ARCA_LIVE_PASSWORD)',
-        );
-    const clientId = testMode
-      ? requireEnvValue(
-          process.env.AMERIA_CLIENT_ID ?? process.env.ARCA_CLIENT_ID,
-          'AMERIA_CLIENT_ID (or ARCA_CLIENT_ID)',
-        )
-      : requireEnvValue(
-          process.env.AMERIA_LIVE_CLIENT_ID ?? process.env.ARCA_LIVE_CLIENT_ID,
-          'AMERIA_LIVE_CLIENT_ID (or ARCA_LIVE_CLIENT_ID)',
-        );
+    const username = requireEnvValue(
+      process.env.AMERIA_LIVE_USERNAME ?? process.env.AMERIA_USERNAME,
+      'AMERIA_LIVE_USERNAME',
+    );
+    const password = requireEnvValue(
+      process.env.AMERIA_LIVE_PASSWORD ?? process.env.AMERIA_PASSWORD,
+      'AMERIA_LIVE_PASSWORD',
+    );
+    const clientId = requireEnvValue(
+      process.env.AMERIA_LIVE_CLIENT_ID ?? process.env.AMERIA_CLIENT_ID,
+      'AMERIA_LIVE_CLIENT_ID',
+    );
     return { username, password, clientId };
   }
 
@@ -115,7 +87,7 @@ function resolveCredentials(
 }
 
 export function getArcaConfig(): ArcaConfig {
-  const testMode = (process.env.ARCA_TEST_MODE ?? '').trim().toLowerCase() === 'true';
+  const testMode = isTestMode();
   const bank = readArcaBank();
   const baseUrl = resolveBaseUrl(bank, testMode);
   const { username, password, clientId } = resolveCredentials(bank, testMode);
@@ -126,7 +98,7 @@ export function getArcaConfig(): ArcaConfig {
     username,
     password,
     clientId,
-    appUrl: resolveAppUrl(),
+    appUrl: getPaymentReturnAppUrl(),
     testMode,
   };
 }

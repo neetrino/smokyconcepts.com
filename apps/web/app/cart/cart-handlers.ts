@@ -140,16 +140,8 @@ export async function handleUpdateQuantity(
     return;
   }
 
-  // Find the cart item to check stock
   const cartItem = cart?.items.find(item => item.id === itemId);
   if (!cartItem) return;
-
-  if (cartItem.variant.stock !== undefined) {
-    if (quantity > cartItem.variant.stock) {
-      alert(`Մատչելի քանակը ${cartItem.variant.stock} հատ է: Դուք չեք կարող ավելացնել ավելի շատ քանակ:`);
-      return;
-    }
-  }
 
   // Optimistic update: update UI immediately
   if (cart) {
@@ -173,19 +165,6 @@ export async function handleUpdateQuantity(
   try {
     if (typeof window === 'undefined') return;
 
-    // Check stock for local cart
-    if (cartItem.variant.stock !== undefined && quantity > cartItem.variant.stock) {
-      alert(`Մատչելի քանակը ${cartItem.variant.stock} հատ է: Դուք չեք կարող ավելացնել ավելի շատ քանակ:`);
-      // Revert optimistic update
-      await fetchCart();
-      setUpdatingItems(prev => {
-        const next = new Set(prev);
-        next.delete(itemId);
-        return next;
-      });
-      return;
-    }
-    
     updateGuestCartQuantity(itemId, quantity);
     setUpdatingItems(prev => {
       const next = new Set(prev);
@@ -201,11 +180,7 @@ export async function handleUpdateQuantity(
     
     // Show user-friendly error message
     const errorMessage = errorObj?.detail || errorObj?.message || t('common.messages.failedToUpdateQuantity');
-    if (errorMessage.includes('stock') || errorMessage.includes('exceeds')) {
-      alert(t('common.alerts.stockInsufficient').replace('{message}', errorMessage));
-    } else {
-      alert(errorMessage);
-    }
+    alert(errorMessage);
   } finally {
     setUpdatingItems(prev => {
       const next = new Set(prev);

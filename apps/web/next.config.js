@@ -17,10 +17,6 @@ function loadRootEnv() {
 
       const key = match[1];
       const value = match[2].replace(/^["']|["']$/g, '').trim();
-      const existing = process.env[key];
-      // Overwrite missing or empty values so updated .env keys take effect.
-      if (existing !== undefined && existing !== '') continue;
-
       process.env[key] = value;
     }
   }

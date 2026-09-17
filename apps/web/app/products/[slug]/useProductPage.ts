@@ -116,9 +116,8 @@ export function useProductPage({
     canAddToCart,
   } = useProductCalculations({ product, currentVariant: variantForPurchase });
 
-  const { quantity, maxQuantity, adjustQuantity } = useProductQuantity({
+  const { quantity, adjustQuantity } = useProductQuantity({
     currentVariant: variantForPurchase,
-    isOutOfStock,
     isVariationRequired,
   });
 
@@ -346,7 +345,6 @@ export function useProductPage({
     originalPrice,
     compareAtPrice,
     discountPercent,
-    maxQuantity,
     isOutOfStock,
     canAddToCart,
     adjustQuantity,
