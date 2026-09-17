@@ -4,10 +4,10 @@
       "retry": "Retry"
     },
     "hero": {
-      "title": "We Make Concepts Real",
-      "titleMobile": "We Make\nConcepts Real",
+      "title": "New Accessory Unlocked",
+      "titleMobile": "New Accessory\nUnlocked",
       "tagline": {
-        "lead": "Premium ",
+        "lead": "Unique ",
         "bold1": "accessories",
         "mid": " that redefine your ",
         "bold2": "rituals",
@@ -78,7 +78,7 @@
       "nextAria": "Next"
     },
     "upcoming": {
-      "title": "Upcoming",
+      "title": "Explore More",
       "loadError": "Failed to load upcoming products.",
       "noUpcoming": "No upcoming products yet.",
       "orderCta": "Order",
