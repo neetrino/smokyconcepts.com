@@ -208,6 +208,8 @@
     "cancel": "Отмена",
     "noCategories": "Категорий пока нет. Создайте выше.",
     "noItems": "В этой категории нет позиций.",
+    "searchPlaceholder": "Поиск по названию",
+    "noSearchResults": "По этому названию ничего не найдено.",
     "titleRequired": "Укажите название",
     "itemFieldsRequired": "Нужны название и изображение",
     "categoryCreated": "Категория создана",

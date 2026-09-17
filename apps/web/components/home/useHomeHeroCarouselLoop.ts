@@ -123,7 +123,17 @@ export function useHomeHeroCarouselLoop(slides: HomeHeroSlide[]) {
         return;
       }
 
-      setDisplayIndexSynced((prev) => prev + delta);
+      setDisplayIndexSynced((prev) => {
+        const next = prev + delta;
+        const lastCloneIndex = total + 1;
+        if (next < 0) {
+          return 0;
+        }
+        if (next > lastCloneIndex) {
+          return lastCloneIndex;
+        }
+        return next;
+      });
     },
     [hasMultipleSlides, setDisplayIndexSynced, clearSnapFallback]
   );

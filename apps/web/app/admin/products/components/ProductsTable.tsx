@@ -10,6 +10,8 @@ import {
   PRODUCTS_TABLE_HEADER_TH_STICKY_CLASS,
   PRODUCTS_TABLE_HEADER_TH_STICKY_FIRST_CLASS,
   PRODUCTS_TABLE_HEADER_TH_STICKY_LAST_CLASS,
+  PRODUCTS_TABLE_STOCK_CELL_CLASS,
+  PRODUCTS_TABLE_STOCK_LINE_CLASS,
 } from '../constants/productsTable.constants';
 import type { Product, ProductsResponse } from '../types';
 import { formatAdminDate } from '../../utils/formatAdminDate';
@@ -48,6 +50,10 @@ const processImageUrl = (url: string | null) => {
   // For relative paths, ensure they start with a slash
   return url.startsWith('/') ? url : `/${url}`;
 };
+
+function formatColorStocksLine(colorStocks: Array<{ color: string; stock: number }>): string {
+  return colorStocks.map((item) => `${item.color} ${item.stock}`).join(' · ');
+}
 
 export function ProductsTable({
   loading,
@@ -380,19 +386,14 @@ export function ProductsTable({
                         <div className="text-sm font-medium text-[#122a26]">{product.title}</div>
                       </div>
                     </td>
-                    <td className="px-3 py-4">
+                    <td className={PRODUCTS_TABLE_STOCK_CELL_CLASS}>
                       {product.colorStocks && product.colorStocks.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                          {product.colorStocks.map((colorStock) => (
-                            <div
-                              key={colorStock.color}
-                              className="px-3 py-1 bg-[#dcc090]/20 rounded-lg text-sm"
-                            >
-                              <span className="font-medium text-[#122a26]">{colorStock.color}:</span>
-                              <span className="ml-1 text-[#414141]/65">{colorStock.stock} {t('admin.products.pcs')}</span>
-                            </div>
-                          ))}
-                        </div>
+                        <p
+                          className={PRODUCTS_TABLE_STOCK_LINE_CLASS}
+                          title={formatColorStocksLine(product.colorStocks)}
+                        >
+                          {formatColorStocksLine(product.colorStocks)}
+                        </p>
                       ) : (
                         <span className="text-sm text-[#414141]/60">
                           {product.stock > 0 ? `${product.stock} ${t('admin.products.pcs')}` : `0 ${t('admin.products.pcs')}`}

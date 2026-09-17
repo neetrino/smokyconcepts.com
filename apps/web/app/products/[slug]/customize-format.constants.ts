@@ -67,7 +67,7 @@ export const CUSTOMIZE_FORMAT_CONTROL_ACTIVE_ICON_CLASS =
 /** Font trigger outline while a mandatory font pick is missing. */
 export const CUSTOMIZE_FORMAT_CONTROL_INVALID_CLASS = 'ring-1 ring-red-600';
 export const CUSTOMIZE_FONT_REQUIRED_HINT_CLASS =
-  'mt-1 font-montserrat text-[12px] font-medium leading-4 text-red-600';
+  'mt-1 max-w-full font-montserrat text-[12px] font-medium leading-4 text-red-600';
 
 /** Toolbar + font validation hint stacked, so the hint stays under the font control. */
 export const CUSTOMIZE_FORMAT_TOOLBAR_COLUMN_CLASS = 'flex min-w-0 shrink-0 flex-col';
@@ -76,12 +76,13 @@ export const CUSTOMIZE_FORMAT_TOOLBAR_COLUMN_CLASS = 'flex min-w-0 shrink-0 flex
 export const CUSTOMIZE_FORMAT_TOOLBAR_CLASS =
   'relative flex shrink-0 flex-nowrap items-center gap-2 overflow-visible sm:gap-3';
 
-/** Customize format row — mobile: input then toolbar; desktop: input left, toolbar flush right. */
+/** Customize format row — mobile: input then toolbar; desktop: input left, toolbar flush right.
+ * `items-start` keeps the input + counter still when the font-required hint appears under the toolbar. */
 export const CUSTOMIZE_FORMAT_ROW_CLASS =
-  'flex w-full min-w-0 flex-col items-stretch gap-3 overflow-visible sm:flex-row sm:items-end sm:gap-6';
+  'flex w-full min-w-0 flex-col items-stretch gap-3 overflow-visible sm:flex-row sm:items-start sm:gap-6';
 
 export const CUSTOMIZE_FORMAT_INPUT_WRAPPER_CLASS =
-  'min-w-0 w-full shrink sm:max-w-[200px]';
+  'min-w-0 w-full shrink sm:max-w-[200px] sm:self-start';
 
 /** Desktop-only flex spacer between input and toolbar. */
 export const CUSTOMIZE_FORMAT_ROW_SPACER_CLASS = 'hidden min-w-0 flex-1 sm:block';

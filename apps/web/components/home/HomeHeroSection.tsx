@@ -18,6 +18,16 @@ const HERO_AUTO_SLIDE_RESUME_DELAY_MS = 10_000;
 const HERO_SWIPE_THRESHOLD_PX = 40;
 const HERO_HORIZONTAL_SWIPE_LOCK_PX = 12;
 
+/** Opaque stage + compositor clip so swipe transforms cannot flash the page background. */
+const HERO_FRAME_CLASS_NAME =
+  'relative isolate overflow-hidden rounded-[1.5rem] bg-black [clip-path:inset(0_round_1.5rem)] [transform:translateZ(0)] sm:rounded-[2.25rem] sm:[clip-path:inset(0_round_2.25rem)]';
+const HERO_VIEWPORT_CLASS_NAME =
+  'relative h-[28rem] touch-pan-y overscroll-none sm:h-[32rem]';
+const HERO_TRACK_CLASS_NAME =
+  'relative z-0 flex h-full bg-black [backface-visibility:hidden]';
+const HERO_TRACK_SLIDE_CLASS_NAME =
+  'relative h-full w-full min-w-full shrink-0 overflow-hidden bg-black shadow-[0_0_0_1px_#000] [backface-visibility:hidden] [transform:translateZ(0)]';
+
 interface HeroTouchState {
   startX: number | null;
   currentX: number | null;
@@ -138,8 +148,6 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
   }
 
   const lines = getHomeHeroSlideLines(current, lang);
-  const currentDesktopSrc = getHomeHeroSlideImageSrc(current, 'desktop');
-  const currentMobileSrc = getHomeHeroSlideImageSrc(current, 'mobile');
 
   const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     if (!hasMultipleSlides) {
@@ -206,10 +214,10 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-[1.5rem] sm:rounded-[2.25rem]">
+    <div className={HERO_FRAME_CLASS_NAME}>
       <div
         ref={heroRef}
-        className="relative h-[28rem] touch-pan-y sm:h-[32rem]"
+        className={HERO_VIEWPORT_CLASS_NAME}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -218,39 +226,13 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
           scheduleAutoSlideResume();
         }}
       >
-        <div className="relative h-full overflow-hidden">
-          <div className="absolute inset-0 z-0">
-            <Image
-              src={currentDesktopSrc}
-              alt=""
-              fill
-              aria-hidden
-              className="hidden object-cover md:block"
-              priority
-              sizes="1680px"
-              unoptimized={
-                currentDesktopSrc.startsWith('http://') || currentDesktopSrc.startsWith('https://')
-              }
-            />
-            <Image
-              src={currentMobileSrc}
-              alt=""
-              fill
-              aria-hidden
-              className="object-cover md:hidden"
-              priority
-              sizes="100vw"
-              unoptimized={
-                currentMobileSrc.startsWith('http://') || currentMobileSrc.startsWith('https://')
-              }
-            />
-          </div>
+        <div className="relative h-full overflow-hidden bg-black">
           <div
-            className={`relative z-[1] flex h-full ${
+            className={`${HERO_TRACK_CLASS_NAME} ${
               isDragging || suppressTransition ? '' : 'transition-transform duration-500 ease-in-out'
             }`}
             style={{
-              transform: `translateX(calc(-${displayIndex * 100}% + ${dragOffsetPx}px))`,
+              transform: `translate3d(calc(-${displayIndex * 100}% + ${dragOffsetPx}px), 0, 0)`,
             }}
             onTransitionEnd={handleTrackTransitionEnd}
           >
@@ -260,30 +242,29 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
               const desktopSrc = getHomeHeroSlideImageSrc(slide, 'desktop');
               const mobileSrc = getHomeHeroSlideImageSrc(slide, 'mobile');
               const slideKey = `${desktopSrc}-${mobileSrc}-${index}`;
+              const isPriority = isHeroSlidePriority(index, trackSlides.length, hasMultipleSlides);
 
               return (
-                <div key={slideKey} className="relative h-full w-full shrink-0">
+                <div key={slideKey} className={HERO_TRACK_SLIDE_CLASS_NAME}>
                   <Image
                     src={desktopSrc}
                     alt={alt}
                     fill
+                    draggable={false}
                     className="hidden object-cover md:block"
-                    priority={hasMultipleSlides ? index === 1 : index === 0}
+                    priority={isPriority}
                     sizes="1680px"
-                    unoptimized={
-                      desktopSrc.startsWith('http://') || desktopSrc.startsWith('https://')
-                    }
+                    unoptimized={isRemoteHeroSrc(desktopSrc)}
                   />
                   <Image
                     src={mobileSrc}
                     alt={alt}
                     fill
+                    draggable={false}
                     className="object-cover md:hidden"
-                    priority={hasMultipleSlides ? index === 1 : index === 0}
+                    priority={isPriority}
                     sizes="100vw"
-                    unoptimized={
-                      mobileSrc.startsWith('http://') || mobileSrc.startsWith('https://')
-                    }
+                    unoptimized={isRemoteHeroSrc(mobileSrc)}
                   />
                 </div>
               );
@@ -324,4 +305,20 @@ export function HomeHeroSection({ slides }: HomeHeroSectionProps) {
       </div>
     </div>
   );
+}
+
+function isRemoteHeroSrc(src: string): boolean {
+  return src.startsWith('http://') || src.startsWith('https://');
+}
+
+function isHeroSlidePriority(
+  index: number,
+  trackSlideCount: number,
+  hasMultipleSlides: boolean,
+): boolean {
+  if (!hasMultipleSlides) {
+    return index === 0;
+  }
+
+  return index <= 1 || index === trackSlideCount - 1;
 }

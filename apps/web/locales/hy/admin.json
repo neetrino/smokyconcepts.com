@@ -208,6 +208,8 @@
     "cancel": "Չեղարկել",
     "noCategories": "Դեռ չափի կատեգորիա չկա։ Ստեղծեք վերևից։",
     "noItems": "Այս կատեգորիայում տարրեր չկան։",
+    "searchPlaceholder": "Որոնել ըստ անվան",
+    "noSearchResults": "Այդ անունով տարր չի գտնվել։",
     "titleRequired": "Անվանումը պարտադիր է",
     "itemFieldsRequired": "Անվանումը և նկարը պարտադիր են",
     "categoryCreated": "Կատեգորիան ստեղծվեց",
