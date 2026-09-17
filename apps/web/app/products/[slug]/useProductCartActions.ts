@@ -28,7 +28,7 @@ interface UseProductCartActionsParams {
   selectedCustomSizeRequest: CustomOrderDraft | null;
   /** Last applied PDP customize (Apply) — attached to guest cart lines */
   customizeApplied: { plain: string; html: string | null } | null;
-  /** Collection surcharge from the product's collection price. */
+  /** Collection surcharge from the product's collection price (only with customize text). */
   collectionPriceAmd: number;
   collectionCategoryTitle: string | null;
   setIsAddingToCart: (value: boolean) => void;
@@ -63,8 +63,17 @@ export function useProductCartActions({
 
       setIsAddingToCart(true);
       try {
+        const customizeForLine =
+          customizeApplied != null &&
+          (customizeApplied.plain.trim() !== '' ||
+            (customizeApplied.html != null && customizeApplied.html.trim() !== ''))
+            ? {
+                plain: customizeApplied.plain.trim(),
+                html: customizeApplied.html?.trim() ? customizeApplied.html.trim() : null,
+              }
+            : null;
         const collectionSnapshot =
-          collectionPriceAmd > 0
+          collectionPriceAmd > 0 && customizeForLine != null
             ? {
                 categoryTitle: collectionCategoryTitle?.trim() ?? '',
                 categoryPriceAmd: collectionPriceAmd,
@@ -99,15 +108,6 @@ export function useProductCartActions({
                 description: selectedCustomSizeRequest.description,
                 imageDataUrl: selectedCustomSizeRequest.imageDataUrl,
                 imageFileName: selectedCustomSizeRequest.imageFileName,
-              }
-            : null;
-        const customizeForLine =
-          customizeApplied != null &&
-          (customizeApplied.plain.trim() !== '' ||
-            (customizeApplied.html != null && customizeApplied.html.trim() !== ''))
-            ? {
-                plain: customizeApplied.plain.trim(),
-                html: customizeApplied.html?.trim() ? customizeApplied.html.trim() : null,
               }
             : null;
         const snapshot = buildGuestCartLineSnapshot(

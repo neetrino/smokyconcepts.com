@@ -60,9 +60,9 @@ export const PERSONALIZE_FIELD_LABEL_CLASS =
 export const PERSONALIZE_UNDERLINE_INPUT_CLASS =
   'w-full border-0 border-b border-[#c4b998] bg-transparent px-0 pb-1 pt-1 text-sm font-bold text-[#414141] placeholder:text-[#414141]/45 focus:border-[#dcc090] focus:outline-none focus:ring-0 lg:text-[clamp(0.5rem,0.78vw,0.9375rem)] lg:font-semibold lg:leading-[23px]' as const;
 
-/** Comment field keeps the underline style but uses the requested 18px text. */
+/** Comment field matches the underline input typography, including placeholder size. */
 export const PERSONALIZE_COMMENT_INPUT_CLASS =
-  `${PERSONALIZE_UNDERLINE_INPUT_CLASS} resize-none !text-[18px] lg:!text-[18px]` as const;
+  `${PERSONALIZE_UNDERLINE_INPUT_CLASS} resize-none` as const;
 
 /** Page title — mobile 24px, desktop 40px extrabold. */
 export const PERSONALIZE_TITLE_CLASS =

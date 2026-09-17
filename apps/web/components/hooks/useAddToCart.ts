@@ -21,8 +21,6 @@ interface UseAddToCartProps {
   defaultSku: string;
   sizeLabel: string;
   categoryLabel: string;
-  collectionCategoryTitle?: string | null;
-  collectionPriceAmd?: number;
 }
 
 interface AddToCartOptions {
@@ -44,8 +42,6 @@ export function useAddToCart({
   defaultSku,
   sizeLabel,
   categoryLabel,
-  collectionCategoryTitle,
-  collectionPriceAmd,
 }: UseAddToCartProps) {
   const { t } = useTranslation();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -78,8 +74,6 @@ export function useAddToCart({
         sizeLabel: sizeLabel.trim() || null,
         categoryLabel,
         quantity: 1,
-        sizeCatalogCategoryTitle: collectionCategoryTitle ?? null,
-        sizeCatalogCategoryPriceAmd: collectionPriceAmd ?? 0,
       });
       upsertGuestCartLineSnapshot(line);
 

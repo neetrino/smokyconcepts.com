@@ -11,6 +11,7 @@ import type { ProductWithFullRelations, ProductVariantWithOptions } from "./type
 import { getCachedDiscountSettings } from '../discount-settings-cache';
 import {
   extractSizeCatalogSelectionFromAttributes,
+  filterDisplayableVariantOptions,
   isDefaultPricingVariant,
   isDisplayVariant,
 } from "@/lib/default-pricing-variant";
@@ -249,7 +250,7 @@ function transformVariants(
         stock: variant.stock,
         imageUrl: variantImageUrl,
         isDisplayVariant: isDisplayVariant(variant as { attributes?: unknown }),
-        options: getVariantOptions(variant).map((opt: VariantOptionFromAttributes) => {
+        options: filterDisplayableVariantOptions(getVariantOptions(variant)).map((opt: VariantOptionFromAttributes) => {
           // Support both new format (AttributeValue) and old format (attributeKey/value)
           if (opt.attributeValue) {
             // New format: use AttributeValue

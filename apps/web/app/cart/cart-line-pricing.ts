@@ -1,4 +1,5 @@
 import { adminInputAmdToUsd } from '@/lib/currency';
+import { orderItemHasSavedCustomize } from '@/lib/orders/order-item-has-saved-customize';
 import {
   normalizeSizeCatalogCategoryTitleKey,
   resolveSizeCatalogCategoryPriceAmd,
@@ -18,12 +19,16 @@ function resolveCartLineCategoryTitle(variant: CartLineVariant): string | undefi
 
 /**
  * Collection surcharge AMD for a cart line.
- * Uses persisted line snapshot first, then category title lookup when needed.
+ * Applied only when the line has customize text; uses snapshot, then title lookup.
  */
 export function resolveCartLineCollectionPriceAmd(
   item: CartItem,
   categoryPriceByTitle?: Map<string, number>
 ): number {
+  if (!orderItemHasSavedCustomize(item.variant)) {
+    return 0;
+  }
+
   const stored = item.variant.sizeCatalogCategoryPriceAmd;
   if (typeof stored === 'number' && Number.isFinite(stored) && stored > 0) {
     return Math.round(stored);

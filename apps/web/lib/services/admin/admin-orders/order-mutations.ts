@@ -2,6 +2,11 @@ import { db } from "@white-shop/db";
 import { Prisma } from "@prisma/client";
 import { logger } from "../../utils/logger";
 import {
+  isOrderHoldingStock,
+  restoreOrderStock,
+  shouldRestoreOrderStock,
+} from "@/lib/services/order-stock";
+import {
   reverseArcaPaymentForOrder,
   shouldReverseArcaPayment,
 } from "./arca-payment-reversal";
@@ -93,6 +98,7 @@ export async function deleteOrder(orderId: string) {
         id: true,
         number: true,
         status: true,
+        paymentStatus: true,
         total: true,
         _count: {
           select: {
@@ -126,8 +132,19 @@ export async function deleteOrder(orderId: string) {
 
     // Հեռացնում ենք պատվերը (cascade-ը ավտոմատ կհեռացնի կապված items, payments, events)
     try {
-      await db.order.delete({
-        where: { id: orderId },
+      await db.$transaction(async (tx: Prisma.TransactionClient) => {
+        if (
+          isOrderHoldingStock({
+            status: existing.status,
+            paymentStatus: existing.paymentStatus,
+          })
+        ) {
+          await restoreOrderStock(tx, orderId);
+        }
+
+        await tx.order.delete({
+          where: { id: orderId },
+        });
       });
       logger.info('Order deleted successfully', { orderId, orderNumber: existing.number });
     } catch (deleteError: unknown) {
@@ -258,6 +275,12 @@ export async function updateOrder(orderId: string, data: UpdateOrderData) {
     }
 
     const updateData = buildOrderUpdateData(data, existing, Boolean(arcaReversal));
+    const shouldRestoreStock = shouldRestoreOrderStock({
+      existingStatus: existing.status,
+      existingPaymentStatus: existing.paymentStatus,
+      nextStatus: data.status,
+      nextPaymentStatus: updateData.paymentStatus,
+    });
 
     const order = await db.$transaction(async (tx: Prisma.TransactionClient) => {
       const updated = await tx.order.update({
@@ -268,6 +291,10 @@ export async function updateOrder(orderId: string, data: UpdateOrderData) {
           payments: true,
         },
       });
+
+      if (shouldRestoreStock) {
+        await restoreOrderStock(tx, orderId);
+      }
 
       if (arcaReversal) {
         await tx.payment.update({
@@ -291,6 +318,7 @@ export async function updateOrder(orderId: string, data: UpdateOrderData) {
             newStatus: data.status || existing.status,
             previousPaymentStatus: existing.paymentStatus,
             newPaymentStatus: updateData.paymentStatus || existing.paymentStatus,
+            stockRestored: shouldRestoreStock,
             ...(arcaReversal
               ? {
                   arcaAction: arcaReversal.action,

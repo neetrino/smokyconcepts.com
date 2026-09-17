@@ -163,6 +163,7 @@ export function ProductPageClient({
 
   const { collectionPriceAmd, collectionCategoryTitle } = useProductSizeCatalogCollectionPrice({
     product,
+    hasCustomizeText: hasCustomizePreviewText,
   });
 
   const displayPrice =

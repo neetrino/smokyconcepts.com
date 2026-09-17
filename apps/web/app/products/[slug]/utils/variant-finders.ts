@@ -74,6 +74,15 @@ export function findVariantByGalleryImage(
   return matches.find((variant) => variant.stock > 0) ?? matches[0];
 }
 
+function preferPurchasableVariant(matches: ProductVariant[]): ProductVariant | null {
+  if (matches.length === 0) {
+    return null;
+  }
+  const nonDisplay = matches.filter((variant) => !variant.isDisplayVariant);
+  const pool = nonDisplay.length > 0 ? nonDisplay : matches;
+  return pool.find((variant) => variant.stock > 0) ?? pool[0] ?? null;
+}
+
 /**
  * Find variant by color and size
  * @param product - Product to search in
@@ -91,42 +100,29 @@ export function findVariantByColorAndSize(
   const normalizedColor = color?.toLowerCase().trim();
   const normalizedSize = size?.toLowerCase().trim();
 
-  // 1. Try exact match (Case-insensitive)
-  // IMPORTANT: Use variantHasColor to check ALL color options, not just the first one
   if (normalizedColor && normalizedSize) {
-    const variant = product.variants.find((v) => {
-      const hasColor = variantHasColor(v, normalizedColor);
-      return hasColor && variantHasOptionValue(v, 'size', normalizedSize);
-    });
-    if (variant) return variant;
+    return preferPurchasableVariant(
+      product.variants.filter(
+        (variant) =>
+          variantHasColor(variant, normalizedColor) &&
+          variantHasOptionValue(variant, 'size', normalizedSize)
+      )
+    );
   }
 
-  // 2. If color selected but no exact match with size, find any variant of this color
   if (normalizedColor) {
-    // Prefer in-stock variant of this color
-    // IMPORTANT: Use variantHasColor to check ALL color options
-    const colorVariants = product.variants.filter((v) =>
-      variantHasColor(v, normalizedColor)
+    return preferPurchasableVariant(
+      product.variants.filter((variant) => variantHasColor(variant, normalizedColor))
     );
-
-    if (colorVariants.length > 0) {
-      return colorVariants.find((v) => v.stock > 0) || colorVariants[0];
-    }
   }
 
-  // 3. If only size selected or fallback for size
   if (normalizedSize) {
-    const sizeVariants = product.variants.filter((v) =>
-      variantHasOptionValue(v, 'size', normalizedSize)
+    return preferPurchasableVariant(
+      product.variants.filter((variant) => variantHasOptionValue(variant, 'size', normalizedSize))
     );
-
-    if (sizeVariants.length > 0) {
-      return sizeVariants.find((v) => v.stock > 0) || sizeVariants[0];
-    }
   }
 
-  // 4. Ultimate fallback
-  return product.variants.find((v) => v.stock > 0) || product.variants[0] || null;
+  return null;
 }
 
 /**
@@ -185,21 +181,19 @@ export function findVariantByAllAttributes(
     return true;
   };
 
-  // 1. Try to find exact match with all attributes
-  const exactMatch = product.variants.find(
-    (v) => variantMatches(v) && v.imageUrl
+  const exactMatches = product.variants.filter(variantMatches);
+  const exactWithImage = preferPurchasableVariant(
+    exactMatches.filter((variant) => Boolean(variant.imageUrl))
   );
-  if (exactMatch) {
-    return exactMatch;
+  if (exactWithImage) {
+    return exactWithImage;
   }
 
-  // 2. Try to find any match (even without image) with all attributes
-  const anyMatch = product.variants.find((v) => variantMatches(v));
-  if (anyMatch) {
-    return anyMatch;
+  const anyExact = preferPurchasableVariant(exactMatches);
+  if (anyExact) {
+    return anyExact;
   }
 
-  // 3. Fallback: find by color and size only
   if (normalizedColor || normalizedSize) {
     return findVariantByColorAndSize(
       product,
@@ -208,8 +202,7 @@ export function findVariantByAllAttributes(
     );
   }
 
-  // 4. Ultimate fallback
-  return product.variants.find((v) => v.stock > 0) || product.variants[0] || null;
+  return null;
 }
 
 

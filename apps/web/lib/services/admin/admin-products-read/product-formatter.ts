@@ -1,6 +1,11 @@
 import { catalogPriceForStorefront } from '@/lib/currency';
 import { isDefaultPricingVariant, isDisplayVariant } from '@/lib/default-pricing-variant';
 import { processImageUrl, smartSplitUrls } from '../../utils/image-utils';
+import {
+  buildColorStocks,
+  getSelectableInventoryVariants,
+  sumVariantStock,
+} from './variant-stock-summary';
 
 interface ProductListCategory {
   translations?: Array<{
@@ -49,6 +54,7 @@ export function formatProductForList(
   const variants = Array.isArray(product.variants) ? product.variants : [];
   const defaultPricingVariant = variants.find((item) => isDefaultPricingVariant(item));
   const pricingVariant = defaultPricingVariant ?? variants[0] ?? null;
+  const inventoryVariants = getSelectableInventoryVariants(variants);
 
   const image = resolveProductListImage(product.media, variants);
   const relationCategories = Array.isArray(product.categories)
@@ -73,12 +79,12 @@ export function formatProductForList(
     featured: product.featured || false,
     upcoming: product.upcoming || false,
     price: catalogPriceForStorefront(pricingVariant?.price || 0),
-    stock: pricingVariant?.stock || 0,
+    stock: sumVariantStock(inventoryVariants),
     discountPercent: product.discountPercent || 0,
     compareAtPrice:
       pricingVariant?.compareAtPrice != null ? catalogPriceForStorefront(pricingVariant.compareAtPrice) : null,
     categories,
-    colorStocks: [], // Can be enhanced later
+    colorStocks: buildColorStocks(inventoryVariants),
     image,
     createdAt: product.createdAt.toISOString(),
   };
