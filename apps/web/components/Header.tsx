@@ -17,8 +17,8 @@ import {
 import { HeaderDesktopAccount } from './HeaderAccountMenu';
 
 const NAVIGATION_ITEMS = [
-  { label: 'Shop', href: '/' },
-  { label: 'Products', href: '/products' },
+  { label: 'Home', href: '/' },
+  { label: 'Shop', href: '/products' },
   { label: 'About', href: '/about' },
 ] as const;
 
