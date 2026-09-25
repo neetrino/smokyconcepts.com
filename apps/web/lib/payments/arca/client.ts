@@ -69,11 +69,16 @@ async function registerAmeriaOrder(
 ): Promise<ArcaRegisterOrderResponse> {
   const config = getArcaConfig();
   const currency = resolvePaymentCurrencyForBank(config.bank, request.currency);
-  const usedIds = await loadUsedAmeriaGatewayOrderIds();
+  let usedIds = new Set<number>();
+  let historyLoaded = false;
   let lastErrorCode: number | string = -1;
   let lastErrorMessage = 'Ameria InitPayment returned an error';
 
   for (let attempt = 0; attempt < AMERIA_INIT_MAX_ATTEMPTS; attempt += 1) {
+    if (attempt > 0 && !historyLoaded) {
+      usedIds = await loadUsedAmeriaGatewayOrderIds();
+      historyLoaded = true;
+    }
     const ameriaOrderId = resolveAmeriaOrderId(request.orderNumber, attempt, usedIds);
     usedIds.add(ameriaOrderId);
 

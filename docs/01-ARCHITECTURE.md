@@ -94,8 +94,8 @@ WhiteShop Template-ը պրոֆեսիոնալ e-commerce հարթակ է, որը 
   - Settings, ContactMessage
 
 ### Cache
-- **Տեխնոլոգիա.** Redis (ioredis)
-- **Նշանակություն.** Հարցումների cache, session storage
+- **Տեխնոլոգիա.** Upstash Redis REST (`@upstash/redis`), ioredis TCP fallback
+- **Նշանակություն.** Rate limiting, հարցումների cache
 
 ### Որոնում
 - **Տեխնոլոգիա.** Meilisearch
@@ -266,7 +266,7 @@ WhiteShop-Template/
 |--------|----------------|-------------------|
 | Neon | PostgreSQL database | [Neon Docs](https://neon.tech/docs) |
 | Meilisearch | Որոնում | [Meilisearch Docs](https://www.meilisearch.com/docs) |
-| Redis | Cache | [ioredis Docs](https://github.com/redis/ioredis) |
+| Upstash Redis | Cache, rate limiting | [Upstash Redis Docs](https://upstash.com/docs/redis) |
 | Cloudflare R2 | Ֆայլերի պահոց (քննարկման) | [R2 Docs](https://developers.cloudflare.com/r2/) |
 | Vercel | Frontend hosting | [Vercel Docs](https://vercel.com/docs) |
 
@@ -357,7 +357,7 @@ External Services:
 | Auth | Custom JWT | Պարզ, ամբողջական վերահսկում |
 | i18n | Custom (locales/) | Բազմալեզու աջակցություն |
 | Որոնում | Meilisearch | Արագ, typo-tolerant |
-| Cache | Redis (ioredis) | Session, query cache |
+| Cache | Upstash Redis REST | Rate limit, query cache |
 
 ---
 

@@ -39,7 +39,7 @@ export function buildFormData(
     slug: product.slug || '',
     descriptionHtml: product.descriptionHtml || '',
     productDetailsHtml: productTabHtmlToEditableText(product.productDetailsHtml || ''),
-    shippingHtml: product.shippingHtml || '',
+    shippingHtml: productTabHtmlToEditableText(product.shippingHtml || ''),
     brandIds: [],
     primaryCategoryId: product.primaryCategoryId || '',
     categoryIds: product.categoryIds || [],

@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { db } from '@white-shop/db';
 import { buildIdramSuccessRedirect } from '@/lib/payments/idram/redirects';
+import { isPaymentReturnProbe, paymentReturnProbeResponse } from '@/lib/payments/payment-return-probe';
 import { createPaymentReturnResponse } from '@/lib/payments/idram/top-level-redirect';
 import { appendOrderAccessCookie } from '@/lib/orders/order-access-cookie.server';
 import { logger } from '@/lib/utils/logger';
@@ -21,7 +22,15 @@ function resolveOrderNumber(query: URLSearchParams): string {
   return '';
 }
 
+export function HEAD() {
+  return paymentReturnProbeResponse();
+}
+
 export async function GET(req: NextRequest) {
+  if (isPaymentReturnProbe(req)) {
+    return paymentReturnProbeResponse();
+  }
+
   const orderNumber = resolveOrderNumber(req.nextUrl.searchParams);
   let orderId: string | undefined;
 

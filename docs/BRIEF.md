@@ -57,7 +57,7 @@ WhiteShop Template-ը պրոֆեսիոնալ e-commerce հարթակ է, որը 
 
 - [x] Աուտենտիֆիկացիա (Custom JWT)
 - [x] Որոնում (Meilisearch)
-- [x] Cache (Redis / ioredis)
+- [x] Cache (Upstash Redis REST / ioredis fallback)
 - [ ] Ֆայլերի պահոց (Cloudflare R2 — քննարկել)
 - [ ] Վճարային համակարգ (Stripe / YooKassa / այլ — քննարկել)
 - [ ] Email mailing (Resend / SendGrid / այլ — քննարկել)

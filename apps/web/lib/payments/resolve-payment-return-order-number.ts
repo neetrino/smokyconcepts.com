@@ -6,6 +6,8 @@ export function resolvePaymentReturnOrderNumber(searchParams: URLSearchParams): 
     searchParams.get('orderNumber'),
     searchParams.get('order_number'),
     searchParams.get('order'),
+    searchParams.get('opaque'),
+    searchParams.get('Opaque'),
     searchParams.get('EDP_BILL_NO'),
   ];
   for (const candidate of candidates) {

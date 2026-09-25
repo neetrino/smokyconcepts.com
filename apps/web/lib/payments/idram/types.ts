@@ -18,4 +18,6 @@ export type IdramFormFields = {
   EDP_AMOUNT: string;
   EDP_BILL_NO: string;
   EDP_EMAIL?: string;
+  /** Non-EDP field. Idram echoes it back on SUCCESS_URL and FAIL_URL. */
+  orderNumber?: string;
 };

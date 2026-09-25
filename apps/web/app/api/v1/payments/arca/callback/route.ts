@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@white-shop/db';
 import { Prisma } from '@prisma/client';
-import { getArcaOrderStatus, isArcaStatusPaid } from '@/lib/payments/arca/client';
+import { getArcaOrderStatus } from '@/lib/payments/arca/client';
+import {
+  readConfirmAttempt,
+  readSettledArcaStatus,
+  resolveArcaCallbackAction,
+  respondToUnsettledArcaCallback,
+} from '@/lib/payments/arca/callback-status';
+import { isPaymentReturnProbe, paymentReturnProbeResponse } from '@/lib/payments/payment-return-probe';
 import { appendOrderAccessCookie } from '@/lib/orders/order-access-cookie.server';
+import { resolveOrderNumberFromAccessCookie } from '@/lib/orders/resolve-order-number-from-access-cookie';
 import { restoreOrderStock, shouldRestoreOrderStock } from '@/lib/services/order-stock';
 import { logger } from '@/lib/utils/logger';
 
@@ -30,12 +38,21 @@ function buildSuccessResponse(
   return response;
 }
 
+async function redirectToPaymentFailed(
+  req: NextRequest,
+  orderNumber?: string | null,
+): Promise<NextResponse> {
+  const trimmed = orderNumber?.trim() ?? '';
+  const resolved = trimmed || (await resolveOrderNumberFromAccessCookie(req));
+  return NextResponse.redirect(buildFailureRedirect(req, resolved));
+}
+
 function buildFailureRedirect(req: NextRequest, orderNumber?: string): string {
   const query = new URLSearchParams({
     payment: 'failed',
   });
-  if (orderNumber) {
-    query.set('orderNumber', orderNumber);
+  if (orderNumber?.trim()) {
+    query.set('orderNumber', orderNumber.trim());
   }
   return `${originFromRequest(req)}/checkout/payment-failed?${query.toString()}`;
 }
@@ -110,13 +127,21 @@ async function findOrderForCallback(orderNumber: string | null, providerOrderId:
   return payment?.order ?? null;
 }
 
+export function HEAD(): NextResponse {
+  return paymentReturnProbeResponse();
+}
+
 export async function GET(req: NextRequest) {
+  if (isPaymentReturnProbe(req)) {
+    return paymentReturnProbeResponse();
+  }
+
   const query = req.nextUrl.searchParams;
   const orderNumber = query.get('order') ?? query.get('opaque') ?? query.get('Opaque');
   const providerOrderId = resolveProviderOrderId(query);
 
   if (!providerOrderId && !(orderNumber?.trim() ?? '')) {
-    return NextResponse.redirect(buildFailureRedirect(req, orderNumber ?? undefined));
+    return redirectToPaymentFailed(req, orderNumber);
   }
 
   try {
@@ -126,7 +151,7 @@ export async function GET(req: NextRequest) {
         providerOrderId,
         orderNumber,
       });
-      return NextResponse.redirect(buildFailureRedirect(req, orderNumber ?? undefined));
+      return redirectToPaymentFailed(req, orderNumber);
     }
 
     const payment = order.payments.find((item: { provider: string }) => item.provider === PAYMENT_PROVIDER);
@@ -135,7 +160,7 @@ export async function GET(req: NextRequest) {
         orderId: order.id,
         orderNumber: order.number,
       });
-      return NextResponse.redirect(buildFailureRedirect(req, order.number));
+      return redirectToPaymentFailed(req, order.number);
     }
 
     if (order.paymentStatus === 'paid' || payment.status === 'completed') {
@@ -147,10 +172,14 @@ export async function GET(req: NextRequest) {
       logger.warn('Arca callback missing provider order id after order lookup', {
         orderNumber: order.number,
       });
-      return NextResponse.redirect(buildFailureRedirect(req, order.number));
+      return redirectToPaymentFailed(req, order.number);
     }
 
-    const statusResponse = await getArcaOrderStatus(statusOrderId);
+    const isIframe = req.headers.get('sec-fetch-dest') === 'iframe';
+    const confirmAttempt = readConfirmAttempt(query.get('confirmAttempt'));
+    const statusResponse = isIframe
+      ? await getArcaOrderStatus(statusOrderId)
+      : await readSettledArcaStatus(statusOrderId);
     logger.info('Arca callback status response', {
       orderNumber: order.number,
       statusOrderId,
@@ -158,11 +187,27 @@ export async function GET(req: NextRequest) {
       orderStatus: statusResponse.orderStatus,
       paymentState: statusResponse.paymentAmountInfo?.paymentState,
       errorMessage: statusResponse.errorMessage,
+      confirmAttempt,
     });
-    const isPaid = isArcaStatusPaid(statusResponse);
+    const action = resolveArcaCallbackAction({
+      status: statusResponse,
+      confirmAttempt,
+      isIframe,
+    });
+    const unsettledResponse = respondToUnsettledArcaCallback({
+      req,
+      action,
+      confirmAttempt,
+      orderNumber: order.number,
+      origin: originFromRequest(req),
+    });
+    if (unsettledResponse) {
+      return unsettledResponse;
+    }
+
     const now = new Date();
 
-    if (isPaid) {
+    if (action === 'paid') {
       await db.$transaction(async (tx: Prisma.TransactionClient) => {
         await tx.order.update({
           where: { id: order.id },
@@ -240,14 +285,14 @@ export async function GET(req: NextRequest) {
       });
     });
 
-    return NextResponse.redirect(buildFailureRedirect(req, order.number));
+    return redirectToPaymentFailed(req, order.number);
   } catch (error: unknown) {
     logger.error('Arca callback error', {
       error,
       providerOrderId,
       orderNumber,
     });
-    return NextResponse.redirect(buildFailureRedirect(req, orderNumber ?? undefined));
+    return redirectToPaymentFailed(req, orderNumber);
   }
 }
 

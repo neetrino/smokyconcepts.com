@@ -49,6 +49,37 @@ export function isArcaStatusFailed(status: ArcaOrderStatusResponse): boolean {
   return orderStatus === 3 || orderStatus === 6;
 }
 
+/**
+ * Bank has not finished 3DS yet (started, approved, or ACS).
+ * These must not be stored as a failed payment.
+ */
+export function isArcaStatusInProgress(status: ArcaOrderStatusResponse): boolean {
+  if (isArcaStatusPaid(status) || isArcaStatusFailed(status)) {
+    return false;
+  }
+
+  const paymentState = readPaymentState(status);
+  if (
+    paymentState.includes('START') ||
+    paymentState.includes('APPROV') ||
+    paymentState.includes('AUTOAUTHOR') ||
+    paymentState.includes('CREATED') ||
+    paymentState.includes('REGISTER') ||
+    paymentState === '0' ||
+    paymentState === '1' ||
+    paymentState === '5'
+  ) {
+    return true;
+  }
+
+  const orderStatus = normalizeArcaOrderStatus(status.orderStatus);
+  if (orderStatus === 0 || orderStatus === 1 || orderStatus === 5) {
+    return true;
+  }
+
+  return normalizeArcaErrorCode(status.errorCode) === 0 && orderStatus < 0;
+}
+
 /** True when bank payment is already cancelled (void) or refunded. */
 export function isArcaStatusAlreadyReversed(status: ArcaOrderStatusResponse): boolean {
   const paymentState = readPaymentState(status);
