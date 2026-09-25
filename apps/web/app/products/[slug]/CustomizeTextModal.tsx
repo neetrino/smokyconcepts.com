@@ -146,26 +146,26 @@ export function CustomizeTextModal({
         aria-labelledby={titleId}
         className={CUSTOMIZE_TEXT_MODAL_PANEL_CLASS}
       >
-        <div className="relative flex items-center justify-center">
+        <div className="flex items-center justify-center">
           <h2 id={titleId} className={CUSTOMIZE_TEXT_MODAL_TITLE_CLASS}>
             {t(language, 'product.customize_popup_title')}
           </h2>
-          <button
-            type="button"
-            className={CUSTOMIZE_TEXT_MODAL_CLOSE_CLASS}
-            aria-label={t(language, 'product.customize_modal_close_aria')}
-            onClick={onClose}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path
-                d="M18 6L6 18M6 6l12 12"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          </button>
         </div>
+        <button
+          type="button"
+          className={CUSTOMIZE_TEXT_MODAL_CLOSE_CLASS}
+          aria-label={t(language, 'product.customize_modal_close_aria')}
+          onClick={onClose}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path
+              d="M18 6L6 18M6 6l12 12"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
 
         <img
           src={CUSTOMIZE_HERO_PREVIEW_ASSETS.productBadgeSrc}
@@ -241,6 +241,7 @@ export function CustomizeTextModal({
                 isFontInvalid={showFontRequired}
                 isFontShaking={isFontShaking}
                 onFontShakeAnimationEnd={handleFontShakeAnimationEnd}
+                boxed
               />
               {showFontRequired ? (
                 <p className={CUSTOMIZE_FONT_REQUIRED_HINT_CLASS} role="alert">

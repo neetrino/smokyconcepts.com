@@ -33,6 +33,7 @@ import {
 } from '../app/cart/cart-line-pricing';
 import { handleRemoveItem, handleUpdateQuantity } from '../app/cart/cart-handlers';
 import type { Cart, CartItem } from '../app/cart/types';
+import { CartDrawerLineMeta } from './cart/CartDrawerLineMeta';
 
 function resolveCartItemImage(item: CartItem): string | null {
   return (
@@ -101,11 +102,16 @@ export function CartDrawer() {
     setIsOpen(false);
   }, [isExiting]);
 
+  const canCheckout = Boolean(cart && cart.items.length > 0);
+
   const goToCheckout = useCallback(() => {
+    if (!canCheckout) {
+      return;
+    }
     setSkipExitAnimation(true);
     setIsOpen(false);
     router.push('/checkout');
-  }, [router]);
+  }, [canCheckout, router]);
 
   async function loadCart() {
     setCart(readGuestCartFromStorage());
@@ -273,64 +279,60 @@ export function CartDrawer() {
                       ) : null}
                     </Link>
 
-                    <div className="grid flex-1 grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-4">
-                      <div className="min-w-0">
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <div className="flex items-start justify-between gap-4">
                         <Link
                           href={`/products/${item.variant.product.slug}`}
                           onClick={handleClose}
-                          className="block"
+                          className="min-w-0"
                         >
                           <h3 className="line-clamp-1 text-[1.125rem] font-extrabold leading-none text-[#414141]">
                             {item.variant.product.title}
                           </h3>
                         </Link>
 
-                        <div className="mt-1.5 flex items-center gap-2">
-                          {item.variant.sizeLabel?.trim() ? (
-                            <span className="text-[0.625rem] font-medium leading-none text-[#9d9d9d]">
-                              {item.variant.sizeLabel.trim()}
-                            </span>
-                          ) : null}
-                          <span className="rounded-[0.375rem] bg-[#122a26] px-[0.375rem] py-[0.125rem] text-[0.625rem] font-medium leading-none text-white">
-                            {item.variant.product.categoryLabel || 'Classic'}
+                        <button
+                          type="button"
+                          onClick={() => void onRemoveItem(item.id)}
+                          className="mt-[0.125rem] h-[1.375rem] shrink-0 rounded-[0.5rem] border-2 border-[#d83e3e] px-2 text-[0.625rem] font-extrabold leading-none text-[#d83e3e] transition-colors hover:bg-[#d83e3e]/5"
+                        >
+                          Remove
+                        </button>
+                      </div>
+
+                      <CartDrawerLineMeta
+                        item={item}
+                        customizedLabel={t('common.cart.customized')}
+                      />
+
+                      <div className="mt-4 flex items-center justify-between gap-3">
+                        <div className="flex h-6 w-[4.625rem] items-center overflow-hidden rounded-[0.25rem] bg-white">
+                          <button
+                            type="button"
+                            onClick={() => void onUpdateItemQuantity(item.id, item.quantity - 1)}
+                            disabled={updatingItems.has(item.id)}
+                            className="inline-flex h-full w-6 items-center justify-center text-[#122a26] disabled:opacity-50"
+                            aria-label="Decrease quantity"
+                          >
+                            <MinusIcon />
+                          </button>
+                          <span className="inline-flex h-full flex-1 items-center justify-center text-[0.875rem] font-medium leading-none text-[#122a26]">
+                            {item.quantity}
                           </span>
+                          <button
+                            type="button"
+                            onClick={() => void onUpdateItemQuantity(item.id, item.quantity + 1)}
+                            disabled={updatingItems.has(item.id)}
+                            className="inline-flex h-full w-6 items-center justify-center text-[#122a26] disabled:opacity-50"
+                            aria-label="Increase quantity"
+                          >
+                            <PlusIcon />
+                          </button>
                         </div>
-                      </div>
 
-                      <button
-                        type="button"
-                        onClick={() => void onRemoveItem(item.id)}
-                        className="mt-[0.25rem] h-[1.375rem] rounded-[0.5rem] border-2 border-[#d83e3e] px-2 text-[0.625rem] font-extrabold leading-none text-[#d83e3e] transition-colors hover:bg-[#d83e3e]/5"
-                      >
-                        Remove
-                      </button>
-
-                      <div className="flex h-6 w-[4.625rem] items-center overflow-hidden rounded-[0.25rem] bg-white">
-                        <button
-                          type="button"
-                          onClick={() => void onUpdateItemQuantity(item.id, item.quantity - 1)}
-                          disabled={updatingItems.has(item.id)}
-                          className="inline-flex h-full w-6 items-center justify-center text-[#122a26] disabled:opacity-50"
-                          aria-label="Decrease quantity"
-                        >
-                          <MinusIcon />
-                        </button>
-                        <span className="inline-flex h-full flex-1 items-center justify-center text-[0.875rem] font-medium leading-none text-[#122a26]">
-                          {item.quantity}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => void onUpdateItemQuantity(item.id, item.quantity + 1)}
-                          disabled={updatingItems.has(item.id)}
-                          className="inline-flex h-full w-6 items-center justify-center text-[#122a26] disabled:opacity-50"
-                          aria-label="Increase quantity"
-                        >
-                          <PlusIcon />
-                        </button>
-                      </div>
-
-                      <div className="justify-self-end self-center -translate-y-0.5 text-[1.125rem] font-extrabold leading-none text-black">
-                        {formatStorePriceForDisplay(getCartLineMerchandiseTotalUsd(item))}
+                        <div className="text-[1.125rem] font-extrabold leading-none text-black">
+                          {formatStorePriceForDisplay(getCartLineMerchandiseTotalUsd(item))}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -379,7 +381,8 @@ export function CartDrawer() {
             <button
               type="button"
               onClick={goToCheckout}
-              className="mt-6 inline-flex h-10 w-full items-center justify-center rounded-[0.5rem] bg-[#dcc090] text-[0.875rem] font-extrabold uppercase tracking-[0.06em] text-[#122a26] transition-opacity hover:opacity-90"
+              disabled={!canCheckout}
+              className="mt-6 inline-flex h-10 w-full items-center justify-center rounded-[0.5rem] bg-[#dcc090] text-[0.875rem] font-extrabold uppercase tracking-[0.06em] text-[#122a26] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               CHECKOUT
             </button>

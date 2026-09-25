@@ -81,7 +81,7 @@ export function getCartDisplaySubtotalUsd(
   return items.reduce((sum, item) => sum + getCartLineTotalUsd(item, categoryPriceByTitle), 0);
 }
 
-const FALLBACK_COLLECTION_SUMMARY_TITLE = 'Collection';
+const CART_CUSTOMIZATION_SUMMARY_TITLE = 'Customization';
 
 /** Line total without collection surcharge (product row display). */
 export function getCartLineMerchandiseTotalUsd(item: CartItem): number {
@@ -93,24 +93,23 @@ export function getCartMerchandiseDisplayUsd(items: CartItem[]): number {
   return items.reduce((sum, item) => sum + getCartLineMerchandiseTotalUsd(item), 0);
 }
 
-/** Collection surcharge rows for cart summary (title + USD). */
+/** Customization surcharge row for the cart summary (single label + USD). */
 export function getCartCollectionSummaryRows(
   items: CartItem[],
   categoryPriceByTitle?: Map<string, number>
 ): Array<{ title: string; usd: number }> {
-  const usdByTitle = new Map<string, number>();
+  let usd = 0;
   for (const item of items) {
     const unitUsd = getCartLineCollectionUnitUsd(item, categoryPriceByTitle);
     if (unitUsd <= 0) {
       continue;
     }
-    const title =
-      item.variant.sizeCatalogCategoryTitle?.trim() ||
-      item.variant.product.categoryLabel?.trim() ||
-      FALLBACK_COLLECTION_SUMMARY_TITLE;
-    usdByTitle.set(title, (usdByTitle.get(title) ?? 0) + unitUsd * item.quantity);
+    usd += unitUsd * item.quantity;
   }
-  return Array.from(usdByTitle, ([title, usd]) => ({ title, usd }));
+  if (usd <= 0) {
+    return [];
+  }
+  return [{ title: CART_CUSTOMIZATION_SUMMARY_TITLE, usd }];
 }
 
 /** Normalized category title keys present on cart lines with a collection surcharge context. */

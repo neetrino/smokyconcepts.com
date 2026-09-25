@@ -6,6 +6,8 @@ import { CustomizeFontDropdown } from './CustomizeFontDropdown';
 import {
   CUSTOMIZE_FORMAT_ASSETS,
   CUSTOMIZE_FORMAT_BUTTON_CLASS,
+  CUSTOMIZE_FORMAT_MODAL_ACTIVE_CLASS,
+  CUSTOMIZE_FORMAT_MODAL_IDLE_CLASS,
   CUSTOMIZE_FORMAT_TOGGLE_ACTIVE_CLASS,
   CUSTOMIZE_FORMAT_TOGGLE_IDLE_CLASS,
   CUSTOMIZE_FORMAT_TOOLBAR_CLASS,
@@ -21,6 +23,8 @@ export type CustomizeFormatToolbarProps = {
   isFontInvalid: boolean;
   isFontShaking: boolean;
   onFontShakeAnimationEnd: () => void;
+  /** Boxed controls for the white mobile popup. Gold outline only while active. */
+  boxed?: boolean;
 };
 
 type FormatToggleKey = keyof Pick<CustomizeFormatState, 'bold' | 'italic'>;
@@ -42,10 +46,15 @@ export function CustomizeFormatToolbar({
   isFontInvalid,
   isFontShaking,
   onFontShakeAnimationEnd,
+  boxed = false,
 }: CustomizeFormatToolbarProps) {
   const toggle = (key: FormatToggleKey) => {
     onFormatChange({ ...format, [key]: !format[key] });
   };
+  const idleClass = boxed ? CUSTOMIZE_FORMAT_MODAL_IDLE_CLASS : CUSTOMIZE_FORMAT_TOGGLE_IDLE_CLASS;
+  const activeClass = boxed
+    ? CUSTOMIZE_FORMAT_MODAL_ACTIVE_CLASS
+    : CUSTOMIZE_FORMAT_TOGGLE_ACTIVE_CLASS;
 
   return (
     <div className={CUSTOMIZE_FORMAT_TOOLBAR_CLASS}>
@@ -58,6 +67,7 @@ export function CustomizeFormatToolbar({
         isInvalid={isFontInvalid}
         isShaking={isFontShaking}
         onShakeAnimationEnd={onFontShakeAnimationEnd}
+        boxed={boxed}
         onChange={(fontStack) => {
           onFormatChange({ ...format, fontStack });
         }}
@@ -71,11 +81,7 @@ export function CustomizeFormatToolbar({
               type="button"
               aria-pressed={isActive}
               aria-label={t(language, labelKey)}
-              className={`${CUSTOMIZE_FORMAT_BUTTON_CLASS} ${
-                isActive
-                  ? CUSTOMIZE_FORMAT_TOGGLE_ACTIVE_CLASS
-                  : CUSTOMIZE_FORMAT_TOGGLE_IDLE_CLASS
-              }`}
+              className={`${CUSTOMIZE_FORMAT_BUTTON_CLASS} ${isActive ? activeClass : idleClass}`}
               onClick={() => {
                 toggle(key);
               }}

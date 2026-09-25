@@ -10,10 +10,10 @@ const COVER_COLLECTION_MOBILE_LINK_MARGIN_TOP_CLASS = 'max-sm:mt-1';
 /** Mobile: raise only the white panel; image compensates downward to stay put. */
 const COVER_COLLECTION_MOBILE_BG_NUDGE_UP_CLASS = 'max-sm:-mt-4';
 /** Image overlap includes BG nudge compensation so the hero stays fixed.
- * Below 384px: lower the hero a bit so it does not sit too high on narrow tiles.
+ * At ≥385px the pull-up stays 3.25rem. Below that the hero eases downward.
  */
 const COVER_COLLECTION_MOBILE_IMAGE_OVERLAP_CLASS =
-  'max-sm:-top-7 max-sm:-translate-y-[3.25rem] max-[383px]:-top-4 max-[383px]:-translate-y-9';
+  'max-sm:-top-7 max-sm:-translate-y-[clamp(2.5rem,calc(3.25rem-(385px-100vw)*1.2),3.25rem)]';
 /** Mobile: nudge category title down inside the white panel. */
 const COVER_COLLECTION_MOBILE_TITLE_OFFSET_CLASS = 'max-sm:translate-y-4';
 /** Desktop: card height follows content so the grid row does not add empty space below the title. */
@@ -40,8 +40,14 @@ const COVER_COLLECTION_MOBILE_CARD_MIN_HEIGHT_CLASS =
  * Mobile: image slot slightly above Figma Mob `4345:2059` baseline (`max-sm:`).
  * Image-only nudge — white panel position stays fixed.
  */
-const COVER_COLLECTION_PRODUCT_IMAGE_TRANSFORM_CLASS =
-  'origin-bottom max-sm:translate-y-0 max-sm:scale-[1.14] translate-y-4 scale-[1.14] sm:translate-y-[0.5rem] sm:scale-[1.18] sm:group-hover:translate-y-0 sm:group-hover:scale-[1.25] max-[360px]:scale-[1.04] min-[390px]:max-sm:scale-[1.18]';
+/** Below 385px the hero eases from 1.14 toward 0.96. Wider mobile stays at 1.14, ≥390px at 1.18. */
+const COVER_COLLECTION_MOBILE_IMAGE_SCALE_CLASS =
+  'max-sm:scale-[clamp(0.96,calc(1.14*100vw/385px),1.14)] min-[390px]:max-sm:scale-[1.18]';
+const COVER_COLLECTION_PRODUCT_IMAGE_TRANSFORM_CLASS = [
+  'origin-bottom max-sm:translate-y-0 translate-y-4 scale-[1.14]',
+  COVER_COLLECTION_MOBILE_IMAGE_SCALE_CLASS,
+  'sm:translate-y-[0.5rem] sm:scale-[1.18] sm:group-hover:translate-y-0 sm:group-hover:scale-[1.25]',
+].join(' ');
 
 const TITLE_MIN_HEIGHT_MOBILE = 'min-h-[2.75rem]';
 const COVER_COLLECTION_COMPACT_MOBILE_TITLE_MIN_HEIGHT_CLASS = 'max-[360px]:min-h-[2.375rem]';
@@ -66,7 +72,7 @@ const MOBILE_CARD_SHELL_CLASS = [
 
 /** Mobile: absolute image slot; desktop: existing flow layout. */
 const COVER_COLLECTION_IMAGE_OUTER_CLASS = [
-  'max-sm:absolute max-sm:left-1/2 max-sm:z-10 max-sm:flex max-sm:h-[clamp(10.75rem,57.5vw,14.75rem)] max-sm:w-full max-sm:-translate-x-1/2 max-sm:items-end max-sm:justify-center max-sm:overflow-visible max-[360px]:h-[10.5rem]',
+  'max-sm:absolute max-sm:left-1/2 max-sm:z-10 max-sm:flex max-sm:h-[clamp(10.75rem,57.5vw,14.75rem)] max-sm:w-full max-sm:-translate-x-1/2 max-sm:items-end max-sm:justify-center max-sm:overflow-visible max-[360px]:h-[11rem]',
   COVER_COLLECTION_MOBILE_IMAGE_OVERLAP_CLASS,
   'relative z-10 mx-auto flex h-[12.25rem] w-full shrink-0 items-end justify-center sm:z-auto sm:mb-0 sm:h-[18rem] sm:max-w-none sm:translate-y-0',
   COVER_COLLECTION_DESKTOP_IMAGE_PULL_UP_CLASS,
