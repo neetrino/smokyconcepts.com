@@ -25,6 +25,7 @@ function loadRootEnv() {
 loadRootEnv();
 
 const { securityHeaders } = require('./lib/security/security-headers.config.cjs');
+// Frame policy (X-Frame-Options / frame-ancestors) is applied in middleware.ts.
 const { URL } = require('url');
 
 function normalizePublicUrl(url) {

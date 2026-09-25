@@ -1,5 +1,5 @@
 /**
- * Product storefront-tab content: line-per-item editing ↔ stacked HTML paragraphs.
+ * Product / Shipping storefront-tab content: line-per-item editing ↔ stacked HTML paragraphs.
  */
 
 const STRUCTURED_HTML_TAG_RE = /<\/?(?:ul|ol|li|h[1-6]|div|table|section)\b/i;
@@ -53,7 +53,7 @@ export function productTabHtmlToEditableText(html: string): string {
 }
 
 /**
- * Converts textarea lines into stacked `<p>` blocks for the storefront Product tab.
+ * Converts textarea lines into stacked `<p>` blocks for storefront Product / Shipping tabs.
  * Structured HTML is passed through unchanged.
  */
 export function editableProductTabTextToHtml(text: string): string {

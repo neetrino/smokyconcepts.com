@@ -265,7 +265,12 @@ export function ProductImageGallery({
 
   const hasHeroImage = heroImageSrc.length > 0;
   const resolvedHeroPreviewHtml = customizeHeroPreviewHtml ?? customizePackPreviewHtml;
-  const showHeroPreviewInGallery = showCustomizeHeroPreview ?? showCustomizePackPreview;
+  /**
+   * Desktop-only: Figma black-body preview may replace the hero while customize text exists.
+   * On mobile/tablet keep the product photo after Save — preview lives in the modal instead.
+   */
+  const showHeroPreviewInGallery =
+    !isMobileGallery && Boolean(showCustomizeHeroPreview ?? showCustomizePackPreview);
   const hasHeroContent = showHeroPreviewInGallery || hasHeroImage;
   const canNavigateImages = images.length > 1;
 

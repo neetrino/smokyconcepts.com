@@ -72,7 +72,7 @@
 | 4.6 | idle_in_transaction_session_timeout | [ադապտիվ — քննարկել] | ⬜ | Neon-ի համար |
 | 4.7 | lock_timeout | [ադապտիվ — քննարկել] | ⬜ | Neon-ի համար |
 | 4.8 | Seed data | prisma db seed | ✅ | packages/db/prisma/seed.cjs |
-| 4.9 | Cache (Redis) | ioredis | ✅ | արդեն կիրառված |
+| 4.9 | Cache (Redis) | Upstash Redis REST (`@upstash/redis`), ioredis fallback | ✅ | rate limit + cache |
 | 4.10 | Հերթեր | պետք չէ | ➖ | |
 
 ---

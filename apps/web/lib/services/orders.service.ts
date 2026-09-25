@@ -29,6 +29,11 @@ import { logger } from "./utils/logger";
 import { adminDeliveryService } from "./admin/admin-delivery.service";
 import { tryApplyCoupon } from "./coupon.service";
 import { loadCollectionPriceAmdByTitle, resolveCheckoutCollectionPriceAmd } from "@/lib/services/collection-price.service";
+import {
+  beginArcaOrderRegistration,
+  discardArcaRegistration,
+  settleArcaRegistration,
+} from "@/lib/payments/arca/checkout-registration";
 import { signPaymentInitToken } from "@/lib/payments/payment-init-token";
 
 type ProductVariantWithProduct = Prisma.ProductVariantGetPayload<{
@@ -118,6 +123,40 @@ async function resolveEarlyAccessForCheckoutLine(productId: string, requested: b
     productId,
   });
   return false;
+}
+
+function startEarlyAccessLookups(
+  items: CheckoutData["items"],
+): Map<string, Promise<boolean>> {
+  const pending = new Map<string, Promise<boolean>>();
+  if (!items) {
+    return pending;
+  }
+  for (const line of items) {
+    if (line.earlyAccess !== true || pending.has(line.variantId)) {
+      continue;
+    }
+    pending.set(line.variantId, resolveEarlyAccessForCheckoutLine(line.productId, true));
+  }
+  return pending;
+}
+
+async function assignEarlyAccessFlags(
+  items: Array<{ variantId: string; earlyAccess: boolean }>,
+  pendingByVariantId: Map<string, Promise<boolean>>,
+): Promise<void> {
+  if (pendingByVariantId.size === 0) {
+    return;
+  }
+  await Promise.all(
+    items.map(async (line) => {
+      const pending = pendingByVariantId.get(line.variantId);
+      if (!pending) {
+        return;
+      }
+      line.earlyAccess = await pending;
+    }),
+  );
 }
 
 function getVariantOptions(attributes: unknown): VariantOptionFromAttributes[] {
@@ -228,6 +267,16 @@ class OrdersService {
         };
       }
 
+      const deliveryLocationsPromise =
+        shippingMethod === "delivery" && shippingAddress && checkoutShippingCity(shippingAddress)
+          ? adminDeliveryService.loadLocations()
+          : null;
+      const arcaOrderNumberPromise =
+        paymentMethod === "arca"
+          ? getNextSequentialOrderNumber(db as Prisma.TransactionClient)
+          : null;
+      const earlyAccessByVariantId = startEarlyAccessLookups(guestItems);
+
       // Get cart items - either from user cart or guest items
       let cartItems: Array<{
         variantId: string;
@@ -324,6 +373,12 @@ class OrdersService {
                 variantId,
                 actualProductId: variant.productId,
               });
+              if (item.earlyAccess === true) {
+                earlyAccessByVariantId.set(
+                  variant.id,
+                  resolveEarlyAccessForCheckoutLine(variant.product.id, true),
+                );
+              }
             }
 
             if (variant.stock < quantity) {
@@ -484,11 +539,6 @@ class OrdersService {
               sizeCatalogImageUrl = uploadedCustomImageUrl;
             }
 
-            const earlyAccess = await resolveEarlyAccessForCheckoutLine(
-              variant.product.id,
-              item.earlyAccess === true,
-            );
-
             return {
               variantId: variant.id,
               productId: variant.product.id,
@@ -505,7 +555,7 @@ class OrdersService {
               customizePlain,
               customizeHtml,
               customSizeRequest: customSizeRequest ?? null,
-              earlyAccess,
+              earlyAccess: false,
             };
           })
         );
@@ -554,14 +604,23 @@ class OrdersService {
       }
       let shippingAmount = 0;
       let deliveryPriceAmd: number | null = null;
+      let reservedOrderNumber: string | null = null;
       if (shippingMethod === "delivery" && shippingAddress) {
         const shipCity = checkoutShippingCity(shippingAddress);
         const shipCountry = checkoutShippingCountry(shippingAddress);
         if (shipCity) {
-          const priceAmd = await adminDeliveryService.getDeliveryPrice(shipCity, shipCountry, subtotal);
+          const [locations, orderNumber] = await Promise.all([
+            deliveryLocationsPromise ?? Promise.resolve([]),
+            arcaOrderNumberPromise ?? Promise.resolve(null),
+          ]);
+          const priceAmd = adminDeliveryService.quotePrice(locations, shipCity, shipCountry, subtotal);
           deliveryPriceAmd = priceAmd;
           shippingAmount = adminInputAmdToUsd(priceAmd);
+          reservedOrderNumber = orderNumber;
         }
+      }
+      if (arcaOrderNumberPromise && reservedOrderNumber === null) {
+        reservedOrderNumber = await arcaOrderNumberPromise;
       }
       const taxAmount = 0; // TODO: Calculate tax if needed
       const total = subtotal - discountAmount + shippingAmount + taxAmount;
@@ -591,12 +650,26 @@ class OrdersService {
         payment: Prisma.PaymentGetPayload<{}>;
       } | null = null;
 
+      let arcaRegistration: ReturnType<typeof beginArcaOrderRegistration> | null = null;
+
       for (let attempt = 0; attempt < ORDER_NUMBER_RETRY_LIMIT; attempt += 1) {
+        let attemptRegistration: ReturnType<typeof beginArcaOrderRegistration> | null = null;
         try {
+          if (paymentMethod === "arca") {
+            if (!reservedOrderNumber) {
+              reservedOrderNumber = await getNextSequentialOrderNumber(db as Prisma.TransactionClient);
+            }
+            attemptRegistration = beginArcaOrderRegistration({
+              orderNumber: reservedOrderNumber,
+              orderTotal: total,
+              orderCurrency: "USD",
+            });
+          }
+          await assignEarlyAccessFlags(cartItems, earlyAccessByVariantId);
           // Create order with items in a transaction
           order = await db.$transaction(
             async (tx: Prisma.TransactionClient) => {
-            const orderNumber = await getNextSequentialOrderNumber(tx);
+            const orderNumber = reservedOrderNumber ?? (await getNextSequentialOrderNumber(tx));
             // Create order
             const newOrder = await tx.order.create({
           data: {
@@ -756,8 +829,11 @@ class OrdersService {
               timeout: CHECKOUT_TRANSACTION_TIMEOUT_MS,
             }
           );
+          arcaRegistration = attemptRegistration;
           break;
         } catch (transactionError: unknown) {
+          discardArcaRegistration(attemptRegistration);
+          reservedOrderNumber = null;
           if (isP2002Error(transactionError) && attempt < ORDER_NUMBER_RETRY_LIMIT - 1) {
             logger.warn("Order number conflict detected, retrying with next number", {
               attempt: attempt + 1,
@@ -787,6 +863,17 @@ class OrdersService {
             })
           : null;
 
+      const arcaRedirectUrl =
+        paymentMethod === "arca" && arcaRegistration
+          ? (
+              await settleArcaRegistration({
+                orderId: order.order.id,
+                paymentId: order.payment.id,
+                registration: arcaRegistration,
+              })
+            ).redirectUrl
+          : null;
+
       // Return order and payment info
       return {
         order: {
@@ -801,6 +888,7 @@ class OrdersService {
           provider: order.payment.provider,
           paymentUrl: null, // TODO: Generate payment URL for Idram/ArCa
           expiresAt: null, // TODO: Set expiration if needed
+          redirectUrl: arcaRedirectUrl,
           initToken: paymentInitToken,
         },
         nextAction: paymentMethod === 'idram' || paymentMethod === 'arca' 

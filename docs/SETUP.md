@@ -33,7 +33,8 @@ Next.js-ը env-ը կարդում է **apps/web** թղթապանակից։ Պար
 
 | Փոփոխական | Նկարագրություն |
 |------------|-----------------|
-| `REDIS_URL` | Redis (cache), օր. `redis://localhost:6379` |
+| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST (cache, rate limit) |
+| `REDIS_URL` | Optional TCP Redis fallback, օր. `redis://localhost:6379` |
 | `MEILI_HOST` / `MEILISEARCH_HOST` | Meilisearch, օր. `http://localhost:7700` |
 | `MEILI_MASTER_KEY` / `MEILISEARCH_API_KEY` | Meilisearch API key |
 | `NEXT_PUBLIC_APP_URL` | Frontend URL, օր. `http://localhost:3000` |

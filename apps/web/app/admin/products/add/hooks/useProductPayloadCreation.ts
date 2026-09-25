@@ -55,7 +55,7 @@ export async function createAndSubmitPayload({
       slug: uniqueSlug,
       descriptionHtml: formData.descriptionHtml || undefined,
       productDetailsHtml: editableProductTabTextToHtml(formData.productDetailsHtml) || undefined,
-      shippingHtml: formData.shippingHtml || undefined,
+      shippingHtml: editableProductTabTextToHtml(formData.shippingHtml) || undefined,
       primaryCategoryId: finalPrimaryCategoryId || undefined,
       categoryIds: formData.categoryIds.length > 0 ? formData.categoryIds : undefined,
       published: isEditMode ? formData.published : true,

@@ -20,7 +20,7 @@
 | **Backend** | Next.js API Routes | 16.x | REST API |
 | **Database** | PostgreSQL | 17 | Database (Neon) |
 | **ORM** | Prisma | 5.x | Database ORM |
-| **Cache** | Redis | - | Cache (ioredis) |
+| **Cache** | Upstash Redis | REST | Cache, rate limiting (`@upstash/redis`) |
 | **Search** | Meilisearch | 0.38 | Որոնում |
 | **Monorepo** | Turborepo | 2.0 | Build system |
 
@@ -107,9 +107,11 @@
   - Schema: `packages/db/prisma/schema.prisma`
 
 ### Cache
-- **Redis** (ioredis 5.x)
+- **Upstash Redis** (`@upstash/redis`)
+  - REST API (serverless-safe)
+  - Rate limiting
   - Query cache
-  - Session storage
+  - Optional `ioredis` TCP fallback via `REDIS_URL`
 
 ---
 
@@ -222,7 +224,8 @@
 - `@hookform/resolvers` — Form resolvers
 - `jsonwebtoken` — JWT
 - `bcryptjs` — Password hashing
-- `ioredis` — Redis client
+- `@upstash/redis` — Upstash Redis REST client
+- `ioredis` — optional TCP Redis fallback
 - `meilisearch` — Search engine
 
 ### Dev Dependencies

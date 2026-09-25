@@ -29,8 +29,8 @@ export function buildIdramFailureRedirect(orderNumber?: string, baseUrl?: string
   const query = new URLSearchParams({
     payment: 'failed',
   });
-  if (orderNumber) {
-    query.set('orderNumber', orderNumber);
+  if (orderNumber?.trim()) {
+    query.set('orderNumber', orderNumber.trim());
   }
   return `${appUrl}/checkout/payment-failed?${query.toString()}`;
 }

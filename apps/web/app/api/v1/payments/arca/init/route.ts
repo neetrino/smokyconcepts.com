@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@white-shop/db';
 import type { Payment } from '@prisma/client';
 import { authenticateToken } from '@/lib/middleware/auth';
-import { registerArcaOrder } from '@/lib/payments/arca/client';
-import { getArcaConfig } from '@/lib/payments/arca/config';
-import type { ArcaCurrencyCode } from '@/lib/payments/arca/types';
-import { convertPrice, roundCatalogAmd } from '@/lib/currency';
+import {
+  beginArcaOrderRegistration,
+  settleArcaRegistration,
+} from '@/lib/payments/arca/checkout-registration';
 import { verifyPaymentInitToken } from '@/lib/payments/payment-init-token';
 import { toApiError } from '@/lib/types/errors';
 import { logger } from '@/lib/utils/logger';
@@ -23,7 +23,6 @@ const HTTP_STATUS_BAD_GATEWAY = 502;
 const HTTP_STATUS_TOO_MANY_REQUESTS = 429;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_REQUESTS = 20;
-const ARCA_TEST_MODE_REQUIRED_AMOUNT_AMD = 10;
 
 const initRateLimitStore = new Map<string, number[]>();
 
@@ -63,22 +62,6 @@ function validateOrderNumber(value: string | undefined): string {
     };
   }
   return trimmed;
-}
-
-function resolveOrderAmountForArcaAmd(orderTotal: number, orderCurrency: string, testMode: boolean): number {
-  if (testMode) {
-    return ARCA_TEST_MODE_REQUIRED_AMOUNT_AMD;
-  }
-
-  const normalizedCurrency = orderCurrency.trim().toUpperCase();
-  if (normalizedCurrency === 'AMD') {
-    return roundCatalogAmd(orderTotal);
-  }
-  if (normalizedCurrency === 'USD') {
-    return roundCatalogAmd(convertPrice(orderTotal, 'USD', 'AMD'));
-  }
-
-  return roundCatalogAmd(orderTotal);
 }
 
 export async function POST(req: NextRequest) {
@@ -177,76 +160,32 @@ export async function POST(req: NextRequest) {
       };
     }
 
-    const config = getArcaConfig();
-    // Classic ArCa: numeric ISO `051`. Ameria maps this to `AMD` inside the client.
-    const currency: ArcaCurrencyCode = '051';
-    const amountAmd = resolveOrderAmountForArcaAmd(
-      Number(order.total),
-      String(order.currency ?? 'USD'),
-      config.testMode,
-    );
-
-    if (!Number.isFinite(amountAmd) || amountAmd <= 0) {
-      throw {
-        status: HTTP_STATUS_BAD_REQUEST,
-        type: 'https://api.shop.am/problems/validation-error',
-        title: 'Validation Error',
-        detail: 'Order total must be greater than zero',
-      };
-    }
-
-    const callbackUrl = `${config.appUrl}/api/v1/payments/arca/callback?order=${encodeURIComponent(
-      order.number,
-    )}`;
-
-    const registerResult = await registerArcaOrder({
+    const registration = beginArcaOrderRegistration({
       orderNumber: order.number,
-      amount: amountAmd,
-      currency,
-      returnUrl: callbackUrl,
-      description: `Order ${order.number}`,
-      language: 'en',
+      orderTotal: Number(order.total),
+      orderCurrency: String(order.currency ?? 'USD'),
+    });
+    const settled = await settleArcaRegistration({
+      orderId: order.id,
+      paymentId: payment.id,
+      registration,
     });
 
-    const errorCode = Number.parseInt(String(registerResult.errorCode), 10);
-    if (errorCode !== 0 || !registerResult.formUrl || !registerResult.orderId) {
-      logger.error('Arca register.do failed', {
-        orderNumber: order.number,
-        errorCode: registerResult.errorCode,
-        errorMessage: registerResult.errorMessage,
-      });
+    if (!settled.redirectUrl || !settled.providerOrderId) {
+      const invalidAmount = settled.failure === 'invalid_amount';
       throw {
-        status: HTTP_STATUS_BAD_GATEWAY,
-        type: 'https://api.shop.am/problems/upstream-error',
-        title: 'Arca Initialization Failed',
-        detail: registerResult.errorMessage || 'Arca register.do returned an error',
+        status: invalidAmount ? HTTP_STATUS_BAD_REQUEST : HTTP_STATUS_BAD_GATEWAY,
+        type: invalidAmount
+          ? 'https://api.shop.am/problems/validation-error'
+          : 'https://api.shop.am/problems/upstream-error',
+        title: invalidAmount ? 'Validation Error' : 'Arca Initialization Failed',
+        detail: settled.errorMessage || 'Arca register returned an error',
       };
     }
-
-    await db.payment.update({
-      where: { id: payment.id },
-      data: {
-        providerTransactionId: registerResult.orderId,
-        providerResponse: registerResult,
-      },
-    });
-
-    await db.orderEvent.create({
-      data: {
-        orderId: order.id,
-        type: 'payment_initialized',
-        data: {
-          provider: 'arca',
-          orderId: registerResult.orderId,
-          gatewayOrderId: registerResult.gatewayOrderId ?? null,
-          testMode: config.testMode,
-        },
-      },
-    });
 
     return NextResponse.json({
-      redirectUrl: registerResult.formUrl,
-      providerOrderId: registerResult.orderId,
+      redirectUrl: settled.redirectUrl,
+      providerOrderId: settled.providerOrderId,
     });
   } catch (error: unknown) {
     logger.error('Arca init error', { error });

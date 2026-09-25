@@ -5,6 +5,7 @@ import { resolveCartLineCollectionPriceAmd } from '../../cart/cart-line-pricing'
 import { useSizeCatalogPriceByTitle } from '@/lib/size-catalog/use-size-catalog-price-by-title';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
+import { rememberPaymentReturnOrderNumber } from '@/lib/payments/remember-payment-return-order-number';
 import { clearGuestCart } from '../checkoutUtils';
 import type { CheckoutFormData, Cart, CartItem } from '../types';
 import { DEFAULT_SHIPPING_COUNTRY } from '../../../lib/shipping-address-display';
@@ -23,6 +24,7 @@ function submitExternalPaymentForm(action: string, fields: Record<string, string
   const form = document.createElement('form');
   form.method = 'POST';
   form.action = action;
+  form.target = '_top';
   form.style.display = 'none';
 
   Object.entries(fields).forEach(([name, value]) => {
@@ -166,6 +168,7 @@ export function useOrderSubmission({
           paymentUrl: string | null;
           expiresAt: string | null;
           initToken?: string | null;
+          redirectUrl?: string | null;
         };
         nextAction: string;
       }>('/api/v1/orders/checkout', {
@@ -181,9 +184,16 @@ export function useOrderSubmission({
         ...(appliedCouponCode ? { couponCode: appliedCouponCode } : {}),
       });
 
+      rememberPaymentReturnOrderNumber(response.order.number);
+
       const resolvedProvider = response.payment?.provider?.trim().toLowerCase() || data.paymentMethod;
 
       if (resolvedProvider === 'arca') {
+        const readyRedirect = response.payment?.redirectUrl?.trim();
+        if (readyRedirect) {
+          window.location.replace(readyRedirect);
+          return;
+        }
         const initToken = response.payment?.initToken;
         if (!initToken) {
           throw new Error(t('checkout.errors.failedToCreateOrder'));
@@ -195,7 +205,7 @@ export function useOrderSubmission({
           orderNumber: response.order.number,
           initToken,
         });
-        window.location.href = arcaInit.redirectUrl;
+        window.location.replace(arcaInit.redirectUrl);
         return;
       }
 

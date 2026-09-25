@@ -95,7 +95,7 @@ export function ProductInfoTabPanels({
       return (
         <div
           className={PRODUCT_TAB_HTML_PROSE_CLASS}
-          dangerouslySetInnerHTML={{ __html: shippingTabHtml }}
+          dangerouslySetInnerHTML={{ __html: normalizeProductTabHtmlForDisplay(shippingTabHtml) }}
         />
       );
     }

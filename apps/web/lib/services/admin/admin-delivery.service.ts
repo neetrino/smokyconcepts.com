@@ -80,26 +80,35 @@ class AdminDeliveryService {
     };
   }
 
+  /** Loads delivery cities once so checkout can overlap this read with cart pricing. */
+  async loadLocations(): Promise<StoredDeliveryLocation[]> {
+    const { locations } = await this.getDeliverySettings();
+    return locations;
+  }
+
+  /**
+   * Price in AMD for an already loaded location list.
+   * When `orderSubtotalUsd` is set, free delivery may apply.
+   */
+  quotePrice(
+    locations: StoredDeliveryLocation[],
+    city: string,
+    country: string = "Armenia",
+    orderSubtotalUsd?: number,
+  ): number {
+    const location = findLocation(locations, city, country);
+    if (!location) {
+      return 0;
+    }
+    return applyFreeDeliveryThreshold(location.price, location, orderSubtotalUsd);
+  }
+
   /**
    * Get delivery price for a specific city (AMD). When `orderSubtotalUsd` is set, free delivery may apply.
    */
   async getDeliveryPrice(city: string, country: string = "Armenia", orderSubtotalUsd?: number): Promise<number> {
-    const setting = await db.settings.findUnique({
-      where: { key: "delivery-locations" },
-    });
-
-    if (!setting) {
-      return 0;
-    }
-
-    const locations = parseLocations(setting.value);
-    const location = findLocation(locations, city, country);
-
-    if (!location) {
-      return 0;
-    }
-
-    return applyFreeDeliveryThreshold(location.price, location, orderSubtotalUsd);
+    const locations = await this.loadLocations();
+    return this.quotePrice(locations, city, country, orderSubtotalUsd);
   }
 
   /**

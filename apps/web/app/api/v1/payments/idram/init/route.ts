@@ -146,6 +146,7 @@ export async function POST(req: NextRequest) {
       EDP_DESCRIPTION: `Order ${order.number}`,
       EDP_AMOUNT: formatIdramAmount(amountAmd),
       EDP_BILL_NO: order.number,
+      orderNumber: order.number,
     };
 
     await db.payment.update({
