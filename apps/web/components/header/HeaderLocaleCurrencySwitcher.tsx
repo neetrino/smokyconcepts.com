@@ -4,6 +4,14 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { CURRENCIES, getStoredCurrency, setStoredCurrency, type CurrencyCode } from '../../lib/currency';
 import { LANGUAGES, type LanguageCode, getStoredLanguage, setStoredLanguage } from '../../lib/language';
+
+/** Closed switcher label. Armenian matches the homepage Figma (`ՀԱՅ`). */
+const HEADER_LANGUAGE_SHORT_LABEL: Record<LanguageCode, string> = {
+  en: 'EN',
+  hy: 'ՀԱՅ',
+  ru: 'RU',
+  ka: 'KA',
+};
 import {
   HEADER_ASSET_PATHS,
   HEADER_LABEL_CLASS,
@@ -214,7 +222,7 @@ export function HeaderLocaleCurrencySwitcher({ variant = 'header' }: HeaderLocal
           className="flex w-full items-center gap-3 border-t border-white/10 py-4 text-[#dcc090]"
         >
           <HeaderIcon src={HEADER_ASSET_PATHS.globe} alt="" className="size-5 object-contain" />
-          <span className={`${HEADER_LABEL_CLASS} font-extrabold`}>{LANGUAGES[currentLang].code.toUpperCase()}</span>
+          <span className={`${HEADER_LABEL_CLASS} font-extrabold`}>{HEADER_LANGUAGE_SHORT_LABEL[currentLang]}</span>
           <LanguageChevronDown open={openPanel === 'language'} />
         </button>
         {openPanel === 'language' ? (
@@ -256,7 +264,7 @@ export function HeaderLocaleCurrencySwitcher({ variant = 'header' }: HeaderLocal
             aria-label="Select language"
           >
             <HeaderIcon src={HEADER_ASSET_PATHS.globe} alt="" className="size-5 shrink-0 object-contain" />
-            <span className={HEADER_LABEL_CLASS}>{LANGUAGES[currentLang].code.toUpperCase()}</span>
+            <span className={HEADER_LABEL_CLASS}>{HEADER_LANGUAGE_SHORT_LABEL[currentLang]}</span>
             <LanguageChevronDown open={openPanel === 'language'} />
           </button>
           {openPanel === 'language' ? <DropdownPanel align="right">{languageMenu}</DropdownPanel> : null}

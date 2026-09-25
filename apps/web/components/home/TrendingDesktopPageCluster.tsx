@@ -1,5 +1,9 @@
+'use client';
+
 import { CatalogStripProductCard } from '../../app/products/components/CatalogStripProductCard';
 import { getSectionLabel } from '../../app/products/components/catalogProductLabels';
+import { useTranslation } from '@/lib/i18n-client';
+import { resolveCoverCollectionTitle } from './coverCollectionLabels';
 import { CLUSTER_INNER_REM } from './trendingFeatured.constants';
 import type { TrendingDesktopPageClusterProps } from './trendingFeatured.types';
 
@@ -11,7 +15,11 @@ export function TrendingDesktopPageCluster({
   isFocal,
   freezeClusterMotion = false,
 }: TrendingDesktopPageClusterProps) {
-  const displayLabel = label && label !== 'Featured' ? label : '—';
+  const { t } = useTranslation();
+  const sourceLabel = label && label !== 'Featured' ? label : '';
+  const displayLabel = sourceLabel
+    ? resolveCoverCollectionTitle(sourceLabel, sourceLabel, t)
+    : '—';
   const clusterMotionClassName = freezeClusterMotion
     ? ''
     : 'transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]';

@@ -47,6 +47,20 @@
     display: none;
   }
 
+  /*
+   * Armenian in Montserrat reads smaller than Latin at the same size.
+   * Nudge copy only — images and icon-only controls stay put.
+   */
+  html[lang='hy'] {
+    --hy-type-zoom: 1.08;
+  }
+
+  html[lang='hy'] [data-hy-type] :is(h1, h2, h3, p),
+  html[lang='hy'] [data-hy-type] a:not(:has(:is(h1, h2, h3, img))):not(:where(:is(p, h1, h2, h3) a)),
+  html[lang='hy'] [data-hy-type] button:not(:has(> svg:only-child)) {
+    zoom: var(--hy-type-zoom);
+  }
+
   body {
     @apply bg-[#efefef] text-gray-900;
     overflow-x: hidden;

@@ -225,10 +225,10 @@ export const UPCOMING_LINES: HomeSimpleCardItem[] = [
 ];
 
 export const FOOTER_LINKS = [
-  { label: 'Privacy Policy', href: '/privacy' },
   { label: 'Terms and conditions', href: '/terms' },
-  { label: 'Delivery Terms', href: '/delivery-terms' },
+  { label: 'Privacy Policy', href: '/privacy' },
   { label: 'Refund Policy', href: '/refund-policy' },
+  { label: 'Delivery Terms', href: '/delivery-terms' },
 ] as const;
 
 export const FOOTER_SOCIALS = [

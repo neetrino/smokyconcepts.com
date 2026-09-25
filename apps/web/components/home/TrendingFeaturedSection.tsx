@@ -11,6 +11,7 @@ import {
   TrendingFeaturedLoadingState,
 } from './TrendingFeaturedSectionStates';
 import { TrendingPageSlider } from './TrendingPageSlider';
+import { resolveCoverCollectionTitle } from './coverCollectionLabels';
 import { buildTrendingPages } from './trendingFeaturedPages';
 import { useTrendingCarouselNavigation } from './useTrendingCarouselNavigation';
 import { useTrendingCarouselSwipe } from './useTrendingCarouselSwipe';
@@ -85,9 +86,9 @@ export function TrendingFeaturedSection() {
       </div>
 
       <TrendingPageSlider
-        prevLabel={navigation.prevLabel}
-        currentLabel={navigation.currentLabel}
-        nextLabel={navigation.nextLabel}
+        prevLabel={resolveCoverCollectionTitle(navigation.prevLabel, navigation.prevLabel, t)}
+        currentLabel={resolveCoverCollectionTitle(navigation.currentLabel, navigation.currentLabel, t)}
+        nextLabel={resolveCoverCollectionTitle(navigation.nextLabel, navigation.nextLabel, t)}
         onPrev={navigation.goPrev}
         onNext={navigation.goNext}
         disabled={!navigation.hasMultiplePages}

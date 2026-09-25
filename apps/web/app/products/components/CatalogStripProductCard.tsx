@@ -12,6 +12,7 @@ import {
 } from './catalogProductCardMobilePresentation';
 import type { CatalogProduct } from './catalogProductLabels';
 import { getCategoryLabel, getSizeLabel, shouldNudgeCatalogProductImage } from './catalogProductLabels';
+import { resolveCoverCollectionTitle } from '@/components/home/coverCollectionLabels';
 import { ProductsCatalogCard } from './ProductsCatalogCard';
 
 /** Shared article classes for catalog strips and home trending clusters. */
@@ -48,7 +49,7 @@ function resolveStripBuyButtonLabel(
     case 'related-products':
       return t('common.buttons.shop');
     case 'home-trending':
-      return t('home.homepage.trending.shopCta');
+      return t('home.homepage.trending.buyCta');
     case 'products-catalog':
     default:
       return t('product.buy_now');
@@ -73,6 +74,7 @@ export function CatalogStripProductCard({
   articleClassName = CATALOG_STRIP_PRODUCT_CARD_ARTICLE_CLASS_NAME,
 }: CatalogStripProductCardProps) {
   const { t } = useTranslation();
+  const categoryLabel = getCategoryLabel(product, sectionLabel);
 
   return (
     <ProductsCatalogCard
@@ -82,7 +84,7 @@ export function CatalogStripProductCard({
       selectedSize={selectedSize}
       selectedSizeCatalogCategoryId={selectedSizeCatalogCategoryId}
       selectedSizeCatalogCategoryTitle={selectedSizeCatalogCategoryTitle}
-      categoryLabel={getCategoryLabel(product, sectionLabel)}
+      categoryLabel={resolveCoverCollectionTitle(categoryLabel, categoryLabel, t)}
       buyButtonLabel={resolveStripBuyButtonLabel(ctaPreset, t)}
       catalogBuyOnlyCta
       productsCatalogPageScaleMultiplier={1}

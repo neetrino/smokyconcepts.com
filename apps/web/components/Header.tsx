@@ -15,16 +15,17 @@ import {
   HEADER_UTILITIES_ROW_CLASS,
 } from './header/header.constants';
 import { HeaderDesktopAccount } from './HeaderAccountMenu';
+import { useTranslation } from '../lib/i18n-client';
 
 const NAVIGATION_ITEMS = [
-  { label: 'Home', href: '/' },
-  { label: 'Shop', href: '/products' },
-  { label: 'About', href: '/about' },
+  { labelKey: 'common.navigation.home', href: '/' },
+  { labelKey: 'common.navigation.shop', href: '/products' },
+  { labelKey: 'common.navigation.about', href: '/about' },
 ] as const;
 
 const MOBILE_MENU_ID = 'header-mobile-menu';
 
-const NAV_LINK_BASE = 'text-[15px] uppercase tracking-[0.1em] transition-opacity';
+const NAV_LINK_BASE = 'text-[15px] tracking-[0.1em] transition-opacity';
 const NAV_LINK_ACTIVE = 'font-extrabold text-[#dcc090]';
 const NAV_LINK_INACTIVE = 'font-normal text-[#dcc090]/80 hover:text-[#dcc090]';
 
@@ -100,6 +101,7 @@ function HeaderCartButton({ cartCount, cartReady }: { cartCount: number; cartRea
  * Main site header aligned with Figma (node 6513:232).
  */
 export function Header() {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const isAdminPath = pathname?.startsWith('/supersudo') ?? false;
 
@@ -135,9 +137,9 @@ export function Header() {
 
   const renderNavLinks = (
     className: string,
-    items: readonly { readonly label: string; readonly href: string }[]
+    items: readonly { readonly labelKey: string; readonly href: string }[]
   ) => (
-    <nav className={className}>
+    <nav data-hy-type className={className}>
       {items.map((item) => {
         const isActive = pathname === item.href;
         return (
@@ -146,7 +148,7 @@ export function Header() {
             href={item.href}
             className={`${NAV_LINK_BASE} ${isActive ? NAV_LINK_ACTIVE : NAV_LINK_INACTIVE}`}
           >
-            {item.label}
+            {t(item.labelKey)}
           </Link>
         );
       })}
@@ -191,7 +193,7 @@ export function Header() {
               id={MOBILE_MENU_ID}
               className="absolute left-0 right-0 top-full z-50 flex flex-col border-t border-white/10 bg-[#122a26] px-4 pb-4 pt-1 sm:px-8 lg:px-[7.5rem] md:hidden"
             >
-              <nav className="flex flex-col" aria-label="Mobile primary">
+              <nav data-hy-type className="flex flex-col" aria-label="Mobile primary">
                 {NAVIGATION_ITEMS.map((item) => {
                   const isActive = pathname === item.href;
                   return (
@@ -203,7 +205,7 @@ export function Header() {
                         isActive ? NAV_LINK_ACTIVE : NAV_LINK_INACTIVE
                       }`}
                     >
-                      {item.label}
+                      {t(item.labelKey)}
                     </Link>
                   );
                 })}

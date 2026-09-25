@@ -9,6 +9,7 @@ import {
   COVER_COLLECTIONS_MOBILE_GRID_MARGIN_TOP_CLASS,
   COVER_COLLECTIONS_MOBILE_SECTION_GAP_CLASS,
 } from './upcomingLinesLayout.constants';
+import { resolveCoverCollectionTitle } from './coverCollectionLabels';
 import { useTranslation } from '@/lib/i18n-client';
 
 interface HomeCoverCollectionsSectionProps {
@@ -34,7 +35,13 @@ export function HomeCoverCollectionsSection({ coverCollections }: HomeCoverColle
         className={`mt-4 grid w-full min-w-0 auto-rows-fr grid-cols-[repeat(2,minmax(0,1fr))] items-stretch justify-items-stretch gap-x-2 gap-y-16 overflow-visible sm:mt-0 sm:grid-cols-4 sm:items-start sm:gap-8 ${COVER_COLLECTIONS_MOBILE_GRID_MARGIN_TOP_CLASS} ${COVER_COLLECTIONS_MOBILE_GRID_GAP_X_CLASS} ${COVER_COLLECTIONS_MOBILE_GRID_GAP_Y_CLASS}`}
       >
         {coverCollections.map((item) => (
-          <CoverCollectionProductCard key={item.slug} item={item} />
+          <CoverCollectionProductCard
+            key={item.slug}
+            item={{
+              ...item,
+              title: resolveCoverCollectionTitle(item.slug, item.title, t),
+            }}
+          />
         ))}
       </div>
     </section>
