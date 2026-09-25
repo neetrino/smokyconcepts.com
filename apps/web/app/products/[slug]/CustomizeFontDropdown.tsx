@@ -12,6 +12,8 @@ import {
   CUSTOMIZE_FORMAT_CONTROL_IDLE_CLASS,
   CUSTOMIZE_FORMAT_CONTROL_INVALID_CLASS,
   CUSTOMIZE_FORMAT_FONT_TRIGGER_CLASS,
+  CUSTOMIZE_FORMAT_MODAL_ACTIVE_CLASS,
+  CUSTOMIZE_FORMAT_MODAL_IDLE_CLASS,
 } from './customize-format.constants';
 import {
   CUSTOMIZE_FONT_OPTIONS,
@@ -20,6 +22,13 @@ import {
 import { CUSTOMIZE_INPUT_FONT_STACK } from './utils/build-customize-preview-html';
 
 const FONT_DROPDOWN_DIVIDER_CLASS = 'mx-0 h-px border-0 bg-[#e8e8e8]';
+
+function fontTriggerBorderClass(open: boolean, boxed: boolean): string {
+  if (boxed) {
+    return open ? CUSTOMIZE_FORMAT_MODAL_ACTIVE_CLASS : CUSTOMIZE_FORMAT_MODAL_IDLE_CLASS;
+  }
+  return open ? CUSTOMIZE_FORMAT_CONTROL_ACTIVE_CLASS : CUSTOMIZE_FORMAT_CONTROL_IDLE_CLASS;
+}
 
 /** Gap between trigger bottom and fixed panel (matches former `mt-0.5`). */
 const FONT_DROPDOWN_PANEL_GAP_PX = 2;
@@ -51,6 +60,8 @@ export type CustomizeFontDropdownProps = {
   isInvalid?: boolean;
   isShaking?: boolean;
   onShakeAnimationEnd?: () => void;
+  /** Visible box on the white mobile popup. Gold outline only while open. */
+  boxed?: boolean;
 };
 
 export function CustomizeFontDropdown({
@@ -63,6 +74,7 @@ export function CustomizeFontDropdown({
   isInvalid = false,
   isShaking = false,
   onShakeAnimationEnd,
+  boxed = false,
 }: CustomizeFontDropdownProps) {
   const [open, setOpen] = useState(false);
   const [panelPosition, setPanelPosition] = useState<FontDropdownPanelPosition | null>(null);
@@ -187,9 +199,9 @@ export function CustomizeFontDropdown({
       onAnimationEnd={onShakeAnimationEnd}
     >
       <div
-        className={`${CUSTOMIZE_FORMAT_FONT_TRIGGER_CLASS} ${
-          open ? CUSTOMIZE_FORMAT_CONTROL_ACTIVE_CLASS : CUSTOMIZE_FORMAT_CONTROL_IDLE_CLASS
-        } ${isInvalid ? CUSTOMIZE_FORMAT_CONTROL_INVALID_CLASS : ''}`}
+        className={`${CUSTOMIZE_FORMAT_FONT_TRIGGER_CLASS} ${fontTriggerBorderClass(open, boxed)} ${
+          isInvalid ? CUSTOMIZE_FORMAT_CONTROL_INVALID_CLASS : ''
+        }`}
       >
         <button
           type="button"

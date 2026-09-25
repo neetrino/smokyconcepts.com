@@ -16,6 +16,7 @@ export const CUSTOMIZE_TEXT_MODAL_PANEL_CLASS = [
 export const CUSTOMIZE_TEXT_MODAL_TITLE_CLASS =
   'font-montserrat text-[22px] font-black leading-none text-black';
 
+/** Anchored to the panel (which is `relative`), aligned with the title row. */
 export const CUSTOMIZE_TEXT_MODAL_CLOSE_CLASS =
   'absolute right-4 top-4 flex size-8 items-center justify-center text-[#414141]';
 

@@ -60,6 +60,9 @@ export const CUSTOMIZE_FORMAT_TOGGLE_IDLE_CLASS =
 /** B/I selected — gold outline like Save (no filled green). */
 export const CUSTOMIZE_FORMAT_TOGGLE_ACTIVE_CLASS =
   'border border-[#dcc090] bg-white';
+/** Mobile popup: box stays visible; gold outline only while active, same as desktop. */
+export const CUSTOMIZE_FORMAT_MODAL_IDLE_CLASS = 'border border-[#e8e8e8] bg-white';
+export const CUSTOMIZE_FORMAT_MODAL_ACTIVE_CLASS = 'border border-[#dcc090] bg-white';
 /** Light foreground for labels/icons on the filled active surface. */
 export const CUSTOMIZE_FORMAT_CONTROL_ACTIVE_FG_CLASS = 'text-[#faf8f4]';
 export const CUSTOMIZE_FORMAT_CONTROL_ACTIVE_ICON_CLASS =

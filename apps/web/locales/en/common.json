@@ -55,7 +55,8 @@
     "total": "Total",
     "free": "Free",
     "items": "items",
-    "item": "item"
+    "item": "item",
+    "customized": "Customized"
   },
   "messages": {
     "addedToCart": "Added to cart",
